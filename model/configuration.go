@@ -163,6 +163,7 @@ type ResourceStore interface {
 // BindPlaneConfiguration includes configuration information needed to render configurations
 type BindPlaneConfiguration interface {
 	BindPlaneURL() string
+	BindPlaneInsecureSkipVerify() bool
 }
 
 // Render converts the Configuration model to a configuration yaml that can be sent to an agent. The specified Agent can
@@ -204,7 +205,7 @@ func (c *Configuration) otelConfiguration(ctx context.Context, agent *Agent, con
 	}
 
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext(agentID, c.Name(), config.BindPlaneURL()),
+		RenderContext:     otel.NewRenderContext(agentID, c.Name(), config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify()),
 		pipelineTypeUsage: newPipelineTypeUsage(),
 	}
 	rc.IncludeSnapshotProcessor = agentFeatures.Has(AgentSupportsSnapshots)
@@ -836,7 +837,7 @@ func (c *Configuration) determinePipelineTypeUsage(ctx context.Context, store Re
 
 	// the agent ID and URL values aren't important
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL"),
+		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false),
 		pipelineTypeUsage: p,
 	}
 	config, err := c.otelConfigurationWithRenderContext(ctx, rc, store)

@@ -45,7 +45,8 @@ func fileResource[T Resource](t *testing.T, path string) T {
 }
 
 type testConfiguration struct {
-	bindplaneURL string
+	bindplaneURL                string
+	bindplaneInsecureSkipVerify bool
 }
 
 func newTestConfiguration() BindPlaneConfiguration {
@@ -54,6 +55,10 @@ func newTestConfiguration() BindPlaneConfiguration {
 
 func (c *testConfiguration) BindPlaneURL() string {
 	return c.bindplaneURL
+}
+
+func (c *testConfiguration) BindPlaneInsecureSkipVerify() bool {
+	return c.bindplaneInsecureSkipVerify
 }
 
 var _ BindPlaneConfiguration = (*testConfiguration)(nil)
@@ -299,8 +304,8 @@ func TestEvalConfiguration3(t *testing.T) {
 	otlp := testResource[*SourceType](t, "sourcetype-otlp.yaml")
 	store.sourceTypes[otlp.Name()] = otlp
 
-	googleCloudType := testResource[*DestinationType](t, "destinationtype-otlp.yaml")
-	store.destinationTypes[googleCloudType.Name()] = googleCloudType
+	otlpDestinationType := testResource[*DestinationType](t, "destinationtype-otlp.yaml")
+	store.destinationTypes[otlpDestinationType.Name()] = otlpDestinationType
 
 	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
 	result, err := configuration.Render(context.TODO(), nil, config, store)
@@ -1795,6 +1800,286 @@ service:
                 - batch/googlecloud
             exporters:
                 - googlecloud/googlecloud
+`, "\n")
+
+	require.Equal(t, expect, result)
+}
+
+func TestEvalConfiguration_TestAgentMetricsTLS(t *testing.T) {
+	t.Parallel()
+	store := newTestResourceStore()
+	config := &testConfiguration{
+		bindplaneURL:                "https://127.0.0.1:8443",
+		bindplaneInsecureSkipVerify: false,
+	}
+
+	agent := Agent{
+		Version: "v1.13.22",
+	}
+	otlp := testResource[*SourceType](t, "sourcetype-otlp.yaml")
+	store.sourceTypes[otlp.Name()] = otlp
+
+	otlpDestinationType := testResource[*DestinationType](t, "destinationtype-otlp.yaml")
+	store.destinationTypes[otlpDestinationType.Name()] = otlpDestinationType
+
+	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
+
+	result, err := configuration.Render(context.TODO(), &agent, config, store)
+	require.NoError(t, err)
+
+	expect := strings.TrimLeft(`
+receivers:
+    otlp/source0:
+        protocols:
+            grpc: null
+            http: null
+    prometheus/_agent_metrics:
+        config:
+            scrape_configs:
+                - job_name: observiq-otel-collector
+                  metric_relabel_configs:
+                    - action: keep
+                      regex: otelcol_processor_throughputmeasurement_.*
+                      source_labels:
+                        - __name__
+                  scrape_interval: 10s
+                  static_configs:
+                    - labels:
+                        agent: ""
+                        configuration: otlp
+                      targets:
+                        - 0.0.0.0:8888
+processors:
+    batch/_agent_metrics: null
+    batch/destination0: null
+    snapshotprocessor: null
+    throughputmeasurement/_d0_logs_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d0_metrics_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d0_traces_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_logs_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_metrics_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_traces_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_traces_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_traces_source0:
+        enabled: true
+        sampling_ratio: 1
+exporters:
+    otlp/destination0:
+        endpoint: otelcol:4317
+    otlphttp/_agent_metrics:
+        endpoint: https://127.0.0.1:8443/v1/otlphttp
+service:
+    pipelines:
+        logs/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_logs_source0
+                - throughputmeasurement/_s1_logs_source0
+                - throughputmeasurement/_d0_logs_destination0
+                - throughputmeasurement/_d1_logs_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
+        metrics/_agent_metrics:
+            receivers:
+                - prometheus/_agent_metrics
+            processors:
+                - batch/_agent_metrics
+            exporters:
+                - otlphttp/_agent_metrics
+        metrics/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_metrics_source0
+                - throughputmeasurement/_s1_metrics_source0
+                - throughputmeasurement/_d0_metrics_destination0
+                - throughputmeasurement/_d1_metrics_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
+        traces/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_traces_source0
+                - throughputmeasurement/_s1_traces_source0
+                - throughputmeasurement/_d0_traces_destination0
+                - throughputmeasurement/_d1_traces_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
+`, "\n")
+
+	require.Equal(t, expect, result)
+}
+
+func TestEvalConfiguration_TestAgentMetricsTLSInsecure(t *testing.T) {
+	t.Parallel()
+	store := newTestResourceStore()
+	config := &testConfiguration{
+		bindplaneURL:                "https://127.0.0.1:8443",
+		bindplaneInsecureSkipVerify: true,
+	}
+
+	agent := Agent{
+		Version: "v1.13.22",
+	}
+	otlp := testResource[*SourceType](t, "sourcetype-otlp.yaml")
+	store.sourceTypes[otlp.Name()] = otlp
+
+	otlpDestinationType := testResource[*DestinationType](t, "destinationtype-otlp.yaml")
+	store.destinationTypes[otlpDestinationType.Name()] = otlpDestinationType
+
+	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
+
+	result, err := configuration.Render(context.TODO(), &agent, config, store)
+	require.NoError(t, err)
+
+	expect := strings.TrimLeft(`
+receivers:
+    otlp/source0:
+        protocols:
+            grpc: null
+            http: null
+    prometheus/_agent_metrics:
+        config:
+            scrape_configs:
+                - job_name: observiq-otel-collector
+                  metric_relabel_configs:
+                    - action: keep
+                      regex: otelcol_processor_throughputmeasurement_.*
+                      source_labels:
+                        - __name__
+                  scrape_interval: 10s
+                  static_configs:
+                    - labels:
+                        agent: ""
+                        configuration: otlp
+                      targets:
+                        - 0.0.0.0:8888
+processors:
+    batch/_agent_metrics: null
+    batch/destination0: null
+    snapshotprocessor: null
+    throughputmeasurement/_d0_logs_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d0_metrics_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d0_traces_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_logs_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_metrics_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_traces_destination0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_traces_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_traces_source0:
+        enabled: true
+        sampling_ratio: 1
+exporters:
+    otlp/destination0:
+        endpoint: otelcol:4317
+    otlphttp/_agent_metrics:
+        endpoint: https://127.0.0.1:8443/v1/otlphttp
+        tls:
+            insecure: true
+service:
+    pipelines:
+        logs/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_logs_source0
+                - throughputmeasurement/_s1_logs_source0
+                - throughputmeasurement/_d0_logs_destination0
+                - throughputmeasurement/_d1_logs_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
+        metrics/_agent_metrics:
+            receivers:
+                - prometheus/_agent_metrics
+            processors:
+                - batch/_agent_metrics
+            exporters:
+                - otlphttp/_agent_metrics
+        metrics/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_metrics_source0
+                - throughputmeasurement/_s1_metrics_source0
+                - throughputmeasurement/_d0_metrics_destination0
+                - throughputmeasurement/_d1_metrics_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
+        traces/source0__destination0:
+            receivers:
+                - otlp/source0
+            processors:
+                - throughputmeasurement/_s0_traces_source0
+                - throughputmeasurement/_s1_traces_source0
+                - throughputmeasurement/_d0_traces_destination0
+                - throughputmeasurement/_d1_traces_destination0
+                - batch/destination0
+                - snapshotprocessor
+            exporters:
+                - otlp/destination0
 `, "\n")
 
 	require.Equal(t, expect, result)

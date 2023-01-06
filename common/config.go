@@ -138,11 +138,14 @@ type TLSConfig struct {
 	// These certificate authorities are used for trusting incoming client mTLS connections.
 	CertificateAuthority []string `mapstructure:"tlsCa" yaml:"tlsCa,omitempty"`
 
-	// InsecureSkipVerify controls whether a client verifies the server's
-	// certificate chain and host name. If InsecureSkipVerify is true, crypto/tls
-	// accepts any certificate presented by the server and any host name in that
-	// certificate. In this mode, TLS is susceptible to machine-in-the-middle
-	// attacks. This should be used only for testing only.
+	// InsecureSkipVerify controls whether a client verifies the server's certificate chain and host name. If
+	// InsecureSkipVerify is true, crypto/tls accepts any certificate presented by the server and any host name in that
+	// certificate.
+	//
+	// It is also used to signal that clients, like the agent metrics pipeline, should connect to the server with
+	// tls.insecure set to true.
+	//
+	// In this mode, TLS is susceptible to machine-in-the-middle attacks. This should be used only for testing only.
 	InsecureSkipVerify bool `mapstructure:"tlsSkipVerify" yaml:"tlsSkipVerify,omitempty"`
 }
 
@@ -319,4 +322,9 @@ func (c *Common) BindPlaneURL() string {
 		return ""
 	}
 	return fmt.Sprintf("%s://%s:%s", c.ServerScheme(), c.Host, c.Port)
+}
+
+// BindPlaneInsecureSkipVerify returns the value of InsecureSkipVerify from the TLSConfig
+func (c *Common) BindPlaneInsecureSkipVerify() bool {
+	return c.InsecureSkipVerify
 }

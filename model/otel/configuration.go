@@ -107,22 +107,24 @@ var present = struct{}{}
 
 // RenderContext keeps track of state needed to render configurations
 type RenderContext struct {
-	IncludeSnapshotProcessor bool
-	IncludeMeasurements      bool
-	IncludeRouteReceiver     bool
-	AgentID                  string
-	ConfigurationName        string
-	BindPlaneURL             string
-	measurementProcessors    map[ComponentID]struct{}
+	IncludeSnapshotProcessor    bool
+	IncludeMeasurements         bool
+	IncludeRouteReceiver        bool
+	AgentID                     string
+	ConfigurationName           string
+	BindPlaneURL                string
+	BindPlaneInsecureSkipVerify bool
+	measurementProcessors       map[ComponentID]struct{}
 }
 
 // NewRenderContext creates a new render context used to render configurations
-func NewRenderContext(agentID string, configurationName string, bindplaneURL string) *RenderContext {
+func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool) *RenderContext {
 	return &RenderContext{
-		AgentID:               agentID,
-		ConfigurationName:     configurationName,
-		BindPlaneURL:          bindplaneURL,
-		measurementProcessors: map[ComponentID]struct{}{},
+		AgentID:                     agentID,
+		ConfigurationName:           configurationName,
+		BindPlaneURL:                bindplaneURL,
+		BindPlaneInsecureSkipVerify: bindplaneInsecureSkipVerify,
+		measurementProcessors:       map[ComponentID]struct{}{},
 	}
 }
 
@@ -376,7 +378,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 	otlphttp := map[string]any{
 		"endpoint": endpoint,
 	}
-	if strings.HasPrefix(endpoint, "https") {
+	if strings.HasPrefix(endpoint, "https") && rc.BindPlaneInsecureSkipVerify {
 		otlphttp["tls"] = map[string]any{
 			"insecure": true,
 		}
