@@ -68,7 +68,9 @@ export const NavBar: React.FC = () => {
               to={{ pathname: "/overview", search: location.search }}
             >
               {({ isActive }) => {
-                const className = isActive ? classes([styles["icon"], styles["active"]]) : styles["icon"];
+                const className = isActive
+                  ? classes([styles["icon"], styles["active"]])
+                  : styles["icon"];
                 return (
                   <>
                     <GridIcon className={className} />
@@ -86,13 +88,15 @@ export const NavBar: React.FC = () => {
               to={{ pathname: "/agents", search: location.search }}
             >
               {({ isActive }) => {
-                const className = isActive ? classes([styles["icon"], styles["active"]]) : styles["icon"];
+                const className = isActive
+                  ? classes([styles["icon"], styles["active"]])
+                  : styles["icon"];
                 return (
                   <>
                     <AgentGridIcon className={className} />
                     Agents
                   </>
-                )
+                );
               }}
             </NavLink>
 
@@ -105,7 +109,9 @@ export const NavBar: React.FC = () => {
               to={{ pathname: "/configurations", search: location.search }}
             >
               {({ isActive }) => {
-                const className = isActive ? classes([styles["icon"], styles["active"]]) : styles["icon"];
+                const className = isActive
+                  ? classes([styles["icon"], styles["active"]])
+                  : styles["icon"];
                 return (
                   <>
                     <SlidersIcon className={className} />
@@ -124,7 +130,13 @@ export const NavBar: React.FC = () => {
               to={{ pathname: "/destinations", search: location.search }}
             >
               {({ isActive }) => {
-                const className = isActive ? classes([styles["icon"], styles["active"]]) : styles["icon"];
+                const className = isActive
+                  ? classes([
+                      styles["icon"],
+                      styles["destination-icon"],
+                      styles["active"],
+                    ])
+                  : classes([styles["icon"], styles["destination-icon"]]);
                 return (
                   <>
                     <SquareIcon className={className} />

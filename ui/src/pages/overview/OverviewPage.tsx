@@ -17,13 +17,14 @@ import {
   MeasurementControlBar,
   TELEMETRY_SIZE_METRICS,
 } from "../../components/MeasurementControlBar/MeasurementControlBar";
-import global from "../../styles/global.module.scss";
 import { gql } from "@apollo/client";
 
 import { DestinationsTableField } from "../../components/Tables/DestinationsTable/DestinationsDataGrid";
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageContent } from "../destinations/DestinationsPage";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect } from "react";
+
+import global from "../../styles/global.module.scss";
 
 gql`
   query DestinationsInConfigs {
@@ -124,12 +125,27 @@ const OverviewPageContent: React.FC = () => {
     selectedTelemetry,
   ]);
 
+  // hide paginations
+  useLayoutEffect(() => {
+    const paginations = document.getElementsByClassName(
+      "MuiDataGrid-footerContainer"
+    );
+    setTimeout(() => {
+      for (let i = 0; i < paginations.length; i++) {
+        const parent = paginations[i].parentElement;
+        if (parent !== null) {
+          parent.innerHTML = "";
+        }
+      }
+    }, 10);
+  });
+
   return (
-    <Grid container spacing={1} alignItems="center" wrap={"nowrap"}>
+    <Grid container spacing={3} alignItems="center" wrap={"nowrap"}>
       <Grid item md={"auto"} lg={"auto"}>
         <Box
           sx={{
-            width: "300px",
+            width: "360px",
           }}
         >
           <Tooltip
@@ -178,7 +194,7 @@ const OverviewPageContent: React.FC = () => {
       <Grid item md={"auto"} lg={"auto"}>
         <Box
           sx={{
-            width: "300px",
+            width: "360px",
           }}
         >
           <Tooltip

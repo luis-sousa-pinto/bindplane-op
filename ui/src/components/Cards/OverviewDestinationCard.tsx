@@ -12,7 +12,7 @@ import { useGetDestinationWithTypeQuery } from "../../graphql/generated";
 import { useOverviewPage } from "../../pages/overview/OverviewPageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
-import { OtherDestinationsIcon } from "../Icons";
+import { SquareIcon } from "../Icons";
 
 import { classes } from "../../utils/styles";
 import styles from "./cards.module.scss";
@@ -96,11 +96,7 @@ const OverviewDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
             <CardContent>
               <Stack alignItems="center">
                 {isEverythingDestination ? (
-                  <OtherDestinationsIcon
-                    color="#b3b3b3"
-                    height="48px"
-                    width="96px"
-                  />
+                  <SquareIcon color="#b3b3b3" height="48px" width="96px" />
                 ) : (
                   <span
                     className={styles.icon}
