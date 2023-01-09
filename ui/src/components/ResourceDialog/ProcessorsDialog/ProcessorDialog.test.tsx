@@ -551,7 +551,7 @@ describe("ProcessorDialogComponent", () => {
     });
 
     // Save it
-    screen.getByText("Save").click();
+    screen.getByText("Done").click();
 
     // Verify we're back on the main view and Custom is present
     await screen.findByText("Source File: Processors");
@@ -634,7 +634,7 @@ describe("ProcessorDialogComponent", () => {
       target: { value: "edited" },
     });
 
-    screen.getByText("Save").click();
+    screen.getByText("Done").click();
 
     await screen.findByText("Destination google-cloud-dest: Processors");
     screen.getByText("Save").click();
@@ -812,7 +812,7 @@ async function addCustomProcessorToSource(screen: Screen) {
   });
 
   // save it
-  screen.getByText("Save").click();
+  screen.getByText("Done").click();
 
   // Verify we're back on the main view and Custom is present
   await screen.findByText("Source File: Processors");
@@ -833,7 +833,7 @@ async function addCustomProcessorToDestination(screen: Screen) {
   });
 
   // save it
-  screen.getByText("Save").click();
+  screen.getByText("Done").click();
 
   // verify we're back on the main view and Custom is present
   await screen.findByText("Destination google-cloud-dest: Processors");

@@ -59,11 +59,11 @@ const CreateProcessorConfigureViewComponent: React.FC<CreateProcessorConfigureVi
 
         <ActionsSection>
           <Button variant="contained" color="secondary" onClick={onBack}>
-            Back
+            Cancel
           </Button>
 
           <Button variant="contained" color="primary" onClick={handleSave}>
-            Save
+            Done
           </Button>
         </ActionsSection>
       </>

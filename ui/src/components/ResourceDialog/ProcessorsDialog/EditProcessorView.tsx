@@ -22,8 +22,8 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
   onRemove,
 }) => {
   // Get the processor type
-  const type = processors[editingIndex].type;
 
+  const type = processors[editingIndex]?.type;
   const { data, error } = useGetProcessorTypeQuery({
     variables: { type: type ?? "" },
   });
@@ -47,8 +47,9 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         description={data?.processorType?.metadata.description ?? ""}
         kind={"processor"}
         parameterDefinitions={data?.processorType?.spec.parameters ?? []}
-        parameters={processors[editingIndex].parameters}
+        parameters={processors[editingIndex]?.parameters}
         onSave={onEditProcessorSave}
+        saveButtonLabel="Done"
         onBack={onBack}
         onDelete={() => onRemove(editingIndex)}
       />
