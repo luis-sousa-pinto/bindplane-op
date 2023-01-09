@@ -125,17 +125,30 @@ const OverviewPageContent: React.FC = () => {
     selectedTelemetry,
   ]);
 
-  // hide paginations
+  // hide pagination controls
   useLayoutEffect(() => {
-    const paginations = document.getElementsByClassName(
-      "MuiDataGrid-footerContainer"
+    // Removes the "Rows selected" text from the Destination & Configurations tables
+    const rowsSelected = document.getElementsByClassName(
+      "MuiDataGrid-selectedRowCount"
     );
+    // Removes the "Rows per page:" label
+    const paginationSelectLabels = document.getElementsByClassName(
+      "MuiTablePagination-selectLabel"
+    );
+    // Removes the "Rows per page" selection control
+    const paginationSelects = document.getElementsByClassName(
+      "css-kjeon3-MuiInputBase-root-MuiTablePagination-select"
+    );
+
     setTimeout(() => {
-      for (let i = 0; i < paginations.length; i++) {
-        const parent = paginations[i].parentElement;
-        if (parent !== null) {
-          parent.innerHTML = "";
-        }
+      for (let i = 0; i < rowsSelected.length; i++) {
+        rowsSelected[i].innerHTML = "";
+      }
+      for (let i = 0; i < paginationSelectLabels.length; i++) {
+        paginationSelectLabels[i].innerHTML = "";
+      }
+      for (let i = 0; i < paginationSelects.length; i++) {
+        paginationSelects[i].innerHTML = "";
       }
     }, 10);
   });
