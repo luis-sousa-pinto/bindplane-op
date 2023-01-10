@@ -284,10 +284,10 @@ jobs:
 
       # Build binaries, packages, and container images
       - name: Test GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v4
         with:
           version: v1.9.0
-          args: release --skip-publish --rm-dist
+          args: release --skip-publish --rm-dist --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
 
