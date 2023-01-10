@@ -96,7 +96,7 @@ const OverviewDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
             <CardContent>
               <Stack alignItems="center">
                 {isEverythingDestination ? (
-                  <SquareIcon color="#b3b3b3" height="48px" width="96px" />
+                  <SquareIcon className={styles["destination-icon"]} />
                 ) : (
                   <span
                     className={styles.icon}

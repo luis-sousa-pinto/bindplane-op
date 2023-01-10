@@ -50,9 +50,9 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
             <Stack justifyContent="center" alignItems="center" spacing={2}>
               {isEverything ? (
                 <Stack direction="row" spacing={2}>
-                  <SlidersIcon color="#b3b3b3" height="20px" width="20px" />
-                  <SlidersIcon color="#b3b3b3" height="20px" width="20px" />
-                  <SlidersIcon color="#b3b3b3" height="20px" width="20px" />
+                  <SlidersIcon height="20px" width="20px" />
+                  <SlidersIcon height="20px" width="20px" />
+                  <SlidersIcon height="20px" width="20px" />
                 </Stack>
               ) : (
                 <SlidersIcon height="40px" width="40px" />
