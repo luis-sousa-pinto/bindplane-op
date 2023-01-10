@@ -126,7 +126,6 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
         columns={columns}
         rows={configurations}
         selectionModel={selectionModel}
-        pageSize={25}
       />
     );
   };

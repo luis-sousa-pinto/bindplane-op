@@ -119,7 +119,6 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
         columns={columns}
         rows={rows}
         selectionModel={selectionModel}
-        pageSize={25}
       />
     );
   }
