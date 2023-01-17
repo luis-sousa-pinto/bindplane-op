@@ -87,3 +87,9 @@ jobs:
         name: Publish Docs to Readme
         with:
           rdme: docs ./docs/www --key=${{ secrets.README_API_KEY }} --version 1.0
+
+      # Cleanup pages that were removed from docs/www directory.
+      - uses: readmeio/rdme@7.5.0
+        name: Publish Docs to Readme
+        with:
+          rdme: docs:prune ./docs/www --key=${{ secrets.README_API_KEY }} --version 1.0 --confirm
