@@ -27,6 +27,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/hashicorp/go-multierror"
+	jsoniter "github.com/json-iterator/go"
 	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
 
@@ -815,7 +816,7 @@ func upsertResource(tx *bbolt.Tx, r model.Resource, kind model.Kind) (model.Upda
 		}
 	}
 
-	data, err := json.Marshal(r)
+	data, err := jsoniter.Marshal(r)
 	if err != nil {
 		// error, status unchanged
 		return model.StatusUnchanged, fmt.Errorf("upsert resource: %w", err)
