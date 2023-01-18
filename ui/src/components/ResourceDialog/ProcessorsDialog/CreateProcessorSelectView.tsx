@@ -115,6 +115,20 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
       [data?.processorTypes, telemetryTypes]
     );
 
+    // Filter the list of supported processor types down to those matching the search,
+    // and sort them in alphabetical order by display name
+    const matchingProcessorTypes: ProcessorType[] = useMemo(
+      () =>
+        supportedProcessorTypes
+          .filter((pt) => metadataSatisfiesSubstring(pt, search))
+          .sort((a, b) =>
+            (a.metadata.displayName?.toLowerCase() ?? "").localeCompare(
+              b.metadata.displayName?.toLowerCase() ?? ""
+            )
+          ),
+      [supportedProcessorTypes, search]
+    );
+
     return (
       <>
         <TitleSection
@@ -133,19 +147,17 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
                 <CircularProgress />
               </Box>
             )}
-            {supportedProcessorTypes
-              .filter((pt) => metadataSatisfiesSubstring(pt, search))
-              .map((p) => (
-                <ResourceTypeButton
-                  hideIcon
-                  key={`${p.metadata.name}`}
-                  displayName={p.metadata.displayName!}
-                  onSelect={() => {
-                    onSelect(p);
-                  }}
-                  telemetryTypes={p.spec.telemetryTypes}
-                />
-              ))}
+            {matchingProcessorTypes.map((p) => (
+              <ResourceTypeButton
+                hideIcon
+                key={`${p.metadata.name}`}
+                displayName={p.metadata.displayName!}
+                onSelect={() => {
+                  onSelect(p);
+                }}
+                telemetryTypes={p.spec.telemetryTypes}
+              />
+            ))}
           </ResourceTypeButtonContainer>
         </ContentSection>
         {onBack && <ActionsSection>{backButton} </ActionsSection>}
