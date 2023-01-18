@@ -212,7 +212,7 @@ func (r *ResourceMeta) Validate() (warnings string, errors error) {
 }
 
 // ValidateWithStore allows for additional validation when a store is available.
-func (r *ResourceMeta) ValidateWithStore(ctx context.Context, store ResourceStore) (warnings string, errors error) {
+func (r *ResourceMeta) ValidateWithStore(_ context.Context, _ ResourceStore) (warnings string, errors error) {
 	return r.Validate()
 }
 
@@ -351,9 +351,8 @@ func ResourcesFromReader(reader io.Reader) ([]*AnyResource, error) {
 		if err := dec.Decode(resource); err != nil {
 			if errors.Is(err, io.EOF) {
 				break
-			} else {
-				return nil, err
 			}
+			return nil, err
 		}
 		resources = append(resources, resource)
 	}

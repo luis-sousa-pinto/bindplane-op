@@ -67,7 +67,7 @@ func ResourcesCommand(bindplane *cli.BindPlane) *cobra.Command {
 	return cmd
 }
 
-func printAll(ctx context.Context, c client.BindPlane, resources []resource[model.Printable], p printer.Printer) error {
+func printAll(_ context.Context, _ client.BindPlane, resources []resource[model.Printable], p printer.Printer) error {
 	var list []model.Printable
 
 	for _, r := range resources {
@@ -83,7 +83,7 @@ func printAll(ctx context.Context, c client.BindPlane, resources []resource[mode
 	return nil
 }
 
-func printEachTable(ctx context.Context, resources []resource[model.Printable], p printer.Printer) error {
+func printEachTable(_ context.Context, resources []resource[model.Printable], p printer.Printer) error {
 	for _, r := range resources {
 		items, err := r.get()
 		if err != nil {

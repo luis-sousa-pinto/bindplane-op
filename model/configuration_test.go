@@ -85,22 +85,22 @@ func newTestResourceStore() *testResourceStore {
 
 var _ ResourceStore = (*testResourceStore)(nil)
 
-func (s *testResourceStore) Source(ctx context.Context, name string) (*Source, error) {
+func (s *testResourceStore) Source(_ context.Context, name string) (*Source, error) {
 	return s.sources[name], nil
 }
-func (s *testResourceStore) SourceType(ctx context.Context, name string) (*SourceType, error) {
+func (s *testResourceStore) SourceType(_ context.Context, name string) (*SourceType, error) {
 	return s.sourceTypes[name], nil
 }
-func (s *testResourceStore) Processor(ctx context.Context, name string) (*Processor, error) {
+func (s *testResourceStore) Processor(_ context.Context, name string) (*Processor, error) {
 	return s.processors[name], nil
 }
-func (s *testResourceStore) ProcessorType(ctx context.Context, name string) (*ProcessorType, error) {
+func (s *testResourceStore) ProcessorType(_ context.Context, name string) (*ProcessorType, error) {
 	return s.processorTypes[name], nil
 }
-func (s *testResourceStore) Destination(ctx context.Context, name string) (*Destination, error) {
+func (s *testResourceStore) Destination(_ context.Context, name string) (*Destination, error) {
 	return s.destinations[name], nil
 }
-func (s *testResourceStore) DestinationType(ctx context.Context, name string) (*DestinationType, error) {
+func (s *testResourceStore) DestinationType(_ context.Context, name string) (*DestinationType, error) {
 	return s.destinationTypes[name], nil
 }
 
@@ -1675,24 +1675,24 @@ func TestDuplicate(t *testing.T) {
 	configuration := testResource[*Configuration](t, "configuration-macos-googlecloud.yaml")
 	require.NotNil(t, configuration)
 
-	new := configuration.Duplicate(duplicateName)
-	require.NotNil(t, new)
+	newConfig := configuration.Duplicate(duplicateName)
+	require.NotNil(t, newConfig)
 
 	t.Run("equal sources, destinations", func(t *testing.T) {
-		require.Equal(t, configuration.Spec.Sources, new.Spec.Sources)
-		require.Equal(t, configuration.Spec.Destinations, new.Spec.Destinations)
+		require.Equal(t, configuration.Spec.Sources, newConfig.Spec.Sources)
+		require.Equal(t, configuration.Spec.Destinations, newConfig.Spec.Destinations)
 	})
 
 	t.Run("replace name, id, and match labels", func(t *testing.T) {
 		// Set the duplicate name
-		require.Equal(t, new.Metadata.Name, duplicateName)
+		require.Equal(t, newConfig.Metadata.Name, duplicateName)
 
 		// Set a new ID
-		require.NotEqual(t, new.Metadata.ID, configuration.Metadata.ID)
+		require.NotEqual(t, newConfig.Metadata.ID, configuration.Metadata.ID)
 
 		// Set the configuration matchLabel
-		require.Contains(t, new.Spec.Selector.MatchLabels, "configuration")
-		require.Equal(t, new.Spec.Selector.MatchLabels["configuration"], duplicateName)
+		require.Contains(t, newConfig.Spec.Selector.MatchLabels, "configuration")
+		require.Equal(t, newConfig.Spec.Selector.MatchLabels["configuration"], duplicateName)
 	})
 }
 

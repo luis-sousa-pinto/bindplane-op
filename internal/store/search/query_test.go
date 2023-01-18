@@ -209,7 +209,7 @@ type testLatestVersionProvider struct {
 	version string
 }
 
-func (v *testLatestVersionProvider) LatestVersionString(ctx context.Context) string {
+func (v *testLatestVersionProvider) LatestVersionString(_ context.Context) string {
 	return v.version
 }
 

@@ -65,7 +65,7 @@ func newStaticFileSystem(logger *zap.Logger) *staticFileSystem {
 	}
 }
 
-func (s *staticFileSystem) Exists(prefix string, path string) bool {
+func (s *staticFileSystem) Exists(_ string, path string) bool {
 	buildpath := fmt.Sprintf("build%s", path)
 
 	// support for folders
@@ -99,10 +99,10 @@ func newFallbackFileSystem(staticFileSystem *staticFileSystem, logger *zap.Logge
 	}
 }
 
-func (f *fallbackFileSystem) Open(path string) (http.File, error) {
+func (f *fallbackFileSystem) Open(_ string) (http.File, error) {
 	return f.staticFileSystem.Open("/index.html")
 }
 
-func (f *fallbackFileSystem) Exists(prefix string, path string) bool {
+func (f *fallbackFileSystem) Exists(_ string, _ string) bool {
 	return true
 }

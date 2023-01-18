@@ -106,7 +106,7 @@ func (s *agentDescriptionSyncer) agentCapabilitiesFlag() protobufs.AgentCapabili
 	return protobufs.AgentCapabilities_ReportsStatus
 }
 
-func (s *agentDescriptionSyncer) update(ctx context.Context, logger *zap.Logger, state *agentState, conn opamp.Connection, agent *model.Agent, value *protobufs.AgentDescription) error {
+func (s *agentDescriptionSyncer) update(_ context.Context, _ *zap.Logger, state *agentState, conn opamp.Connection, agent *model.Agent, value *protobufs.AgentDescription) error {
 	state.Status.AgentDescription = value
 	updateOpAmpAgentDetails(agent, conn, value)
 	return nil

@@ -45,7 +45,7 @@ func (s *effectiveConfigSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilit
 	return protobufs.AgentCapabilities_ReportsEffectiveConfig
 }
 
-func (s *effectiveConfigSyncer) update(ctx context.Context, logger *zap.Logger, state *agentState, conn opamp.Connection, agent *model.Agent, value *protobufs.EffectiveConfig) error {
+func (s *effectiveConfigSyncer) update(_ context.Context, _ *zap.Logger, state *agentState, _ opamp.Connection, agent *model.Agent, value *protobufs.EffectiveConfig) error {
 	state.Status.EffectiveConfig = value
 
 	// parse the configuration

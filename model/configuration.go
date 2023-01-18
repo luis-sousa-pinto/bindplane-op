@@ -323,7 +323,7 @@ func evalSource(ctx context.Context, source *ResourceConfiguration, defaultName 
 	return srcName, partials
 }
 
-func evalProcessor(ctx context.Context, processor *ResourceConfiguration, defaultName string, store ResourceStore, rc *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
+func evalProcessor(ctx context.Context, processor *ResourceConfiguration, defaultName string, store ResourceStore, _ *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
 	prc, prcType, err := findProcessorAndType(ctx, processor, defaultName, store)
 	if err != nil {
 		errorHandler(err)
@@ -381,7 +381,7 @@ func evalDestination(ctx context.Context, destination *ResourceConfiguration, de
 
 // builtinRouteReceiver renders a blank 'route' receiver with a hardcoded name. logcount processors can use the hardcoded
 // name to have calculated metrics routed to destinations. This receiver requires collector version >= 1.14.0
-func builtinRouteReceiver(ctx context.Context, store ResourceStore, errorHandler TemplateErrorHandler) (string, otel.Partials) {
+func builtinRouteReceiver(_ context.Context, _ ResourceStore, errorHandler TemplateErrorHandler) (string, otel.Partials) {
 	srcType := SourceType{
 		ResourceType: ResourceType{
 			Spec: ResourceTypeSpec{
@@ -577,7 +577,7 @@ func (rc *ResourceConfiguration) validateParameters(ctx context.Context, resourc
 	}
 }
 
-func (rc *ResourceConfiguration) validateProcessors(ctx context.Context, resourceKind Kind, errors validation.Errors, store ResourceStore) {
+func (rc *ResourceConfiguration) validateProcessors(ctx context.Context, _ Kind, errors validation.Errors, store ResourceStore) {
 	for _, processor := range rc.Processors {
 		processor.validate(ctx, KindProcessor, errors, store)
 	}
@@ -641,16 +641,16 @@ func (rc *ResourceConfiguration) indexFields(resourceName string, resourceTypeNa
 // a duplicate with the new name.  It should be identical except for the
 // Metadata.Name, Metadata.ID, and Spec.Selector fields.
 func (c *Configuration) Duplicate(name string) *Configuration {
-	copy := *c
+	clone := *c
 
 	// Change the metadata values
-	copy.Metadata.Name = name
-	copy.Metadata.ID = uuid.NewString()
+	clone.Metadata.Name = name
+	clone.Metadata.ID = uuid.NewString()
 
 	// replace the configuration matchLabel
-	matchLabels := copy.Spec.Selector.MatchLabels
+	matchLabels := clone.Spec.Selector.MatchLabels
 	matchLabels["configuration"] = name
-	return &copy
+	return &clone
 }
 
 // ----------------------------------------------------------------------

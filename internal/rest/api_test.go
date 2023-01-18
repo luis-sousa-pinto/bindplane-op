@@ -1686,22 +1686,22 @@ type mockStore struct {
 	mock.Mock
 }
 
-func (m *mockStore) ApplyResources(ctx context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
+func (m *mockStore) ApplyResources(_ context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
 	args := m.Called(resources)
 	return args.Get(0).([]model.ResourceStatus), args.Error(1)
 }
 
-func (m *mockStore) DeleteResources(ctx context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
+func (m *mockStore) DeleteResources(_ context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
 	args := m.Called(resources)
 	return args.Get(0).([]model.ResourceStatus), args.Error(1)
 }
 
-func (m *mockStore) Sources(ctx context.Context) ([]*model.Source, error) {
+func (m *mockStore) Sources(_ context.Context) ([]*model.Source, error) {
 	args := m.Called()
 	return args.Get(0).([]*model.Source), args.Error(1)
 }
 
-func (m *mockStore) Source(ctx context.Context, name string) (*model.Source, error) {
+func (m *mockStore) Source(_ context.Context, name string) (*model.Source, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1711,7 +1711,7 @@ func (m *mockStore) Source(ctx context.Context, name string) (*model.Source, err
 	}
 }
 
-func (m *mockStore) DeleteSource(ctx context.Context, name string) (*model.Source, error) {
+func (m *mockStore) DeleteSource(_ context.Context, name string) (*model.Source, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1721,12 +1721,12 @@ func (m *mockStore) DeleteSource(ctx context.Context, name string) (*model.Sourc
 	}
 }
 
-func (m *mockStore) Agents(ctx context.Context, options ...store.QueryOption) ([]*model.Agent, error) {
+func (m *mockStore) Agents(_ context.Context, _ ...store.QueryOption) ([]*model.Agent, error) {
 	args := m.Called()
 	return args.Get(0).([]*model.Agent), args.Error(1)
 }
 
-func (m *mockStore) Agent(ctx context.Context, id string) (*model.Agent, error) {
+func (m *mockStore) Agent(_ context.Context, id string) (*model.Agent, error) {
 	args := m.Called(id)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1736,12 +1736,12 @@ func (m *mockStore) Agent(ctx context.Context, id string) (*model.Agent, error) 
 	}
 }
 
-func (m *mockStore) Destinations(ctx context.Context) ([]*model.Destination, error) {
+func (m *mockStore) Destinations(_ context.Context) ([]*model.Destination, error) {
 	args := m.Called()
 	return args.Get(0).([]*model.Destination), args.Error(1)
 }
 
-func (m *mockStore) Destination(ctx context.Context, name string) (*model.Destination, error) {
+func (m *mockStore) Destination(_ context.Context, name string) (*model.Destination, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1751,7 +1751,7 @@ func (m *mockStore) Destination(ctx context.Context, name string) (*model.Destin
 	}
 }
 
-func (m *mockStore) DeleteDestination(ctx context.Context, name string) (*model.Destination, error) {
+func (m *mockStore) DeleteDestination(_ context.Context, name string) (*model.Destination, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1761,12 +1761,12 @@ func (m *mockStore) DeleteDestination(ctx context.Context, name string) (*model.
 	}
 }
 
-func (m *mockStore) Configurations(ctx context.Context, options ...store.QueryOption) ([]*model.Configuration, error) {
+func (m *mockStore) Configurations(_ context.Context, _ ...store.QueryOption) ([]*model.Configuration, error) {
 	args := m.Called()
 	return args.Get(0).([]*model.Configuration), args.Error(1)
 }
 
-func (m *mockStore) Configuration(ctx context.Context, name string) (*model.Configuration, error) {
+func (m *mockStore) Configuration(_ context.Context, name string) (*model.Configuration, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:
@@ -1776,7 +1776,7 @@ func (m *mockStore) Configuration(ctx context.Context, name string) (*model.Conf
 	}
 }
 
-func (m *mockStore) DeleteConfiguration(ctx context.Context, name string) (*model.Configuration, error) {
+func (m *mockStore) DeleteConfiguration(_ context.Context, name string) (*model.Configuration, error) {
 	args := m.Called(name)
 	switch args.Get(0).(type) {
 	case nil:

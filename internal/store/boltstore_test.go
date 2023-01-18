@@ -113,9 +113,9 @@ func (x mockUnknownResource) ValidateWithStore(context.Context, model.ResourceSt
 func (x mockUnknownResource) GetLabels() model.Labels { return model.MakeLabels() }
 func (x mockUnknownResource) UniqueKey() string       { return x.ID() }
 
-func (x mockUnknownResource) IndexID() string                  { return "" }
-func (x mockUnknownResource) IndexFields(index search.Indexer) {}
-func (x mockUnknownResource) IndexLabels(index search.Indexer) {}
+func (x mockUnknownResource) IndexID() string              { return "" }
+func (x mockUnknownResource) IndexFields(_ search.Indexer) {}
+func (x mockUnknownResource) IndexLabels(_ search.Indexer) {}
 
 var _ model.Resource = (*mockUnknownResource)(nil)
 

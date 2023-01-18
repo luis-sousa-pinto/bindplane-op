@@ -43,7 +43,7 @@ func (s *remoteConfigStatusSyncer) agentCapabilitiesFlag() protobufs.AgentCapabi
 	return protobufs.AgentCapabilities_AcceptsRemoteConfig
 }
 
-func (s *remoteConfigStatusSyncer) update(ctx context.Context, logger *zap.Logger, state *agentState, conn opamp.Connection, agent *model.Agent, value *protobufs.RemoteConfigStatus) error {
+func (s *remoteConfigStatusSyncer) update(_ context.Context, _ *zap.Logger, state *agentState, _ opamp.Connection, _ *model.Agent, value *protobufs.RemoteConfigStatus) error {
 	state.Status.RemoteConfigStatus = value
 	return nil
 }

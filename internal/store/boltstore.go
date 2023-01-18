@@ -523,7 +523,7 @@ func (s *boltstore) AgentsCount(ctx context.Context, options ...QueryOption) (in
 	return len(agents), nil
 }
 
-func (s *boltstore) Agent(ctx context.Context, id string) (*model.Agent, error) {
+func (s *boltstore) Agent(_ context.Context, id string) (*model.Agent, error) {
 	var agent *model.Agent
 
 	err := s.db.View(func(tx *bbolt.Tx) error {
@@ -538,14 +538,14 @@ func (s *boltstore) Agent(ctx context.Context, id string) (*model.Agent, error) 
 	return agent, err
 }
 
-func (s *boltstore) AgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
+func (s *boltstore) AgentVersion(_ context.Context, name string) (*model.AgentVersion, error) {
 	item, exists, err := resource[*model.AgentVersion](s, model.KindAgentVersion, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) AgentVersions(ctx context.Context) ([]*model.AgentVersion, error) {
+func (s *boltstore) AgentVersions(_ context.Context) ([]*model.AgentVersion, error) {
 	result, err := resources[*model.AgentVersion](s, model.KindAgentVersion)
 	if err == nil {
 		model.SortAgentVersionsLatestFirst(result)
@@ -575,7 +575,7 @@ func (s *boltstore) Configurations(ctx context.Context, options ...QueryOption) 
 		return opts.selector.Matches(c.GetLabels())
 	})
 }
-func (s *boltstore) Configuration(ctx context.Context, name string) (*model.Configuration, error) {
+func (s *boltstore) Configuration(_ context.Context, name string) (*model.Configuration, error) {
 	item, exists, err := resource[*model.Configuration](s, model.KindConfiguration, name)
 	if !exists {
 		item = nil
@@ -590,14 +590,14 @@ func (s *boltstore) DeleteConfiguration(ctx context.Context, name string) (*mode
 	return item, err
 }
 
-func (s *boltstore) Source(ctx context.Context, name string) (*model.Source, error) {
+func (s *boltstore) Source(_ context.Context, name string) (*model.Source, error) {
 	item, exists, err := resource[*model.Source](s, model.KindSource, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) Sources(ctx context.Context) ([]*model.Source, error) {
+func (s *boltstore) Sources(_ context.Context) ([]*model.Source, error) {
 	return resources[*model.Source](s, model.KindSource)
 }
 func (s *boltstore) DeleteSource(ctx context.Context, name string) (*model.Source, error) {
@@ -608,14 +608,14 @@ func (s *boltstore) DeleteSource(ctx context.Context, name string) (*model.Sourc
 	return item, err
 }
 
-func (s *boltstore) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
+func (s *boltstore) SourceType(_ context.Context, name string) (*model.SourceType, error) {
 	item, exists, err := resource[*model.SourceType](s, model.KindSourceType, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) SourceTypes(ctx context.Context) ([]*model.SourceType, error) {
+func (s *boltstore) SourceTypes(_ context.Context) ([]*model.SourceType, error) {
 	return resources[*model.SourceType](s, model.KindSourceType)
 }
 func (s *boltstore) DeleteSourceType(ctx context.Context, name string) (*model.SourceType, error) {
@@ -626,14 +626,14 @@ func (s *boltstore) DeleteSourceType(ctx context.Context, name string) (*model.S
 	return item, err
 }
 
-func (s *boltstore) Processor(ctx context.Context, name string) (*model.Processor, error) {
+func (s *boltstore) Processor(_ context.Context, name string) (*model.Processor, error) {
 	item, exists, err := resource[*model.Processor](s, model.KindProcessor, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) Processors(ctx context.Context) ([]*model.Processor, error) {
+func (s *boltstore) Processors(_ context.Context) ([]*model.Processor, error) {
 	return resources[*model.Processor](s, model.KindProcessor)
 }
 func (s *boltstore) DeleteProcessor(ctx context.Context, name string) (*model.Processor, error) {
@@ -644,14 +644,14 @@ func (s *boltstore) DeleteProcessor(ctx context.Context, name string) (*model.Pr
 	return item, err
 }
 
-func (s *boltstore) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
+func (s *boltstore) ProcessorType(_ context.Context, name string) (*model.ProcessorType, error) {
 	item, exists, err := resource[*model.ProcessorType](s, model.KindProcessorType, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType, error) {
+func (s *boltstore) ProcessorTypes(_ context.Context) ([]*model.ProcessorType, error) {
 	return resources[*model.ProcessorType](s, model.KindProcessorType)
 }
 func (s *boltstore) DeleteProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
@@ -662,14 +662,14 @@ func (s *boltstore) DeleteProcessorType(ctx context.Context, name string) (*mode
 	return item, err
 }
 
-func (s *boltstore) Destination(ctx context.Context, name string) (*model.Destination, error) {
+func (s *boltstore) Destination(_ context.Context, name string) (*model.Destination, error) {
 	item, exists, err := resource[*model.Destination](s, model.KindDestination, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) Destinations(ctx context.Context) ([]*model.Destination, error) {
+func (s *boltstore) Destinations(_ context.Context) ([]*model.Destination, error) {
 	return resources[*model.Destination](s, model.KindDestination)
 }
 func (s *boltstore) DeleteDestination(ctx context.Context, name string) (*model.Destination, error) {
@@ -680,14 +680,14 @@ func (s *boltstore) DeleteDestination(ctx context.Context, name string) (*model.
 	return item, err
 }
 
-func (s *boltstore) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
+func (s *boltstore) DestinationType(_ context.Context, name string) (*model.DestinationType, error) {
 	item, exists, err := resource[*model.DestinationType](s, model.KindDestinationType, name)
 	if !exists {
 		item = nil
 	}
 	return item, err
 }
-func (s *boltstore) DestinationTypes(ctx context.Context) ([]*model.DestinationType, error) {
+func (s *boltstore) DestinationTypes(_ context.Context) ([]*model.DestinationType, error) {
 	return resources[*model.DestinationType](s, model.KindDestinationType)
 }
 func (s *boltstore) DeleteDestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
@@ -728,12 +728,12 @@ func (s *boltstore) CleanupDisconnectedAgents(ctx context.Context, since time.Ti
 }
 
 // Index provides access to the search Index implementation managed by the Store
-func (s *boltstore) AgentIndex(ctx context.Context) search.Index {
+func (s *boltstore) AgentIndex(_ context.Context) search.Index {
 	return s.agentIndex
 }
 
 // ConfigurationIndex provides access to the search Index for Configurations
-func (s *boltstore) ConfigurationIndex(ctx context.Context) search.Index {
+func (s *boltstore) ConfigurationIndex(_ context.Context) search.Index {
 	return s.configurationIndex
 }
 
@@ -1120,7 +1120,7 @@ var getCurrentTime = func() time.Time {
 	return time.Now().UTC()
 }
 
-func (s *boltstore) retrieveMetrics(ctx context.Context, metricNames []string, objectType string, ids []string, options ...stats.QueryOption) (stats.MetricData, error) {
+func (s *boltstore) retrieveMetrics(_ context.Context, metricNames []string, objectType string, ids []string, options ...stats.QueryOption) (stats.MetricData, error) {
 	result := stats.MetricData{}
 	opts := stats.MakeQueryOptions(options)
 	rollup := getRollupFromPeriod(opts)
@@ -1342,7 +1342,7 @@ func (s *boltstore) startMeasurements(ctx context.Context) {
 	}()
 }
 
-func (s *boltstore) storeMeasurements(ctx context.Context, metricName string, metrics stats.MetricData) error {
+func (s *boltstore) storeMeasurements(_ context.Context, metricName string, metrics stats.MetricData) error {
 	if len(metrics) == 0 {
 		return nil
 	}
@@ -1366,7 +1366,7 @@ func (s *boltstore) storeMeasurements(ctx context.Context, metricName string, me
 	})
 }
 
-func (s *boltstore) cleanupMeasurements(ctx context.Context, metricName string) error {
+func (s *boltstore) cleanupMeasurements(_ context.Context, metricName string) error {
 	return s.db.Update(func(tx *bbolt.Tx) error {
 		var errs error
 		c := measurementsBucket(tx, metricName).Cursor()
@@ -1489,7 +1489,7 @@ func sanitizeKey(key string) string {
 
 // ----------------------------------------------------------------------
 
-func getNameFromResource[R model.Resource](ctx context.Context, v []byte) (string, error) {
+func getNameFromResource[R model.Resource](_ context.Context, v []byte) (string, error) {
 	var resource R
 	if err := json.Unmarshal(v, &resource); err != nil {
 		return "", err

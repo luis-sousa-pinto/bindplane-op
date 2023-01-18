@@ -17,6 +17,6 @@ package version
 import "testing"
 
 // TODO(jsirianni) https://github.com/observiq/bindplane/issues/253
-func TestVersionCommand(t *testing.T) {
+func TestVersionCommand(_ *testing.T) {
 
 }

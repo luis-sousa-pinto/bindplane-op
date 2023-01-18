@@ -244,7 +244,7 @@ func NewBindPlane(config *common.Client, logger *zap.Logger) (BindPlane, error) 
 	}, nil
 }
 
-func (c *bindplaneClient) Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error) {
+func (c *bindplaneClient) Agents(_ context.Context, options ...QueryOption) ([]*model.Agent, error) {
 	c.Debug("Agents called")
 
 	opts := makeQueryOptions(options)
@@ -265,7 +265,7 @@ func (c *bindplaneClient) Agents(ctx context.Context, options ...QueryOption) ([
 	return ar.Agents, c.statusError(resp, err, "unable to get agents")
 }
 
-func (c *bindplaneClient) Agent(ctx context.Context, id string) (*model.Agent, error) {
+func (c *bindplaneClient) Agent(_ context.Context, id string) (*model.Agent, error) {
 	c.Debug("Agent called")
 
 	ar := &model.AgentResponse{}
@@ -279,7 +279,7 @@ func (c *bindplaneClient) Agent(ctx context.Context, id string) (*model.Agent, e
 	return ar.Agent, c.statusError(resp, err, "unable to get agents")
 }
 
-func (c *bindplaneClient) DeleteAgents(ctx context.Context, ids []string) ([]*model.Agent, error) {
+func (c *bindplaneClient) DeleteAgents(_ context.Context, ids []string) ([]*model.Agent, error) {
 	c.Debug("DeleteAgents called")
 
 	body := &model.DeleteAgentsPayload{
@@ -308,7 +308,7 @@ func (c *bindplaneClient) DeleteAgentVersion(ctx context.Context, name string) e
 	return c.deleteResource(ctx, "/agent-versions", name)
 }
 
-func (c *bindplaneClient) SyncAgentVersions(ctx context.Context, version string) ([]*model.AnyResourceStatus, error) {
+func (c *bindplaneClient) SyncAgentVersions(_ context.Context, version string) ([]*model.AnyResourceStatus, error) {
 	ar := &model.ApplyResponseClientSide{}
 	resp, err := c.client.R().
 		SetHeader("Content-Type", "application/json").
@@ -323,7 +323,7 @@ func (c *bindplaneClient) SyncAgentVersions(ctx context.Context, version string)
 
 // ----------------------------------------------------------------------
 
-func (c *bindplaneClient) Configurations(ctx context.Context) ([]*model.Configuration, error) {
+func (c *bindplaneClient) Configurations(_ context.Context) ([]*model.Configuration, error) {
 	c.Debug("Configurations called")
 
 	pr := &model.ConfigurationsResponse{}
@@ -457,7 +457,7 @@ func (c *bindplaneClient) DeleteDestinationType(ctx context.Context, name string
 
 // ----------------------------------------------------------------------
 
-func (c *bindplaneClient) Apply(ctx context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
+func (c *bindplaneClient) Apply(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
 	c.Debug("Apply called")
 
 	payload := model.ApplyPayload{
@@ -475,7 +475,7 @@ func (c *bindplaneClient) Apply(ctx context.Context, resources []*model.AnyResou
 	return ar.Updates, c.statusError(resp, err, "unable to apply resources")
 }
 
-func (c *bindplaneClient) Delete(ctx context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
+func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
 	c.Debug("Batch Delete called")
 
 	payload := model.DeletePayload{
@@ -518,7 +518,7 @@ func (c *bindplaneClient) Delete(ctx context.Context, resources []*model.AnyReso
 	return nil, fmt.Errorf("unknown response from bindplane server")
 }
 
-func (c *bindplaneClient) Version(ctx context.Context) (version.Version, error) {
+func (c *bindplaneClient) Version(_ context.Context) (version.Version, error) {
 	c.Debug("Version called")
 
 	v := version.Version{}
@@ -526,7 +526,7 @@ func (c *bindplaneClient) Version(ctx context.Context) (version.Version, error) 
 	return v, c.statusError(resp, err, "unable to get version")
 }
 
-func (c *bindplaneClient) AgentInstallCommand(ctx context.Context, options AgentInstallOptions) (string, error) {
+func (c *bindplaneClient) AgentInstallCommand(_ context.Context, options AgentInstallOptions) (string, error) {
 	c.Debug("AgentInstallCommand called")
 
 	var command model.InstallCommandResponse
@@ -544,7 +544,7 @@ func (c *bindplaneClient) AgentInstallCommand(ctx context.Context, options Agent
 	return command.Command, c.statusError(resp, err, "unable to get install command")
 }
 
-func (c *bindplaneClient) AgentUpgrade(ctx context.Context, id string, version string) error {
+func (c *bindplaneClient) AgentUpgrade(_ context.Context, id string, version string) error {
 	endpoint := fmt.Sprintf("/agents/%s/version", id)
 	resp, err := c.client.R().
 		SetBody(model.PostAgentVersionRequest{
@@ -580,7 +580,7 @@ func logRequestError(logger *zap.Logger, err error, endpoint string) {
 	logger.Error("Error making request", zap.Error(err), zap.String("endpoint", endpoint))
 }
 
-func (c *bindplaneClient) AgentLabels(ctx context.Context, id string) (*model.Labels, error) {
+func (c *bindplaneClient) AgentLabels(_ context.Context, id string) (*model.Labels, error) {
 	var response model.AgentLabelsResponse
 	endpoint := fmt.Sprintf("/agents/%s/labels", id)
 
@@ -591,7 +591,7 @@ func (c *bindplaneClient) AgentLabels(ctx context.Context, id string) (*model.La
 	return response.Labels, c.statusError(resp, err, "unable to get agent labels")
 }
 
-func (c *bindplaneClient) ApplyAgentLabels(ctx context.Context, id string, labels *model.Labels, overwrite bool) (*model.Labels, error) {
+func (c *bindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels *model.Labels, overwrite bool) (*model.Labels, error) {
 	payload := model.AgentLabelsPayload{
 		Labels: labels.AsMap(),
 	}
@@ -630,7 +630,7 @@ func (c *bindplaneClient) ApplyAgentLabels(ctx context.Context, id string, label
 
 // ----------------------------------------------------------------------
 
-func (c *bindplaneClient) CopyConfig(ctx context.Context, name, copyName string) error {
+func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) error {
 	payload := model.PostCopyConfigRequest{
 		Name: copyName,
 	}
@@ -698,7 +698,7 @@ func (c *bindplaneClient) get(ctx context.Context, url string, result any) error
 	return c.statusError(resp, err, fmt.Sprintf("unable to get %s", url))
 }
 
-func (c *bindplaneClient) deleteResource(ctx context.Context, resourcesURL string, name string) error {
+func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string, name string) error {
 	deleteEndpoint := fmt.Sprintf("%s/%s", resourcesURL, name)
 	resp, err := c.client.R().Delete(deleteEndpoint)
 	if err != nil {

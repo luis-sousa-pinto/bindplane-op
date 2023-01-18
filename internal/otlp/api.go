@@ -90,7 +90,7 @@ func metrics(c *gin.Context, bindplane server.BindPlane) {
 	c.Status(200)
 }
 
-func getAgentMetrics(c *gin.Context, metrics []*record.Metric) []*record.Metric {
+func getAgentMetrics(_ *gin.Context, metrics []*record.Metric) []*record.Metric {
 	result := []*record.Metric{}
 
 	for _, metric := range metrics {
@@ -125,12 +125,12 @@ type unmarshalProto interface {
 	UnmarshalProto(data []byte) error
 }
 
-func isSnapshotMetrics(c *gin.Context, metrics []*record.Metric) bool {
+func isSnapshotMetrics(c *gin.Context, _ []*record.Metric) bool {
 	sessionID := c.Request.Header.Get("X-Bindplane-Session-Id")
 	return sessionID != ""
 }
 
-func otlpParse[T unmarshalProto](c *gin.Context, bindplane server.BindPlane, result T) error {
+func otlpParse[T unmarshalProto](c *gin.Context, _ server.BindPlane, result T) error {
 	reader := c.Request.Body
 
 	// headers sent by the agent:

@@ -568,7 +568,7 @@ func (p ParameterDefinition) validateEnumsValue(fieldType parameterFieldType, va
 	return err.ErrorOrNil()
 }
 
-func (p ParameterDefinition) validateTimezoneType(fieldType parameterFieldType, value any) error {
+func (p ParameterDefinition) validateTimezoneType(_ parameterFieldType, value any) error {
 	tzErr := errors.NewError(fmt.Sprintf("invalid value for timezone for parameter %s", p.Name),
 		"ensure that the value is one of the possible timezone values found here: https://github.com/observIQ/observiq-otel-collector/blob/main/receiver/pluginreceiver/timezone.go",
 	)
@@ -589,7 +589,7 @@ func (p ParameterDefinition) validateMetricsType(fieldType parameterFieldType, v
 	return p.validateStringArrayValue(fieldType, value)
 }
 
-func (p ParameterDefinition) validateYamlValue(fieldType parameterFieldType, value any) error {
+func (p ParameterDefinition) validateYamlValue(_ parameterFieldType, value any) error {
 	str, ok := value.(string)
 	if !ok {
 		return errors.NewError(
@@ -602,7 +602,7 @@ func (p ParameterDefinition) validateYamlValue(fieldType parameterFieldType, val
 	return yaml.Unmarshal([]byte(str), &into)
 }
 
-func (p ParameterDefinition) validateMapValue(fieldType parameterFieldType, value any) error {
+func (p ParameterDefinition) validateMapValue(_ parameterFieldType, value any) error {
 	reflectValue := reflect.ValueOf(value)
 	kind := reflectValue.Kind()
 	if kind != reflect.Map {
@@ -635,7 +635,7 @@ type AwsCloudWatchNamedFieldItem struct {
 	Prefixes []string `mapstructure:"prefixes" yaml:"prefixes,omitempty"`
 }
 
-func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(fieldType parameterFieldType, value any) error {
+func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFieldType, value any) error {
 	reflectValue := reflect.ValueOf(value)
 	kind := reflectValue.Kind()
 	if kind != reflect.Slice {

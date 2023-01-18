@@ -49,7 +49,7 @@ func (c *testConnection) RemoteAddr() net.Addr {
 	return &c.addr
 }
 
-func (c *testConnection) Send(ctx context.Context, message *protobufs.ServerToAgent) error {
+func (c *testConnection) Send(_ context.Context, _ *protobufs.ServerToAgent) error {
 	return nil
 }
 

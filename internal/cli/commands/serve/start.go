@@ -261,7 +261,8 @@ func (s *Server) createVersions(ctx context.Context, config *common.Server, st s
 	})
 }
 
-func (s *Server) ensureSecretKey(config *common.Server, h profile.Helper) error {
+func (s *Server) ensureSecretKey(config *common.Server, _ profile.Helper) error {
+	//revive:disable:empty-block Until the TODO below is handled
 	if config.SecretKey == "" {
 		// TODO(andy): generate a new secret key and save it.
 		//
@@ -270,6 +271,7 @@ func (s *Server) ensureSecretKey(config *common.Server, h profile.Helper) error 
 		// * it should create the secretKey and save it for the current profile. that means if we run with --profile
 		// some-profile-name, we should save the secretKey to some-profile-name even if it isn't the current profile. we
 		// don't have enough information to do that here right now.
+		// return fmt.Errorf("no secret key set in configuration, run bindplanectl init server to initialize a configuration")
 	}
 	return nil
 }

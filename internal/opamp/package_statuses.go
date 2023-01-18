@@ -44,7 +44,7 @@ func (s *packageStatusesSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilit
 	return protobufs.AgentCapabilities_ReportsPackageStatuses
 }
 
-func (s *packageStatusesSyncer) update(ctx context.Context, logger *zap.Logger, state *agentState, conn opamp.Connection, agent *model.Agent, value *protobufs.PackageStatuses) error {
+func (s *packageStatusesSyncer) update(_ context.Context, _ *zap.Logger, state *agentState, _ opamp.Connection, agent *model.Agent, value *protobufs.PackageStatuses) error {
 	// if an upgrade is in progress but the hash doesn't match, ignore the message. this could happen if two upgrades
 	// happen in quick succession and we will get another update soon.
 	if agent.Upgrade != nil && !bytes.Equal(agent.Upgrade.AllPackagesHash, value.ServerProvidedAllPackagesHash) {

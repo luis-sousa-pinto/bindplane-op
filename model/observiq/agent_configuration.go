@@ -126,20 +126,20 @@ func (raw *RawAgentConfiguration) Hash() []byte {
 // ApplyUpdates applies a partial configuration to a configuration, returning a new configuration and leaving the
 // existing configuration unmodified.
 func (raw *RawAgentConfiguration) ApplyUpdates(update *RawAgentConfiguration) RawAgentConfiguration {
-	copy := *raw
+	clone := *raw
 	if update == nil {
-		return copy
+		return clone
 	}
 	if update.Logging != nil {
-		copy.Logging = update.Logging
+		clone.Logging = update.Logging
 	}
 	if update.Collector != nil {
-		copy.Collector = update.Collector
+		clone.Collector = update.Collector
 	}
 	if update.Manager != nil {
-		copy.Manager = update.Manager
+		clone.Manager = update.Manager
 	}
-	return copy
+	return clone
 }
 
 func marshalConfig(config interface{}) []byte {
@@ -182,9 +182,9 @@ func (c *AgentConfiguration) ReplaceLabels(labels string) {
 			Labels: labels,
 		}
 	} else {
-		copy := *c.Manager
-		copy.Labels = labels
-		c.Manager = &copy
+		clone := *c.Manager
+		clone.Labels = labels
+		c.Manager = &clone
 	}
 }
 
@@ -222,10 +222,10 @@ func ComputeConfigurationUpdates(server *AgentConfiguration, agent *AgentConfigu
 	}
 
 	if !agent.HasLabels(server.Manager.Labels) {
-		// start with a copy of the agent manager configuration since we want to preserve the rest of the agent config
-		copy := *agent.Manager
-		copy.Labels = server.Manager.Labels
-		diff.Manager = &copy
+		// start with a clone of the agent manager configuration since we want to preserve the rest of the agent config
+		clone := *agent.Manager
+		clone.Labels = server.Manager.Labels
+		diff.Manager = &clone
 	}
 
 	return diff

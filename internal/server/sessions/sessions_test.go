@@ -283,7 +283,7 @@ func TestVerify(t *testing.T) {
 
 }
 
-func getLoggedInContext(t *testing.T, bindplane server.BindPlane, w http.ResponseWriter) *gin.Context {
+func getLoggedInContext(_ *testing.T, bindplane server.BindPlane, w http.ResponseWriter) *gin.Context {
 	// Make a login request
 	loginRequest := httptest.NewRequest("POST", "/login", nil)
 	loginRequest.PostForm = url.Values{

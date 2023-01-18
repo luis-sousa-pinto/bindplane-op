@@ -182,7 +182,7 @@ func parseAgentHeaders(request *http.Request) *agentHeaders {
 // HTTP connection is upgraded to WebSocket.
 //
 // opamp.Connection doesn't have much information that we can use here
-func (s *opampServer) OnConnected(conn opamp.Connection) {
+func (s *opampServer) OnConnected(_ opamp.Connection) {
 	_, span := tracer.Start(context.TODO(), "opamp/connected")
 	defer span.End()
 }
@@ -402,7 +402,7 @@ func (s *opampServer) SendHeartbeat(agentID string) error {
 }
 
 // RequestReport sends report configuration to the specified agent
-func (s *opampServer) RequestReport(ctx context.Context, agentID string, configuration report.Configuration) error {
+func (s *opampServer) RequestReport(_ context.Context, agentID string, configuration report.Configuration) error {
 	conn := s.connections.connection(agentID)
 	if conn != nil {
 		body, err := configuration.YAML()

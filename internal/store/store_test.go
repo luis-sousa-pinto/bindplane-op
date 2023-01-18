@@ -1630,7 +1630,7 @@ func saveTestMetrics(ctx context.Context, t *testing.T, m stats.Measurements, na
 	require.NoError(t, err)
 }
 
-func generateTestMetric(t *testing.T, name string, timestamp, startTime time.Time, configuration, agent, processor string, value float64) *record.Metric {
+func generateTestMetric(_ *testing.T, name string, timestamp, startTime time.Time, configuration, agent, processor string, value float64) *record.Metric {
 	m := &record.Metric{
 		Name:           name,
 		Timestamp:      timestamp,

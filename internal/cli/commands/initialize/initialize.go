@@ -117,11 +117,7 @@ func modifyProfile(bindplane *cli.BindPlane, h profile.Helper, updater ProfileUp
 	}
 
 	// save the changes
-	if err = saveProfileSpec(specPath, spec); err != nil {
-		return err
-	}
-
-	return nil
+	return saveProfileSpec(specPath, spec)
 }
 
 // ----------------------------------------------------------------------
@@ -148,10 +144,8 @@ func saveProfileSpec(path string, spec *model.ProfileSpec) error {
 	if err != nil {
 		return err
 	}
-	if err = ioutil.WriteFile(path, bytes, 0600); err != nil {
-		return err
-	}
-	return nil
+
+	return ioutil.WriteFile(path, bytes, 0600)
 }
 
 // ----------------------------------------------------------------------

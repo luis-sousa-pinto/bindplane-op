@@ -118,7 +118,7 @@ func (s *googleCloudStore) Agents(ctx context.Context, options ...QueryOption) (
 	return getDatastoreResourcesWithQuery[*model.Agent](ctx, s, s.agentIndex, model.KindAgent, &opts)
 }
 
-func (s *googleCloudStore) AgentsCount(ctx context.Context, options ...QueryOption) (int, error) {
+func (s *googleCloudStore) AgentsCount(ctx context.Context, _ ...QueryOption) (int, error) {
 	return s.client.Count(ctx, datastoreQuery(model.KindAgent, nil))
 }
 
@@ -126,7 +126,7 @@ func (s *googleCloudStore) AgentsCount(ctx context.Context, options ...QueryOpti
 // It appends the passed updates with the appropriate agent and status.
 // It does *not* PUT to update the agents in the store, notify subscribers of updates,
 // or update the search index.
-func (s *googleCloudStore) getAndUpdateAgent(ctx context.Context, agentID string, updater AgentUpdater, updates *Updates) (agent *model.Agent, err error) {
+func (s *googleCloudStore) getAndUpdateAgent(ctx context.Context, agentID string, updater AgentUpdater, _ *Updates) (agent *model.Agent, err error) {
 	agentEventType := EventTypeUpdate
 
 	agent, exists, err := getDatastoreResource[*model.Agent](ctx, s, model.KindAgent, agentID)
@@ -504,7 +504,7 @@ func (s *googleCloudStore) AgentsIDsMatchingConfiguration(ctx context.Context, c
 }
 
 // CleanupDisconnectedAgents removes agents that have disconnected before the specified time
-func (s *googleCloudStore) CleanupDisconnectedAgents(ctx context.Context, since time.Time) error {
+func (s *googleCloudStore) CleanupDisconnectedAgents(_ context.Context, _ time.Time) error {
 	// TODO: find agents where status=disconnected and disconnectedAt < since
 	return nil
 }
@@ -517,12 +517,12 @@ func (s *googleCloudStore) Updates() eventbus.Source[*Updates] {
 }
 
 // Index provides access to the search Index implementation managed by the Store
-func (s *googleCloudStore) AgentIndex(ctx context.Context) search.Index {
+func (s *googleCloudStore) AgentIndex(_ context.Context) search.Index {
 	return s.agentIndex
 }
 
 // ConfigurationIndex provides access to the search Index for Configurations
-func (s *googleCloudStore) ConfigurationIndex(ctx context.Context) search.Index {
+func (s *googleCloudStore) ConfigurationIndex(_ context.Context) search.Index {
 	return s.configurationIndex
 }
 

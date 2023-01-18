@@ -217,7 +217,7 @@ func (mapstore *mapStore) UpsertAgent(ctx context.Context, agentID string, updat
 	return agent, nil
 }
 
-func (mapstore *mapStore) Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error) {
+func (mapstore *mapStore) Agents(_ context.Context, options ...QueryOption) ([]*model.Agent, error) {
 	mapstore.RLock()
 	defer mapstore.RUnlock()
 
@@ -251,7 +251,7 @@ func (mapstore *mapStore) AgentsCount(ctx context.Context, options ...QueryOptio
 	return len(agents), nil
 }
 
-func (mapstore *mapStore) Agent(ctx context.Context, id string) (*model.Agent, error) {
+func (mapstore *mapStore) Agent(_ context.Context, id string) (*model.Agent, error) {
 	mapstore.RLock()
 	defer mapstore.RUnlock()
 	return mapstore.agents[id], nil
@@ -290,10 +290,10 @@ func (mapstore *mapStore) DeleteAgents(ctx context.Context, agentIDs []string) (
 	return deleted, nil
 }
 
-func (mapstore *mapStore) AgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
+func (mapstore *mapStore) AgentVersion(_ context.Context, name string) (*model.AgentVersion, error) {
 	return mapstore.agentVersions.get(name), nil
 }
-func (mapstore *mapStore) AgentVersions(ctx context.Context) ([]*model.AgentVersion, error) {
+func (mapstore *mapStore) AgentVersions(_ context.Context) ([]*model.AgentVersion, error) {
 	return mapstore.agentVersions.list(), nil
 }
 func (mapstore *mapStore) DeleteAgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
@@ -307,7 +307,7 @@ func (mapstore *mapStore) DeleteAgentVersion(ctx context.Context, name string) (
 	return item, nil
 }
 
-func (mapstore *mapStore) Configurations(ctx context.Context, options ...QueryOption) ([]*model.Configuration, error) {
+func (mapstore *mapStore) Configurations(_ context.Context, options ...QueryOption) ([]*model.Configuration, error) {
 	opts := makeQueryOptions(options)
 	config := mapstore.configurations.list()
 	if opts.sort == "" {
@@ -318,7 +318,7 @@ func (mapstore *mapStore) Configurations(ctx context.Context, options ...QueryOp
 		return item.Name()
 	}), nil
 }
-func (mapstore *mapStore) Configuration(ctx context.Context, name string) (*model.Configuration, error) {
+func (mapstore *mapStore) Configuration(_ context.Context, name string) (*model.Configuration, error) {
 	return mapstore.configurations.get(name), nil
 }
 func (mapstore *mapStore) DeleteConfiguration(ctx context.Context, name string) (*model.Configuration, error) {
@@ -333,10 +333,10 @@ func (mapstore *mapStore) DeleteConfiguration(ctx context.Context, name string) 
 	return item, nil
 }
 
-func (mapstore *mapStore) Source(ctx context.Context, name string) (*model.Source, error) {
+func (mapstore *mapStore) Source(_ context.Context, name string) (*model.Source, error) {
 	return mapstore.sources.get(name), nil
 }
-func (mapstore *mapStore) Sources(ctx context.Context) ([]*model.Source, error) {
+func (mapstore *mapStore) Sources(_ context.Context) ([]*model.Source, error) {
 	return mapstore.sources.list(), nil
 }
 func (mapstore *mapStore) DeleteSource(ctx context.Context, name string) (*model.Source, error) {
@@ -351,10 +351,10 @@ func (mapstore *mapStore) DeleteSource(ctx context.Context, name string) (*model
 	return item, nil
 }
 
-func (mapstore *mapStore) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
+func (mapstore *mapStore) SourceType(_ context.Context, name string) (*model.SourceType, error) {
 	return mapstore.sourceTypes.get(name), nil
 }
-func (mapstore *mapStore) SourceTypes(ctx context.Context) ([]*model.SourceType, error) {
+func (mapstore *mapStore) SourceTypes(_ context.Context) ([]*model.SourceType, error) {
 	return mapstore.sourceTypes.list(), nil
 }
 func (mapstore *mapStore) DeleteSourceType(ctx context.Context, name string) (*model.SourceType, error) {
@@ -369,10 +369,10 @@ func (mapstore *mapStore) DeleteSourceType(ctx context.Context, name string) (*m
 	return item, nil
 }
 
-func (mapstore *mapStore) Processor(ctx context.Context, name string) (*model.Processor, error) {
+func (mapstore *mapStore) Processor(_ context.Context, name string) (*model.Processor, error) {
 	return mapstore.processors.get(name), nil
 }
-func (mapstore *mapStore) Processors(ctx context.Context) ([]*model.Processor, error) {
+func (mapstore *mapStore) Processors(_ context.Context) ([]*model.Processor, error) {
 	return mapstore.processors.list(), nil
 }
 func (mapstore *mapStore) DeleteProcessor(ctx context.Context, name string) (*model.Processor, error) {
@@ -387,10 +387,10 @@ func (mapstore *mapStore) DeleteProcessor(ctx context.Context, name string) (*mo
 	return item, nil
 }
 
-func (mapstore *mapStore) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
+func (mapstore *mapStore) ProcessorType(_ context.Context, name string) (*model.ProcessorType, error) {
 	return mapstore.processorTypes.get(name), nil
 }
-func (mapstore *mapStore) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType, error) {
+func (mapstore *mapStore) ProcessorTypes(_ context.Context) ([]*model.ProcessorType, error) {
 	return mapstore.processorTypes.list(), nil
 }
 func (mapstore *mapStore) DeleteProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
@@ -405,10 +405,10 @@ func (mapstore *mapStore) DeleteProcessorType(ctx context.Context, name string) 
 	return item, nil
 }
 
-func (mapstore *mapStore) Destination(ctx context.Context, name string) (*model.Destination, error) {
+func (mapstore *mapStore) Destination(_ context.Context, name string) (*model.Destination, error) {
 	return mapstore.destinations.get(name), nil
 }
-func (mapstore *mapStore) Destinations(ctx context.Context) ([]*model.Destination, error) {
+func (mapstore *mapStore) Destinations(_ context.Context) ([]*model.Destination, error) {
 	return mapstore.destinations.list(), nil
 }
 func (mapstore *mapStore) DeleteDestination(ctx context.Context, name string) (*model.Destination, error) {
@@ -423,10 +423,10 @@ func (mapstore *mapStore) DeleteDestination(ctx context.Context, name string) (*
 	return item, nil
 }
 
-func (mapstore *mapStore) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
+func (mapstore *mapStore) DestinationType(_ context.Context, name string) (*model.DestinationType, error) {
 	return mapstore.destinationTypes.get(name), nil
 }
-func (mapstore *mapStore) DestinationTypes(ctx context.Context) ([]*model.DestinationType, error) {
+func (mapstore *mapStore) DestinationTypes(_ context.Context) ([]*model.DestinationType, error) {
 	return mapstore.destinationTypes.list(), nil
 }
 func (mapstore *mapStore) DeleteDestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
@@ -591,7 +591,7 @@ func (mapstore *mapStore) AgentConfiguration(ctx context.Context, agentID string
 }
 
 // AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
-func (mapstore *mapStore) AgentsIDsMatchingConfiguration(ctx context.Context, configuration *model.Configuration) ([]string, error) {
+func (mapstore *mapStore) AgentsIDsMatchingConfiguration(_ context.Context, configuration *model.Configuration) ([]string, error) {
 	ids := mapstore.agentIndex.Select(configuration.Spec.Selector.MatchLabels)
 	return ids, nil
 }
@@ -620,12 +620,12 @@ func (mapstore *mapStore) CleanupDisconnectedAgents(ctx context.Context, since t
 }
 
 // Index provides access to the search Index implementation managed by the Store
-func (mapstore *mapStore) AgentIndex(ctx context.Context) search.Index {
+func (mapstore *mapStore) AgentIndex(_ context.Context) search.Index {
 	return mapstore.agentIndex
 }
 
 // ConfigurationIndex provides access to the search Index for Configurations
-func (mapstore *mapStore) ConfigurationIndex(ctx context.Context) search.Index {
+func (mapstore *mapStore) ConfigurationIndex(_ context.Context) search.Index {
 	return mapstore.configurationIndex
 }
 
@@ -711,7 +711,7 @@ func resourcesEqual(r1 model.Resource, r2 model.Resource) bool {
 //
 // Note: While the same record.Metric struct is used to return the metrics, these are not the same metrics provided to
 // Store. They will be aggregated and counter metrics will be converted into rates.
-func (mapstore *mapStore) AgentMetrics(ctx context.Context, id []string, options ...stats.QueryOption) (stats.MetricData, error) {
+func (mapstore *mapStore) AgentMetrics(_ context.Context, _ []string, _ ...stats.QueryOption) (stats.MetricData, error) {
 	return nil, nil
 }
 
@@ -720,17 +720,17 @@ func (mapstore *mapStore) AgentMetrics(ctx context.Context, id []string, options
 //
 // Note: While the same record.Metric struct is used to return the metrics, these are not the same metrics provided to
 // Store. They will be aggregated and counter metrics will be converted into rates.
-func (mapstore *mapStore) ConfigurationMetrics(ctx context.Context, name string, options ...stats.QueryOption) (stats.MetricData, error) {
+func (mapstore *mapStore) ConfigurationMetrics(_ context.Context, _ string, _ ...stats.QueryOption) (stats.MetricData, error) {
 	return nil, nil
 }
 
 // OverviewMetrics provides all metrics needed for the overview page. This page shows agents and destinations.
-func (mapstore *mapStore) OverviewMetrics(ctx context.Context, options ...stats.QueryOption) (stats.MetricData, error) {
+func (mapstore *mapStore) OverviewMetrics(_ context.Context, _ ...stats.QueryOption) (stats.MetricData, error) {
 	return nil, nil
 }
 
 // SaveAgentMetrics saves new metrics. These metrics will be aggregated to determine metrics associated with agents and configurations.
-func (mapstore *mapStore) SaveAgentMetrics(ctx context.Context, metrics []*record.Metric) error {
+func (mapstore *mapStore) SaveAgentMetrics(_ context.Context, _ []*record.Metric) error {
 	return nil
 }
 
@@ -740,6 +740,6 @@ func (mapstore *mapStore) MeasurementsSize() (int, error) {
 }
 
 // ProcessMetrics is called in the background at regular intervals and performs metric roll-up and removes old data
-func (mapstore *mapStore) ProcessMetrics(ctx context.Context) error {
+func (mapstore *mapStore) ProcessMetrics(_ context.Context) error {
 	return nil
 }

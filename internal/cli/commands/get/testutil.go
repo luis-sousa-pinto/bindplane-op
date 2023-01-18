@@ -46,7 +46,7 @@ type mockClient struct {
 }
 
 // Agents TODO(doc)
-func (c *mockClient) Agents(ctx context.Context, options ...client.QueryOption) ([]*model.Agent, error) {
+func (c *mockClient) Agents(_ context.Context, _ ...client.QueryOption) ([]*model.Agent, error) {
 	return []*model.Agent{
 		{
 			ID:              "1",

@@ -184,7 +184,7 @@ func (r *Resolver) hasAgentConfigurationChanges(updates *store.Updates) bool {
 	return false
 }
 
-func configurationNodeIDResolver(metric *record.Metric, position model.MeasurementPosition, pipelineType bpotel.PipelineType, resourceName string) string {
+func configurationNodeIDResolver(_ *record.Metric, position model.MeasurementPosition, _ bpotel.PipelineType, resourceName string) string {
 	switch position {
 	case model.MeasurementPositionSourceBeforeProcessors:
 		return fmt.Sprintf("source/%s", resourceName)

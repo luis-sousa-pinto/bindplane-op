@@ -37,20 +37,20 @@ type configOptions struct {
 	Version string
 }
 
-func newConfigOptions(config *common.Server) *configOptions {
+func newConfigOptions() *configOptions {
 	return &configOptions{
 		Version: version.NewVersion().String(),
 	}
 }
 
 // generateGlobalJS generates the static javascript file for the UI.
-func generateGlobalJS(config *common.Server) (string, error) {
+func generateGlobalJS(_ *common.Server) (string, error) {
 	tmp, err := template.New("globals").Parse(templateStr)
 	if err != nil {
 		return fallbackJs, err
 	}
 
-	opts := newConfigOptions(config)
+	opts := newConfigOptions()
 
 	w := bytes.NewBufferString("")
 	err = tmp.Execute(w, opts)

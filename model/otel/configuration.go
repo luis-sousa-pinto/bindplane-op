@@ -338,7 +338,7 @@ type ComponentIDProvider interface {
 // UniqueComponentID ensures that each ComponentID is unique by including the type and resource name. To make them easy
 // to find in a completed configuration, we preserve the part before the / and then insert the type and resource name
 // separated by 2 underscores.
-func UniqueComponentID(original, typeName, resourceName string) ComponentID {
+func UniqueComponentID(original, _, resourceName string) ComponentID {
 	// replace type/name with type/resourceType__resourceName__name
 	pipelineType, name := ParseComponentID(ComponentID(original))
 
@@ -488,7 +488,7 @@ func (c ComponentMap) addComponents(componentList ComponentList) []ComponentID {
 }
 
 // AddReceivers adds receivers to the pipeline
-func (p *Pipeline) AddReceivers(rc *RenderContext, id []ComponentID) {
+func (p *Pipeline) AddReceivers(_ *RenderContext, id []ComponentID) {
 	p.Receivers = append(p.Receivers, id...)
 }
 
@@ -508,7 +508,7 @@ func (p *Pipeline) AddProcessors(rc *RenderContext, ids []ComponentID) {
 }
 
 // AddExporters adds exporters to the pipeline
-func (p *Pipeline) AddExporters(rc *RenderContext, id []ComponentID) {
+func (p *Pipeline) AddExporters(_ *RenderContext, id []ComponentID) {
 	p.Exporters = append(p.Exporters, id...)
 }
 

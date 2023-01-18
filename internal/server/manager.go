@@ -314,7 +314,7 @@ func (m *manager) AgentUpdates(ctx context.Context, agent *model.Agent) (*AgentU
 
 // VerifySecretKey checks to see if the specified secretKey matches configured secretKey. If the BindPlane server does not
 // have a configured secretKey, this returns true.
-func (m *manager) VerifySecretKey(ctx context.Context, secretKey string) bool {
+func (m *manager) VerifySecretKey(_ context.Context, secretKey string) bool {
 	return m.secretKey == "" || m.secretKey == secretKey
 }
 

@@ -257,7 +257,7 @@ func (updates *Updates) addConfigurationUpdates(ctx context.Context, s Store) er
 	return nil
 }
 
-func (updates *Updates) addConfigurationUpdatesFromComponents(configuration *model.Configuration, s Store) {
+func (updates *Updates) addConfigurationUpdatesFromComponents(configuration *model.Configuration, _ Store) {
 	for _, source := range configuration.Spec.Sources {
 		if _, ok := updates.Sources[source.Name]; ok {
 			updates.Configurations.Include(configuration, EventTypeUpdate)

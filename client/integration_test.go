@@ -71,7 +71,7 @@ func bindplaneContainer(t *testing.T, env map[string]string) (testcontainers.Con
 	var target testcontainers.ContainerMountTarget = "/tmp"
 	mount := testcontainers.ContainerMount{
 		Source: testcontainers.GenericBindMountSource{
-			path.Join(dir, "testdata"),
+			HostPath: path.Join(dir, "testdata"),
 		},
 		Target: target,
 	}

@@ -79,7 +79,7 @@ tidy:
 
 .PHONY: lint # runs revive linter and npm run lint
 lint:
-	revive -formatter friendly -exclude "internal/graphql/schema.*" -set_exit_status ./...
+	revive -config revive/config.toml -formatter=stylish -exclude "internal/graphql/schema.resolvers.go"  -set_exit_status ./...
 	cd ui && npm run lint && cd ..
 
 .PHONY: vet # runs go vet

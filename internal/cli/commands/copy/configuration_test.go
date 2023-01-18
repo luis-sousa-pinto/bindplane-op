@@ -37,7 +37,7 @@ type mockClient struct {
 
 var gotArgs []any
 
-func (mc *mockClient) CopyConfig(ctx context.Context, configName, copyName string) error {
+func (mc *mockClient) CopyConfig(_ context.Context, configName, copyName string) error {
 	gotArgs = []any{configName, copyName}
 	return nil
 }
