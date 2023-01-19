@@ -1,0 +1,62 @@
+apiVersion: bindplane.observiq.com/v1
+kind: ProcessorType
+metadata:
+  name: filter_http_status
+  displayName: Filter By HTTP Status
+  description: Filter logs by whether they contain a HTTP status code in some range.
+spec:
+  version: 0.0.1
+  parameters:
+    - name: minimum
+      label: Minimum Status Code
+      type: enum
+      description: |
+        Lowest possible status code to allow through.
+      default: "100"
+      required: true
+      validValues:
+        - "100"
+        - "200"
+        - "300"
+        - "400"
+        - "500"
+        - "600"
+    - name: maximum
+      label: Maximum Status Code 
+      type: enum
+      description: |
+        Highest possible status code to allow through.
+      default: "599"
+      required: true
+      validValues:
+        - "199"
+        - "299"
+        - "399"
+        - "499"
+        - "599"
+
+
+
+  logs:
+    processors: |
+       - filter:
+            logs:
+                log_record:
+                    {{ $statuses := "" }}
+                    {{ if (not (and (le .minimum "100") (ge .maximum "199"))) }}
+                      {{ $statuses = (print $statuses  "(1[0-9]+)|") }}
+                    {{ end }}
+                    {{ if (not (and (le .minimum "200") (ge .maximum "299"))) }}
+                      {{ $statuses = (print $statuses  "(2[0-9]+)|") }}
+                    {{ end }}  
+                    {{ if (not (and (le .minimum "300") (ge .maximum "399"))) }}
+                      {{ $statuses = (print $statuses  "(3[0-9]+)|") }}
+                    {{ end }}  
+                    {{ if (not (and (le .minimum "400") (ge .maximum "499"))) }}
+                      {{ $statuses = (print $statuses  "(4[0-9]+)|") }}
+                    {{ end }}  
+                    {{ if (not (and (le .minimum "500") (ge .maximum "599"))) }}
+                      {{ $statuses = (print $statuses  "(5[0-9]+)") }}
+                    {{ end }}  
+                  - 'IsMatch(attributes, "\"?status\"? ?: ?({{ $statuses }}),") == true'
+                  - 'IsMatch(body, "\"?status\"? ?: ?({{ $statuses }}),") == true'
