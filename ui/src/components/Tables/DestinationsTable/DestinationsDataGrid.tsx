@@ -9,10 +9,6 @@ import {
 } from "@mui/x-data-grid";
 import { isFunction } from "lodash";
 import { memo } from "react";
-import {
-  DestinationsQuery,
-  DestinationsInConfigsQuery,
-} from "../../../graphql/generated";
 import { DestinationTypeCell } from "./cells";
 
 import styles from "./cells.module.scss";
@@ -23,25 +19,24 @@ export enum DestinationsTableField {
   TYPE = "type",
 }
 
-interface DestinationsDataGridProps
-  extends Omit<DataGridProps, "columns" | "rows"> {
+interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
   setSelectionModel?: (names: GridSelectionModel) => void;
   onEditDestination: (name: string) => void;
-  queryData: DestinationsQuery | DestinationsInConfigsQuery;
   loading: boolean;
   columnFields?: DestinationsTableField[];
   minHeight?: string;
   selectionModel?: GridSelectionModel;
+  destinationsPage?: boolean;
 }
 
 export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
   ({
     setSelectionModel,
-    queryData,
     onEditDestination,
     columnFields,
     minHeight,
     selectionModel,
+    destinationsPage,
     ...dataGridProps
   }) => {
     function renderNameCell(cellParams: GridCellParams<string>): JSX.Element {
@@ -95,11 +90,6 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
       }
     });
 
-    const rows =
-      (queryData as DestinationsQuery).destinations !== undefined
-        ? [...(queryData as DestinationsQuery).destinations]
-        : [...(queryData as DestinationsInConfigsQuery).destinationsInConfigs];
-
     return (
       <DataGrid
         {...dataGridProps}
@@ -117,7 +107,6 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
         autoHeight
         getRowId={(row) => `${row.kind}|${row.metadata.name}`}
         columns={columns}
-        rows={rows}
         selectionModel={selectionModel}
       />
     );

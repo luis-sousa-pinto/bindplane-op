@@ -33,8 +33,9 @@ describe("DestinationsDataGrid", () => {
   it("renders without error", () => {
     render(
       <DestinationsDataGrid
+
         loading={false}
-        queryData={{ destinations: destinationData }}
+        rows={ destinationData }
         setSelectionModel={() => {}}
         disableSelectionOnClick
         checkboxSelection
@@ -47,7 +48,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <DestinationsDataGrid
         loading={false}
-        queryData={{ destinations: destinationData }}
+        rows={ destinationData }
         setSelectionModel={() => {}}
         disableSelectionOnClick
         checkboxSelection
@@ -69,7 +70,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <DestinationsDataGrid
         loading={false}
-        queryData={{ destinations: destinationData }}
+        rows={ destinationData }
         setSelectionModel={onDestinationsSelected}
         disableSelectionOnClick
         checkboxSelection
@@ -88,7 +89,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <DestinationsDataGrid
         loading={false}
-        queryData={{ destinations: destinationData }}
+        rows={ destinationData }
         setSelectionModel={() => {}}
         disableSelectionOnClick
         checkboxSelection

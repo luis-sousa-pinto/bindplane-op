@@ -11,13 +11,14 @@ import {
   useConfigurationTableMetricsSubscription,
   useGetConfigurationTableQuery,
 } from "../../../graphql/generated";
-import mixins from "../../../styles/mixins.module.scss";
 import { SearchBar } from "../../SearchBar";
 import {
   ConfigurationsDataGrid,
   ConfigurationsTableField,
 } from "./ConfigurationsDataGrid";
 import { DeleteDialog } from "./DeleteDialog";
+
+import mixins from "../../../styles/mixins.module.scss";
 
 gql`
   query GetConfigurationTable(
@@ -111,7 +112,7 @@ interface ConfigurationTableProps {
   selected: GridSelectionModel;
   enableDelete?: boolean;
   minHeight?: string;
-  onlyDeployedConfigurations?: boolean;
+  overviewPage?: boolean;
 }
 
 export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
@@ -122,13 +123,13 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
   columns,
   enableDelete = true,
   minHeight,
-  onlyDeployedConfigurations = false,
+  overviewPage = false,
   ...dataGridProps
 }) => {
   const { data, loading, refetch, subscribeToMore } =
     useGetConfigurationTableQuery({
-      variables: { selector, query: initQuery, onlyDeployedConfigurations },
-      fetchPolicy: onlyDeployedConfigurations
+      variables: { selector, query: initQuery, onlyDeployedConfigurations: overviewPage },
+      fetchPolicy: overviewPage
         ? "cache-and-network"
         : "network-only",
       nextFetchPolicy: "cache-only",
@@ -222,6 +223,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
           columnFields={columns}
           selectionModel={selected}
           minHeight={minHeight}
+          classes={overviewPage && ((data?.configurations.configurations.length ?? 0) < 100) ? {footerContainer: mixins["hidden"]} : undefined}
         />
       </Stack>
       <DeleteDialog

@@ -10,7 +10,6 @@ import {
 } from "../../graphql/generated";
 import { OverviewGraph } from "./OverviewGraph";
 import { OverviewPageProvider, useOverviewPage } from "./OverviewPageContext";
-import mixins from "../../styles/mixins.module.scss";
 import {
   DEFAULT_OVERVIEW_GRAPH_PERIOD,
   DEFAULT_TELEMETRY_TYPE,
@@ -18,13 +17,13 @@ import {
   TELEMETRY_SIZE_METRICS,
 } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { gql } from "@apollo/client";
-
 import { DestinationsTableField } from "../../components/Tables/DestinationsTable/DestinationsDataGrid";
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageContent } from "../destinations/DestinationsPage";
-import { useCallback, useEffect, useLayoutEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import global from "../../styles/global.module.scss";
+import mixins from "../../styles/mixins.module.scss";
 
 gql`
   query DestinationsInConfigs {
@@ -124,28 +123,12 @@ const OverviewPageContent: React.FC = () => {
     selectTopDestinations,
     selectedTelemetry,
   ]);
-
-  // hide paginations
-  useLayoutEffect(() => {
-    const paginations = document.getElementsByClassName(
-      "MuiDataGrid-footerContainer"
-    );
-    setTimeout(() => {
-      for (let i = 0; i < paginations.length; i++) {
-        const parent = paginations[i].parentElement;
-        if (parent !== null) {
-          parent.innerHTML = "";
-        }
-      }
-    }, 10);
-  });
-
   return (
     <Grid container spacing={3} alignItems="center" wrap={"nowrap"}>
       <Grid item md={"auto"} lg={"auto"}>
         <Box
           sx={{
-            width: "360px",
+            width: "370px",
           }}
         >
           <Tooltip
@@ -167,7 +150,7 @@ const OverviewPageContent: React.FC = () => {
             enableDelete={false}
             minHeight="calc(100vh - 231px)"
             columns={[ConfigurationsTableField.NAME]}
-            onlyDeployedConfigurations
+            overviewPage
           />
         </Box>
       </Grid>
@@ -213,7 +196,7 @@ const OverviewPageContent: React.FC = () => {
           <DestinationsPageContent
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
-            enableDelete={false}
+            destinationsPage={false}
             destinationsQuery={useDestinationsInConfigsQuery}
             columnFields={[DestinationsTableField.NAME]}
             minHeight="calc(100vh - 181px)"

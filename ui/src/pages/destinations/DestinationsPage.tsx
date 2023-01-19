@@ -44,7 +44,7 @@ gql`
 `;
 
 export interface DestinationsPageContentProps {
-  enableDelete: boolean;
+  destinationsPage: boolean;
   // grid selection model
   selected: GridSelectionModel;
   // function to set grid selection model
@@ -79,7 +79,7 @@ export interface DestinationsPageContentProps {
 }
 export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
   ({
-    enableDelete,
+    destinationsPage,
     selected,
     setSelected,
     columnFields,
@@ -138,6 +138,11 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
         enqueueSnackbar("Failed to delete components.", { variant: "error" });
       }
     }
+    const queryData = data ?? { destinations: [] };
+    const rows = "destinations" in queryData
+        ? [...queryData.destinations]
+        : [...queryData.destinationsInConfigs];
+
 
     return (
       <>
@@ -145,7 +150,7 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
           <Typography variant="h5" className={mixins["mb-5"]}>
             Destinations
           </Typography>
-          {enableDelete && selected.length > 0 && (
+          {destinationsPage && selected.length > 0 && (
             <FormControl classes={{ root: mixins["ml-5"] }}>
               <Button
                 variant="contained"
@@ -160,7 +165,6 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
         </div>
         <DestinationsDataGrid
           loading={loading}
-          queryData={data ?? { destinations: [] }}
           setSelectionModel={setSelected}
           selectionModel={selected}
           disableSelectionOnClick
@@ -168,6 +172,8 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
           onEditDestination={(name: string) => setEditingDestination(name)}
           columnFields={columnFields}
           minHeight={minHeight}
+          rows={rows}
+          classes={!destinationsPage && rows.length < 100 ? {footerContainer:  mixins["hidden"]} : {}  }
         />
         <ConfirmDeleteResourceDialog
           open={open}
@@ -231,7 +237,7 @@ export const DestinationsPage = withRequireLogin(
     return (
       <CardContainer>
         <DestinationsPageContent
-          enableDelete={true}
+          destinationsPage
           selected={selected}
           setSelected={setSelected}
           editingDestination={editingDestination}

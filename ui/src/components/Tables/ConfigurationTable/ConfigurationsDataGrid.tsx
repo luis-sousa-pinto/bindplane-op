@@ -121,7 +121,6 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
         }}
         style={{ minHeight }}
         disableSelectionOnClick
-        autoHeight
         getRowId={(row) => row.metadata.name}
         columns={columns}
         rows={configurations}
