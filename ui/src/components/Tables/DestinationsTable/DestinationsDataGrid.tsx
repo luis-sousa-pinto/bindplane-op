@@ -87,7 +87,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
         components={{
           NoRowsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
-              No Components
+              No Destinations
             </Stack>
           ),
         }}
