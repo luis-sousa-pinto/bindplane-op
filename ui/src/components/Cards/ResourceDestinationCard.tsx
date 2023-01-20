@@ -16,8 +16,10 @@ import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPDestination } from "../../utils/classes";
 import { FormValues } from "../ResourceConfigForm";
 import { classes } from "../../utils/styles";
+import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
 
 import styles from "./cards.module.scss";
+import { truncateLabel } from "../../utils/graph/utils";
 
 type onDeleteFunc = () => Promise<void>;
 
@@ -318,29 +320,36 @@ const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
           onClick={() => setEditing(true)}
         >
           <CardActionArea className={styles.action}>
-            <CardContent>
-              <Stack alignItems="center">
-                <span
-                  className={styles.icon}
-                  style={{
-                    backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
-                  }}
-                />
-                <Typography component="div" fontWeight={600} gutterBottom>
-                  {name}
-                </Typography>
-                {data.destinationWithType.destination?.spec.disabled && (
+            <NoMaxWidthTooltip title={name.length > 20 ? name : ""}>
+              <CardContent>
+                <Stack alignItems="center">
+                  <span
+                    className={styles.icon}
+                    style={{
+                      backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
+                    }}
+                  />
                   <Typography
                     component="div"
-                    fontWeight={400}
-                    fontSize={14}
-                    variant="overline"
+                    fontWeight={600}
+                    gutterBottom
+                    fontSize={name.length > 15 ? 11 : 16}
                   >
-                    Paused
+                    {truncateLabel(name, 20)}
                   </Typography>
-                )}
-              </Stack>
-            </CardContent>
+                  {data.destinationWithType.destination?.spec.disabled && (
+                    <Typography
+                      component="div"
+                      fontWeight={400}
+                      fontSize={14}
+                      variant="overline"
+                    >
+                      Paused
+                    </Typography>
+                  )}
+                </Stack>
+              </CardContent>
+            </NoMaxWidthTooltip>
           </CardActionArea>
         </Card>
 

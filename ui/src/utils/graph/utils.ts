@@ -655,3 +655,9 @@ export function convertUnits(
   const round = 10;
   return { value: Math.round(metric.value * round) / round, unit: metric.unit };
 }
+export function truncateLabel(label: string, maxLength: number): string {
+  if (label.length > maxLength && !label.includes(" ")) {
+    return label.slice(0, maxLength) + "...";
+  }
+  return label;
+}

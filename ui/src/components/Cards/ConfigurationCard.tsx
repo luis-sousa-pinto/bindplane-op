@@ -7,7 +7,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { truncateLabel } from "../../utils/graph/utils";
 import { CardMeasurementContent } from "../CardMeasurementContent/CardMeasurementContent";
+import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
 import { SlidersIcon } from "../Icons";
 
 import styles from "./cards.module.scss";
@@ -46,22 +48,28 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
             navigate({ pathname: configurationURL, search: location.search })
           }
         >
-          <CardContent>
-            <Stack justifyContent="center" alignItems="center" spacing={2}>
-              {isEverything ? (
-                <Stack direction="row" spacing={2}>
-                  <SlidersIcon height="20px" width="20px" />
-                  <SlidersIcon height="20px" width="20px" />
-                  <SlidersIcon height="20px" width="20px" />
-                </Stack>
-              ) : (
-                <SlidersIcon height="40px" width="40px" />
-              )}
-              <Typography align="center" fontWeight={600}>
-                {cardLabel}
-              </Typography>
-            </Stack>
-          </CardContent>
+          <NoMaxWidthTooltip title={cardLabel.length > 20 ? cardLabel : ""}>
+            <CardContent>
+              <Stack justifyContent="center" alignItems="center" spacing={2}>
+                {isEverything ? (
+                  <Stack direction="row" spacing={2}>
+                    <SlidersIcon height="20px" width="20px" />
+                    <SlidersIcon height="20px" width="20px" />
+                    <SlidersIcon height="20px" width="20px" />
+                  </Stack>
+                ) : (
+                  <SlidersIcon height="40px" width="40px" />
+                )}
+                <Typography
+                  align="center"
+                  fontWeight={600}
+                  fontSize={cardLabel.length > 15 ? 11 : 16}
+                >
+                  {truncateLabel(cardLabel, 20)}
+                </Typography>
+              </Stack>
+            </CardContent>
+          </NoMaxWidthTooltip>
         </CardActionArea>
       </Card>
       <Chip

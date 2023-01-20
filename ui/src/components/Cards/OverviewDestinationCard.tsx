@@ -16,6 +16,8 @@ import { SquareIcon } from "../Icons";
 
 import { classes } from "../../utils/styles";
 import styles from "./cards.module.scss";
+import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
+import { truncateLabel } from "../../utils/graph/utils";
 
 interface ResourceDestinationCardProps {
   name: string;
@@ -93,38 +95,41 @@ const OverviewDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
           }}
         >
           <CardActionArea className={styles.action}>
-            <CardContent>
-              <Stack alignItems="center">
-                {isEverythingDestination ? (
-                  <SquareIcon className={styles["destination-icon"]} />
-                ) : (
-                  <span
-                    className={styles.icon}
-                    style={{
-                      backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
-                    }}
-                  />
-                )}
-                <Typography
-                  align="center"
-                  component="div"
-                  fontWeight={600}
-                  gutterBottom
-                >
-                  {cardName}
-                </Typography>
-                {data.destinationWithType.destination?.spec.disabled && (
+            <NoMaxWidthTooltip title={cardName.length > 20 ? name : ""}>
+              <CardContent>
+                <Stack alignItems="center" spacing={1}>
+                  {isEverythingDestination ? (
+                    <SquareIcon className={styles["destination-icon"]} />
+                  ) : (
+                    <span
+                      className={styles.icon}
+                      style={{
+                        backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
+                      }}
+                    />
+                  )}
                   <Typography
+                    align="center"
                     component="div"
-                    fontWeight={400}
-                    fontSize={14}
-                    variant="overline"
+                    fontWeight={600}
+                    gutterBottom
+                    fontSize={cardName.length > 15 ? 11 : 16}
                   >
-                    Paused
+                    {truncateLabel(cardName, 20)}
                   </Typography>
-                )}
-              </Stack>
-            </CardContent>
+                  {data.destinationWithType.destination?.spec.disabled && (
+                    <Typography
+                      component="div"
+                      fontWeight={400}
+                      fontSize={14}
+                      variant="overline"
+                    >
+                      Paused
+                    </Typography>
+                  )}
+                </Stack>
+              </CardContent>
+            </NoMaxWidthTooltip>
           </CardActionArea>
         </Card>
       </div>
