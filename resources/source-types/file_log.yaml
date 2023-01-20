@@ -88,20 +88,6 @@ spec:
           operator: equals
           value: specify line end
 
-    - name: encoding
-      label: Encoding
-      description: The encoding of the file being read.
-      type: enum
-      default: utf-8
-      validValues:
-        - nop
-        - utf-8
-        - utf-16le
-        - utf-16be
-        - ascii
-        - big5
-      advancedConfig: true
-
     - name: include_file_name_attribute
       label: Include File Name Attribute
       description: Whether to add the file name as the attribute "log.file.name".
@@ -130,6 +116,20 @@ spec:
       default: false
       advancedConfig: true
 
+    - name: encoding
+      label: Encoding
+      description: The encoding of the file being read.
+      type: enum
+      default: utf-8
+      validValues:
+        - nop
+        - utf-8
+        - utf-16le
+        - utf-16be
+        - ascii
+        - big5
+      advancedConfig: true
+
     - name: offset_storage_dir
       label: Offset Storage Directory
       description: The directory that the offset storage file will be created.
@@ -146,7 +146,7 @@ spec:
 
     - name: max_concurrent_files
       label: Max Concurrent Files
-      description: The maximum number of log files fromw hich logs will be read concurrently. If the number of files matched exceeds this number, then files will be processed in batches.
+      description: The maximum number of log files from which logs will be read concurrently. If the number of files matched exceeds this number, then files will be processed in batches.
       type: int
       default: 1024
       advancedConfig: true
