@@ -10,9 +10,9 @@ export const PERIODS: { [period: string]: string } = {
   "1h": "1h",
   "24h": "24h",
 };
-export const DEFAULT_PERIOD = "10s";
-export const DEFAULT_AGENTS_TABLE_PERIOD = "10s";
-export const DEFAULT_CONFIGURATION_TABLE_PERIOD = "10s";
+export const DEFAULT_PERIOD = "1m";
+export const DEFAULT_AGENTS_TABLE_PERIOD = "1m";
+export const DEFAULT_CONFIGURATION_TABLE_PERIOD = "1m";
 export const DEFAULT_OVERVIEW_GRAPH_PERIOD = "1h";
 export const TELEMETRY_TYPES: { [telemetryType: string]: string } = {
   logs: "Logs",
