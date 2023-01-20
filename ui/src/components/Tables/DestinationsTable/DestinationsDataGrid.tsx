@@ -15,7 +15,6 @@ import styles from "./cells.module.scss";
 
 export enum DestinationsTableField {
   NAME = "name",
-  KIND = "kind",
   TYPE = "type",
 }
 
@@ -66,16 +65,6 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
               params.row.metadata.name,
             renderCell: renderNameCell,
           };
-        case DestinationsTableField.KIND:
-          return {
-            // TODO removing this column breaks the tests in an inscrutable way.
-
-            field: DestinationsTableField.KIND,
-            flex: 1,
-            headerName: "Kind",
-            valueGetter: (params: GridValueGetterParams) => params.row.kind,
-            renderCell: renderStringCell,
-          };
         case DestinationsTableField.TYPE:
           return {
             field: DestinationsTableField.TYPE,
@@ -123,9 +112,5 @@ function renderStringCell(cellParams: GridCellParams<string>): JSX.Element {
 
 DestinationsDataGrid.defaultProps = {
   minHeight: "calc(100vh - 250px)",
-  columnFields: [
-    DestinationsTableField.NAME,
-    DestinationsTableField.KIND,
-    DestinationsTableField.TYPE,
-  ],
+  columnFields: [DestinationsTableField.NAME, DestinationsTableField.TYPE],
 };

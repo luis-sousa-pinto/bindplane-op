@@ -1,6 +1,9 @@
+import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 import { GridSelectionModel } from "@mui/x-data-grid";
 import { render, screen, waitFor } from "@testing-library/react";
+import { GetDestinationTypeDisplayInfoDocument } from "../../../graphql/generated";
 import { resourcesFromSelected } from "../../../pages/destinations/DestinationsPage";
+import { ResourceKind } from "../../../types/resources";
 
 import {
   Destination1,
@@ -14,7 +17,7 @@ describe("resourcesFromSelected", () => {
 
     const want = [
       {
-        kind: "Destination",
+        kind: ResourceKind.DESTINATION,
         metadata: {
           name: "gcp",
         },
@@ -27,33 +30,73 @@ describe("resourcesFromSelected", () => {
   });
 });
 
+const MOCKS: MockedResponse[] = [
+  {
+    request: {
+      query: GetDestinationTypeDisplayInfoDocument,
+      variables: {
+        name: Destination1.metadata.name,
+      },
+    },
+    result: {
+      data: {
+        metadata: {
+          name: "destination-1-name",
+          icon: "",
+          displayName: "",
+        },
+      },
+    },
+  },
+  {
+    request: {
+      query: GetDestinationTypeDisplayInfoDocument,
+      variables: {
+        name: Destination2.metadata.name,
+      },
+    },
+    result: {
+      data: {
+        metadata: {
+          name: "destination-2-name",
+          icon: "",
+          displayName: "",
+        },
+      },
+    },
+  },
+];
+
 describe("DestinationsDataGrid", () => {
   const destinationData = [Destination1, Destination2];
 
   it("renders without error", () => {
     render(
-      <DestinationsDataGrid
-
-        loading={false}
-        rows={ destinationData }
-        setSelectionModel={() => {}}
-        disableSelectionOnClick
-        checkboxSelection
-        onEditDestination={() => {}}
-      />
+      <MockedProvider mocks={MOCKS}>
+        <DestinationsDataGrid
+          loading={false}
+          rows={destinationData}
+          setSelectionModel={() => {}}
+          disableSelectionOnClick
+          checkboxSelection
+          onEditDestination={() => {}}
+        />
+      </MockedProvider>
     );
   });
 
   it("displays destinations", () => {
     render(
-      <DestinationsDataGrid
-        loading={false}
-        rows={ destinationData }
-        setSelectionModel={() => {}}
-        disableSelectionOnClick
-        checkboxSelection
-        onEditDestination={() => {}}
-      />
+      <MockedProvider mocks={MOCKS}>
+        <DestinationsDataGrid
+          loading={false}
+          rows={destinationData}
+          setSelectionModel={() => {}}
+          disableSelectionOnClick
+          checkboxSelection
+          onEditDestination={() => {}}
+        />
+      </MockedProvider>
     );
 
     screen.getByText(Destination1.metadata.name);
@@ -68,14 +111,16 @@ describe("DestinationsDataGrid", () => {
       ]);
     }
     render(
-      <DestinationsDataGrid
-        loading={false}
-        rows={ destinationData }
-        setSelectionModel={onDestinationsSelected}
-        disableSelectionOnClick
-        checkboxSelection
-        onEditDestination={() => {}}
-      />
+      <MockedProvider mocks={MOCKS}>
+        <DestinationsDataGrid
+          loading={false}
+          rows={destinationData}
+          setSelectionModel={onDestinationsSelected}
+          disableSelectionOnClick
+          checkboxSelection
+          onEditDestination={() => {}}
+        />
+      </MockedProvider>
     );
 
     screen.getByLabelText("Select all rows").click();
@@ -87,14 +132,16 @@ describe("DestinationsDataGrid", () => {
       editCalled = true;
     }
     render(
-      <DestinationsDataGrid
-        loading={false}
-        rows={ destinationData }
-        setSelectionModel={() => {}}
-        disableSelectionOnClick
-        checkboxSelection
-        onEditDestination={onEditDestination}
-      />
+      <MockedProvider mocks={MOCKS}>
+        <DestinationsDataGrid
+          loading={false}
+          rows={destinationData}
+          setSelectionModel={() => {}}
+          disableSelectionOnClick
+          checkboxSelection
+          onEditDestination={onEditDestination}
+        />
+      </MockedProvider>
     );
 
     screen.getByText(Destination1.metadata.name).click();
