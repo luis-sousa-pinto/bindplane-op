@@ -52,6 +52,7 @@ type ResolverRoot interface {
 	Metadata() MetadataResolver
 	Mutation() MutationResolver
 	ParameterDefinition() ParameterDefinitionResolver
+	ParameterOptions() ParameterOptionsResolver
 	Processor() ProcessorResolver
 	ProcessorType() ProcessorTypeResolver
 	Query() QueryResolver
@@ -273,6 +274,7 @@ type ComplexityRoot struct {
 	ParameterOptions struct {
 		Creatable        func(childComplexity int) int
 		GridColumns      func(childComplexity int) int
+		Labels           func(childComplexity int) int
 		MetricCategories func(childComplexity int) int
 		Multiline        func(childComplexity int) int
 		SectionHeader    func(childComplexity int) int
@@ -430,6 +432,9 @@ type MutationResolver interface {
 }
 type ParameterDefinitionResolver interface {
 	Type(ctx context.Context, obj *model1.ParameterDefinition) (model.ParameterType, error)
+}
+type ParameterOptionsResolver interface {
+	Labels(ctx context.Context, obj *model1.ParameterOptions) (map[string]interface{}, error)
 }
 type ProcessorResolver interface {
 	Kind(ctx context.Context, obj *model1.Processor) (string, error)
@@ -1359,6 +1364,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ParameterOptions.GridColumns(childComplexity), true
+
+	case "ParameterOptions.labels":
+		if e.complexity.ParameterOptions.Labels == nil {
+			break
+		}
+
+		return e.complexity.ParameterOptions.Labels(childComplexity), true
 
 	case "ParameterOptions.metricCategories":
 		if e.complexity.ParameterOptions.MetricCategories == nil {
@@ -2368,6 +2380,7 @@ type ParameterOptions {
   sectionHeader: Boolean
   metricCategories: [MetricCategory!]
   multiline: Boolean
+  labels: Map
 }
 
 type MetricCategory {
@@ -8645,6 +8658,8 @@ func (ec *executionContext) fieldContext_ParameterDefinition_options(ctx context
 				return ec.fieldContext_ParameterOptions_metricCategories(ctx, field)
 			case "multiline":
 				return ec.fieldContext_ParameterOptions_multiline(ctx, field)
+			case "labels":
+				return ec.fieldContext_ParameterOptions_labels(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ParameterOptions", field.Name)
 		},
@@ -8948,6 +8963,47 @@ func (ec *executionContext) fieldContext_ParameterOptions_multiline(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ParameterOptions_labels(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterOptions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ParameterOptions_labels(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ParameterOptions().Labels(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ParameterOptions_labels(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ParameterOptions",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Map does not have child fields")
 		},
 	}
 	return fc, nil
@@ -16419,6 +16475,23 @@ func (ec *executionContext) _ParameterOptions(ctx context.Context, sel ast.Selec
 
 			out.Values[i] = ec._ParameterOptions_multiline(ctx, field, obj)
 
+		case "labels":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ParameterOptions_labels(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18024,12 +18097,12 @@ func (ec *executionContext) marshalNAgents2ᚖgithubᚗcomᚋobserviqᚋbindplan
 	return ec._Agents(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAny2interface(ctx context.Context, v interface{}) (any, error) {
+func (ec *executionContext) unmarshalNAny2interface(ctx context.Context, v interface{}) (interface{}, error) {
 	res, err := graphql.UnmarshalAny(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAny2interface(ctx context.Context, sel ast.SelectionSet, v any) graphql.Marshaler {
+func (ec *executionContext) marshalNAny2interface(ctx context.Context, sel ast.SelectionSet, v interface{}) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

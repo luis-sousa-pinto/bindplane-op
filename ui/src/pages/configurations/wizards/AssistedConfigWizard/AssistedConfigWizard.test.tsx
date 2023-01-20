@@ -17,6 +17,16 @@ import {
 } from "../../../../types/resources";
 import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 
+const DEFAULT_PARAMETER_OPTIONS = {
+  creatable: false,
+  multiline: false,
+  trackUnchecked: false,
+  sectionHeader: null,
+  gridColumns: null,
+  metricCategories: null,
+  labels: null,
+};
+
 const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {
   __typename: "SourceType",
   apiVersion: APIVersion.V1,
@@ -46,14 +56,7 @@ const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {
         validValues: null,
         relevantIf: null,
         advancedConfig: false,
-        options: {
-          creatable: null,
-          trackUnchecked: null,
-          sectionHeader: null,
-          gridColumns: null,
-          metricCategories: null,
-          multiline: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
       },
       {
         __typename: "ParameterDefinition",
@@ -67,14 +70,7 @@ const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {
         validValues: null,
         relevantIf: null,
         advancedConfig: false,
-        options: {
-          creatable: null,
-          trackUnchecked: null,
-          sectionHeader: null,
-          gridColumns: null,
-          metricCategories: null,
-          multiline: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
       },
     ],
     telemetryTypes: [],
@@ -110,14 +106,7 @@ const dummyDestinationType: DestinationsAndTypesQuery["destinationTypes"][0] = {
         advancedConfig: false,
         validValues: null,
         relevantIf: null,
-        options: {
-          creatable: null,
-          trackUnchecked: null,
-          sectionHeader: null,
-          gridColumns: null,
-          metricCategories: null,
-          multiline: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
       },
       {
         __typename: "ParameterDefinition",
@@ -131,14 +120,7 @@ const dummyDestinationType: DestinationsAndTypesQuery["destinationTypes"][0] = {
         required: false,
         validValues: null,
         relevantIf: null,
-        options: {
-          creatable: null,
-          trackUnchecked: null,
-          sectionHeader: null,
-          gridColumns: null,
-          metricCategories: null,
-          multiline: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
       },
     ],
     telemetryTypes: [],

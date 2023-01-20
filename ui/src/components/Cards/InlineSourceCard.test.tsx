@@ -6,6 +6,17 @@ import { ConfigurationPageContextProvider } from "../../pages/configurations/con
 import { MinimumRequiredConfig } from "../PipelineGraph/PipelineGraph";
 import { InlineSourceCard } from "./InlineSourceCard";
 
+const DEFAULT_PARAMETER_OPTIONS = {
+  creatable: false,
+  multiline: false,
+  trackUnchecked: false,
+  sectionHeader: null,
+  gridColumns: null,
+  metricCategories: null,
+  labels: null,
+  __typename: "ParameterOptions",
+};
+
 describe("InlineSourceCard", () => {
   afterEach(() => {
     cleanup();
@@ -46,15 +57,7 @@ describe("InlineSourceCard", () => {
                       type: "bool",
                       validValues: null,
                       default: true,
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -75,15 +78,7 @@ describe("InlineSourceCard", () => {
                       type: "string",
                       validValues: null,
                       default: "localhost:6379",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -105,15 +100,7 @@ describe("InlineSourceCard", () => {
                       type: "enum",
                       validValues: ["tcp", "unix"],
                       default: "tcp",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -135,15 +122,7 @@ describe("InlineSourceCard", () => {
                       type: "string",
                       validValues: null,
                       default: "",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -164,15 +143,7 @@ describe("InlineSourceCard", () => {
                       type: "int",
                       validValues: null,
                       default: 60,
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -193,15 +164,7 @@ describe("InlineSourceCard", () => {
                       type: "bool",
                       validValues: null,
                       default: false,
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: true,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -223,15 +186,7 @@ describe("InlineSourceCard", () => {
                       type: "bool",
                       validValues: null,
                       default: false,
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -253,15 +208,7 @@ describe("InlineSourceCard", () => {
                       type: "string",
                       validValues: null,
                       default: "",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -283,15 +230,7 @@ describe("InlineSourceCard", () => {
                       type: "string",
                       validValues: null,
                       default: "",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -313,15 +252,7 @@ describe("InlineSourceCard", () => {
                       type: "string",
                       validValues: null,
                       default: "",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -335,15 +266,7 @@ describe("InlineSourceCard", () => {
                       type: "bool",
                       validValues: null,
                       default: true,
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -370,15 +293,7 @@ describe("InlineSourceCard", () => {
                         "/var/log/redis/default.log",
                         "/var/log/redis/redis_6379.log",
                       ],
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: 12,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                     {
@@ -400,15 +315,7 @@ describe("InlineSourceCard", () => {
                       type: "enum",
                       validValues: ["beginning", "end"],
                       default: "end",
-                      options: {
-                        creatable: false,
-                        multiline: false,
-                        trackUnchecked: false,
-                        sectionHeader: null,
-                        gridColumns: null,
-                        metricCategories: null,
-                        __typename: "ParameterOptions",
-                      },
+                      options: DEFAULT_PARAMETER_OPTIONS,
                       __typename: "ParameterDefinition",
                     },
                   ],

@@ -9,6 +9,16 @@ import {
 } from "../../../graphql/generated";
 import { APIVersion } from "../../../types/resources";
 
+const DEFAULT_PARAMETER_OPTIONS = {
+  creatable: false,
+  multiline: false,
+  trackUnchecked: false,
+  sectionHeader: null,
+  gridColumns: null,
+  metricCategories: null,
+  labels: null,
+};
+
 // This file contains dummy resources used for testing the ResourceConfigForm
 // component.  These are also used in resource form stories.
 
@@ -19,7 +29,7 @@ export const stringDef: ParameterDefinition = {
   label: "String Input",
   description: "Here is the description.",
   required: false,
-  options: {},
+  options: DEFAULT_PARAMETER_OPTIONS,
   advancedConfig: false,
 
   type: ParameterType.String,
@@ -32,7 +42,7 @@ export const stringDefRequired: ParameterDefinition = {
   label: "String Input",
   description: "Here is the description.",
   required: true,
-  options: {},
+  options: DEFAULT_PARAMETER_OPTIONS,
   advancedConfig: false,
 
   type: ParameterType.String,
@@ -46,7 +56,7 @@ export const enumDef: ParameterDefinition = {
   description: "Here is the description.",
   required: false,
   advancedConfig: false,
-  options: {},
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Enum,
 
@@ -60,7 +70,7 @@ export const stringsDef: ParameterDefinition = {
   description: "Here is the description.",
   required: false,
   advancedConfig: false,
-  options: {},
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Strings,
 
@@ -73,7 +83,7 @@ export const boolDef: ParameterDefinition = {
   description: "Here is the description.",
   required: false,
   advancedConfig: false,
-  options: {},
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Bool,
 
@@ -86,14 +96,7 @@ export const boolDefaultFalseDef: ParameterDefinition = {
   description: "Here is the description.",
   advancedConfig: false,
   required: false,
-  options: {
-    creatable: null,
-    trackUnchecked: null,
-    sectionHeader: null,
-    gridColumns: null,
-    metricCategories: null,
-    multiline: null,
-  },
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Bool,
 
@@ -109,14 +112,7 @@ export const intDef: ParameterDefinition = {
   description: "Here is the description.",
   advancedConfig: false,
   required: false,
-  options: {
-    creatable: null,
-    trackUnchecked: null,
-    sectionHeader: null,
-    gridColumns: null,
-    metricCategories: null,
-    multiline: null,
-  },
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Int,
 
@@ -129,14 +125,7 @@ export const relevantIfDef: ParameterDefinition = {
   description: "Here is the description.",
   advancedConfig: false,
   required: false,
-  options: {
-    creatable: null,
-    trackUnchecked: null,
-    sectionHeader: null,
-    gridColumns: null,
-    metricCategories: null,
-    multiline: null,
-  },
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.String,
 
@@ -159,14 +148,7 @@ export const relevantIfNotEqualDef: ParameterDefinition = {
   description: "Here is the description.",
   advancedConfig: false,
   required: false,
-  options: {
-    creatable: null,
-    trackUnchecked: null,
-    sectionHeader: null,
-    gridColumns: null,
-    metricCategories: null,
-    multiline: null,
-  },
+  options: DEFAULT_PARAMETER_OPTIONS,
 
   type: ParameterType.Int,
 

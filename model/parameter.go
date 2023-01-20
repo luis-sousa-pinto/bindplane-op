@@ -97,6 +97,10 @@ type ParameterOptions struct {
 
 	// Multiline indicates that a multiline textarea should be used for editing a "string" parameter.
 	Multiline bool `json:"multiline,omitempty" yaml:"multiline,omitempty"`
+
+	// Labels indicate labels that can be used when rendering the parameter. This was added for the "map" parameter type
+	// to make the "key" and "value" labels configurable.
+	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // MetricCategory consists of the label, optional column, and metrics for a metricsType Parameter

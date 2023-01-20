@@ -17,6 +17,16 @@ import {
 import { PipelineContext } from "../../PipelineGraph/PipelineGraphContext";
 import { ProcessorDialogComponent } from "./ProcessorDialog";
 
+const DEFAULT_PARAMETER_OPTIONS = {
+  creatable: false,
+  trackUnchecked: false,
+  gridColumns: 6,
+  sectionHeader: false,
+  multiline: false,
+  metricCategories: null,
+  labels: null,
+};
+
 const CONFIG_NO_PROCESSORS = {
   metadata: {
     id: "test",
@@ -190,14 +200,7 @@ const CUSTOM_PROCESSOR = {
         advancedConfig: false,
         default: [],
         required: true,
-        options: {
-          creatable: false,
-          trackUnchecked: false,
-          gridColumns: 6,
-          sectionHeader: false,
-          multiline: false,
-          metricCategories: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
       },
       {
         name: "configuration",
@@ -210,14 +213,7 @@ const CUSTOM_PROCESSOR = {
           "Enter any supported Processor and the YAML will be inserted into the configuration.",
         required: true,
         type: "yaml",
-        options: {
-          creatable: false,
-          trackUnchecked: false,
-          gridColumns: 6,
-          sectionHeader: false,
-          multiline: false,
-          metricCategories: null,
-        },
+        options: DEFAULT_PARAMETER_OPTIONS,
         documentation: [
           {
             text: "Processor Syntax",

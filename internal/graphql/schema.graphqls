@@ -274,6 +274,7 @@ type ParameterOptions {
   sectionHeader: Boolean
   metricCategories: [MetricCategory!]
   multiline: Boolean
+  labels: Map
 }
 
 type MetricCategory {

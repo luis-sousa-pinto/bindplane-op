@@ -53,6 +53,7 @@ gql`
             trackUnchecked
             sectionHeader
             gridColumns
+            labels
             metricCategories {
               label
               column

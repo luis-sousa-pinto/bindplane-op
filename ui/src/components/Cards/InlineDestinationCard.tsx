@@ -56,6 +56,7 @@ gql`
             sectionHeader
             gridColumns
             multiline
+            labels
             metricCategories {
               label
               column

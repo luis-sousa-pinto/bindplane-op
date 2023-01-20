@@ -126,10 +126,10 @@ const MapParamInputComponent: React.FC<
       <Stack spacing={1}>
         <Stack direction="row">
           <Typography marginLeft={1} fontWeight={600} width={220}>
-            Key
+            {definition.options?.labels?.key ?? 'Key'}
           </Typography>
           <Typography marginLeft={2} fontWeight={600}>
-            Value
+            {definition.options?.labels?.value ?? 'Value'}
           </Typography>
         </Stack>
         {controlValue.map(([k, v], rowIndex) => {

@@ -229,6 +229,15 @@ func (r *parameterDefinitionResolver) Type(ctx context.Context, obj *model.Param
 	}
 }
 
+// Labels is the resolver for the labels field.
+func (r *parameterOptionsResolver) Labels(ctx context.Context, obj *model.ParameterOptions) (map[string]interface{}, error) {
+	result := map[string]interface{}{}
+	for k, v := range obj.Labels {
+		result[k] = v
+	}
+	return result, nil
+}
+
 // Kind is the resolver for the kind field.
 func (r *processorResolver) Kind(ctx context.Context, obj *model.Processor) (string, error) {
 	return string(obj.GetKind()), nil
@@ -710,6 +719,11 @@ func (r *Resolver) ParameterDefinition() generated.ParameterDefinitionResolver {
 	return &parameterDefinitionResolver{r}
 }
 
+// ParameterOptions returns generated.ParameterOptionsResolver implementation.
+func (r *Resolver) ParameterOptions() generated.ParameterOptionsResolver {
+	return &parameterOptionsResolver{r}
+}
+
 // Processor returns generated.ProcessorResolver implementation.
 func (r *Resolver) Processor() generated.ProcessorResolver { return &processorResolver{r} }
 
@@ -742,6 +756,7 @@ type destinationTypeResolver struct{ *Resolver }
 type metadataResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type parameterDefinitionResolver struct{ *Resolver }
+type parameterOptionsResolver struct{ *Resolver }
 type processorResolver struct{ *Resolver }
 type processorTypeResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
