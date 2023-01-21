@@ -93,7 +93,6 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
         }}
         style={{ minHeight }}
         disableSelectionOnClick
-        autoHeight
         getRowId={(row) => `${row.kind}|${row.metadata.name}`}
         columns={columns}
         selectionModel={selectionModel}
