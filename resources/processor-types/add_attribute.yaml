@@ -31,5 +31,5 @@ spec:
             {{ range $k, $v := .attributes }}
             - key: '{{ $k }}'
               value: {{ $v }}
-              action: upsert
+              action: {{ $.action }}
             {{ end }}

@@ -42,7 +42,7 @@ spec:
             {{ range $k, $v := .resources }}
             - key: '{{ $k }}'
               value: {{ $v }}
-              action: upsert
+              action: {{ $.action }}
             {{ end }}
       {{ end }}
   logs:
@@ -53,7 +53,7 @@ spec:
             {{ range $k, $v := .resources }}
             - key: '{{ $k }}'
               value: {{ $v }}
-              action: upsert
+              action: {{ $.action }}
             {{ end }}
       {{ end }}
   traces:
@@ -64,6 +64,6 @@ spec:
             {{ range $k, $v := .resources }}
             - key: '{{ $k }}'
               value: {{ $v }}
-              action: upsert
+              action: {{ $.action }}
             {{ end }}
       {{ end }}
