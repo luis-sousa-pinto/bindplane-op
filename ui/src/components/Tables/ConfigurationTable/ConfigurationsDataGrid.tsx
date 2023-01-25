@@ -85,9 +85,20 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
             field: ConfigurationsTableField.LABELS,
             width: 300,
             headerName: "Labels",
-            valueGetter: (params: GridValueGetterParams) =>
-              params.row.metadata.labels,
+            valueGetter: (params: GridValueGetterParams) => {
+              const labels = params.row.metadata.labels;
+              return { labels };
+            },
             renderCell: renderLabels,
+            sortComparator: (v1, v2) => {
+              return ensureSortValue(v1).localeCompare(
+                ensureSortValue(v2),
+                "en",
+                {
+                  sensitivity: "base",
+                }
+              );
+            },
           };
         case ConfigurationsTableField.LOGS:
           return createMetricRateColumn(field, "logs", configurationMetrics);
@@ -129,12 +140,27 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
     );
   };
 
+function ensureSortValue(labelsCellValue: {
+  labels: { [key: string]: string };
+  sortValue?: string;
+}): string {
+  if (labelsCellValue.sortValue == null) {
+    const labels = labelsCellValue.labels;
+    labelsCellValue.sortValue = Object.keys(labels ?? {})
+      .sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }))
+      .map((key) => key + labels[key])
+      .join();
+  }
+  return labelsCellValue.sortValue;
+}
+
 function renderLabels(
   cellParams: GridCellParams<Record<string, string>>
 ): JSX.Element {
+  const labels = cellParams.value?.labels;
   return (
     <Stack direction="row" spacing={1}>
-      {Object.entries(cellParams.value || {}).map(([k, v]) => {
+      {Object.entries(labels ?? {}).map(([k, v]) => {
         const formattedLabel = `${k}: ${v}`;
         return <Chip key={k} size="small" label={formattedLabel} />;
       })}
@@ -142,7 +168,7 @@ function renderLabels(
   );
 }
 
-function abreviateName(limit: number, name?: string): string {
+function abbreviateName(limit: number, name?: string): string {
   if (!name) return "";
   return name.length > limit ? name.substring(0, limit) + "..." : name;
 }
@@ -157,7 +183,7 @@ function renderNameDataCell(cellParams: GridCellParams<string>): JSX.Element {
       <div>
         <SearchLink
           path={`/configurations/${cellParams.value || ""}`}
-          displayName={abreviateName(40, cellParams.value)}
+          displayName={abbreviateName(40, cellParams.value)}
         />
       </div>
     </NoMaxWidthTooltip>
