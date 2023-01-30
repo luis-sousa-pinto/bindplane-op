@@ -16,5 +16,5 @@ hidden: false
 | [Filter Log Record Attribute](doc:filter-log-record-attribute) |         | ✓    |        |
 | [Filter Metric Name](doc:filter-metric-name)                   | ✓       |      |        |
 | [Filter Resource Attribute](doc:filter-resource-attribute)     | ✓       | ✓    |        |
-| [Severity Filter](doc:severity-filter)                         |         | ✓    |        |
+| [Severity Filter](doc:filter-severity)                         |         | ✓    |        |
 | [Log Sampling](doc:log-sampling)                               |         | ✓    |        |

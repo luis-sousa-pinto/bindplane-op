@@ -12,9 +12,9 @@ BindPlane server configuration can be found at `/etc/bindplane/config.yaml`.
 
 BindPlane will look for flags, environment variables, and a configuration file, with precedence: flags > environment variables > configuration file.
 
-Server and client configurations can be bootstrapped using the `init` command. See the [initialization section](./configuration.md#initialization).
+Server and client configurations can be bootstrapped using the `init` command. See the [initialization section](doc:configuration#initialization).
 
-For detailed examples, see the [configurations seection](./configuration.md#example-configuration).
+For detailed examples, see the [configurations section](doc:configuration#example-configuration).
 
 **Host**
 

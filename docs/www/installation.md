@@ -10,7 +10,7 @@ BindPlane OP does not have any dependencies and can run on Windows, Linux, or ma
 
 The BindPlane CLI (included in the BindPlane OP binary) will run on Linux, Windows, and macOS. For a detailed list of commands and installation instructions for remote clients, see our [CLI](doc:cli) page.
 
-The OpenTelemetry Agent can be downloaded and installed using the UI. More instruction on agent installation can be found in our getting started guide [here](https://bindplaneop.readme.io/docs/getting-started#step-3-install-an-agent).
+The OpenTelemetry Agent can be downloaded and installed using the UI. More instruction on agent installation can be found in our getting started guide [here](doc:getting-started#step-3-install-an-agent).
 
 To download packages directly, see our [Downloads](doc:downloads) page or visit the [BindPlane OP Github Repository](https://github.com/observIQ/bindplane-op).
 
