@@ -17,6 +17,7 @@ package otel
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
@@ -377,6 +378,21 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 	endpoint := fmt.Sprintf("%s/v1/otlphttp", rc.BindPlaneURL)
 	otlphttp := map[string]any{
 		"endpoint": endpoint,
+		// Default retry values can be found at:
+		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L249
+		"retry_on_failure": map[string]any{
+			"enabled":          true,
+			"initial_interval": 5 * time.Second,
+			"max_interval":     5 * time.Second,
+			"max_elapsed_time": 30 * time.Second,
+		},
+		// Default queue values can be found at:
+		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L44
+		"sending_queue": map[string]any{
+			"enabled":       true,
+			"num_consumers": 10,
+			"queue_size":    60,
+		},
 	}
 	if strings.HasPrefix(endpoint, "https") && rc.BindPlaneInsecureSkipVerify {
 		otlphttp["tls"] = map[string]any{

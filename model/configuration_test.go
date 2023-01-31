@@ -678,6 +678,15 @@ exporters:
     googlecloud/googlecloud: null
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__googlecloud:
@@ -845,6 +854,15 @@ exporters:
         timeout: 10s
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__cabin-production-logs:
@@ -1203,6 +1221,15 @@ exporters:
     googlecloud/googlecloud: null
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__googlecloud:
@@ -1396,6 +1423,15 @@ exporters:
     googlecloud/googlecloud: null
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__googlecloud:
@@ -1517,6 +1553,15 @@ exporters:
     googlecloud/googlecloud: null
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__googlecloud:
@@ -1641,6 +1686,15 @@ exporters:
     googlecloud/googlecloud: null
     otlphttp/_agent_metrics:
         endpoint: /v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__googlecloud:
@@ -1894,6 +1948,15 @@ exporters:
         endpoint: otelcol:4317
     otlphttp/_agent_metrics:
         endpoint: https://127.0.0.1:8443/v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
 service:
     pipelines:
         logs/source0__destination0:
@@ -2033,6 +2096,15 @@ exporters:
         endpoint: otelcol:4317
     otlphttp/_agent_metrics:
         endpoint: https://127.0.0.1:8443/v1/otlphttp
+        retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_elapsed_time: 30s
+            max_interval: 5s
+        sending_queue:
+            enabled: true
+            num_consumers: 10
+            queue_size: 60
         tls:
             insecure: true
 service:

@@ -16,6 +16,7 @@ package otel
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -122,4 +123,34 @@ func TestPipelineTypeFlags_Set(t *testing.T) {
 			require.Equal(t, test.expect, test.flags)
 		})
 	}
+}
+
+// TODO(jsirianni): Refactor this test to include all measurement cases, including tls,
+// prometheus scraper, etc.
+func TestAddAgentMetricsPipeline(t *testing.T) {
+	rc := NewRenderContext("testid", "testname", "http://test", false)
+	rc.IncludeMeasurements = true
+	c := NewConfiguration()
+	c.AddAgentMetricsPipeline(rc)
+
+	expect := map[string]any{
+		"endpoint": "http://test/v1/otlphttp",
+		"retry_on_failure": map[string]any{
+			"enabled":          true,
+			"initial_interval": 5 * time.Second,
+			"max_interval":     5 * time.Second,
+			"max_elapsed_time": 30 * time.Second,
+		},
+		"sending_queue": map[string]any{
+			"enabled":       true,
+			"num_consumers": 10,
+			"queue_size":    60,
+		},
+	}
+
+	require.True(t, c.Exporters.hasComponent("otlphttp/_agent_metrics"))
+
+	actual := c.Exporters["otlphttp/_agent_metrics"]
+	require.IsType(t, map[string]any{}, actual)
+	require.Equal(t, expect, actual.(map[string]any))
 }
