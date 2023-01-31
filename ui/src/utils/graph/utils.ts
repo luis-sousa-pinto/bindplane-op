@@ -69,7 +69,7 @@ export function getNodesAndEdges(
         handlePosition: Position.Right,
         handleType: "source",
       },
-      position: { x: 0, y },
+      position: { x: 8, y },
       type: "uiControlNode",
     });
 
@@ -318,7 +318,7 @@ export function getNodesAndEdges(
           handleType: "source",
           isButton: true,
         },
-        position: { x: 0, y: bottomY },
+        position: { x: 8, y: bottomY },
         type: "uiControlNode",
       });
     }

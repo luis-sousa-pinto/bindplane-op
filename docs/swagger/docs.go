@@ -1935,6 +1935,13 @@ const docTemplate = `{
                     "description": "GridColumns will specify the number of flex-grid columns the\ncontrol will take up, must be an integer between 1 and 12 or\nunspecified.",
                     "type": "integer"
                 },
+                "labels": {
+                    "description": "Labels indicate labels that can be used when rendering the parameter. This was added for the \"map\" parameter type\nto make the \"key\" and \"value\" labels configurable.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "metricCategories": {
                     "type": "array",
                     "items": {

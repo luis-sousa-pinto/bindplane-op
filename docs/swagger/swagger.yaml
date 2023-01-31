@@ -394,6 +394,13 @@ definitions:
           control will take up, must be an integer between 1 and 12 or
           unspecified.
         type: integer
+      labels:
+        additionalProperties:
+          type: string
+        description: |-
+          Labels indicate labels that can be used when rendering the parameter. This was added for the "map" parameter type
+          to make the "key" and "value" labels configurable.
+        type: object
       metricCategories:
         items:
           $ref: '#/definitions/model.MetricCategory'
