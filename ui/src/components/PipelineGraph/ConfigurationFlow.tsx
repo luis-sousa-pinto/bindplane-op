@@ -144,9 +144,7 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
         zoomOnScroll={false}
         panOnDrag={true}
         minZoom={0.1}
-        onWheel={(event) => {
-          window.scrollBy(event.deltaX, event.deltaY);
-        }}
+        preventScrolling={false}
         // This callback only fires when a node is deleted in the graph (ie select node and press the delete button)
         // Need to figure out how to update after node is deleted from the App
         // This callback *does* fire when a Node is added in the App (?)
