@@ -20,7 +20,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: Find a way to test this without getting false positives in CI
+
 func TestGithubVersion(t *testing.T) {
+	t.Skip("Not hitting live GitHub API")
 	github := newGithub()
 	version, err := github.Version("v1.4.0")
 	require.NoError(t, err)
@@ -32,6 +35,7 @@ func TestGithubVersion(t *testing.T) {
 }
 
 func TestGithubLatestVersion(t *testing.T) {
+	t.Skip("Not hitting live GitHub API")
 	github := newGithub()
 
 	// since the latest version will change over time, we just want to make sure that we get reasonable results.
