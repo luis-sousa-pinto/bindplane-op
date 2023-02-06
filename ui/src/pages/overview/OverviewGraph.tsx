@@ -239,26 +239,28 @@ export const OverviewGraph: React.FC = () => {
       </ReactFlow>
     </div>
   ) : (
-    <NoConfigurationMessage navigate={navigate} />
+    <NoDeployedConfigurationsMessage navigate={navigate} />
   );
 };
 
-const NoConfigurationMessage: React.FC<{ navigate: (to: string) => void }> = ({
-  navigate,
-}) => {
+const NoDeployedConfigurationsMessage: React.FC<{
+  navigate: (to: string) => void;
+}> = ({ navigate }) => {
   return (
     <Stack
       width="100%"
       height="calc(100vh - 200px)"
       justifyContent="center"
       alignItems="center"
-      spacing={1}
+      spacing={2}
+      padding={4}
     >
-      <Typography variant="h4">
-        You haven’t built any configurations yet.
+      <Typography variant="h4" textAlign={"center"}>
+        You haven&apos;t deployed any configurations.
       </Typography>
-      <Typography>
-        Once you&apos;ve created one, you&apos;ll see your data topology here.
+      <Typography textAlign={"center"}>
+        Once you&apos;ve created a configuration and applied it to an agent,
+        you&apos;ll see your data topology here.
       </Typography>
       <Button
         variant="contained"
