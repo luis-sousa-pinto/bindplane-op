@@ -50,8 +50,6 @@ spec:
             metrics:
               - name: system.paging.faults
               - name: system.paging.operations
-              - name: system.paging.operations.page_in
-              - name: system.paging.operations.page_out
               - name: system.paging.usage
               - name: system.paging.utilization
           - label: Load Metrics
