@@ -24,7 +24,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -63,7 +63,7 @@ jobs:
 
   # Run shellcheck against scripts
   shellcheck:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
@@ -76,7 +76,7 @@ jobs:
 
   # Run go vet against Go code.
   vet:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     strategy:
@@ -91,7 +91,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -109,7 +109,7 @@ jobs:
 
   # Run gosec against Go code.
   secure:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -118,7 +118,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -134,7 +134,7 @@ jobs:
 
   # Check license headers in source files.
   check-license:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -143,7 +143,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -159,7 +159,7 @@ jobs:
 
   # Lint Go and Node.
   lint:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -168,7 +168,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -193,7 +193,7 @@ jobs:
 
   # Run ui tests.
   ui-test:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -213,7 +213,7 @@ jobs:
 
   # Run Go tests
   go-test:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -222,7 +222,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -237,7 +237,7 @@ jobs:
 
   # Run Goreleaser to build binaries, packages, and container images.
   build:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - setup-environment
     steps:
@@ -246,7 +246,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -361,7 +361,7 @@ jobs:
 
   # Upload test coverage.
   codecov:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       # Requires that the container image has been built and pushed
       - build
@@ -371,7 +371,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3.3.1
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
@@ -402,7 +402,7 @@ jobs:
 
   publish-stage-image:
     if: github.ref == 'refs/heads/main'
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     needs:
       - build
       - codecov

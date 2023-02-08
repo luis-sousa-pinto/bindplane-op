@@ -2,7 +2,7 @@
 
 ## Requirements
 Ensure that the following tools are installed:
-- Go 1.18 ([install instructions](https://go.dev/doc/install))
+- Go 1.20 ([install instructions](https://go.dev/doc/install))
 - Node 16.x.x ([install instructions](https://nodejs.dev/learn/how-to-install-nodejs))
 - GoReleaser ([install instructions](https://goreleaser.com/install/))
 

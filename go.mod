@@ -1,6 +1,6 @@
 module github.com/observiq/bindplane-op
 
-go 1.18
+go 1.20
 
 require (
 	github.com/99designs/gqlgen v0.17.22
