@@ -128,10 +128,12 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 }) => {
   const { data, loading, refetch, subscribeToMore } =
     useGetConfigurationTableQuery({
-      variables: { selector, query: initQuery, onlyDeployedConfigurations: overviewPage },
-      fetchPolicy: overviewPage
-        ? "cache-and-network"
-        : "network-only",
+      variables: {
+        selector,
+        query: initQuery,
+        onlyDeployedConfigurations: overviewPage,
+      },
+      fetchPolicy: overviewPage ? "cache-and-network" : "network-only",
       nextFetchPolicy: "cache-only",
     });
 
@@ -161,14 +163,13 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
         const { data } = subscriptionData as unknown as {
           data: ConfigurationChangesSubscription;
         };
-
         return {
           configurations: {
             __typename: "Configurations",
-            suggestions: prev.configurations.suggestions,
-            query: prev.configurations.query,
+            suggestions: prev.configurations?.suggestions ?? [],
+            query: prev.configurations?.query ?? "",
             configurations: mergeConfigs(
-              prev.configurations.configurations,
+              prev.configurations?.configurations ?? [],
               data.configurationChanges
             ),
           },
@@ -223,7 +224,12 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
           columnFields={columns}
           selectionModel={selected}
           minHeight={minHeight}
-          classes={overviewPage && ((data?.configurations.configurations.length ?? 0) < 100) ? {footerContainer: mixins["hidden"]} : undefined}
+          classes={
+            overviewPage &&
+            (data?.configurations.configurations.length ?? 0) < 100
+              ? { footerContainer: mixins["hidden"] }
+              : undefined
+          }
         />
       </Stack>
       <DeleteDialog
