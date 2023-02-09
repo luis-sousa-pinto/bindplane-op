@@ -390,7 +390,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L44
 		"sending_queue": map[string]any{
 			"enabled":       true,
-			"num_consumers": 10,
+			"num_consumers": 1,
 			"queue_size":    60,
 		},
 	}

@@ -143,7 +143,7 @@ func TestAddAgentMetricsPipeline(t *testing.T) {
 		},
 		"sending_queue": map[string]any{
 			"enabled":       true,
-			"num_consumers": 10,
+			"num_consumers": 1,
 			"queue_size":    60,
 		},
 	}

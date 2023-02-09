@@ -685,7 +685,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -861,7 +861,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -1228,7 +1228,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -1430,7 +1430,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -1560,7 +1560,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -1693,7 +1693,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -1955,7 +1955,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
 service:
     pipelines:
@@ -2103,7 +2103,7 @@ exporters:
             max_interval: 5s
         sending_queue:
             enabled: true
-            num_consumers: 10
+            num_consumers: 1
             queue_size: 60
         tls:
             insecure: true
