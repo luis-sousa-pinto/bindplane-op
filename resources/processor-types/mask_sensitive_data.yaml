@@ -15,7 +15,7 @@ spec:
       default: []
 
     - name: rules
-      label: Match Expression
+      label: Rules
       required: true
       description: Regex expression to find matching logs.
       type: map
