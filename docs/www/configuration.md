@@ -114,7 +114,50 @@ BindPlane supports one storage backend, `bbolt`, but other storage backends will
 | Option                 | Flag                | Environment Variable               | Default                |
 | ---------------------- | ------------------- | ---------------------------------- | ---------------------- |
 | server.storeType       | --store-type        | BINDPLANE_CONFIG_STORE_TYPE        | `bbolt`                |
+
+**BBolt Backend**
+
+| Option                 | Flag                | Environment Variable               | Default                |
+| ---------------------- | ------------------- | ---------------------------------- | ---------------------- |
 | server.storageFilePath | --storage-file-path | BINDPLANE_CONFIG_STORAGE_FILE_PATH | `~/.bindplane/storage` |
+
+**Postgres Backend**
+
+Postgres can be used as a local or remote storage backend. Postgres storage is enabled
+when `server.storeType` is set to `postgres`.
+
+> **Postgres is a BindPlane OP Enterprise feature.**
+
+| Option                   | Flag                       | Environment Variable                      | Default |
+| ------------------------ | -------------------------- | ----------------------------------------- | ------- |
+| postgres.host            | --postgres-host            | BINDPLANE_CONFIG_POSTGRES_HOST            | `localhost` |
+| postgres.port            | --postgres-port            | BINDPLANE_CONFIG_POSTGRES_PORT            | `5432`  |
+| postgres.database        | --postgres-database        | BINDPLANE_CONFIG_POSTGRES_DATABASE        |         |
+| postgres.sslmode         | --postgres-sslmode         | BINDPLANE_CONFIG_POSTGRES_SSLMODE         | `disable` |
+| postgres.username        | --postgres-username        | BINDPLANE_CONFIG_POSTGRES_USERNAME        |         |
+| postgres.password        | --postgres-password        | BINDPLANE_CONFIG_POSTGRES_PASSWORD        |         |
+| postgres.maxConnections  | --postgres-max-connections | BINDPLANE_CONFIG_POSTGRES_MAX_CONNECTIONS | `100`   |
+
+
+Example Postgres configuration:
+
+```yaml
+host: 0.0.0.0
+port: "3001"
+serverURL: http://10.99.1.10:3001
+username: user
+password: password
+server:
+    storeType: postgres
+    postgres:
+        host: localhost
+        port: "5432"
+        database: bindplane
+        sslmode: disable
+        username: postgres
+        password: password
+        maxConnections: 200
+```
 
 **Server Secret Key**
 
