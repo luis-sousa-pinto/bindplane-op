@@ -20,7 +20,7 @@ describe file('/var/lib/bindplane/storage/bindplane.db') do
 end
 
 describe file('/var/log/bindplane/bindplane.log') do
-    its('mode') { should cmp '0644' }
+    its('mode') { should cmp '0600' }
     its('owner') { should eq 'bindplane' }
     its('group') { should eq 'bindplane' }
     its('type') { should cmp 'file' }
