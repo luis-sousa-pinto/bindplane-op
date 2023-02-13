@@ -226,7 +226,13 @@ export type MetricOption = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  removeAgentConfiguration?: Maybe<Agent>;
   updateProcessors?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationRemoveAgentConfigurationArgs = {
+  input?: InputMaybe<RemoveAgentConfigurationInput>;
 };
 
 
@@ -466,6 +472,10 @@ export enum RelevantIfOperatorType {
   NotEquals = 'notEquals'
 }
 
+export type RemoveAgentConfigurationInput = {
+  agentId: Scalars['String'];
+};
+
 export type ResourceConfiguration = {
   __typename?: 'ResourceConfiguration';
   disabled: Scalars['Boolean'];
@@ -597,6 +607,13 @@ export type GetDestinationWithTypeQueryVariables = Exact<{
 
 
 export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+
+export type RemoveAgentConfigurationMutationVariables = Exact<{
+  input: RemoveAgentConfigurationInput;
+}>;
+
+
+export type RemoveAgentConfigurationMutation = { __typename?: 'Mutation', removeAgentConfiguration?: { __typename?: 'Agent', id: string, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null, Logging?: string | null, Manager?: any | null } | null } | null };
 
 export type ConfigurationMetricsSubscriptionVariables = Exact<{
   period: Scalars['String'];
@@ -1025,6 +1042,44 @@ export function useGetDestinationWithTypeLazyQuery(baseOptions?: Apollo.LazyQuer
 export type GetDestinationWithTypeQueryHookResult = ReturnType<typeof useGetDestinationWithTypeQuery>;
 export type GetDestinationWithTypeLazyQueryHookResult = ReturnType<typeof useGetDestinationWithTypeLazyQuery>;
 export type GetDestinationWithTypeQueryResult = Apollo.QueryResult<GetDestinationWithTypeQuery, GetDestinationWithTypeQueryVariables>;
+export const RemoveAgentConfigurationDocument = gql`
+    mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
+  removeAgentConfiguration(input: $input) {
+    id
+    configuration {
+      Collector
+      Logging
+      Manager
+    }
+  }
+}
+    `;
+export type RemoveAgentConfigurationMutationFn = Apollo.MutationFunction<RemoveAgentConfigurationMutation, RemoveAgentConfigurationMutationVariables>;
+
+/**
+ * __useRemoveAgentConfigurationMutation__
+ *
+ * To run a mutation, you first call `useRemoveAgentConfigurationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveAgentConfigurationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeAgentConfigurationMutation, { data, loading, error }] = useRemoveAgentConfigurationMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useRemoveAgentConfigurationMutation(baseOptions?: Apollo.MutationHookOptions<RemoveAgentConfigurationMutation, RemoveAgentConfigurationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveAgentConfigurationMutation, RemoveAgentConfigurationMutationVariables>(RemoveAgentConfigurationDocument, options);
+      }
+export type RemoveAgentConfigurationMutationHookResult = ReturnType<typeof useRemoveAgentConfigurationMutation>;
+export type RemoveAgentConfigurationMutationResult = Apollo.MutationResult<RemoveAgentConfigurationMutation>;
+export type RemoveAgentConfigurationMutationOptions = Apollo.BaseMutationOptions<RemoveAgentConfigurationMutation, RemoveAgentConfigurationMutationVariables>;
 export const ConfigurationMetricsDocument = gql`
     subscription ConfigurationMetrics($period: String!, $name: String!, $agent: String) {
   configurationMetrics(period: $period, name: $name, agent: $agent) {

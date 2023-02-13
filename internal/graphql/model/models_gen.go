@@ -64,6 +64,10 @@ type OverviewPage struct {
 	Graph *graph.Graph `json:"graph"`
 }
 
+type RemoveAgentConfigurationInput struct {
+	AgentID string `json:"agentId"`
+}
+
 type Snapshot struct {
 	Logs    []*record.Log    `json:"logs"`
 	Metrics []*record.Metric `json:"metrics"`

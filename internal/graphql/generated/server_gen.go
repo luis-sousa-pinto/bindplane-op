@@ -238,7 +238,8 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		UpdateProcessors func(childComplexity int, input model.UpdateProcessorsInput) int
+		RemoveAgentConfiguration func(childComplexity int, input *model.RemoveAgentConfigurationInput) int
+		UpdateProcessors         func(childComplexity int, input model.UpdateProcessorsInput) int
 	}
 
 	Node struct {
@@ -429,6 +430,7 @@ type MetadataResolver interface {
 }
 type MutationResolver interface {
 	UpdateProcessors(ctx context.Context, input model.UpdateProcessorsInput) (*bool, error)
+	RemoveAgentConfiguration(ctx context.Context, input *model.RemoveAgentConfigurationInput) (*model1.Agent, error)
 }
 type ParameterDefinitionResolver interface {
 	Type(ctx context.Context, obj *model1.ParameterDefinition) (model.ParameterType, error)
@@ -1212,6 +1214,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MetricOption.Name(childComplexity), true
+
+	case "Mutation.removeAgentConfiguration":
+		if e.complexity.Mutation.RemoveAgentConfiguration == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeAgentConfiguration_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveAgentConfiguration(childComplexity, args["input"].(*model.RemoveAgentConfigurationInput)), true
 
 	case "Mutation.updateProcessors":
 		if e.complexity.Mutation.UpdateProcessors == nil {
@@ -2026,6 +2040,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputParameterInput,
 		ec.unmarshalInputProcessorInput,
+		ec.unmarshalInputRemoveAgentConfigurationInput,
 		ec.unmarshalInputUpdateProcessorsInput,
 	)
 	first := true
@@ -2606,8 +2621,13 @@ input UpdateProcessorsInput {
   processors: [ProcessorInput!]!
 }
 
+input RemoveAgentConfigurationInput {
+  agentId: String!
+}
+
 type Mutation {
   updateProcessors(input: UpdateProcessorsInput!): Boolean
+  removeAgentConfiguration(input: RemoveAgentConfigurationInput): Agent
 }
 `, BuiltIn: false},
 }
@@ -2616,6 +2636,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_removeAgentConfiguration_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.RemoveAgentConfigurationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalORemoveAgentConfigurationInput2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋinternalᚋgraphqlᚋmodelᚐRemoveAgentConfigurationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_updateProcessors_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -7889,6 +7924,102 @@ func (ec *executionContext) fieldContext_Mutation_updateProcessors(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateProcessors_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeAgentConfiguration(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeAgentConfiguration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveAgentConfiguration(rctx, fc.Args["input"].(*model.RemoveAgentConfigurationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.Agent)
+	fc.Result = res
+	return ec.marshalOAgent2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐAgent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeAgentConfiguration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Agent_id(ctx, field)
+			case "architecture":
+				return ec.fieldContext_Agent_architecture(ctx, field)
+			case "hostName":
+				return ec.fieldContext_Agent_hostName(ctx, field)
+			case "labels":
+				return ec.fieldContext_Agent_labels(ctx, field)
+			case "platform":
+				return ec.fieldContext_Agent_platform(ctx, field)
+			case "operatingSystem":
+				return ec.fieldContext_Agent_operatingSystem(ctx, field)
+			case "version":
+				return ec.fieldContext_Agent_version(ctx, field)
+			case "name":
+				return ec.fieldContext_Agent_name(ctx, field)
+			case "home":
+				return ec.fieldContext_Agent_home(ctx, field)
+			case "macAddress":
+				return ec.fieldContext_Agent_macAddress(ctx, field)
+			case "remoteAddress":
+				return ec.fieldContext_Agent_remoteAddress(ctx, field)
+			case "type":
+				return ec.fieldContext_Agent_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Agent_status(ctx, field)
+			case "errorMessage":
+				return ec.fieldContext_Agent_errorMessage(ctx, field)
+			case "connectedAt":
+				return ec.fieldContext_Agent_connectedAt(ctx, field)
+			case "disconnectedAt":
+				return ec.fieldContext_Agent_disconnectedAt(ctx, field)
+			case "configuration":
+				return ec.fieldContext_Agent_configuration(ctx, field)
+			case "configurationResource":
+				return ec.fieldContext_Agent_configurationResource(ctx, field)
+			case "upgrade":
+				return ec.fieldContext_Agent_upgrade(ctx, field)
+			case "upgradeAvailable":
+				return ec.fieldContext_Agent_upgradeAvailable(ctx, field)
+			case "features":
+				return ec.fieldContext_Agent_features(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Agent", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeAgentConfiguration_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -14910,6 +15041,34 @@ func (ec *executionContext) unmarshalInputProcessorInput(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputRemoveAgentConfigurationInput(ctx context.Context, obj interface{}) (model.RemoveAgentConfigurationInput, error) {
+	var it model.RemoveAgentConfigurationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"agentId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "agentId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agentId"))
+			it.AgentID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateProcessorsInput(ctx context.Context, obj interface{}) (model.UpdateProcessorsInput, error) {
 	var it model.UpdateProcessorsInput
 	asMap := map[string]interface{}{}
@@ -16220,6 +16379,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateProcessors(ctx, field)
+			})
+
+		case "removeAgentConfiguration":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeAgentConfiguration(ctx, field)
 			})
 
 		default:
@@ -20031,6 +20196,14 @@ func (ec *executionContext) marshalORelevantIfCondition2ᚕgithubᚗcomᚋobserv
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalORemoveAgentConfigurationInput2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋinternalᚋgraphqlᚋmodelᚐRemoveAgentConfigurationInput(ctx context.Context, v interface{}) (*model.RemoveAgentConfigurationInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputRemoveAgentConfigurationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOResourceConfiguration2ᚕgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐResourceConfigurationᚄ(ctx context.Context, sel ast.SelectionSet, v []model1.ResourceConfiguration) graphql.Marshaler {

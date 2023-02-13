@@ -46,7 +46,7 @@ type Options struct {
 type Store interface {
 	Clear()
 
-	Agent(ctx context.Context, name string) (*model.Agent, error)
+	Agent(ctx context.Context, id string) (*model.Agent, error)
 	Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error)
 	AgentsCount(context.Context, ...QueryOption) (int, error)
 	// UpsertAgent adds a new Agent to the Store or updates an existing one

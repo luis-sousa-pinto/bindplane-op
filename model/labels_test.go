@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func TestLabelsFromMap(t *testing.T) {
@@ -77,6 +78,49 @@ func TestLabelsFromMap(t *testing.T) {
 			for _, errorMsg := range test.errorMsgs {
 				require.Contains(t, err.Error(), errorMsg)
 			}
+		})
+	}
+}
+
+func TestLabelsFromMerge(t *testing.T) {
+
+	testCases := []struct {
+		name      string
+		oldLabels Labels
+		newLabels Labels
+		expected  Labels
+	}{
+		{
+			name:      "empty labels",
+			oldLabels: MakeLabels(),
+			newLabels: MakeLabels(),
+			expected:  MakeLabels(),
+		},
+		{
+			name: "overwriting old labels",
+			oldLabels: Labels{
+				labels.Set{
+					"configuration": "old-config",
+					"platform":      "Linux",
+				},
+			},
+			newLabels: Labels{
+				labels.Set{
+					"configuration": "new-config",
+				},
+			},
+			expected: Labels{
+				labels.Set{
+					"configuration": "new-config",
+					"platform":      "Linux",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, LabelsFromMerge(tc.oldLabels, tc.newLabels))
 		})
 	}
 }

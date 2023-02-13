@@ -99,14 +99,15 @@ func LabelsFromSelector(selector string) (Labels, error) {
 	return Labels{set}, nil
 }
 
-// LabelsFromMerge TODO(doc)
-func LabelsFromMerge(l Labels, o Labels) Labels {
-	labels := Labels{labels.Merge(l.Set, o.Set)}
+// LabelsFromMerge merges new labels into existing labels.
+// Any labels with blank values in the merged labels will be removed
+func LabelsFromMerge(existing, new Labels) Labels {
+	labels := Labels{labels.Merge(existing.Set, new.Set)}
 	labels.removeEmptyValues()
 	return labels
 }
 
-// MakeLabels TODO(doc)
+// MakeLabels returns a new, empty Labels object
 func MakeLabels() Labels {
 	return Labels{map[string]string{}}
 }
@@ -125,7 +126,7 @@ func (l *Labels) AsMap() map[string]string {
 }
 
 // Conflicts returns true if the specified set of labels has a label with the same name as this set of labels but with a
-// differnet value.
+// different value.
 func (l Labels) Conflicts(o Labels) bool {
 	return labels.Conflicts(l.Set, o.Set)
 }
@@ -157,7 +158,7 @@ func (l Labels) filtered(hasBindPlanePrefix bool) Labels {
 // without custom marshalling, we end up with "labels": { "Set": {} } and we want to avoid the "Set" but json:",inline"
 // isn't a thing
 
-// MarshalJSON TODO(doc )
+// MarshalJSON marshals the Labels as JSON. An empty Labels will be marshalled as `{}`
 func (l *Labels) MarshalJSON() ([]byte, error) {
 	// serialize null as empty
 	if l.Set == nil {
@@ -166,7 +167,7 @@ func (l *Labels) MarshalJSON() ([]byte, error) {
 	return json.Marshal(l.Set)
 }
 
-// UnmarshalJSON TODO(doc)
+// UnmarshalJSON unmarshals JSON bytes into the Label's internal Set
 func (l *Labels) UnmarshalJSON(b []byte) error {
 	return json.Unmarshal(b, &l.Set)
 }

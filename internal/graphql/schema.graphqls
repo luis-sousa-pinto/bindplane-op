@@ -500,6 +500,11 @@ input UpdateProcessorsInput {
   processors: [ProcessorInput!]!
 }
 
+input RemoveAgentConfigurationInput {
+  agentId: String!
+}
+
 type Mutation {
   updateProcessors(input: UpdateProcessorsInput!): Boolean
+  removeAgentConfiguration(input: RemoveAgentConfigurationInput): Agent
 }

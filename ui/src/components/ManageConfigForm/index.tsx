@@ -1,5 +1,6 @@
+import { gql } from "@apollo/client";
 import { Button, Typography } from "@mui/material";
-import { GetAgentAndConfigurationsQuery } from "../../graphql/generated";
+import { GetAgentAndConfigurationsQuery, useRemoveAgentConfigurationMutation } from "../../graphql/generated";
 import { classes } from "../../utils/styles";
 import { patchConfigLabel } from "../../utils/patch-config-label";
 import { Link } from "react-router-dom";
@@ -8,6 +9,19 @@ import { Config } from "./types";
 
 import mixins from "../../styles/mixins.module.scss";
 import styles from "./apply-config-form.module.scss";
+
+gql`
+  mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
+    removeAgentConfiguration(input: $input) {
+      id
+      configuration {
+        Collector
+        Logging
+        Manager
+      }
+    }
+  }
+`
 
 interface ManageConfigFormProps {
   agent: NonNullable<GetAgentAndConfigurationsQuery["agent"]>;
@@ -29,8 +43,17 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
   setSelectedConfig,
 }) => {
   const snackbar = useSnackbar();
+  const [removeAgentConfiguration] =
+    useRemoveAgentConfigurationMutation({
+      variables: {
+        input: {
+          agentId: agent.id,
+        },
+      },
+    });
 
   const configResourceName = agent?.configurationResource?.metadata.name;
+  const isRawConfig = configResourceName == null;
 
   async function onApplyConfiguration() {
     try {
@@ -38,7 +61,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
 
       setEditing(false);
     } catch (err) {
-      snackbar.enqueueSnackbar("Failed to patch label.", {
+      console.error("Failed to apply new configuration", err);
+      snackbar.enqueueSnackbar("Failed to change configuration.", {
         color: "error",
         autoHideDuration: 5000,
       });
@@ -52,22 +76,38 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
     );
   }
 
+  // Remove the 'configuration' label and refetch the agent
+  async function onRemoveConfiguration() {
+    try {
+      await removeAgentConfiguration();
+      setEditing(false);
+    } catch (err) {
+      setEditing(false);
+      console.error("Failed to remove configuration", err);
+      snackbar.enqueueSnackbar("Failed to change configuration.", {
+        color: "error",
+        autoHideDuration: 5000,
+      });
+    }
+  }
+
   const ShowConfiguration: React.FC = () => {
     return (
       <>
-        {configResourceName ? (
-          <>
-            <Link to={`/configurations/${configResourceName}`}>
-              {configResourceName}
-            </Link>
-          </>
-        ) : (
+        {isRawConfig ? (
           <>
             <Typography variant={"body2"} classes={{ root: mixins["mb-2"] }}>
               This agent configuration is not currently managed by BindPlane.
               Click import to pull this agent&apos;s configuration in as a new
               managed configuration.
             </Typography>
+          </>
+
+        ) : (
+          <>
+            <Link to={`/configurations/${configResourceName}`}>
+              {configResourceName}
+            </Link>
           </>
         )}
       </>
@@ -93,6 +133,16 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
               <Button variant="outlined" onClick={onCancelEdit}>
                 Cancel
               </Button>
+              {!isRawConfig && (
+                <Button
+                  className={mixins["ml-2"]}
+                  variant="contained"
+                  color="secondary"
+                  onClick={onRemoveConfiguration}
+                >
+                  Detach
+                </Button>
+              )}
               <Button
                 variant="contained"
                 onClick={onApplyConfiguration}
@@ -103,7 +153,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
             </>
           ) : (
             <>
-              {configResourceName == null && (
+              {isRawConfig && (
                 <>
                   <Button variant="contained" onClick={onImport}>
                     Import

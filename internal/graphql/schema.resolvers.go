@@ -1,4 +1,4 @@
-// Copyright  observIQ, Inc.
+// Copyright observIQ, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ import (
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/graph"
 	"github.com/observiq/bindplane-op/model/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -187,6 +190,31 @@ func (r *mutationResolver) UpdateProcessors(ctx context.Context, input model1.Up
 	}
 
 	return nil, nil
+}
+
+// RemoveAgentConfiguration sets the given agent's `configuration` label to blank
+func (r *mutationResolver) RemoveAgentConfiguration(ctx context.Context, input *model1.RemoveAgentConfigurationInput) (*model.Agent, error) {
+	ctx, span := tracer.Start(ctx, "graphql/removeAgentConfiguration",
+		trace.WithAttributes(attribute.String("bindplane.agent.id", input.AgentID)),
+	)
+	defer span.End()
+
+	agent, err := r.bindplane.Store().Agent(ctx, input.AgentID)
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	newAgent, err := r.bindplane.Store().UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+		current.Labels.Set["configuration"] = ""
+	})
+
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return newAgent, nil
 }
 
 // Type is the resolver for the type field.

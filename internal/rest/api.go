@@ -23,6 +23,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/internal/server"
@@ -266,6 +268,7 @@ func labelAgents(c *gin.Context, bindplane server.BindPlane) {
 	p := &model.BulkAgentLabelsPayload{}
 
 	if err := c.BindJSON(p); err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		handleErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
@@ -342,6 +345,8 @@ func patchAgentLabels(c *gin.Context, bindplane server.BindPlane) {
 	defer span.End()
 
 	id := c.Param("id")
+	span.SetAttributes(attribute.String("bindplane.agent.id", id))
+
 	overwrite := c.DefaultQuery("overwrite", "false") == "true"
 	p := &model.AgentLabelsPayload{}
 	if err := c.BindJSON(p); err != nil {
@@ -361,13 +366,16 @@ func patchAgentLabels(c *gin.Context, bindplane server.BindPlane) {
 	curAgent, err := bindplane.Store().Agent(c, id)
 	switch {
 	case err != nil:
+		span.SetStatus(codes.Error, err.Error())
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	case curAgent == nil:
+		span.SetStatus(codes.Error, store.ErrResourceMissing.Error())
 		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
 		return
 	case !overwrite && curAgent.Labels.Conflicts(newLabels):
 		err := fmt.Errorf("new labels conflict with existing labels, add ?overwrite=true to replace labels")
+		span.SetStatus(codes.Error, err.Error())
 		c.Error(err)
 		c.JSON(http.StatusConflict, model.AgentLabelsResponse{
 			Errors: []string{err.Error()},
@@ -381,11 +389,15 @@ func patchAgentLabels(c *gin.Context, bindplane server.BindPlane) {
 	})
 
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	bindplane.Logger().Info("patchAgentLabels", zap.String("payloadLabels", newLabels.String()), zap.String("newLabels", newAgent.Labels.String()))
+	bindplane.Logger().Info("patchAgentLabels",
+		zap.String("payloadLabels", newLabels.String()),
+		zap.String("newLabels", newAgent.Labels.String()),
+	)
 	c.JSON(http.StatusOK, model.AgentLabelsResponse{
 		Labels: &newAgent.Labels,
 	})
