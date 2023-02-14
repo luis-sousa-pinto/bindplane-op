@@ -8,7 +8,7 @@ import {
   Divider,
   InputBase,
 } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { KeyboardArrowDownIcon } from "../Icons";
 import { Suggestion } from "../../graphql/generated";
 
 import styles from "./search-bar.module.scss";

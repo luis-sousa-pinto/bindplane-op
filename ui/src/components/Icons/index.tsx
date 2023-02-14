@@ -6,6 +6,25 @@ export type IconProps = React.ComponentProps<"svg">;
  * These SVGs are all open source icons from Feather: https://feathericons.com/
  */
 
+
+export const KeyboardArrowDownIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="0"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+
+  );
+};
 export const ArrowUpIcon: React.FC<IconProps> = (props) => {
   return (
     <svg
