@@ -233,6 +233,7 @@ exports[`EnumsParameter renders correctly 1`] = `
           <input
             className="PrivateSwitchBase-input MuiSwitch-input css-1m9pwf3"
             onChange={[Function]}
+            required={false}
             type="checkbox"
           />
           <span
@@ -277,6 +278,7 @@ exports[`EnumsParameter renders correctly 1`] = `
           <input
             className="PrivateSwitchBase-input MuiSwitch-input css-1m9pwf3"
             onChange={[Function]}
+            required={false}
             type="checkbox"
           />
           <span
@@ -321,6 +323,7 @@ exports[`EnumsParameter renders correctly 1`] = `
           <input
             className="PrivateSwitchBase-input MuiSwitch-input css-1m9pwf3"
             onChange={[Function]}
+            required={false}
             type="checkbox"
           />
           <span
@@ -365,6 +368,7 @@ exports[`EnumsParameter renders correctly 1`] = `
           <input
             className="PrivateSwitchBase-input MuiSwitch-input css-1m9pwf3"
             onChange={[Function]}
+            required={false}
             type="checkbox"
           />
           <span
