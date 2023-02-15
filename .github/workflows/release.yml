@@ -72,24 +72,3 @@ jobs:
           # github token requires permission to observiq/bindplane-op and observiq/homebrew-bindplane-op
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-
-  readme:
-    runs-on: "ubuntu-22.04"
-    needs:
-      - release
-    steps:
-      - name: Check out source code
-        uses: actions/checkout@v3
-
-      # Always publish to 1.0, as creating a new version
-      # will cause IDs to change.
-      - uses: readmeio/rdme@8.4.0
-        name: Publish Docs to Readme
-        with:
-          rdme: docs ./docs/www --key=${{ secrets.README_API_KEY }} --version 1.0
-
-      # Cleanup pages that were removed from docs/www directory.
-      - uses: readmeio/rdme@8.4.0
-        name: Publish Docs to Readme
-        with:
-          rdme: docs:prune ./docs/www --key=${{ secrets.README_API_KEY }} --version 1.0 --confirm
