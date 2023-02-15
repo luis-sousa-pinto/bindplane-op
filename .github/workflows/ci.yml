@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Setup Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -67,6 +69,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Run shellcheck
         uses: ludeeus/action-shellcheck@master
         with:
@@ -88,6 +92,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -115,6 +121,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -140,6 +148,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -165,6 +175,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -199,6 +211,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
           node-version: '16'
@@ -219,6 +233,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -243,6 +259,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -280,7 +298,7 @@ jobs:
       # Cache Goreleaser's container image output to be used
       # by other jobs that depend on this job.
       - name: Set GITHUB_SHA_SHORT
-        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
 
       # Build binaries, packages, and container images
       - name: Test GoReleaser
@@ -306,6 +324,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Goreleaser uses a 7 character short commit hash for the `ShortCommit`
+      # template variable. This conflicts with ArgoCD's 8 character hash.
+      # To get around this, add the short commit tag here instead of within
+      # the Goreleaser configuration.
+      # https://github.com/argoproj/argo-cd/issues/11976#issue-1532285712
+      - name: Tag Images with GITHUB_SHA_SHORT
+        run: |
+          docker tag observiq/bindplane-amd64:latest observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag observiq/bindplane-arm64:latest observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag ghcr.io/observiq/bindplane-amd64:latest ghcr.io/observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag ghcr.io/observiq/bindplane-arm64:latest ghcr.io/observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
 
       - name: Push Container Images to Dockerhub
         run: |
@@ -368,6 +398,8 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -389,7 +421,7 @@ jobs:
           path: /home/runner/go/bin
           key: tooling-${{ runner.os }}-${{ hashFiles('./internal/tools/go.mod') }}
       - name: Set GITHUB_SHA_SHORT
-        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
       - name: Run Unit Tests With Coverage
         run: make test-with-cover
       - name: Upload coverage report
@@ -410,10 +442,12 @@ jobs:
       - name: Checkout Repo
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set GITHUB_SHA_SHORT
         if: ${{ github.actor != 'dependabot[bot]' }}
-        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         if: ${{ github.actor != 'dependabot[bot]' }}

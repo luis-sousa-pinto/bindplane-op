@@ -3,7 +3,12 @@ ALL_MODULES := $(shell find . -type f -name "go.mod" -exec dirname {} \; | sort 
 TOOLS_MOD_DIR := ./internal/tools
 ADDLICENSE=addlicense
 ALL_SRC := $(shell find . -name '*.go' -o -name '*.sh' -o -name 'Dockerfile' -type f | sort)
-GIT_SHA=$(shell git rev-parse --short HEAD)
+
+# Use 8 characters in order to match ArgoCD's behavior
+# when using the template variable `head_short_sha`.
+# https://github.com/argoproj/argo-cd/issues/11976#issue-1532285712
+GIT_SHA=$(shell git rev-parse --short=8 HEAD)
+
 NAMESPACE=bindplane-dev
 OUTDIR=./build
 
