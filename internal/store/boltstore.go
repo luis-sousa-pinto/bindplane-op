@@ -29,6 +29,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	jsoniter "github.com/json-iterator/go"
 	"go.etcd.io/bbolt"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/internal/eventbus"
@@ -37,6 +38,8 @@ import (
 	"github.com/observiq/bindplane-op/internal/store/stats"
 	"github.com/observiq/bindplane-op/model"
 )
+
+var tracer = otel.Tracer("boltstore")
 
 // bucket names
 const (

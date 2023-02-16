@@ -227,10 +227,6 @@ func (s *Server) createStore(config *common.Server) (store.Store, error) {
 			MaxEventsToMerge: 100,
 		}, s.logger), nil
 
-	case common.StoreTypeGoogleCloud:
-		s.logger.Info("Using Google Cloud Datastore and Pub/Sub")
-		return store.NewGoogleCloudStore(context.Background(), config, s.logger)
-
 	default:
 		// case common.StoreTypeBbolt:
 		storageFilePath := config.BoltDatabasePath()

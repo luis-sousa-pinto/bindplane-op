@@ -154,8 +154,6 @@ const (
 	StoreTypeMap = "map"
 	// StoreTypeBbolt uses go.etcd.io/bbolt for storage
 	StoreTypeBbolt = "bbolt"
-	// StoreTypeGoogleCloud uses Google Cloud Datastore for storage
-	StoreTypeGoogleCloud = "googlecloud"
 )
 
 // Server TODO(doc)
