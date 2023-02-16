@@ -24,6 +24,11 @@ import (
 	"github.com/observiq/bindplane-op/model"
 )
 
+var testOptions = Options{
+	SessionsSecret:   "super-secret-key",
+	MaxEventsToMerge: 1,
+}
+
 func TestMapstoreNotifyUpdates(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

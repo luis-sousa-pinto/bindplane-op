@@ -540,11 +540,52 @@ func (s *googleCloudStore) UserSessions() sessions.Store {
 // ----------------------------------------------------------------------
 // events
 
+// addTransitiveUpdates adds all the transitive updates based on the resource type.
+func (s *googleCloudStore) addTransitiveUpdates(ctx context.Context, updates *Updates) error {
+	if updates.CouldAffectProcessors() {
+		processors, err := s.Processors(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get processors: %w", err)
+		}
+
+		updates.AddAffectedProcessors(processors)
+	}
+
+	if updates.CouldAffectSources() {
+		sources, err := s.Sources(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get sources: %w", err)
+		}
+
+		updates.AddAffectedSources(sources)
+	}
+
+	if updates.CouldAffectDestinations() {
+		destinations, err := s.Destinations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get destinations: %w", err)
+		}
+
+		updates.AddAffectedDestinations(destinations)
+	}
+
+	if updates.CouldAffectConfigurations() {
+		configurations, err := s.Configurations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get configurations: %w", err)
+		}
+
+		updates.AddAffectedConfigurations(configurations)
+	}
+
+	return nil
+}
+
 func (s *googleCloudStore) notify(ctx context.Context, updates *Updates) {
 	ctx, span := tracer.Start(ctx, "store/notify")
 	defer span.End()
 
-	err := updates.addTransitiveUpdates(ctx, s)
+	err := s.addTransitiveUpdates(ctx, updates)
 	if err != nil {
 		// TODO: if we can't notify about all updates, what do we do?
 		s.logger.Error("unable to add transitive updates", zap.Any("updates", updates), zap.Error(err))

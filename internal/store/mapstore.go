@@ -46,7 +46,7 @@ type mapStore struct {
 	destinations     resourceStore[*model.Destination]
 	destinationTypes resourceStore[*model.DestinationType]
 
-	updates            *storeUpdates
+	updates            *UpdatesEventBus
 	agentIndex         search.Index
 	configurationIndex search.Index
 	logger             *zap.Logger
@@ -68,7 +68,7 @@ func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store
 		processorTypes:     newResourceStore[*model.ProcessorType](),
 		destinations:       newResourceStore[*model.Destination](),
 		destinationTypes:   newResourceStore[*model.DestinationType](),
-		updates:            newStoreUpdates(ctx, options.MaxEventsToMerge),
+		updates:            NewUpdatesEventBus(ctx, options.MaxEventsToMerge),
 		agentIndex:         search.NewInMemoryIndex("agent"),
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		logger:             logger,
@@ -675,8 +675,49 @@ func (mapstore *mapStore) upsertAgent(agentID string, updater AgentUpdater, upda
 	return agent
 }
 
+// addTransitiveUpdates adds all the transitive updates based on the resource type.
+func (mapstore *mapStore) addTransitiveUpdates(ctx context.Context, updates *Updates) error {
+	if updates.CouldAffectProcessors() {
+		processors, err := mapstore.Processors(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get processors: %w", err)
+		}
+
+		updates.AddAffectedProcessors(processors)
+	}
+
+	if updates.CouldAffectSources() {
+		sources, err := mapstore.Sources(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get sources: %w", err)
+		}
+
+		updates.AddAffectedSources(sources)
+	}
+
+	if updates.CouldAffectDestinations() {
+		destinations, err := mapstore.Destinations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get destinations: %w", err)
+		}
+
+		updates.AddAffectedDestinations(destinations)
+	}
+
+	if updates.CouldAffectConfigurations() {
+		configurations, err := mapstore.Configurations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get configurations: %w", err)
+		}
+
+		updates.AddAffectedConfigurations(configurations)
+	}
+
+	return nil
+}
+
 func (mapstore *mapStore) notify(ctx context.Context, updates *Updates) {
-	err := updates.addTransitiveUpdates(ctx, mapstore)
+	err := mapstore.addTransitiveUpdates(ctx, updates)
 	if err != nil {
 		// TODO: if we can't notify about all updates, what do we do?
 		mapstore.logger.Error("unable to add transitive updates", zap.Any("updates", updates), zap.Error(err))

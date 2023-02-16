@@ -18,12 +18,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/observiq/bindplane-op/internal/eventbus"
 	"github.com/observiq/bindplane-op/model"
 )
 
-// Updates are sent on the channel available from Store.Updates().
+// Updates is a collection of events created by a store operation.
 type Updates struct {
 	Agents           Events[*model.Agent]
 	AgentVersions    Events[*model.AgentVersion]
@@ -36,7 +35,7 @@ type Updates struct {
 	Configurations   Events[*model.Configuration]
 }
 
-// NewUpdates returns a New Updates struct
+// NewUpdates returns a new Updates object.
 func NewUpdates() *Updates {
 	// TODO: optimize allocate as needed
 	return &Updates{
@@ -52,279 +51,362 @@ func NewUpdates() *Updates {
 	}
 }
 
-// IncludeAgent will include the agent in the updates. While updates.Agents.Include can also be used directly, this
-// matches the pattern of IncludeResource.
-func (updates *Updates) IncludeAgent(agent *model.Agent, eventType EventType) {
-	updates.Agents.Include(agent, eventType)
+// IncludeAgent will add an agent event to Updates.
+func (u *Updates) IncludeAgent(agent *model.Agent, eventType EventType) {
+	if u.Agents == nil {
+		u.Agents = NewEvents[*model.Agent]()
+	}
+
+	u.Agents.Include(agent, eventType)
 }
 
-// IncludeResource will include the resource in the updates for the appropriate type. If the specified Resource is not
-// supported by Updates, this will do nothing.
-func (updates *Updates) IncludeResource(r model.Resource, eventType EventType) {
+// IncludeAgentVersion will add an agent version event to Updates.
+func (u *Updates) IncludeAgentVersion(agentVersion *model.AgentVersion, eventType EventType) {
+	if u.AgentVersions == nil {
+		u.AgentVersions = NewEvents[*model.AgentVersion]()
+	}
+
+	u.AgentVersions.Include(agentVersion, eventType)
+}
+
+// IncludeSource will add a source event to Updates.
+func (u *Updates) IncludeSource(source *model.Source, eventType EventType) {
+	if u.Sources == nil {
+		u.Sources = NewEvents[*model.Source]()
+	}
+
+	u.Sources.Include(source, eventType)
+}
+
+// IncludeSourceType will add a source type event to Updates.
+func (u *Updates) IncludeSourceType(sourceType *model.SourceType, eventType EventType) {
+	if u.SourceTypes == nil {
+		u.SourceTypes = NewEvents[*model.SourceType]()
+	}
+
+	u.SourceTypes.Include(sourceType, eventType)
+}
+
+// IncludeProcessor will add a processor event to Updates.
+func (u *Updates) IncludeProcessor(processor *model.Processor, eventType EventType) {
+	if u.Processors == nil {
+		u.Processors = NewEvents[*model.Processor]()
+	}
+
+	u.Processors.Include(processor, eventType)
+}
+
+// IncludeProcessorType will add a processor type event to Updates.
+func (u *Updates) IncludeProcessorType(processorType *model.ProcessorType, eventType EventType) {
+	if u.ProcessorTypes == nil {
+		u.ProcessorTypes = NewEvents[*model.ProcessorType]()
+	}
+
+	u.ProcessorTypes.Include(processorType, eventType)
+}
+
+// IncludeDestination will add a destination event to Updates.
+func (u *Updates) IncludeDestination(destination *model.Destination, eventType EventType) {
+	if u.Destinations == nil {
+		u.Destinations = NewEvents[*model.Destination]()
+	}
+
+	u.Destinations.Include(destination, eventType)
+}
+
+// IncludeDestinationType will add a destination type event to Updates.
+func (u *Updates) IncludeDestinationType(destinationType *model.DestinationType, eventType EventType) {
+	if u.DestinationTypes == nil {
+		u.DestinationTypes = NewEvents[*model.DestinationType]()
+	}
+
+	u.DestinationTypes.Include(destinationType, eventType)
+}
+
+// IncludeConfiguration will add a configuration event to Updates.
+func (u *Updates) IncludeConfiguration(configuration *model.Configuration, eventType EventType) {
+	if u.Configurations == nil {
+		u.Configurations = NewEvents[*model.Configuration]()
+	}
+
+	u.Configurations.Include(configuration, eventType)
+}
+
+// IncludeResource will add a resource event to Updates.
+// If the resource is not supported by Updates, this will do nothing.
+func (u *Updates) IncludeResource(r model.Resource, eventType EventType) {
 	switch r := r.(type) {
 	case *model.AgentVersion:
-		updates.AgentVersions.Include(r, eventType)
+		u.IncludeAgentVersion(r, eventType)
 	case *model.Source:
-		updates.Sources.Include(r, eventType)
+		u.IncludeSource(r, eventType)
 	case *model.SourceType:
-		updates.SourceTypes.Include(r, eventType)
+		u.IncludeSourceType(r, eventType)
 	case *model.Processor:
-		updates.Processors.Include(r, eventType)
+		u.IncludeProcessor(r, eventType)
 	case *model.ProcessorType:
-		updates.ProcessorTypes.Include(r, eventType)
+		u.IncludeProcessorType(r, eventType)
 	case *model.Destination:
-		updates.Destinations.Include(r, eventType)
+		u.IncludeDestination(r, eventType)
 	case *model.DestinationType:
-		updates.DestinationTypes.Include(r, eventType)
+		u.IncludeDestinationType(r, eventType)
 	case *model.Configuration:
-		updates.Configurations.Include(r, eventType)
+		u.IncludeConfiguration(r, eventType)
 	}
 }
 
-// Empty returns true if all individual updates are empty
-func (updates *Updates) Empty() bool {
-	return updates.Size() == 0
+// Empty returns true if no events exist.
+func (u *Updates) Empty() bool {
+	return u.Size() == 0
 }
 
-// Size returns the sum of all updates of all types
-func (updates *Updates) Size() int {
-	return len(updates.Agents) +
-		len(updates.AgentVersions) +
-		len(updates.Sources) +
-		len(updates.SourceTypes) +
-		len(updates.Processors) +
-		len(updates.ProcessorTypes) +
-		len(updates.Destinations) +
-		len(updates.DestinationTypes) +
-		len(updates.Configurations)
+// Size returns the sum of all events.
+func (u *Updates) Size() int {
+	return len(u.Agents) +
+		len(u.AgentVersions) +
+		len(u.Sources) +
+		len(u.SourceTypes) +
+		len(u.Processors) +
+		len(u.ProcessorTypes) +
+		len(u.Destinations) +
+		len(u.DestinationTypes) +
+		len(u.Configurations)
 }
 
-// ----------------------------------------------------------------------
-//
-// add transitive updates based on updates that already exist. this could be optimized for a specific store and may not
-// be used by all stores.
-
-// TODO: how does this work in a distributed environment?
-// pub/sub individual event => pub/sub include dependencies => subscribers
-func (updates *Updates) addTransitiveUpdates(ctx context.Context, s Store) error {
-	// for sourceTypes, add sources
-	// for processorTypes, add sources and processors
-	// for destinationTypes, add destinations
-	// for sources and sourceTypes, add configurations
-	// for processors and processorTypes, add configurations
-	// for destinations and destinationTypes, add configurations
-
-	var errs error
-
-	err := updates.addProcessorUpdates(ctx, s)
-	if err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
-	err = updates.addSourceUpdates(ctx, s)
-	if err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
-	err = updates.addDestinationUpdates(ctx, s)
-	if err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
-	err = updates.addConfigurationUpdates(ctx, s)
-	if err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
-	return errs
+// HasSourceTypeEvents returns true if any source type events exist.
+func (u *Updates) HasSourceTypeEvents() bool {
+	return !u.SourceTypes.Empty()
 }
 
-func (updates *Updates) addSourceUpdates(ctx context.Context, s Store) error {
-	if updates.SourceTypes.Empty() && updates.Processors.Empty() && updates.ProcessorTypes.Empty() {
-		return nil
-	}
+// HasProcessorTypeEvents returns true if any processor type events exist.
+func (u *Updates) HasProcessorTypeEvents() bool {
+	return !u.ProcessorTypes.Empty()
+}
 
-	// get all of the sources
-	sources, err := s.Sources(ctx)
-	if err != nil {
-		return err
-	}
+// HasDestinationTypeEvents returns true if any destination type events exist.
+func (u *Updates) HasDestinationTypeEvents() bool {
+	return !u.DestinationTypes.Empty()
+}
 
-sourceLoop:
-	for _, source := range sources {
-		// updates to a SourceType will trigger updates of all of the Sources that use that SourceType.
-		for _, sourceTypeEvent := range updates.SourceTypes.Updates() {
-			sourceTypeName := sourceTypeEvent.Item.Name()
+// HasSourceEvents returns true if any source events exist.
+func (u *Updates) HasSourceEvents() bool {
+	return !u.Sources.Empty()
+}
 
-			if source.Spec.Type == sourceTypeName {
-				updates.Sources.Include(source, EventTypeUpdate)
-				continue sourceLoop
-			}
+// HasProcessorEvents returns true if any processor events exist.
+func (u *Updates) HasProcessorEvents() bool {
+	return !u.Processors.Empty()
+}
+
+// HasDestinationEvents returns true if any destination events exist.
+func (u *Updates) HasDestinationEvents() bool {
+	return !u.Destinations.Empty()
+}
+
+// CouldAffectProcessors returns true if the updates could affect processors.
+func (u *Updates) CouldAffectProcessors() bool {
+	return u.HasProcessorTypeEvents()
+}
+
+// CouldAffectSources returns true if the updates could affect sources.
+func (u *Updates) CouldAffectSources() bool {
+	return u.HasSourceTypeEvents() ||
+		u.HasProcessorTypeEvents() ||
+		u.HasProcessorEvents()
+}
+
+// CouldAffectDestinations returns true if the updates could affect destinations.
+func (u *Updates) CouldAffectDestinations() bool {
+	return u.HasDestinationTypeEvents()
+}
+
+// CouldAffectConfigurations returns true if the updates could affect configurations.
+func (u *Updates) CouldAffectConfigurations() bool {
+	return u.HasSourceTypeEvents() ||
+		u.HasSourceEvents() ||
+		u.HasProcessorTypeEvents() ||
+		u.HasProcessorEvents() ||
+		u.HasDestinationTypeEvents() ||
+		u.HasDestinationEvents()
+}
+
+// AffectsSource returns true if the updates affect the given source.
+func (u *Updates) AffectsSource(source *model.Source) bool {
+	for _, sourceTypeEvent := range u.SourceTypes.Updates() {
+		sourceTypeName := sourceTypeEvent.Item.Name()
+		if source.Spec.Type == sourceTypeName {
+			return true
 		}
+	}
 
-		// updates to a ProcessorType will trigger updates of all of the Sources that use that ProcessorType.
-		for _, processorTypeEvent := range updates.ProcessorTypes.Updates() {
-			processorTypeName := processorTypeEvent.Item.Name()
-			for _, processor := range source.Spec.Processors {
-				if processor.Type == processorTypeName {
-					updates.Sources.Include(source, EventTypeUpdate)
-					continue sourceLoop
-				}
-			}
-		}
-
-		// updates to a Processor will trigger updates of all of the Sources that use that Processor.
-		for _, processorEvent := range updates.Processors.Updates() {
-			processorName := processorEvent.Item.Name()
-			for _, processor := range source.Spec.Processors {
-				if processor.Name == processorName {
-					updates.Sources.Include(source, EventTypeUpdate)
-					continue sourceLoop
-				}
+	for _, processorTypeEvent := range u.ProcessorTypes.Updates() {
+		processorTypeName := processorTypeEvent.Item.Name()
+		for _, processor := range source.Spec.Processors {
+			if processor.Type == processorTypeName {
+				return true
 			}
 		}
 	}
 
-	return nil
+	for _, processorEvent := range u.Processors.Updates() {
+		processorName := processorEvent.Item.Name()
+		for _, processor := range source.Spec.Processors {
+			if processor.Name == processorName {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
-func (updates *Updates) addProcessorUpdates(ctx context.Context, s Store) error {
-	if updates.ProcessorTypes.Empty() {
-		return nil
-	}
-
-	processors, err := s.Processors(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, processorTypeEvent := range updates.ProcessorTypes {
+// AffectsProcessor returns true if the updates affect the given processor.
+func (u *Updates) AffectsProcessor(processor *model.Processor) bool {
+	for _, processorTypeEvent := range u.ProcessorTypes {
 		if processorTypeEvent.Type == EventTypeUpdate {
 			processorTypeName := processorTypeEvent.Item.Name()
-
-			for _, processor := range processors {
-				if processor.Spec.Type == processorTypeName {
-					updates.Processors.Include(processor, EventTypeUpdate)
-				}
+			if processor.Spec.Type == processorTypeName {
+				return true
 			}
 		}
 	}
 
-	return nil
+	return false
 }
 
-func (updates *Updates) addDestinationUpdates(ctx context.Context, s Store) error {
-	if updates.DestinationTypes.Empty() {
-		return nil
-	}
-
-	// get all of the destinations
-	destinations, err := s.Destinations(ctx)
-	if err != nil {
-		return err
-	}
-
-	// updates to a DestinationType will trigger updates of all of the Destinations that use that DestinationType.
-	for _, destinationTypeEvent := range updates.DestinationTypes {
+// AffectsDestination returns true if the updates affect the given destination.
+func (u *Updates) AffectsDestination(destination *model.Destination) bool {
+	for _, destinationTypeEvent := range u.DestinationTypes {
 		if destinationTypeEvent.Type == EventTypeUpdate {
 			destinationTypeName := destinationTypeEvent.Item.Name()
-
-			for _, destination := range destinations {
-				if destination.Spec.Type == destinationTypeName {
-					updates.Destinations.Include(destination, EventTypeUpdate)
-				}
+			if destination.Spec.Type == destinationTypeName {
+				return true
 			}
 		}
 	}
 
-	return nil
+	return false
 }
 
-func (updates *Updates) addConfigurationUpdates(ctx context.Context, s Store) error {
-	configurations, err := s.Configurations(ctx)
-	if err != nil {
-		return err
+// AffectsConfiguration returns true if the updates affect the given configuration.
+func (u *Updates) AffectsConfiguration(configuration *model.Configuration) bool {
+	for _, source := range configuration.Spec.Sources {
+		if _, ok := u.Sources[source.Name]; ok {
+			return true
+		}
+
+		if _, ok := u.SourceTypes[source.Type]; ok {
+			return true
+		}
 	}
 
-	for _, configuration := range configurations {
-		// as a small optimization, before checking all of the sources and destinations for changes, check to see if we're
-		// already updating this configuration.
-		if updates.Configurations.Contains(configuration.Name(), EventTypeUpdate) {
+	for _, destination := range configuration.Spec.Destinations {
+		if _, ok := u.Destinations[destination.Name]; ok {
+			return true
+		}
+
+		if _, ok := u.DestinationTypes[destination.Type]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+// AddAffectedSources will add updates for Sources that are affected by other resource updates.
+func (u *Updates) AddAffectedSources(sources []*model.Source) {
+	for _, source := range sources {
+		if u.Sources.Contains(source.Name(), EventTypeUpdate) {
 			continue
 		}
-		updates.addConfigurationUpdatesFromComponents(configuration, s)
-	}
-	return nil
-}
 
-func (updates *Updates) addConfigurationUpdatesFromComponents(configuration *model.Configuration, _ Store) {
-	for _, source := range configuration.Spec.Sources {
-		if _, ok := updates.Sources[source.Name]; ok {
-			updates.Configurations.Include(configuration, EventTypeUpdate)
-			return
-		}
-		if _, ok := updates.SourceTypes[source.Type]; ok {
-			updates.Configurations.Include(configuration, EventTypeUpdate)
-			return
-		}
-	}
-	for _, destination := range configuration.Spec.Destinations {
-		if _, ok := updates.Destinations[destination.Name]; ok {
-			updates.Configurations.Include(configuration, EventTypeUpdate)
-			return
-		}
-		if _, ok := updates.DestinationTypes[destination.Type]; ok {
-			updates.Configurations.Include(configuration, EventTypeUpdate)
-			return
+		if u.AffectsSource(source) {
+			u.IncludeSource(source, EventTypeUpdate)
 		}
 	}
 }
 
-// ----------------------------------------------------------------------
-// merge for use with RelayWithMerge
+// AddAffectedProcessors will add updates for Processors that are affected by other resource updates.
+func (u *Updates) AddAffectedProcessors(processors []*model.Processor) {
+	for _, processor := range processors {
+		if u.Processors.Contains(processor.Name(), EventTypeUpdate) {
+			continue
+		}
 
-func mergeUpdates(into, single *Updates) bool {
-	// first make sure we can safely merge
-	safe := into.Agents.CanSafelyMerge(single.Agents) &&
-		into.AgentVersions.CanSafelyMerge(single.AgentVersions) &&
-		into.Sources.CanSafelyMerge(single.Sources) &&
-		into.SourceTypes.CanSafelyMerge(single.SourceTypes) &&
-		into.Processors.CanSafelyMerge(single.Processors) &&
-		into.ProcessorTypes.CanSafelyMerge(single.ProcessorTypes) &&
-		into.Destinations.CanSafelyMerge(single.Destinations) &&
-		into.DestinationTypes.CanSafelyMerge(single.DestinationTypes) &&
-		into.Configurations.CanSafelyMerge(single.Configurations)
+		if u.AffectsProcessor(processor) {
+			u.IncludeProcessor(processor, EventTypeUpdate)
+		}
+	}
+}
+
+// AddAffectedDestinations will add updates for Destinations that are affected by other resource updates.
+func (u *Updates) AddAffectedDestinations(destinations []*model.Destination) {
+	for _, destination := range destinations {
+		if u.Destinations.Contains(destination.Name(), EventTypeUpdate) {
+			continue
+		}
+
+		if u.AffectsDestination(destination) {
+			u.IncludeDestination(destination, EventTypeUpdate)
+		}
+	}
+}
+
+// AddAffectedConfigurations will add updates for Configurations that are affected by other resource updates.
+func (u *Updates) AddAffectedConfigurations(configurations []*model.Configuration) {
+	for _, configuration := range configurations {
+		if u.Configurations.Contains(configuration.Name(), EventTypeUpdate) {
+			continue
+		}
+
+		if u.AffectsConfiguration(configuration) {
+			u.IncludeConfiguration(configuration, EventTypeUpdate)
+		}
+	}
+}
+
+// MergeUpdates merges the updates from the given Updates into the current Updates.
+func MergeUpdates(into, from *Updates) bool {
+	safe := into.Agents.CanSafelyMerge(from.Agents) &&
+		into.AgentVersions.CanSafelyMerge(from.AgentVersions) &&
+		into.Sources.CanSafelyMerge(from.Sources) &&
+		into.SourceTypes.CanSafelyMerge(from.SourceTypes) &&
+		into.Processors.CanSafelyMerge(from.Processors) &&
+		into.ProcessorTypes.CanSafelyMerge(from.ProcessorTypes) &&
+		into.Destinations.CanSafelyMerge(from.Destinations) &&
+		into.DestinationTypes.CanSafelyMerge(from.DestinationTypes) &&
+		into.Configurations.CanSafelyMerge(from.Configurations)
 
 	if !safe {
 		return false
 	}
 
-	// merge individual events
-	into.Agents.Merge(single.Agents)
-	into.AgentVersions.Merge(single.AgentVersions)
-	into.Sources.Merge(single.Sources)
-	into.SourceTypes.Merge(single.SourceTypes)
-	into.Processors.Merge(single.Processors)
-	into.ProcessorTypes.Merge(single.ProcessorTypes)
-	into.Destinations.Merge(single.Destinations)
-	into.DestinationTypes.Merge(single.DestinationTypes)
-	into.Configurations.Merge(single.Configurations)
+	into.Agents.Merge(from.Agents)
+	into.AgentVersions.Merge(from.AgentVersions)
+	into.Sources.Merge(from.Sources)
+	into.SourceTypes.Merge(from.SourceTypes)
+	into.Processors.Merge(from.Processors)
+	into.ProcessorTypes.Merge(from.ProcessorTypes)
+	into.Destinations.Merge(from.Destinations)
+	into.DestinationTypes.Merge(from.DestinationTypes)
+	into.Configurations.Merge(from.Configurations)
 
 	return true
 }
 
-// ----------------------------------------------------------------------
+// UpdatesEventBus is a wrapped event bus for store updates.
+type UpdatesEventBus struct {
+	// external is an external channel used by external clients.
+	external eventbus.Source[*Updates]
 
-type storeUpdates struct {
-	updates eventbus.Source[*Updates]
-	// updatesInternal is an internal source used for notification. It will relay to the updates available to clients of
-	// the store.
-	updatesInternal eventbus.Source[*Updates]
+	// internal is an internal channel used for merging and relaying.
+	internal eventbus.Source[*Updates]
 }
 
-func newStoreUpdates(ctx context.Context, maxEventsToMerge int) *storeUpdates {
-	updates := eventbus.NewSource[*Updates]()
-	updatesInternal := eventbus.NewSource[*Updates]()
+// NewUpdatesEventBus creates a new UpdatesEventBus.
+func NewUpdatesEventBus(ctx context.Context, maxEventsToMerge int) *UpdatesEventBus {
+	external := eventbus.NewSource[*Updates]()
+	internal := eventbus.NewSource[*Updates]()
 
 	if maxEventsToMerge == 0 {
 		maxEventsToMerge = 100
@@ -333,26 +415,26 @@ func newStoreUpdates(ctx context.Context, maxEventsToMerge int) *storeUpdates {
 	// introduce a separate relay with a large buffer to avoid blocking on changes
 	eventbus.RelayWithMerge(
 		ctx,
-		updatesInternal,
-		mergeUpdates,
-		updates,
+		internal,
+		MergeUpdates,
+		external,
 		200*time.Millisecond,
 		maxEventsToMerge,
 		eventbus.WithUnboundedChannel[*Updates](100*time.Millisecond),
 	)
 
-	return &storeUpdates{
-		updates:         updates,
-		updatesInternal: updatesInternal,
+	return &UpdatesEventBus{
+		external: external,
+		internal: internal,
 	}
 }
 
 // Updates returns the external channel that can be provided to external clients.
-func (s *storeUpdates) Updates() eventbus.Source[*Updates] {
-	return s.updates
+func (s *UpdatesEventBus) Updates() eventbus.Source[*Updates] {
+	return s.external
 }
 
 // Send adds an Updates event to the internal channel where it can be merged and relayed to the external channel.
-func (s *storeUpdates) Send(updates *Updates) {
-	s.updatesInternal.Send(updates)
+func (s *UpdatesEventBus) Send(updates *Updates) {
+	s.internal.Send(updates)
 }

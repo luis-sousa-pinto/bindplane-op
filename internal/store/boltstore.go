@@ -48,7 +48,7 @@ const (
 
 type boltstore struct {
 	db                 *bbolt.DB
-	updates            *storeUpdates
+	updates            *UpdatesEventBus
 	agentIndex         search.Index
 	configurationIndex search.Index
 	logger             *zap.Logger
@@ -62,7 +62,7 @@ var _ Store = (*boltstore)(nil)
 func NewBoltStore(ctx context.Context, db *bbolt.DB, options Options, logger *zap.Logger) Store {
 	store := &boltstore{
 		db:                 db,
-		updates:            newStoreUpdates(ctx, options.MaxEventsToMerge),
+		updates:            NewUpdatesEventBus(ctx, options.MaxEventsToMerge),
 		agentIndex:         search.NewInMemoryIndex("agent"),
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		logger:             logger,
@@ -281,10 +281,51 @@ func (s *boltstore) ApplyResources(ctx context.Context, resources []model.Resour
 	return resourceStatuses, errs
 }
 
+// addTransitiveUpdates adds all the transitive updates based on the resource type.
+func (s *boltstore) addTransitiveUpdates(ctx context.Context, updates *Updates) error {
+	if updates.CouldAffectProcessors() {
+		processors, err := s.Processors(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get processors: %w", err)
+		}
+
+		updates.AddAffectedProcessors(processors)
+	}
+
+	if updates.CouldAffectSources() {
+		sources, err := s.Sources(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get sources: %w", err)
+		}
+
+		updates.AddAffectedSources(sources)
+	}
+
+	if updates.CouldAffectDestinations() {
+		destinations, err := s.Destinations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get destinations: %w", err)
+		}
+
+		updates.AddAffectedDestinations(destinations)
+	}
+
+	if updates.CouldAffectConfigurations() {
+		configurations, err := s.Configurations(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get configurations: %w", err)
+		}
+
+		updates.AddAffectedConfigurations(configurations)
+	}
+
+	return nil
+}
+
 // ----------------------------------------------------------------------
 
 func (s *boltstore) notify(ctx context.Context, updates *Updates) {
-	err := updates.addTransitiveUpdates(ctx, s)
+	err := s.addTransitiveUpdates(ctx, updates)
 	if err != nil {
 		// TODO: if we can't notify about all updates, what do we do?
 		s.logger.Error("unable to add transitive updates", zap.Any("updates", updates), zap.Error(err))

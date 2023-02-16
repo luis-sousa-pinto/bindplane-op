@@ -15,260 +15,1203 @@
 package store
 
 import (
-	"context"
 	"testing"
 
 	"github.com/observiq/bindplane-op/model"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
-var (
-	updatesTestStore Store
-	resourceMap      map[string]model.Resource
-	testOptions      = Options{
-		SessionsSecret:   "super-secret-key",
-		MaxEventsToMerge: 1,
+func TestUpdatesIncludeAgent(t *testing.T) {
+	updates := &Updates{}
+	agent := &model.Agent{
+		ID: "test",
 	}
-)
 
-func updatesTestSetup(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	updatesTestStore = NewMapStore(ctx, testOptions, zap.NewNop())
-	resourceMap = map[string]model.Resource{}
-	resources := []model.Resource{
-		newTestProcessorType("pt1"),
-		newTestProcessorType("pt2"),
-		newTestProcessorType("pt3"),
-		newTestProcessor("p1", "pt1"),
-		newTestSourceType("st1"),
-		newTestSourceType("st2"),
-		newTestSourceType("st3"),
-		newTestSourceType("st4"),
-		newTestSourceType("st5"),
-		newTestSource("s1", "st1"),
-		newTestSource("s2", "st2"),
-		newTestSource("s3", "st3"),
-		newTestSourceWithProcessors("s4", "st5", []model.ResourceConfiguration{
-			{ParameterizedSpec: model.ParameterizedSpec{Type: "pt2"}},
-			{Name: "p1"},
-		}),
-		newTestDestinationType("dt1"),
-		newTestDestinationType("dt2"),
-		newTestDestinationType("dt3"),
-		newTestDestinationType("dt4"),
-		newTestDestination("d1", "dt1"),
-		newTestDestination("d2", "dt2"),
-		newTestDestination("d3", "dt3"),
-		newTestConfiguration("c1", []string{"s1"}, []string{"st2"}, []string{"d1"}, []string{"dt2"}),
-		newTestConfiguration("c2", []string{"s2"}, nil, []string{"d2"}, nil),
-		newTestConfiguration("c3", []string{"s1", "s2", "s3"}, nil, []string{"d1", "d2", "d3"}, nil),
-		newTestConfiguration("c4", nil, []string{"st4"}, nil, []string{"dt4"}),
-		newTestConfiguration("c5", nil, nil, nil, nil),
-		newTestConfiguration("c6", []string{"s4"}, nil, []string{"d3"}, nil),
-		newTestConfiguration("c7", nil, []string{"st5"}, []string{"d3"}, nil),
-	}
-	for _, resource := range resources {
-		resourceMap[resource.Name()] = resource
-	}
-	_, err := updatesTestStore.ApplyResources(context.Background(), resources)
-	require.NoError(t, err)
+	updates.IncludeAgent(agent, EventTypeInsert)
+	require.Equal(t, 1, len(updates.Agents))
+	require.Equal(t, agent, updates.Agents[agent.UniqueKey()].Item)
 }
 
-func newTestSourceType(name string) *model.SourceType {
-	return model.NewSourceType(name, []model.ParameterDefinition{})
+func TestUpdatesIncludeResource(t *testing.T) {
+	agentVersion := &model.AgentVersion{}
+	source := &model.Source{}
+	sourceType := &model.SourceType{}
+	processor := &model.Processor{}
+	processorType := &model.ProcessorType{}
+	destination := &model.Destination{}
+	destinationType := &model.DestinationType{}
+	configuration := &model.Configuration{}
+
+	updates := &Updates{}
+	updates.IncludeResource(agentVersion, EventTypeInsert)
+	updates.IncludeResource(source, EventTypeInsert)
+	updates.IncludeResource(sourceType, EventTypeInsert)
+	updates.IncludeResource(processor, EventTypeInsert)
+	updates.IncludeResource(processorType, EventTypeInsert)
+	updates.IncludeResource(destination, EventTypeInsert)
+	updates.IncludeResource(destinationType, EventTypeInsert)
+	updates.IncludeResource(configuration, EventTypeInsert)
+	updates.IncludeResource(nil, EventTypeInsert)
+
+	require.Equal(t, 8, updates.Size())
+	require.Equal(t, agentVersion, updates.AgentVersions[agentVersion.UniqueKey()].Item)
+	require.Equal(t, source, updates.Sources[source.UniqueKey()].Item)
+	require.Equal(t, sourceType, updates.SourceTypes[sourceType.UniqueKey()].Item)
+	require.Equal(t, processor, updates.Processors[processor.UniqueKey()].Item)
+	require.Equal(t, processorType, updates.ProcessorTypes[processorType.UniqueKey()].Item)
+	require.Equal(t, destination, updates.Destinations[destination.UniqueKey()].Item)
+	require.Equal(t, destinationType, updates.DestinationTypes[destinationType.UniqueKey()].Item)
+	require.Equal(t, configuration, updates.Configurations[configuration.UniqueKey()].Item)
 }
 
-func newTestSource(name string, sourceType string) *model.Source {
-	return model.NewSource(name, sourceType, []model.Parameter{})
-}
-
-func newTestSourceWithProcessors(name string, sourceType string, processors []model.ResourceConfiguration) *model.Source {
-	src := model.NewSource(name, sourceType, []model.Parameter{})
-	src.Spec.Processors = processors
-	return src
-}
-
-func newTestProcessorType(name string) *model.ProcessorType {
-	return model.NewProcessorType(name, []model.ParameterDefinition{})
-}
-
-func newTestProcessor(name string, processorType string) *model.Processor {
-	return model.NewProcessor(name, processorType, []model.Parameter{})
-}
-
-func newTestDestinationType(name string) *model.DestinationType {
-	return model.NewDestinationType(name, []model.ParameterDefinition{})
-}
-
-func newTestDestination(name string, destinationType string) *model.Destination {
-	return model.NewDestination(name, destinationType, []model.Parameter{})
-}
-
-func newTestConfiguration(name string, sources []string, sourceTypes []string, destinations []string, destinationTypes []string) *model.Configuration {
-	c := &model.Configuration{
-		ResourceMeta: model.ResourceMeta{
-			APIVersion: model.V1,
-			Kind:       model.KindDestinationType,
-			Metadata: model.Metadata{
-				Name: name,
-			},
-		},
-		Spec: model.ConfigurationSpec{},
-	}
-	for _, source := range sources {
-		c.Spec.Sources = append(c.Spec.Sources, model.ResourceConfiguration{Name: source})
-	}
-	for _, sourceType := range sourceTypes {
-		c.Spec.Sources = append(c.Spec.Sources, model.ResourceConfiguration{ParameterizedSpec: model.ParameterizedSpec{Type: sourceType}})
-	}
-	for _, destination := range destinations {
-		c.Spec.Destinations = append(c.Spec.Destinations, model.ResourceConfiguration{Name: destination})
-	}
-	for _, destinationType := range destinationTypes {
-		c.Spec.Destinations = append(c.Spec.Destinations, model.ResourceConfiguration{ParameterizedSpec: model.ParameterizedSpec{Type: destinationType}})
-	}
-	return c
-}
-
-func addUpdates[T model.Resource](t *testing.T, names []string, events Events[T]) {
-	for _, name := range names {
-		resource, ok := resourceMap[name]
-		require.True(t, ok)
-		events.Include(resource.(T), EventTypeUpdate)
-	}
-}
-
-func TestTransitiveUpdates(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	updatesTestSetup(t)
-	tests := []struct {
-		Name string
-
-		Sources          []string
-		SourceTypes      []string
-		Processors       []string
-		ProcessorTypes   []string
-		Destinations     []string
-		DestinationTypes []string
-		Configurations   []string
-
-		ExpectSources          []string
-		ExpectSourceTypes      []string
-		ExpectProcessors       []string
-		ExpectProcessorTypes   []string
-		ExpectDestinations     []string
-		ExpectDestinationTypes []string
-		ExpectConfigurations   []string
+func TestUpdatesEmpty(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected bool
 	}{
 		{
-			Name:                 "s1 source",
-			Sources:              []string{"s1"},
-			ExpectSources:        []string{"s1"},
-			ExpectConfigurations: []string{"c1", "c3"},
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: true,
 		},
 		{
-			Name:                 "s2 source",
-			Sources:              []string{"s2"},
-			ExpectSources:        []string{"s2"},
-			ExpectConfigurations: []string{"c2", "c3"},
-		},
-		{
-			Name:                 "s1 sources, d2 destination",
-			Sources:              []string{"s1"},
-			Destinations:         []string{"d2"},
-			ExpectSources:        []string{"s1"},
-			ExpectDestinations:   []string{"d2"},
-			ExpectConfigurations: []string{"c1", "c2", "c3"},
-		},
-		{
-			Name:                 "st1-4 source types",
-			SourceTypes:          []string{"st1", "st2", "st3", "st4"},
-			ExpectSources:        []string{"s1", "s2", "s3"},
-			ExpectSourceTypes:    []string{"st1", "st2", "st3", "st4"},
-			ExpectConfigurations: []string{"c1", "c2", "c3", "c4"},
-		},
-		{
-			Name:                   "dt2 destination type",
-			DestinationTypes:       []string{"dt2"},
-			ExpectDestinationTypes: []string{"dt2"},
-			ExpectDestinations:     []string{"d2"},
-			ExpectConfigurations:   []string{"c1", "c2", "c3"},
-		},
-		{
-			Name:                 "s1 source, st1 sourceType, d2 destination",
-			Sources:              []string{"s1"},
-			SourceTypes:          []string{"st1"},
-			Destinations:         []string{"d2"},
-			Configurations:       []string{"c1"},
-			ExpectSources:        []string{"s1"},
-			ExpectSourceTypes:    []string{"st1"},
-			ExpectDestinations:   []string{"d2"},
-			ExpectConfigurations: []string{"c1", "c2", "c3"},
-		},
-		{
-			Name:                 "s1 source, st1 sourceType, d2 destination",
-			Sources:              []string{"s1"},
-			SourceTypes:          []string{"st1"},
-			Destinations:         []string{"d2"},
-			Configurations:       []string{"c1"},
-			ExpectSources:        []string{"s1"},
-			ExpectSourceTypes:    []string{"st1"},
-			ExpectDestinations:   []string{"d2"},
-			ExpectConfigurations: []string{"c1", "c2", "c3"},
-		},
-		{
-			Name:                 "p1",
-			Processors:           []string{"p1"},
-			ExpectProcessors:     []string{"p1"},
-			ExpectSources:        []string{"s4"},
-			ExpectConfigurations: []string{"c6"},
-		},
-		{
-			Name:                 "pt2",
-			ProcessorTypes:       []string{"pt2"},
-			ExpectProcessorTypes: []string{"pt2"},
-			ExpectSources:        []string{"s4"},
-			ExpectConfigurations: []string{"c6"},
-		},
-		{
-			Name:                 "pt1",
-			ProcessorTypes:       []string{"pt1"},
-			ExpectSources:        []string{"s4"},
-			ExpectProcessors:     []string{"p1"},
-			ExpectProcessorTypes: []string{"pt1"},
-			ExpectConfigurations: []string{"c6"},
+			name: "not empty",
+			updates: &Updates{
+				Agents: Events[*model.Agent]{
+					"test": Event[*model.Agent]{},
+				},
+			},
+			expected: false,
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			updates := NewUpdates()
-
-			// populate updates
-			addUpdates(t, test.Sources, updates.Sources)
-			addUpdates(t, test.SourceTypes, updates.SourceTypes)
-			addUpdates(t, test.Processors, updates.Processors)
-			addUpdates(t, test.ProcessorTypes, updates.ProcessorTypes)
-			addUpdates(t, test.Destinations, updates.Destinations)
-			addUpdates(t, test.DestinationTypes, updates.DestinationTypes)
-			addUpdates(t, test.Configurations, updates.Configurations)
-
-			// add transitive
-			err := updates.addTransitiveUpdates(ctx, updatesTestStore)
-			require.NoError(t, err)
-
-			// compare results
-			require.ElementsMatch(t, test.ExpectSources, updates.Sources.Keys(), "Sources")
-			require.ElementsMatch(t, test.ExpectSourceTypes, updates.SourceTypes.Keys(), "SourceTypes")
-			require.ElementsMatch(t, test.ExpectProcessors, updates.Processors.Keys(), "Processors")
-			require.ElementsMatch(t, test.ExpectProcessorTypes, updates.ProcessorTypes.Keys(), "ProcessorTypes")
-			require.ElementsMatch(t, test.ExpectDestinations, updates.Destinations.Keys(), "Destinations")
-			require.ElementsMatch(t, test.ExpectDestinationTypes, updates.DestinationTypes.Keys(), "DestinationTypes")
-			require.ElementsMatch(t, test.ExpectConfigurations, updates.Configurations.Keys(), "Configurations")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.Empty())
 		})
 	}
+}
+
+func TestUpdatesSize(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected int
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: 0,
+		},
+		{
+			name: "with resources",
+			updates: &Updates{
+				Agents: Events[*model.Agent]{
+					"test": Event[*model.Agent]{},
+				},
+				AgentVersions: Events[*model.AgentVersion]{
+					"test": Event[*model.AgentVersion]{},
+				},
+				Sources: Events[*model.Source]{
+					"test": Event[*model.Source]{},
+				},
+				SourceTypes: Events[*model.SourceType]{
+					"test": Event[*model.SourceType]{},
+				},
+				Processors: Events[*model.Processor]{
+					"test": Event[*model.Processor]{},
+				},
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test": Event[*model.ProcessorType]{},
+				},
+				Destinations: Events[*model.Destination]{
+					"test": Event[*model.Destination]{},
+				},
+				DestinationTypes: Events[*model.DestinationType]{
+					"test": Event[*model.DestinationType]{},
+				},
+			},
+			expected: 8,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.Size())
+		})
+	}
+}
+
+func TestUpdatesCouldAffectProcessors(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected bool
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: false,
+		},
+		{
+			name: "with processors",
+			updates: &Updates{
+				Processors: Events[*model.Processor]{
+					"test": Event[*model.Processor]{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "with processor types",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test": Event[*model.ProcessorType]{},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.CouldAffectProcessors())
+		})
+	}
+}
+
+func TestUpdatesCouldAffectSources(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected bool
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: false,
+		},
+		{
+			name: "with sources",
+			updates: &Updates{
+				Sources: Events[*model.Source]{
+					"test": Event[*model.Source]{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "with source types",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test": Event[*model.SourceType]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with processors",
+			updates: &Updates{
+				Processors: Events[*model.Processor]{
+					"test": Event[*model.Processor]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with processor types",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test": Event[*model.ProcessorType]{},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.CouldAffectSources())
+		})
+	}
+}
+
+func TestUpdatesCouldAffectDestinations(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected bool
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: false,
+		},
+		{
+			name: "with destinations",
+			updates: &Updates{
+				Destinations: Events[*model.Destination]{
+					"test": Event[*model.Destination]{},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "with destination types",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test": Event[*model.DestinationType]{},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.CouldAffectDestinations())
+		})
+	}
+}
+
+func TestUpdatesCouldAffectConfigurations(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		expected bool
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			expected: false,
+		},
+		{
+			name: "with sources",
+			updates: &Updates{
+				Sources: Events[*model.Source]{
+					"test": Event[*model.Source]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with source types",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test": Event[*model.SourceType]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with destinations",
+			updates: &Updates{
+				Destinations: Events[*model.Destination]{
+					"test": Event[*model.Destination]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with destination types",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test": Event[*model.DestinationType]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with processors",
+			updates: &Updates{
+				Processors: Events[*model.Processor]{
+					"test": Event[*model.Processor]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with processor types",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test": Event[*model.ProcessorType]{},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "with configurations",
+			updates: &Updates{
+				Configurations: Events[*model.Configuration]{
+					"test": Event[*model.Configuration]{},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.CouldAffectConfigurations())
+		})
+	}
+}
+
+func TestUpdatesAffectsSource(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		source   *model.Source
+		expected bool
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			source:   &model.Source{},
+			expected: false,
+		},
+		{
+			name: "with source type update",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			source:   model.NewSource("test-name", "test-source-type", nil),
+			expected: true,
+		},
+		{
+			name: "with source type insert",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			source:   model.NewSource("test-name", "test-source-type", nil),
+			expected: false,
+		},
+		{
+			name: "with processor update",
+			updates: &Updates{
+				Processors: Events[*model.Processor]{
+					"test-processor": Event[*model.Processor]{
+						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			source:   createSourceWithProcessor("test-source-type", "test-name", "test-processor-type", "test-processor"),
+			expected: true,
+		},
+		{
+			name: "with processor insert",
+			updates: &Updates{
+				Processors: Events[*model.Processor]{
+					"test-processor": Event[*model.Processor]{
+						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			source:   createSourceWithProcessor("test-source-type", "test-name", "test-processor-type", "test-processor"),
+			expected: false,
+		},
+		{
+			name: "with processor type update",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			source:   createSourceWithProcessor("test-source-type", "test-name", "test-processor-type", "test-processor"),
+			expected: true,
+		},
+		{
+			name: "with processor type insert",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			source:   createSourceWithProcessor("test-source-type", "test-name", "test-processor-type", "test-processor"),
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.AffectsSource(tc.source))
+		})
+	}
+}
+
+func TestUpdatesAffectsProcessor(t *testing.T) {
+	testCase := []struct {
+		name      string
+		updates   *Updates
+		processor *model.Processor
+		expected  bool
+	}{
+		{
+			name:      "empty",
+			updates:   NewUpdates(),
+			processor: &model.Processor{},
+			expected:  false,
+		},
+		{
+			name: "with processor type update",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			processor: model.NewProcessor("test-name", "test-processor-type", nil),
+			expected:  true,
+		},
+		{
+			name: "with processor type insert",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			processor: model.NewProcessor("test-name", "test-processor-type", nil),
+			expected:  false,
+		},
+	}
+
+	for _, tc := range testCase {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.AffectsProcessor(tc.processor))
+		})
+	}
+}
+
+func TestUpdatesAffectsDestination(t *testing.T) {
+	testCases := []struct {
+		name        string
+		updates     *Updates
+		destination *model.Destination
+		expected    bool
+	}{
+		{
+			name:        "empty",
+			updates:     NewUpdates(),
+			destination: &model.Destination{},
+			expected:    false,
+		},
+		{
+			name: "with destination type update",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			destination: model.NewDestination("test-name", "test-destination-type", nil),
+			expected:    true,
+		},
+		{
+			name: "with destination type insert",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			destination: model.NewDestination("test-name", "test-destination-type", nil),
+			expected:    false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.AffectsDestination(tc.destination))
+		})
+	}
+}
+
+func TestUpdatesAffectsConfiguration(t *testing.T) {
+	testCases := []struct {
+		name          string
+		updates       *Updates
+		configuration *model.Configuration
+		expected      bool
+	}{
+		{
+			name:          "empty",
+			updates:       NewUpdates(),
+			configuration: &model.Configuration{},
+			expected:      false,
+		},
+		{
+			name: "with source update",
+			updates: &Updates{
+				Sources: Events[*model.Source]{
+					"test-source": Event[*model.Source]{
+						Item: model.NewSource("test-source", "test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSource("test-config", "test-source-type", "test-source"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated source update",
+			updates: &Updates{
+				Sources: Events[*model.Source]{
+					"unrelated-source": Event[*model.Source]{
+						Item: model.NewSource("unrelated-source", "unrelated-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSource("test-config", "test-source-type", "test-source"),
+			expected:      false,
+		},
+		{
+			name: "with source type update",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSource("test-config", "test-source-type", "test-source"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated source type update",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"unrelated-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("unrelated-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSource("test-config", "test-source-type", "test-source"),
+			expected:      false,
+		},
+		{
+			name: "with destination update",
+			updates: &Updates{
+				Destinations: Events[*model.Destination]{
+					"test-destination": Event[*model.Destination]{
+						Item: model.NewDestination("test-destination", "test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestination("test-config", "test-destination-type", "test-destination"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated destination update",
+			updates: &Updates{
+				Destinations: Events[*model.Destination]{
+					"unrelated-destination": Event[*model.Destination]{
+						Item: model.NewDestination("unrelated-destination", "unrelated-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestination("test-config", "test-destination-type", "test-destination"),
+			expected:      false,
+		},
+		{
+			name: "with destination type update",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestination("test-config", "test-destination-type", "test-destination"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated destination type update",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"unrelated-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("unrelated-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestination("test-config", "test-destination-type", "test-destination"),
+			expected:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, tc.updates.AffectsConfiguration(tc.configuration))
+		})
+	}
+}
+
+func TestUpdatesAddAffectedSources(t *testing.T) {
+	testCases := []struct {
+		name     string
+		updates  *Updates
+		sources  []*model.Source
+		expected *Updates
+	}{
+		{
+			name:     "empty",
+			updates:  NewUpdates(),
+			sources:  []*model.Source{},
+			expected: NewUpdates(),
+		},
+		{
+			name: "with affected source",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			sources: []*model.Source{model.NewSource("test-source", "test-source-type", nil)},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Sources: Events[*model.Source]{
+					"test-source": Event[*model.Source]{
+						Item: model.NewSource("test-source", "test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with unrelated source",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			sources: []*model.Source{model.NewSource("unrelated-source", "unrelated-source-type", nil)},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with existing source update",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Sources: Events[*model.Source]{
+					"test-source": Event[*model.Source]{
+						Item: model.NewSource("test-source", "test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			sources: []*model.Source{model.NewSource("test-source", "test-source-type", nil)},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Sources: Events[*model.Source]{
+					"test-source": Event[*model.Source]{
+						Item: model.NewSource("test-source", "test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.updates.AddAffectedSources(tc.sources)
+			require.Equal(t, tc.expected, tc.updates)
+		})
+	}
+}
+
+func TestUpdatesAddAffectedProcessors(t *testing.T) {
+	testCases := []struct {
+		name       string
+		updates    *Updates
+		processors []*model.Processor
+		expected   *Updates
+	}{
+		{
+			name:       "empty",
+			updates:    NewUpdates(),
+			processors: []*model.Processor{},
+			expected:   NewUpdates(),
+		},
+		{
+			name: "with affected processor",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			processors: []*model.Processor{model.NewProcessor("test-processor", "test-processor-type", nil)},
+			expected: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Processors: Events[*model.Processor]{
+					"test-processor": Event[*model.Processor]{
+						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with unrelated processor",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			processors: []*model.Processor{model.NewProcessor("unrelated-processor", "unrelated-processor-type", nil)},
+			expected: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with existing processor update",
+			updates: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Processors: Events[*model.Processor]{
+					"test-processor": Event[*model.Processor]{
+						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			processors: []*model.Processor{model.NewProcessor("test-processor", "test-processor-type", nil)},
+			expected: &Updates{
+				ProcessorTypes: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Processors: Events[*model.Processor]{
+					"test-processor": Event[*model.Processor]{
+						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.updates.AddAffectedProcessors(tc.processors)
+			require.Equal(t, tc.expected, tc.updates)
+		})
+	}
+}
+
+func TestUpdatesAddAffectedDestinations(t *testing.T) {
+	testCases := []struct {
+		name         string
+		updates      *Updates
+		destinations []*model.Destination
+		expected     *Updates
+	}{
+		{
+			name:         "empty",
+			updates:      NewUpdates(),
+			destinations: []*model.Destination{},
+			expected:     NewUpdates(),
+		},
+		{
+			name: "with affected destination",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			destinations: []*model.Destination{model.NewDestination("test-destination", "test-destination-type", nil)},
+			expected: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Destinations: Events[*model.Destination]{
+					"test-destination": Event[*model.Destination]{
+						Item: model.NewDestination("test-destination", "test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with unrelated destination",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			destinations: []*model.Destination{model.NewDestination("unrelated-destination", "unrelated-destination-type", nil)},
+			expected: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with existing destination update",
+			updates: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Destinations: Events[*model.Destination]{
+					"test-destination": Event[*model.Destination]{
+						Item: model.NewDestination("test-destination", "test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			destinations: []*model.Destination{model.NewDestination("test-destination", "test-destination-type", nil)},
+			expected: &Updates{
+				DestinationTypes: Events[*model.DestinationType]{
+					"test-destination-type": Event[*model.DestinationType]{
+						Item: model.NewDestinationType("test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Destinations: Events[*model.Destination]{
+					"test-destination": Event[*model.Destination]{
+						Item: model.NewDestination("test-destination", "test-destination-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.updates.AddAffectedDestinations(tc.destinations)
+			require.Equal(t, tc.expected, tc.updates)
+		})
+	}
+}
+
+func TestUpdatesAddAffectedConfigurations(t *testing.T) {
+	testCases := []struct {
+		name           string
+		updates        *Updates
+		configurations []*model.Configuration
+		expected       *Updates
+	}{
+		{
+			name:           "empty",
+			updates:        NewUpdates(),
+			configurations: []*model.Configuration{},
+			expected:       NewUpdates(),
+		},
+		{
+			name: "with affected configuration",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configurations: []*model.Configuration{
+				createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
+			},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Configurations: Events[*model.Configuration]{
+					"test-configuration": Event[*model.Configuration]{
+						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with unrelated configuration",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configurations: []*model.Configuration{
+				createConfigurationWithSource("unrelated-configuration", "unrelated-source-type", "unrelated-source-name"),
+			},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+		{
+			name: "with existing configuration update",
+			updates: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Configurations: Events[*model.Configuration]{
+					"test-configuration": Event[*model.Configuration]{
+						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configurations: []*model.Configuration{
+				createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
+			},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Configurations: Events[*model.Configuration]{
+					"test-configuration": Event[*model.Configuration]{
+						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.updates.AddAffectedConfigurations(tc.configurations)
+			require.Equal(t, tc.expected, tc.updates)
+		})
+	}
+}
+
+func TestMergeUpdates(t *testing.T) {
+	testCases := []struct {
+		name       string
+		into       *Updates
+		from       *Updates
+		expected   *Updates
+		successful bool
+	}{
+		{
+			name:       "empty",
+			into:       NewUpdates(),
+			from:       NewUpdates(),
+			expected:   NewUpdates(),
+			successful: true,
+		},
+		{
+			name: "with no conflicts",
+			into: NewUpdates(),
+			from: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			expected: &Updates{
+				Agents:        Events[*model.Agent]{},
+				AgentVersions: Events[*model.AgentVersion]{},
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+				Sources:          Events[*model.Source]{},
+				ProcessorTypes:   Events[*model.ProcessorType]{},
+				Processors:       Events[*model.Processor]{},
+				DestinationTypes: Events[*model.DestinationType]{},
+				Destinations:     Events[*model.Destination]{},
+				Configurations:   Events[*model.Configuration]{},
+			},
+			successful: true,
+		},
+		{
+			name: "with conflicts",
+			into: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			from: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeInsert,
+					},
+				},
+			},
+			expected: &Updates{
+				SourceTypes: Events[*model.SourceType]{
+					"test-source-type": Event[*model.SourceType]{
+						Item: model.NewSourceType("test-source-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			successful: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			successful := MergeUpdates(tc.into, tc.from)
+			require.Equal(t, tc.successful, successful)
+			require.Equal(t, tc.expected, tc.into)
+		})
+	}
+}
+
+// createSourceWithProcessor creates a source with a processor for testing.
+func createSourceWithProcessor(sourceType, sourceName, processorType, processorName string) *model.Source {
+	return model.NewSourceWithSpec(sourceName, model.ParameterizedSpec{
+		Type: sourceType,
+		Processors: []model.ResourceConfiguration{
+			{
+				Name: processorName,
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: processorType,
+				},
+			},
+		},
+	})
+}
+
+// createConfigurationWithSource creates a configuration with a source for testing.
+func createConfigurationWithSource(configName, sourceType, sourceName string) *model.Configuration {
+	return model.NewConfigurationWithSpec(configName, model.ConfigurationSpec{
+		Sources: []model.ResourceConfiguration{
+			{
+				Name: sourceName,
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: sourceType,
+				},
+			},
+		},
+	})
+}
+
+// createConfigurationWithDestination creates a configuration with a destination for testing.
+func createConfigurationWithDestination(configName, destinationType, destinationName string) *model.Configuration {
+	return model.NewConfigurationWithSpec(configName, model.ConfigurationSpec{
+		Destinations: []model.ResourceConfiguration{
+			{
+				Name: destinationName,
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: destinationType,
+				},
+			},
+		},
+	})
 }
