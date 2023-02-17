@@ -41,36 +41,7 @@ func TestAgentsCommand(t *testing.T) {
 
 		cmd := AgentsCommand(bindplane)
 		cmd.SetOut(buffer)
-		expected := `[
-  {
-    "id": "1",
-    "name": "Agent 1",
-    "type": "stanza",
-    "arch": "amd64",
-    "hostname": "local",
-    "labels": {},
-    "version": "1.0.0",
-    "home": "/stanza",
-    "platform": "linux",
-    "operatingSystem": "Ubuntu 20.10",
-    "macAddress": "00:00:ac:00:00:00",
-    "status": 1
-  },
-  {
-    "id": "2",
-    "name": "Agent 2",
-    "type": "",
-    "arch": "",
-    "hostname": "",
-    "labels": {},
-    "version": "1.0.0",
-    "home": "",
-    "platform": "",
-    "operatingSystem": "",
-    "macAddress": "",
-    "status": 0
-  }
-]`
+		expected := "[\n  {\n    \"id\": \"1\",\n    \"name\": \"Agent 1\",\n    \"type\": \"stanza\",\n    \"arch\": \"amd64\",\n    \"hostname\": \"local\",\n    \"labels\": {},\n    \"version\": \"1.0.0\",\n    \"home\": \"/stanza\",\n    \"platform\": \"linux\",\n    \"operatingSystem\": \"Ubuntu 20.10\",\n    \"macAddress\": \"00:00:ac:00:00:00\",\n    \"status\": 1\n  },\n  {\n    \"id\": \"2\",\n    \"name\": \"Agent 2\",\n    \"type\": \"\",\n    \"arch\": \"\",\n    \"hostname\": \"\",\n    \"labels\": {},\n    \"version\": \"1.0.0\",\n    \"home\": \"\",\n    \"platform\": \"\",\n    \"operatingSystem\": \"\",\n    \"macAddress\": \"\",\n    \"status\": 0\n  }\n]"
 
 		executeAndAssertOutput(t, cmd, buffer, expected)
 	})

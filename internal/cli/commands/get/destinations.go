@@ -15,10 +15,11 @@
 package get
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
 	"github.com/spf13/cobra"
 )
 
@@ -29,35 +30,15 @@ func DestinationsCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"destination"},
 		Short:   "Displays the destinations",
 		Long:    `A destination is a service that receives logs, metrics, and traces.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
-				name := args[0]
-				destination, err := c.Destination(cmd.Context(), name)
-				if err != nil {
-					return err
-				}
-
-				if destination == nil {
-					return fmt.Errorf("no destination found with name %s", name)
-				}
-
-				printer.PrintResource(bindplane.Printer(), destination)
-				return nil
-			}
-
-			destinations, err := c.Destinations(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), destinations)
-			return nil
-		},
+		RunE: getImpl(bindplane, "destinations", getter[*model.Destination]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.Destination, bool, error) {
+				item, err := client.Destination(ctx, name)
+				return item, item != nil, err
+			},
+			all: func(ctx context.Context, client client.BindPlane) ([]*model.Destination, error) {
+				return client.Destinations(ctx)
+			},
+		}),
 	}
 	return cmd
 }

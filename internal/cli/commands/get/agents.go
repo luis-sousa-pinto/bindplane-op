@@ -15,13 +15,12 @@
 package get
 
 import (
-	"fmt"
-
-	"github.com/spf13/cobra"
+	"context"
 
 	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
+	"github.com/spf13/cobra"
 )
 
 // AgentsCommand returns the BindPlane get agents cobra command
@@ -37,40 +36,20 @@ func AgentsCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"agent"},
 		Short:   "Displays the agents",
 		Long:    `An agent collects logs, metrics, and traces for sources and sends them to destinations.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
-				id := args[0]
-				agent, err := c.Agent(cmd.Context(), id)
-				if err != nil {
-					return err
-				}
-
-				if agent == nil {
-					return fmt.Errorf("no agent found with ID %s", id)
-				}
-
-				printer.PrintResource(bindplane.Printer(), agent)
-				return nil
-			}
-
-			agents, err := c.Agents(cmd.Context(),
-				client.WithSelector(selector),
-				client.WithQuery(query),
-				client.WithOffset(offset),
-				client.WithLimit(limit),
-			)
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), agents)
-			return nil
-		},
+		RunE: getImpl(bindplane, "agents", getter[*model.Agent]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.Agent, bool, error) {
+				item, err := client.Agent(ctx, name)
+				return item, item != nil, err
+			},
+			all: func(ctx context.Context, cli client.BindPlane) ([]*model.Agent, error) {
+				return cli.Agents(ctx,
+					client.WithSelector(selector),
+					client.WithQuery(query),
+					client.WithOffset(offset),
+					client.WithLimit(limit),
+				)
+			},
+		}),
 	}
 
 	cmd.Flags().StringVarP(&selector, "selector", "l", "", "label selector to filter agents by label, e.g. name=value")

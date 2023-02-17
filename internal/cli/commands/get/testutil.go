@@ -17,6 +17,7 @@ package get
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io/ioutil"
 	"testing"
 
@@ -74,11 +75,12 @@ func (c *mockClient) Agents(_ context.Context, _ ...client.QueryOption) ([]*mode
 // Agent TODO(doc)
 func (c *mockClient) Agent(ctx context.Context, id string) (*model.Agent, error) {
 	agents, _ := c.Agents(ctx)
-	if id == agents[0].ID {
-		return agents[0], nil
+	for _, agent := range agents {
+		if id == agent.ID {
+			return agent, nil
+		}
 	}
-
-	return nil, nil
+	return nil, errors.New("unable to get agents, got 404 Not Found	")
 }
 
 func executeAndAssertOutput(t *testing.T, cmd *cobra.Command, buffer *bytes.Buffer, expected string) {

@@ -15,10 +15,11 @@
 package get
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
 	"github.com/spf13/cobra"
 )
 
@@ -29,35 +30,15 @@ func DestinationTypesCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"destination-type"},
 		Short:   "Displays the destination types",
 		Long:    `A destination type is a type of service that receives logs, metrics, and traces.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
-				name := args[0]
-				destinationType, err := c.DestinationType(cmd.Context(), name)
-				if err != nil {
-					return err
-				}
-
-				if destinationType == nil {
-					return fmt.Errorf("no destination-type found with name %s", name)
-				}
-
-				printer.PrintResource(bindplane.Printer(), destinationType)
-				return nil
-			}
-
-			destinationTypes, err := c.DestinationTypes(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), destinationTypes)
-			return nil
-		},
+		RunE: getImpl(bindplane, "destination-types", getter[*model.DestinationType]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.DestinationType, bool, error) {
+				item, err := client.DestinationType(ctx, name)
+				return item, item != nil, err
+			},
+			all: func(ctx context.Context, client client.BindPlane) ([]*model.DestinationType, error) {
+				return client.DestinationTypes(ctx)
+			},
+		}),
 	}
 	return cmd
 }

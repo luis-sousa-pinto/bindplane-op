@@ -15,10 +15,11 @@
 package get
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
 	"github.com/spf13/cobra"
 )
 
@@ -29,35 +30,15 @@ func ProcessorsCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"processor"},
 		Short:   "Displays the processors",
 		Long:    `A processor transforms logs, metrics, and traces.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
-				name := args[0]
-				processor, err := c.Processor(cmd.Context(), name)
-				if err != nil {
-					return err
-				}
-
-				if processor == nil {
-					return fmt.Errorf("no processor found with name %s", name)
-				}
-
-				printer.PrintResource(bindplane.Printer(), processor)
-				return nil
-			}
-
-			processors, err := c.Processors(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), processors)
-			return nil
-		},
+		RunE: getImpl(bindplane, "processors", getter[*model.Processor]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.Processor, bool, error) {
+				item, err := client.Processor(ctx, name)
+				return item, item != nil, err
+			},
+			all: func(ctx context.Context, client client.BindPlane) ([]*model.Processor, error) {
+				return client.Processors(ctx)
+			},
+		}),
 	}
 	return cmd
 }

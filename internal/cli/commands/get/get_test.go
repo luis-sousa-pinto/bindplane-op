@@ -16,15 +16,19 @@ package get
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
+	"github.com/hashicorp/go-multierror"
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/cli"
+	"github.com/observiq/bindplane-op/internal/cli/commands"
+	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testArgs struct {
@@ -63,33 +67,84 @@ func TestGetCommand(t *testing.T) {
 
 func TestGetIndividualCommand(t *testing.T) {
 	var tests = []struct {
-		description  string
-		args         []string
-		expectOutput string
+		description   string
+		args          []string
+		expectOutput  string
+		expectedError error
 	}{
 		{
-			description:  "get agent 1",
-			args:         []string{"agent", "1"},
-			expectOutput: "ID\tNAME   \tVERSION\tSTATUS   \tCONNECTED\tDISCONNECTED\tLABELS \n1 \tAgent 1\t1.0.0  \tConnected\t-        \t-           \t      \t\n",
+			description:   "get agent 1",
+			args:          []string{"get", "agent", "1"},
+			expectOutput:  "ID\tNAME   \tVERSION\tSTATUS   \tCONNECTED\tDISCONNECTED\tLABELS \n1 \tAgent 1\t1.0.0  \tConnected\t-        \t-           \t      \t\n",
+			expectedError: nil,
+		},
+		{
+			description:   "get agent 2",
+			args:          []string{"get", "agent", "2"},
+			expectOutput:  "ID\tNAME   \tVERSION\tSTATUS      \tCONNECTED\tDISCONNECTED\tLABELS \n2 \tAgent 2\t1.0.0  \tDisconnected\t-        \t-           \t      \t\n",
+			expectedError: nil,
+		},
+		{
+			description:   "get agent 1 2",
+			args:          []string{"get", "agent", "1", "2"},
+			expectOutput:  "ID\tNAME   \tVERSION\tSTATUS      \tCONNECTED\tDISCONNECTED\tLABELS \n1 \tAgent 1\t1.0.0  \tConnected   \t-        \t-           \t      \t\n2 \tAgent 2\t1.0.0  \tDisconnected\t-        \t-           \t      \t\n",
+			expectedError: nil,
+		},
+		{
+			description:   "get agent 2 1",
+			args:          []string{"get", "agent", "2", "1"},
+			expectOutput:  "ID\tNAME   \tVERSION\tSTATUS      \tCONNECTED\tDISCONNECTED\tLABELS \n2 \tAgent 2\t1.0.0  \tDisconnected\t-        \t-           \t      \t\n1 \tAgent 1\t1.0.0  \tConnected   \t-        \t-           \t      \t\n",
+			expectedError: nil,
+		},
+		{
+			description:   "get agent 3",
+			args:          []string{"get", "agent", "3"},
+			expectOutput:  "No matching resources found.\n",
+			expectedError: multierror.Append(errors.New("unable to get agents, got 404 Not Found\t"), errors.New("no agents found with name 3")),
 		},
 	}
 
+	home := commands.BindplaneHome()
+
+	var h = profile.NewHelper(home)
+
+	// We need to perform this before creating a new bindplane cli because bindplane cli
+	// creates a new logger with a file in ~/.bindplane
+	err := h.HomeFolderSetup()
+	if err != nil {
+		fmt.Printf("error while trying to set up BindPlane home directory %s, %s\n", home, err.Error())
+		os.Exit(1)
+	}
+
+	buffer := bytes.NewBufferString("")
+
+	// Initialize the BindPlane CLI
+	bindplane := cli.NewBindPlane(common.InitConfig(home), buffer)
+	bindplane.SetClient(&mockClient{})
+
+	// root command is neccessary to inherit error handling behavior
+	rootCmd := commands.Command(bindplane, "bindplanectl")
+
+	rootCmd.SetOut(buffer)
+	cmd := Command(bindplane)
+	cmd.SetOut(buffer)
+	rootCmd.AddCommand(cmd)
+
+	// The following should replace the above setup code to better reflect reality.
+	// buffer := bytes.NewBufferString("")
+	// rootCmd, bindplane := cmd.bindplanectl.main.SetupCobra(buffer)
+
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			buffer := bytes.NewBufferString("")
-			bindplane := cli.NewBindPlane(common.InitConfig(""), buffer)
-			bindplane.SetClient(&mockClient{})
 
-			cmd := Command(bindplane)
-			cmd.SetOut(buffer)
-
-			cmd.SetArgs(test.args)
-			cmd.Execute()
+			rootCmd.SetArgs(test.args)
+			cmdError := rootCmd.Execute()
 
 			out, err := ioutil.ReadAll(buffer)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expectOutput, string(out))
+			assert.Equal(t, test.expectedError, cmdError)
 		})
 	}
 }

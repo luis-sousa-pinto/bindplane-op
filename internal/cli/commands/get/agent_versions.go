@@ -30,8 +30,8 @@ func AgentVersionsCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"agent-version"},
 		Short:   "Displays the agent versions",
 		Long:    `An agent version defines a specific version of an agent with links to the release package.`,
-		RunE: getImpl(bindplane, "agent-version", getter[*model.AgentVersion]{
-			one: func(ctx context.Context, client client.BindPlane, name string) (*model.AgentVersion, bool, error) {
+		RunE: getImpl(bindplane, "agent-versions", getter[*model.AgentVersion]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.AgentVersion, bool, error) {
 				item, err := client.AgentVersion(ctx, name)
 				return item, item != nil, err
 			},

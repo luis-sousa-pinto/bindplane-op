@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/observiq/bindplane-op/client"
@@ -52,10 +53,20 @@ func Command(bindplane *cli.BindPlane) *cobra.Command {
 // ----------------------------------------------------------------------
 // generic implementations for get
 
+// 'some' is a function used for 'get' implementations that take arguments, e.g.
+//			bindplanectl get agents 0738a9b0-7c36-46ae-800e-98b61f763654 caf962be-3950-4c13-a60b-10324f0bd304
+// 'all' is a function that implements a call for all of the command type, e.g.
+//			bindplanectl get agents
+// will return all of the agents
+
 type getter[T model.Printable] struct {
-	one func(ctx context.Context, client client.BindPlane, name string) (T, bool, error)
-	all func(ctx context.Context, client client.BindPlane) ([]T, error)
+	some func(ctx context.Context, client client.BindPlane, name string) (T, bool, error)
+	all  func(ctx context.Context, client client.BindPlane) ([]T, error)
 }
+
+// Since all the 'get' commands share common error handling and printing code,
+// this function factors out that common code and uses the functions passed in the
+// getter struct to execute the specific functionality, e.g. configuration, agents, sources, etc.
 
 func getImpl[T model.Printable](bindplane *cli.BindPlane, resourceName string, g getter[T]) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
@@ -64,19 +75,27 @@ func getImpl[T model.Printable](bindplane *cli.BindPlane, resourceName string, g
 			return fmt.Errorf("error creating client: %w", err)
 		}
 
+		var errGroup error
 		if len(args) > 0 {
-			name := args[0]
-			item, exists, err := g.one(cmd.Context(), c, name)
-			if err != nil {
-				return err
+			items := []T{}
+			for _, name := range args {
+				item, exists, err := g.some(cmd.Context(), c, name)
+				if err != nil {
+					errGroup = multierror.Append(errGroup, err)
+				}
+				if !exists {
+					errGroup = multierror.Append(errGroup, fmt.Errorf("no %s found with name %s", resourceName, name))
+				} else {
+					items = append(items, item)
+				}
 			}
-
-			if !exists {
-				return fmt.Errorf("no %s found with name %s", resourceName, name)
+			if len(items) == 1 {
+				printer.PrintResource(bindplane.Printer(), items[0])
+			} else {
+				// PrintResources will print an error if there are no items
+				printer.PrintResources(bindplane.Printer(), items)
 			}
-
-			printer.PrintResource(bindplane.Printer(), item)
-			return nil
+			return errGroup
 		}
 
 		items, err := g.all(cmd.Context(), c)

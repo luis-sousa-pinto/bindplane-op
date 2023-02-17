@@ -15,12 +15,14 @@
 package get
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
 )
 
 // ConfigurationsCommand returns the BindPlane get configurations cobra command
@@ -29,45 +31,35 @@ func ConfigurationsCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Use:     "configurations [name]",
 		Aliases: []string{"configuration", "configs", "config"},
 		Short:   "Displays the configurations",
-		Long:    "A configuration provides a complete agent configuration to ship logs metrics, and traces",
+		Long:    "A configuration provides a complete agent configuration to ship logs, metrics, and traces",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
+			// special case for raw configurations
+			if bindplane.Config.Output == "raw" && len(args) > 0 {
 				name := args[0]
-				configuration, err := c.Configuration(cmd.Context(), name)
+				c, err := bindplane.Client()
+				if err != nil {
+					return fmt.Errorf("error creating client: %w", err)
+				}
+				raw, err := c.RawConfiguration(cmd.Context(), name)
 				if err != nil {
 					return err
 				}
-				if configuration == nil {
-					return fmt.Errorf("no Configuration found with name %s", name)
+				if _, err := cmd.OutOrStdout().Write([]byte(raw)); err != nil {
+					return err
 				}
-
-				if bindplane.Config.Output == "raw" {
-					raw, err := c.RawConfiguration(cmd.Context(), name)
-					if err != nil {
-						return err
-					}
-					if _, err := cmd.OutOrStdout().Write([]byte(raw)); err != nil {
-						return err
-					}
-					return nil
-				}
-
-				printer.PrintResource(bindplane.Printer(), configuration)
 				return nil
 			}
 
-			configurations, err := c.Configurations(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), configurations)
-			return nil
+			// normal get case
+			return getImpl(bindplane, "configurations", getter[*model.Configuration]{
+				some: func(ctx context.Context, client client.BindPlane, name string) (*model.Configuration, bool, error) {
+					item, err := client.Configuration(ctx, name)
+					return item, item != nil, err
+				},
+				all: func(ctx context.Context, client client.BindPlane) ([]*model.Configuration, error) {
+					return client.Configurations(ctx)
+				},
+			})(cmd, args)
 		},
 	}
 

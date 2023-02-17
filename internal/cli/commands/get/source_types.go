@@ -30,8 +30,8 @@ func SourceTypesCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"source-type"},
 		Short:   "Displays the source types",
 		Long:    `A source type is a type of source that collects logs, metrics, and traces.`,
-		RunE: getImpl(bindplane, "source-type", getter[*model.SourceType]{
-			one: func(ctx context.Context, client client.BindPlane, name string) (*model.SourceType, bool, error) {
+		RunE: getImpl(bindplane, "source-types", getter[*model.SourceType]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.SourceType, bool, error) {
 				item, err := client.SourceType(ctx, name)
 				return item, item != nil, err
 			},

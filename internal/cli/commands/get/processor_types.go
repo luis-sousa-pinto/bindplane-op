@@ -15,10 +15,11 @@
 package get
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/printer"
+	"github.com/observiq/bindplane-op/model"
 	"github.com/spf13/cobra"
 )
 
@@ -29,35 +30,15 @@ func ProcessorTypesCommand(bindplane *cli.BindPlane) *cobra.Command {
 		Aliases: []string{"processor-type"},
 		Short:   "Displays the processor types",
 		Long:    `A processor type is a type of service that transforms logs, metrics, and traces.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := bindplane.Client()
-			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
-			}
-
-			if len(args) > 0 {
-				name := args[0]
-				processorType, err := c.ProcessorType(cmd.Context(), name)
-				if err != nil {
-					return err
-				}
-
-				if processorType == nil {
-					return fmt.Errorf("no processor-type found with name %s", name)
-				}
-
-				printer.PrintResource(bindplane.Printer(), processorType)
-				return nil
-			}
-
-			processorTypes, err := c.ProcessorTypes(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			printer.PrintResources(bindplane.Printer(), processorTypes)
-			return nil
-		},
+		RunE: getImpl(bindplane, "processor-types", getter[*model.ProcessorType]{
+			some: func(ctx context.Context, client client.BindPlane, name string) (*model.ProcessorType, bool, error) {
+				item, err := client.ProcessorType(ctx, name)
+				return item, item != nil, err
+			},
+			all: func(ctx context.Context, client client.BindPlane) ([]*model.ProcessorType, error) {
+				return client.ProcessorTypes(ctx)
+			},
+		}),
 	}
 	return cmd
 }
