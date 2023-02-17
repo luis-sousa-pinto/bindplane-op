@@ -7,6 +7,11 @@ on:
     branches:
       - main
 
+permissions:
+  # Make sure package write permission is always enabled, even
+  # for Dependabot pull requests.
+  packages: write
+
 # Prevent multiple runs on the same branch. This is important for webhooks
 # that must be run in order.
 concurrency:
