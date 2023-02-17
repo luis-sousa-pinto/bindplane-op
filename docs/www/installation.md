@@ -6,7 +6,10 @@ hidden: false
 ---
 ## Install BindPlane OP
 
-BindPlane OP does not have any dependencies and can run on Windows, Linux, or macOS although we recommend installing BindPlane OP server on a supported Linux distribution.
+BindPlane OP has two components, server and an optional command line interface.
+
+BindPlane server runs on Linux. See the [Linux](doc:installation#Linux) section for
+installation instructions.
 
 The BindPlane CLI (included in the BindPlane OP binary) will run on Linux, Windows, and macOS. For a detailed list of commands and installation instructions for remote clients, see our [CLI](doc:cli) page.
 
