@@ -48,7 +48,7 @@ spec:
   logs:
     processors: |
       - logcount:
-          route: builtin
+          route: '{{ bpRouteID }}'
           match: '{{ .match }}'
           metric_name: '{{ .metric_name }}'
           metric_unit: '{{ .metric_units }}'

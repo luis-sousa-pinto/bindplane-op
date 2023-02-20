@@ -44,9 +44,6 @@ const (
 	// ConfigurationTypeModular configurations have Sources and Destinations that are used to generate the configuration to pass to an agent.
 	ConfigurationTypeModular ConfigurationType = "modular"
 	// TODO(andy): Do we like Modular for configurations with Sources/Destinations?
-
-	// builtinRouteReceiverName is the name of the route receiver builtin to configurations
-	builtinRouteReceiverName string = "builtin"
 )
 
 // Configuration is the resource for the entire agent configuration
@@ -257,26 +254,23 @@ func (c *Configuration) evalComponents(ctx context.Context, store ResourceStore,
 	sources = map[string]otel.Partials{}
 	destinations = map[string]otel.Partials{}
 
-	pipelineNeedsRouteReceiver := false
-
 	for i, source := range c.Spec.Sources {
 		source := source // copy to local variable to securely pass a reference to a loop variable
 		sourceName, srcParts := evalSource(ctx, &source, fmt.Sprintf("source%d", i), store, rc, errorHandler)
 		sources[sourceName] = srcParts
 
-		// If the route receiver is supported, check if any source is using the `count_logs` processor
-		if rc.IncludeRouteReceiver && !pipelineNeedsRouteReceiver {
-			for _, p := range source.Processors {
+		// If the route receiver is supported, check if any processor needs it
+		if rc.IncludeRouteReceiver {
+			for j, p := range source.Processors {
 				if processorNeedsRouteReceiver(p) {
-					pipelineNeedsRouteReceiver = true
+					name := fmt.Sprintf("%s__processor%d", sourceName, j)
+					routeReceiver, routeParts := createRouteReceiver(ctx, name, errorHandler)
+					if routeReceiver != "" {
+						addMeasureProcessors(routeParts, MeasurementPositionSourceBeforeProcessors, routeReceiver, rc)
+						sources[routeReceiver] = routeParts
+					}
 				}
 			}
-		}
-	}
-
-	if pipelineNeedsRouteReceiver && rc.IncludeRouteReceiver {
-		if routeReceiver, routeParts := builtinRouteReceiver(ctx, store, errorHandler); routeReceiver != "" {
-			sources["route"] = routeParts
 		}
 	}
 
@@ -379,9 +373,10 @@ func evalDestination(ctx context.Context, destination *ResourceConfiguration, de
 	return destName, partials
 }
 
-// builtinRouteReceiver renders a blank 'route' receiver with a hardcoded name. logcount processors can use the hardcoded
-// name to have calculated metrics routed to destinations. This receiver requires collector version >= 1.14.0
-func builtinRouteReceiver(_ context.Context, _ ResourceStore, errorHandler TemplateErrorHandler) (string, otel.Partials) {
+// createRouteReceiver renders a blank 'route' receiver with a unique name.
+// processors can forward telemetry to this receiver by its unique name
+// This receiver requires collector version >= 1.14.0
+func createRouteReceiver(_ context.Context, name string, errorHandler TemplateErrorHandler) (string, otel.Partials) {
 	srcType := SourceType{
 		ResourceType: ResourceType{
 			Spec: ResourceTypeSpec{
@@ -404,7 +399,7 @@ func builtinRouteReceiver(_ context.Context, _ ResourceStore, errorHandler Templ
 		},
 	}
 
-	src := NewSource(builtinRouteReceiverName, srcType.Name(), []Parameter{})
+	src := NewSource(name, srcType.Name(), []Parameter{})
 	return src.Name(), srcType.eval(src, errorHandler)
 }
 

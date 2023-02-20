@@ -50,5 +50,5 @@ BindPlane OP maintains network connections for the following:
 - CLI and Web Interfaces
 
 While BindPlane's observed network throughput is very low (less than 1mbps at 2,000 agents),
-it is recomended to use a low latency network. Generally this means a modern network
+it is recommended to use a low latency network. Generally this means a modern network
 interface supporting 1gpbs or greater speeds.

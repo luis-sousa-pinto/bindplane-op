@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -148,6 +149,7 @@ const (
 	templateFuncHasCategoryMetricsEnabled = "bpHasCategoryMetricsEnabled"
 	templateFuncDisabledCategoryMetrics   = "bpDisabledCategoryMetrics"
 	templateFuncComponentID               = "bpComponentID"
+	templateFuncRouteID                   = "bpRouteID"
 )
 
 func (rt *ResourceType) templateFuncMap(nameProvider otel.ComponentIDProvider) template.FuncMap {
@@ -155,12 +157,22 @@ func (rt *ResourceType) templateFuncMap(nameProvider otel.ComponentIDProvider) t
 		templateFuncHasCategoryMetricsEnabled: rt.templateFuncHasCategoryMetricsEnabled,
 		templateFuncDisabledCategoryMetrics:   rt.templateFuncDisabledCategoryMetrics,
 		templateFuncComponentID:               rt.templateFuncComponentID(nameProvider),
+		templateFuncRouteID:                   rt.templateFuncRouteID(nameProvider),
 	}
 }
 
 func (rt *ResourceType) templateFuncComponentID(nameProvider otel.ComponentIDProvider) func(componentName string) (string, error) {
 	return func(componentName string) (string, error) {
 		return string(nameProvider.ComponentID(componentName)), nil
+	}
+}
+func (rt *ResourceType) templateFuncRouteID(nameProvider otel.ComponentIDProvider) func() (string, error) {
+	return func() (string, error) {
+		componentID, err := rt.templateFuncComponentID(nameProvider)("route")
+		if err != nil {
+			return "", err
+		}
+		return strings.Replace(componentID, "route/", "", 1), nil
 	}
 }
 
@@ -392,6 +404,9 @@ func bpTemplateFuncMap() template.FuncMap {
 		},
 		templateFuncComponentID: func(name string) (string, error) {
 			return name, nil
+		},
+		templateFuncRouteID: func() (string, error) {
+			return "", nil
 		},
 	}
 }

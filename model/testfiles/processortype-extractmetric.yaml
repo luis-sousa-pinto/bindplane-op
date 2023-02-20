@@ -50,7 +50,7 @@ spec:
   logs:
     processors: |
       - metricextract:
-          route: builtin
+          route: {{ bpRouteID }}
           match: '{{ .match }}'
           extract: '{{ .path }}'
           metric_name: '{{ .metric_name }}'

@@ -1128,7 +1128,7 @@ service:
 	require.Equal(t, expect, result)
 }
 
-func TestEvalConfiguration_WithLogCount(t *testing.T) {
+func TestEvalConfiguration_WithLogCountAndExtract(t *testing.T) {
 	t.Parallel()
 	store := newTestResourceStore()
 	config := newTestConfiguration()
@@ -1145,7 +1145,10 @@ func TestEvalConfiguration_WithLogCount(t *testing.T) {
 	logCountProcessor := testResource[*ProcessorType](t, "processortype-countlogs.yaml")
 	store.processorTypes[logCountProcessor.Name()] = logCountProcessor
 
-	configuration := testResource[*Configuration](t, "configuration-file-count-logs.yaml")
+	extractMetricProcessor := testResource[*ProcessorType](t, "processortype-extractmetric.yaml")
+	store.processorTypes[extractMetricProcessor.Name()] = extractMetricProcessor
+
+	configuration := testResource[*Configuration](t, "configuration-file-count-extract-logs.yaml")
 	agent := Agent{
 		Version: "v1.14.0",
 	}
@@ -1177,10 +1180,11 @@ receivers:
                   static_configs:
                     - labels:
                         agent: ""
-                        configuration: file-countlogs
+                        configuration: file-count-extract-logs
                       targets:
                         - 0.0.0.0:8888
-    route/builtin: null
+    route/source0__processor0: null
+    route/source0__processor1: null
 processors:
     batch/_agent_metrics: null
     batch/googlecloud: null
@@ -1191,7 +1195,15 @@ processors:
         match: "true"
         metric_name: custom.metric.count
         metric_unit: '{logs}'
-        route: builtin
+        route: source0__processor0
+    metricextract/source0__processor1:
+        attributes:
+            status_code: body.status
+        extract: body.duration
+        match: body.duration != nil
+        metric_name: http.request.duration
+        metric_unit: ms
+        route: source0__processor1
     resourcedetection/source0:
         detectors:
             - system
@@ -1212,6 +1224,12 @@ processors:
         enabled: true
         sampling_ratio: 1
     throughputmeasurement/_s0_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0__processor0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0__processor1:
         enabled: true
         sampling_ratio: 1
     throughputmeasurement/_s1_logs_source0:
@@ -1239,6 +1257,7 @@ service:
                 - resourcedetection/source0
                 - throughputmeasurement/_s0_logs_source0
                 - logcount/source0__processor0
+                - metricextract/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud
                 - throughputmeasurement/_d1_logs_googlecloud
@@ -1253,10 +1272,22 @@ service:
                 - batch/_agent_metrics
             exporters:
                 - otlphttp/_agent_metrics
-        metrics/route__googlecloud:
+        metrics/source0__processor0__googlecloud:
             receivers:
-                - route/builtin
+                - route/source0__processor0
             processors:
+                - throughputmeasurement/_s0_metrics_source0__processor0
+                - throughputmeasurement/_d0_metrics_googlecloud
+                - throughputmeasurement/_d1_metrics_googlecloud
+                - batch/googlecloud
+                - snapshotprocessor
+            exporters:
+                - googlecloud/googlecloud
+        metrics/source0__processor1__googlecloud:
+            receivers:
+                - route/source0__processor1
+            processors:
+                - throughputmeasurement/_s0_metrics_source0__processor1
                 - throughputmeasurement/_d0_metrics_googlecloud
                 - throughputmeasurement/_d1_metrics_googlecloud
                 - batch/googlecloud
@@ -1399,7 +1430,7 @@ processors:
         match: "true"
         metric_name: custom.metric.count
         metric_unit: '{logs}'
-        route: builtin
+        route: source0__processor0
     resourcedetection/source0:
         detectors:
             - system
@@ -1512,7 +1543,7 @@ receivers:
                         configuration: file-extract-duration
                       targets:
                         - 0.0.0.0:8888
-    route/builtin: null
+    route/source0__processor0: null
 processors:
     batch/_agent_metrics: null
     batch/googlecloud: null
@@ -1523,7 +1554,7 @@ processors:
         match: body.duration != nil
         metric_name: http.request.duration
         metric_unit: ms
-        route: builtin
+        route: source0__processor0
     resourcedetection/source0:
         detectors:
             - system
@@ -1544,6 +1575,9 @@ processors:
         enabled: true
         sampling_ratio: 1
     throughputmeasurement/_s0_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0__processor0:
         enabled: true
         sampling_ratio: 1
     throughputmeasurement/_s1_logs_source0:
@@ -1585,10 +1619,11 @@ service:
                 - batch/_agent_metrics
             exporters:
                 - otlphttp/_agent_metrics
-        metrics/route__googlecloud:
+        metrics/source0__processor0__googlecloud:
             receivers:
-                - route/builtin
+                - route/source0__processor0
             processors:
+                - throughputmeasurement/_s0_metrics_source0__processor0
                 - throughputmeasurement/_d0_metrics_googlecloud
                 - throughputmeasurement/_d1_metrics_googlecloud
                 - batch/googlecloud
@@ -1662,7 +1697,7 @@ processors:
         match: body.duration != nil
         metric_name: http.request.duration
         metric_unit: ms
-        route: builtin
+        route: source0__processor0
     resourcedetection/source0:
         detectors:
             - system
