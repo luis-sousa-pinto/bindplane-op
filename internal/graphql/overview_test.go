@@ -800,7 +800,7 @@ func Test_overviewGraph(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			b := mocks.NewBindPlane(t)
-			s := storeMocks.NewStore(t)
+			s := storeMocks.NewMockStore(t)
 			measurementsMocks := measurementsMocks.NewMeasurements(t)
 			measurementsMocks.On("OverviewMetrics", mock.Anything, mock.Anything).Return(test.testData.measurements, nil)
 
@@ -852,7 +852,7 @@ func Test_overviewGraph(t *testing.T) {
 	}
 	t.Run("error when store.Configurations fails", func(t *testing.T) {
 		b := mocks.NewBindPlane(t)
-		s := storeMocks.NewStore(t)
+		s := storeMocks.NewMockStore(t)
 		b.On("Store").Return(s)
 		s.On("Configurations", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("unexpected error"))
 		got, err := overviewGraph(context.Background(), b, []string{}, []string{}, "1h", "logs")

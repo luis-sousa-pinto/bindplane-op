@@ -42,7 +42,9 @@ type Options struct {
 	MaxEventsToMerge int
 }
 
-// Store handles interacting with a storage backend,
+// Store handles interacting with a storage backend.
+//
+//go:generate mockery --name=Store --filename=mock_store.go --structname=MockStore
 type Store interface {
 	Clear()
 
