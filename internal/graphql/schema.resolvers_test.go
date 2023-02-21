@@ -26,7 +26,7 @@ import (
 
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/agent"
-	"github.com/observiq/bindplane-op/internal/agent/mocks"
+	agentMocks "github.com/observiq/bindplane-op/internal/agent/mocks"
 	model1 "github.com/observiq/bindplane-op/internal/graphql/model"
 	"github.com/observiq/bindplane-op/internal/server"
 	"github.com/observiq/bindplane-op/internal/store"
@@ -43,7 +43,7 @@ func addAgent(s store.Store, agent *model.Agent) (*model.Agent, error) {
 const mockLatestVersion = "v1.5.0"
 
 func mockVersions() agent.Versions {
-	v := &mocks.Versions{}
+	v := &agentMocks.MockVersions{}
 	v.On("LatestVersionString", mock.Anything).Return(mockLatestVersion)
 	return v
 }
@@ -79,8 +79,8 @@ func TestUpgradeAvailable(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			agentVersions := mocks.NewVersions(t)
-			agentVersions.On("LatestVersion").Return(tc.latestVersion, nil)
+			agentVersions := agentMocks.NewMockVersions(t)
+			agentVersions.On("LatestVersion", ctx).Return(tc.latestVersion, nil)
 			bindplane, err := server.NewBindPlane(&common.Server{},
 				zaptest.NewLogger(t),
 				store.NewMapStore(ctx, store.Options{}, zap.NewNop()),

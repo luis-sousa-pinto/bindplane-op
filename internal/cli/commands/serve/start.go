@@ -246,9 +246,9 @@ func (s *Server) createStore(config *common.Server) (store.Store, error) {
 }
 
 func (s *Server) createVersions(ctx context.Context, config *common.Server, st store.Store) agent.Versions {
-	var client agent.Client
+	var client agent.VersionClient
 	if !config.Offline {
-		client = agent.NewClient()
+		client = agent.NewVersionClient()
 	}
 	return agent.NewVersions(ctx, client, st, agent.VersionsSettings{
 		Logger:                    s.logger.Named("versions"),

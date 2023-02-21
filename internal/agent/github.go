@@ -32,10 +32,10 @@ type github struct {
 	client *resty.Client
 }
 
-var _ Client = (*github)(nil)
+var _ VersionClient = (*github)(nil)
 
 // newGithub creates a new github client for retrieving agent versions
-func newGithub() Client {
+func newGithub() VersionClient {
 	c := resty.New()
 	c.SetTimeout(time.Second * 20)
 	c.SetBaseURL("https://api.github.com")

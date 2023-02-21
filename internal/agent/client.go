@@ -27,8 +27,10 @@ var (
 	ErrVersionNotFound = errors.New("agent version not found")
 )
 
-// Client TODO(doc)
-type Client interface {
+// VersionClient is an interface for retrieving available agent versions
+//
+//go:generate mockery --name VersionClient --filename mock_version_client.go --structname MockVersionClient
+type VersionClient interface {
 	Version(version string) (*model.AgentVersion, error)
 	Versions() ([]*model.AgentVersion, error)
 	LatestVersion() (*model.AgentVersion, error)
@@ -36,8 +38,8 @@ type Client interface {
 
 // ----------------------------------------------------------------------
 
-// NewClient constructs a new Client implementation with the specified settings.
-func NewClient() Client {
+// NewVersionClient creates a new VersionClient
+func NewVersionClient() VersionClient {
 	return newGithub()
 }
 

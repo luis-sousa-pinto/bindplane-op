@@ -33,11 +33,12 @@ const (
 
 // Versions manages versions of agents that are used during install and upgrade. The versions are stored in the Store as
 // agent-version resources, but Versions provides quick access to the latest version.
+//
+//go:generate mockery --name Versions --filename mock_versions.go --structname MockVersions
 type Versions interface {
 	LatestVersionString(ctx context.Context) string
 	LatestVersion(ctx context.Context) (*model.AgentVersion, error)
 	Version(ctx context.Context, version string) (*model.AgentVersion, error)
-
 	SyncVersion(version string) (*model.AgentVersion, error)
 	SyncVersions() ([]*model.AgentVersion, error)
 }
@@ -65,7 +66,7 @@ const (
 )
 
 type versions struct {
-	client        Client
+	client        VersionClient
 	store         store.Store
 	latestVersion util.Remember[model.AgentVersion]
 	logger        *zap.Logger
@@ -75,7 +76,7 @@ var _ Versions = (*versions)(nil)
 
 // NewVersions creates an implementation of Versions using the specified client, cache, and settings. To disable
 // caching, pass nil for the Cache.
-func NewVersions(ctx context.Context, client Client, store store.Store, settings VersionsSettings) Versions {
+func NewVersions(ctx context.Context, client VersionClient, store store.Store, settings VersionsSettings) Versions {
 	v := &versions{
 		client:        client,
 		store:         store,
