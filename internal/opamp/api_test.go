@@ -16,7 +16,6 @@ package opamp
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -25,8 +24,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/observiq/bindplane-op/common"
+	"github.com/observiq/bindplane-op/internal/opamp/mocks"
 	"github.com/observiq/bindplane-op/internal/server"
-	"github.com/observiq/bindplane-op/internal/server/mocks"
+	serverMocks "github.com/observiq/bindplane-op/internal/server/mocks"
 	"github.com/observiq/bindplane-op/internal/store"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
@@ -59,8 +59,8 @@ func fileResource[T model.Resource](t *testing.T, path string) T {
 }
 
 func TestServerSendHeartbeat(t *testing.T) {
-	manager := &mocks.Manager{}
-	conn := &mocks.Connection{}
+	manager := serverMocks.NewManager(t)
+	conn := mocks.NewMockConnection(t)
 	server := testServer(manager)
 	server.connections.connect(conn, "known")
 
@@ -91,7 +91,7 @@ func (addr *TestAddr) String() string {
 
 func TestUpdateOpAmpAgentDetails(t *testing.T) {
 	agent := model.Agent{}
-	conn := &mocks.Connection{}
+	conn := mocks.NewMockConnection(t)
 	conn.On("RemoteAddr").Return(&TestAddr{network: "tcp", address: "0.0.0.0:0"})
 
 	kv := func(key, value string) *protobufs.KeyValue {
@@ -142,7 +142,7 @@ func TestUpdateOpAmpAgentDetails(t *testing.T) {
 // slightly different (no address and labels in non-identifying)
 func TestUpdateOpAmpAgentDetails2(t *testing.T) {
 	agent := model.Agent{}
-	conn := &mocks.Connection{}
+	conn := mocks.NewMockConnection(t)
 	conn.On("RemoteAddr").Return(nil)
 
 	kv := func(key, value string) *protobufs.KeyValue {
@@ -193,7 +193,7 @@ func TestUpdateOpAmpAgentDetails2(t *testing.T) {
 // bad labels
 func TestUpdateOpAmpAgentDetails3(t *testing.T) {
 	agent := model.Agent{}
-	conn := &mocks.Connection{}
+	conn := mocks.NewMockConnection(t)
 	conn.On("RemoteAddr").Return(nil)
 
 	kv := func(key, value string) *protobufs.KeyValue {
@@ -241,61 +241,82 @@ func TestUpdateOpAmpAgentDetails3(t *testing.T) {
 }
 
 func TestServerOnConnecting(t *testing.T) {
-	goodKey := "secret"
-	badKey := "other"
-	noKey := ""
-	tests := []struct {
+	testCases := []struct {
 		name          string
 		authorization string
+		createManager func(t *testing.T) server.Manager
 		expect        opamp.ConnectionResponse
 	}{
 		{
-			name:          "no key",
+			name:          "Missing key",
 			authorization: "",
+			createManager: func(t *testing.T) server.Manager {
+				manager := serverMocks.NewManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				return manager
+			},
 			expect: opamp.ConnectionResponse{
 				Accept:         false,
 				HTTPStatusCode: http.StatusUnauthorized,
 			},
 		},
 		{
-			name:          "bad key",
-			authorization: fmt.Sprintf("Secret-Key %s", badKey),
+			name:          "Invalid key",
+			authorization: "Secret-Key bad-key",
+			createManager: func(t *testing.T) server.Manager {
+				manager := serverMocks.NewManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "bad-key").Return(false)
+				return manager
+			},
 			expect: opamp.ConnectionResponse{
 				Accept:         false,
 				HTTPStatusCode: http.StatusUnauthorized,
 			},
 		},
 		{
-			name:          "good key",
-			authorization: fmt.Sprintf("Secret-Key %s", goodKey),
+			name:          "Valid key",
+			authorization: "Secret-Key good-key",
+			createManager: func(t *testing.T) server.Manager {
+				manager := serverMocks.NewManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(true)
+				return manager
+			},
 			expect: opamp.ConnectionResponse{
 				Accept:         true,
 				HTTPStatusCode: http.StatusOK,
 			},
 		},
 		{
-			name:          "bad format",
-			authorization: badKey,
+			name:          "Missing prefix",
+			authorization: "good-key",
+			createManager: func(t *testing.T) server.Manager {
+				manager := serverMocks.NewManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				return manager
+			},
 			expect: opamp.ConnectionResponse{
 				Accept:         false,
 				HTTPStatusCode: http.StatusUnauthorized,
 			},
 		},
 		{
-			name:          "bad format 2",
-			authorization: fmt.Sprintf("Secret-Key: %s", goodKey),
+			name:          "Invalid prefix",
+			authorization: "Secret-Key: good-key",
+			createManager: func(t *testing.T) server.Manager {
+				manager := serverMocks.NewManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				return manager
+			},
 			expect: opamp.ConnectionResponse{
 				Accept:         false,
 				HTTPStatusCode: http.StatusUnauthorized,
 			},
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			manager := &mocks.Manager{}
-			manager.On("VerifySecretKey", mock.Anything, goodKey).Return(true)
-			manager.On("VerifySecretKey", mock.Anything, badKey).Return(false)
-			manager.On("VerifySecretKey", mock.Anything, noKey).Return(false)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			manager := tc.createManager(t)
 			server := testServer(manager)
 			server.compatibleOpAMPVersions = []string{"v0.2.0"}
 			request := &http.Request{
@@ -303,12 +324,14 @@ func TestServerOnConnecting(t *testing.T) {
 					"Opamp-Version": []string{"v0.2.0"},
 				},
 			}
-			if test.authorization != "" {
-				request.Header["Authorization"] = []string{test.authorization}
+	
+			if tc.authorization != "" {
+				request.Header["Authorization"] = []string{tc.authorization}
 			}
+
 			response := server.OnConnecting(request)
-			require.Equal(t, test.expect.Accept, response.Accept)
-			require.Equal(t, test.expect.HTTPStatusCode, response.HTTPStatusCode)
+			require.Equal(t, tc.expect.Accept, response.Accept)
+			require.Equal(t, tc.expect.HTTPStatusCode, response.HTTPStatusCode)
 		})
 	}
 }

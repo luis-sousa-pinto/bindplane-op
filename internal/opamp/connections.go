@@ -20,23 +20,30 @@ import (
 	opamp "github.com/open-telemetry/opamp-go/server/types"
 )
 
+// Connection is an interface that wraps the opamp.Connection interface
+//
+//go:generate mockery --name Connection --filename mock_connection.go --structname MockConnection
+type Connection interface {
+	opamp.Connection
+}
+
 type connections struct {
 	// maps connection => agentID and agentID => connection
-	locks       map[opamp.Connection]*sync.Mutex
-	connections map[opamp.Connection]string
-	agents      map[string]opamp.Connection
+	locks       map[Connection]*sync.Mutex
+	connections map[Connection]string
+	agents      map[string]Connection
 	mtx         sync.RWMutex
 }
 
 func newConnections() *connections {
 	return &connections{
-		locks:       make(map[opamp.Connection]*sync.Mutex),
-		connections: make(map[opamp.Connection]string),
-		agents:      make(map[string]opamp.Connection),
+		locks:       make(map[Connection]*sync.Mutex),
+		connections: make(map[Connection]string),
+		agents:      make(map[string]Connection),
 	}
 }
 
-func (c *connections) connect(conn opamp.Connection, agentID string) {
+func (c *connections) connect(conn Connection, agentID string) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	c.locks[conn] = &sync.Mutex{}
@@ -44,7 +51,7 @@ func (c *connections) connect(conn opamp.Connection, agentID string) {
 	c.agents[agentID] = conn
 }
 
-func (c *connections) disconnect(conn opamp.Connection) {
+func (c *connections) disconnect(conn Connection) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	agentID, ok := c.connections[conn]
@@ -60,20 +67,20 @@ func (c *connections) connected(agentID string) bool {
 	return c.connection(agentID) != nil
 }
 
-// connection returns the current opamp.Connection for the specified agentID or nil if there is no connection
-func (c *connections) connection(agentID string) opamp.Connection {
+// connection returns the current Connection for the specified agentID or nil if there is no connection
+func (c *connections) connection(agentID string) Connection {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	return c.agents[agentID]
 }
 
-func (c *connections) agentID(conn opamp.Connection) string {
+func (c *connections) agentID(conn Connection) string {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	return c.connections[conn]
 }
 
-func (c *connections) sendLock(conn opamp.Connection) *sync.Mutex {
+func (c *connections) sendLock(conn Connection) *sync.Mutex {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	return c.locks[conn]
