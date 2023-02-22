@@ -80,7 +80,6 @@ bench:
 
 .PHONY: tidy # runs go mod tidy
 tidy:
-	$(MAKE) for-all CMD="rm -fr go.sum"
 	$(MAKE) for-all CMD="go mod tidy"
 
 .PHONY: lint # runs revive linter and npm run lint
