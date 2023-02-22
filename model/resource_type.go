@@ -146,18 +146,20 @@ func (rt *ResourceType) evalOutput(output *ResourceTypeOutput, resource paramete
 }
 
 const (
-	templateFuncHasCategoryMetricsEnabled = "bpHasCategoryMetricsEnabled"
-	templateFuncDisabledCategoryMetrics   = "bpDisabledCategoryMetrics"
-	templateFuncComponentID               = "bpComponentID"
-	templateFuncRouteID                   = "bpRouteID"
+	templateFuncHasCategoryMetricsEnabled      = "bpHasCategoryMetricsEnabled"
+	templateFuncDisabledCategoryMetrics        = "bpDisabledCategoryMetrics"
+	templateFuncComponentID                    = "bpComponentID"
+	templateFuncRouteID                        = "bpRouteID"
+	templateFuncDefaultDisabledCategoryMetrics = "bpDefaultDisabledCategoryMetrics"
 )
 
 func (rt *ResourceType) templateFuncMap(nameProvider otel.ComponentIDProvider) template.FuncMap {
 	return template.FuncMap{
-		templateFuncHasCategoryMetricsEnabled: rt.templateFuncHasCategoryMetricsEnabled,
-		templateFuncDisabledCategoryMetrics:   rt.templateFuncDisabledCategoryMetrics,
-		templateFuncComponentID:               rt.templateFuncComponentID(nameProvider),
-		templateFuncRouteID:                   rt.templateFuncRouteID(nameProvider),
+		templateFuncHasCategoryMetricsEnabled:      rt.templateFuncHasCategoryMetricsEnabled,
+		templateFuncDisabledCategoryMetrics:        rt.templateFuncDisabledCategoryMetrics,
+		templateFuncComponentID:                    rt.templateFuncComponentID(nameProvider),
+		templateFuncRouteID:                        rt.templateFuncRouteID(nameProvider),
+		templateFuncDefaultDisabledCategoryMetrics: rt.templateFuncDefaultDisabledCategoryMetrics,
 	}
 }
 
@@ -218,6 +220,41 @@ func (rt *ResourceType) templateFuncDisabledCategoryMetrics(parameterValue []any
 			if name == val {
 				result = append(result, name)
 			}
+		}
+	}
+
+	return result, nil
+}
+
+// templateFuncDefaultDisabledCategoryMetrics returns metrics that are not filtered out but are not enabled by default
+func (rt *ResourceType) templateFuncDefaultDisabledCategoryMetrics(parameterValue []any, parameterName, metricCategory string) ([]string, error) {
+	parameterDefinition := rt.Spec.ParameterDefinition(parameterName)
+	if parameterDefinition == nil {
+		return nil, fmt.Errorf("unknown parameter name %s", parameterName)
+	}
+
+	if parameterDefinition.Type != metricsType {
+		return nil, fmt.Errorf("parameter name %s is not a metrics type", parameterName)
+	}
+
+	// Create a lookup to tell if a metric is in the filtered list
+	parameterLookup := make(map[string]struct{}, len(parameterValue))
+	for _, val := range parameterValue {
+		stringVal, ok := val.(string)
+		if !ok {
+			return nil, fmt.Errorf("parameter value %v is not a string", val)
+		}
+		parameterLookup[stringVal] = struct{}{}
+	}
+
+	// Retrieve metrics for the category
+	metrics := parameterDefinition.metrics(metricCategory)
+
+	var result []string
+	for _, metric := range metrics {
+		// If the metric is not in the filtered list and is disabled by default, add it to the result
+		if _, ok := parameterLookup[metric.Name]; !ok && metric.DefaultDisabled {
+			result = append(result, metric.Name)
 		}
 	}
 
@@ -407,6 +444,9 @@ func bpTemplateFuncMap() template.FuncMap {
 		},
 		templateFuncRouteID: func() (string, error) {
 			return "", nil
+		},
+		templateFuncDefaultDisabledCategoryMetrics: func(parameterValue []any, parameterName, metricCategory string) ([]string, error) {
+			return nil, nil
 		},
 	}
 }

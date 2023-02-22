@@ -1850,6 +1850,9 @@ const docTemplate = `{
         "model.MetricOption": {
             "type": "object",
             "properties": {
+                "defaultDisabled": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "string"
                 },

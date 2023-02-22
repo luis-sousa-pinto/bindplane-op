@@ -114,9 +114,10 @@ type MetricCategory struct {
 
 // MetricOption is an individual metric that can be specified for a metricsType Parameter
 type MetricOption struct {
-	Name        string  `json:"name" yaml:"name"`
-	Description *string `json:"description" yaml:"description"`
-	KPI         *bool   `json:"kpi" yaml:"kpi"`
+	Name            string  `json:"name" yaml:"name"`
+	Description     *string `json:"description" yaml:"description"`
+	KPI             *bool   `json:"kpi" yaml:"kpi"`
+	DefaultDisabled bool    `json:"defaultDisabled" yaml:"defaultDisabled"`
 }
 
 // RelevantIfCondition specifies a condition under which a parameter is deemed relevant.
@@ -685,7 +686,7 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 	return nil
 }
 
-// Metrics returns the list of metrics associated with this parameter definition
+// metricNames returns the list of metric names associated with this parameter definition
 func (p ParameterDefinition) metricNames(metricCategory string) []string {
 	if p.Type != metricsType {
 		return nil
@@ -697,6 +698,21 @@ func (p ParameterDefinition) metricNames(metricCategory string) []string {
 			for _, metric := range cat.Metrics {
 				results = append(results, metric.Name)
 			}
+		}
+	}
+
+	return results
+}
+
+// metrics returns the list of metrics associated with this parameter definition
+func (p ParameterDefinition) metrics(metricCategory string) []MetricOption {
+	if p.Type != metricsType {
+		return nil
+	}
+	results := []MetricOption{}
+	for _, cat := range p.Options.MetricCategories {
+		if cat.Label == metricCategory {
+			results = append(results, cat.Metrics...)
 		}
 	}
 

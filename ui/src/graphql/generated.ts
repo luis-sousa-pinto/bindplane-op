@@ -219,6 +219,7 @@ export type MetricCategory = {
 
 export type MetricOption = {
   __typename?: 'MetricOption';
+  defaultDisabled?: Maybe<Scalars['Boolean']>;
   description?: Maybe<Scalars['String']>;
   kpi?: Maybe<Scalars['Boolean']>;
   name: Scalars['String'];

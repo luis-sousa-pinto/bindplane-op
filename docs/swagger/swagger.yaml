@@ -331,6 +331,8 @@ definitions:
     type: object
   model.MetricOption:
     properties:
+      defaultDisabled:
+        type: boolean
       description:
         type: string
       kpi:

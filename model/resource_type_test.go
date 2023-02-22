@@ -15,6 +15,7 @@
 package model
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -353,6 +354,112 @@ func TestResourceType_templateFuncHasMetricsEnabled(t *testing.T) {
 			}
 			if got != test.want {
 				t.Errorf("ResourceType.templateFuncHasMetricsEnabled() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestResourceType_templateFuncDefaultDisabledCategoryMetrics(t *testing.T) {
+	testCases := []struct {
+		desc               string
+		metrics            ParameterDefinition
+		inputParameter     []any
+		inputParameterName string
+		inputCategory      string
+		expectedNames      []string
+		expectedErr        error
+	}{
+		{
+			desc: "unknown parameter name",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+			},
+			inputParameter:     nil,
+			inputParameterName: "bad",
+			inputCategory:      "Network",
+			expectedNames:      nil,
+			expectedErr:        errors.New("unknown parameter name"),
+		},
+		{
+			desc: "not metrics type",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: mapType,
+			},
+			inputParameter:     nil,
+			inputParameterName: "metrics",
+			inputCategory:      "Network",
+			expectedNames:      nil,
+			expectedErr:        errors.New("is not a metrics type"),
+		},
+		{
+			desc: "not string inputs",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: metricsType,
+			},
+			inputParameter:     []any{1, 2},
+			inputParameterName: "metrics",
+			inputCategory:      "Network",
+			expectedNames:      nil,
+			expectedErr:        errors.New("is not a string"),
+		},
+		{
+			desc: "Only returns default disabled metrics",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: metricsType,
+				Options: ParameterOptions{
+					MetricCategories: []MetricCategory{
+						{
+							Label: "Network",
+							Metrics: []MetricOption{
+								{
+									Name:            "system.network.io",
+									DefaultDisabled: false,
+								},
+								{
+									Name:            "system.network.errors",
+									DefaultDisabled: true,
+								},
+								{
+									Name:            "system.network.packets",
+									DefaultDisabled: false,
+								},
+							},
+						},
+					},
+				},
+			},
+			inputParameter:     []any{"system.network.io"},
+			inputParameterName: "metrics",
+			inputCategory:      "Network",
+			expectedNames:      []string{"system.network.errors"},
+			expectedErr:        nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			rt := &ResourceType{
+				ResourceMeta: ResourceMeta{
+					Metadata: Metadata{
+						Name: "test",
+					},
+				},
+				Spec: ResourceTypeSpec{
+					Parameters: []ParameterDefinition{
+						tc.metrics,
+					},
+				},
+			}
+			got, err := rt.templateFuncDefaultDisabledCategoryMetrics(tc.inputParameter, tc.inputParameterName, tc.inputCategory)
+			if err != nil {
+				require.Nil(t, got)
+				require.ErrorContains(t, err, tc.expectedErr.Error())
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedNames, got)
 			}
 		})
 	}

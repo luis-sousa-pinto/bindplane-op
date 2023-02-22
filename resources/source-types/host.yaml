@@ -33,15 +33,19 @@ spec:
               - name: system.filesystem.inodes.usage
               - name: system.filesystem.usage
               - name: system.filesystem.utilization
+                defaultDisabled: true
           - label: Memory Metrics
             metrics:
               - name: system.memory.usage
               - name: system.memory.utilization
+                defaultDisabled: true
           - label: Network Metrics
             metrics:
               - name: system.network.connections
               - name: system.network.conntrack.count
+                defaultDisabled: true
               - name: system.network.conntrack.max
+                defaultDisabled: true
               - name: system.network.dropped
               - name: system.network.errors
               - name: system.network.io
@@ -52,6 +56,7 @@ spec:
               - name: system.paging.operations
               - name: system.paging.usage
               - name: system.paging.utilization
+                defaultDisabled: true
           - label: Load Metrics
             column: 1
             metrics:
@@ -63,6 +68,7 @@ spec:
             metrics:
               - name: system.cpu.time
               - name: system.cpu.utilization
+                defaultDisabled: true
           - label: Disk Metrics
             column: 1
             metrics:
@@ -177,6 +183,10 @@ spec:
                 {{ $m }}:
                   enabled: false
                 {{ end }}
+                {{ range $m := bpDefaultDisabledCategoryMetrics .metric_filtering "metric_filtering" "Filesystem Metrics" }}
+                {{ $m }}:
+                  enabled: true
+                {{ end }}
           {{ end }}
 
 
@@ -187,6 +197,10 @@ spec:
                 {{ $m }}:
                   enabled: false
                 {{ end }}
+                {{ range $m := bpDefaultDisabledCategoryMetrics .metric_filtering "metric_filtering" "Memory Metrics" }}
+                {{ $m }}:
+                  enabled: true
+                {{ end }}
           {{ end }}
 
           {{ if bpHasCategoryMetricsEnabled .metric_filtering "metric_filtering" "Network Metrics" }}
@@ -196,6 +210,10 @@ spec:
                 {{ $m }}:
                   enabled: false
                 {{ end }}
+                {{ range $m := bpDefaultDisabledCategoryMetrics .metric_filtering "metric_filtering" "Network Metrics" }}
+                {{ $m }}:
+                  enabled: true
+                {{ end }}
           {{ end }}
 
           {{ if bpHasCategoryMetricsEnabled .metric_filtering "metric_filtering" "Paging Metrics" }}
@@ -204,6 +222,10 @@ spec:
                 {{ range $m := bpDisabledCategoryMetrics .metric_filtering "metric_filtering" "Paging Metrics" }}
                 {{ $m }}:
                   enabled: false
+                {{ end }}
+                {{ range $m := bpDefaultDisabledCategoryMetrics .metric_filtering "metric_filtering" "Paging Metrics" }}
+                {{ $m }}:
+                  enabled: true
                 {{ end }}
           {{ end }}
 
@@ -223,6 +245,10 @@ spec:
                 {{ range $m := bpDisabledCategoryMetrics .metric_filtering "metric_filtering" "CPU Metrics" }}
                 {{ $m }}:
                   enabled: false
+                {{ end }}
+                {{ range $m := bpDefaultDisabledCategoryMetrics .metric_filtering "metric_filtering" "CPU Metrics" }}
+                {{ $m }}:
+                  enabled: true
                 {{ end }}
           {{ end }}
 
