@@ -6,25 +6,24 @@ metadata:
   icon: /icons/destinations/logging.svg
 spec:
   parameters:
-    - name: log_level
-      label: Log Level
+    - name: verbosity
+      label: Verbosity
       description: The log level
       type: enum
       validValues:
-        - debug
-        - info
-        - warn
-        - error
-      default: info
+        - detailed
+        - normal
+        - basic
+      default: detailed
   logs:
     exporters: |
       - logging:
-          logLevel: {{ .log_level }}
+          verbosity: {{ .verbosity }}
   metrics:
     exporters: |
       - logging:
-          logLevel: {{ .log_level }}
+          verbosity: {{ .verbosity }}
   traces:
     exporters: |
       - logging:
-          logLevel: {{ .log_level }}
+          verbosity: {{ .verbosity }}
