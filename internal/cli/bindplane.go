@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the BindPlane command line client.
 package cli
 
 import (

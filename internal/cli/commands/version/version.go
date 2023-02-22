@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package version provides the version command, which prints the BindPlane version.
 package version
 
 import (

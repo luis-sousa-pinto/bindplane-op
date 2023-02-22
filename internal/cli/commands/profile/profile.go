@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package profile provides commands for managing BindPlane profile configurations.
 package profile
 
 import (

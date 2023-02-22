@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package graph provides the Graph type, which is used to display topology in the UI
 package graph
 
 import (

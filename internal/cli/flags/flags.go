@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package flags provides functions for adding flags to CLI commands
 package flags
 
 import (

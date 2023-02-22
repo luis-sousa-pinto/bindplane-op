@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package rest provides a HTTP API for interacting with BindPlane
 package rest
 
 import (

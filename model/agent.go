@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package model contains the data model for resources used in BindPlane
 package model
 
 import (
@@ -109,7 +110,7 @@ const (
 // AgentFeaturesDefault is the default bitmask of features supported by Agents
 const AgentFeaturesDefault = AgentSupportsUpgrade
 
-// Agent TODO(doc)
+// Agent is a single observIQ OTel Collector instance
 type Agent struct {
 	ID              string `json:"id" yaml:"id"`
 	Name            string `json:"name" yaml:"name"`

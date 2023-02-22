@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package search provides a search engine with indexing and suggestions for the store
 package search
 
 import (

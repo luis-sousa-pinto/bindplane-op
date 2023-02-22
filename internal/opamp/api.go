@@ -109,13 +109,15 @@ func newServer(manager server.Manager, logger *zap.Logger) *opampServer {
 // OnConnecting is called when there is a new incoming connection.
 // The handler can examine the request and either accept or reject the connection.
 // To accept:
-//   Return ConnectionResponse with Accept=true.
-//   HTTPStatusCode and HTTPResponseHeader are ignored.
+//
+//	Return ConnectionResponse with Accept=true.
+//	HTTPStatusCode and HTTPResponseHeader are ignored.
 //
 // To reject:
-//   Return ConnectionResponse with Accept=false. HTTPStatusCode MUST be set to
-//   non-zero value to indicate the rejection reason (typically 401, 429 or 503).
-//   HTTPResponseHeader may be optionally set (e.g. "Retry-After: 30").
+//
+//	Return ConnectionResponse with Accept=false. HTTPStatusCode MUST be set to
+//	non-zero value to indicate the rejection reason (typically 401, 429 or 503).
+//	HTTPResponseHeader may be optionally set (e.g. "Retry-After: 30").
 func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionResponse {
 	ctx, span := tracer.Start(request.Context(), "opamp/connecting")
 	defer span.End()

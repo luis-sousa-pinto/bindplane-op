@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package printer provides an interface for printing resources, and several implementations.
 package printer
 
 import (

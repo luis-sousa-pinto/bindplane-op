@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package otlp provides the HTTP handlers for receiving OTLP telemetry signals.
 package otlp
 
 import (

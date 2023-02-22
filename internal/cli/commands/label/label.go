@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package label contains the label command.
+// The label command is used to list or modify the labels of a resource.
 package label
 
 import (

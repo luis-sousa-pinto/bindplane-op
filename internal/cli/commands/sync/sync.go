@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package sync provides the sync command, which synchronizes an agent-version from github
+// with the store.
 package sync
 
 import (

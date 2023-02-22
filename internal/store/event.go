@@ -70,6 +70,7 @@ func (e Events[T]) Contains(uniqueKey string, eventType EventType) bool {
 	return false
 }
 
+// Keys returns all keys of the events
 func (e Events[T]) Keys() []string {
 	result := make([]string, 0, len(e))
 	for k := range e {
@@ -87,10 +88,12 @@ func (e Events[T]) Include(item T, eventType EventType) {
 	}
 }
 
+// Updates returns all events of type [EventTypeUpdate]
 func (e Events[T]) Updates() []Event[T] {
 	return e.ByType(EventTypeUpdate)
 }
 
+// ByType returns all events of the specified type
 func (e Events[T]) ByType(eventType EventType) []Event[T] {
 	var results []Event[T]
 	for _, event := range e {

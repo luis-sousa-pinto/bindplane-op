@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package resources embeds the files in `resources` for seeding on startup
 package resources
 
 import "embed"
 
-//go:embed destination-types/* source-types/* processor-types/* agent-versions/*
 // Files contains the files embedded in resources/destination-types/*, resources/source-types/*, resources/processor-types/*, and resources/agent-versions/*
+//
+//go:embed destination-types/* source-types/* processor-types/* agent-versions/*
 var Files embed.FS
 
 // SeedFolders is the list of folders that we seed on startup

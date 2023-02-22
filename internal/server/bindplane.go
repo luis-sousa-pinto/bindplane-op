@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package server contains the interface and implementation of the BindPlane Server
 package server
 
 import (
@@ -22,7 +23,7 @@ import (
 	"github.com/observiq/bindplane-op/internal/store"
 )
 
-// BindPlane TODO(doc)
+// BindPlane is the interface for the BindPlane Server
 type BindPlane interface {
 	// Store TODO(doc)
 	Store() store.Store
@@ -38,7 +39,7 @@ type BindPlane interface {
 	Logger() *zap.Logger
 }
 
-// NewBindPlane TODO(doc)
+// NewBindPlane creates a new BindPlane Server using the given store and agent versions
 func NewBindPlane(config *common.Server, logger *zap.Logger, s store.Store, versions agent.Versions) (BindPlane, error) {
 	manager, err := NewManager(config, s, versions, logger)
 	if err != nil {

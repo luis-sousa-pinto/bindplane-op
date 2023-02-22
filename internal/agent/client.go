@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package agent provides a client for fetching information about agent versions from Github.
 package agent
 
 import (
@@ -31,8 +32,11 @@ var (
 //
 //go:generate mockery --name VersionClient --filename mock_version_client.go --structname MockVersionClient
 type VersionClient interface {
+	// Version returns the agent version for the given version string
 	Version(version string) (*model.AgentVersion, error)
+	// Versions returns all available agent versions
 	Versions() ([]*model.AgentVersion, error)
+	// LatestVersion returns the latest agent version, as determined by Github
 	LatestVersion() (*model.AgentVersion, error)
 }
 

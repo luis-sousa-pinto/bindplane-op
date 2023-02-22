@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package delete provides the delete command, as well as subcommands for deleting
+// specific resources and resource types.
 package delete
 
 import (

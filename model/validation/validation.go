@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package validation contains functions for validating constraints are met for given strings
 package validation
 
 import (

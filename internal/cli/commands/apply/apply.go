@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package apply provides the apply command, which upserts resources from a file to the store.
 package apply
 
 import (

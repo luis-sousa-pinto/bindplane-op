@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package sessions provides session management for the UI
 package sessions
 
 import (

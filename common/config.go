@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package common contains common types and functions used by the BindPlane CLI and Server
 package common
 
 import (

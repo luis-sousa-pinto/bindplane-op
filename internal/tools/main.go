@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main exists to provide imports for tools used in development
 package main
 
 import (
@@ -25,5 +26,6 @@ import (
 	_ "github.com/securego/gosec/v2/report/text"  // required by gosec
 	_ "github.com/swaggo/swag/cmd/swag"
 	_ "github.com/uw-labs/lichen"
+	_ "github.com/vektra/mockery/v2"
 	_ "honnef.co/go/tools/cmd/staticcheck"
 )

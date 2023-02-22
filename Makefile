@@ -42,7 +42,7 @@ install-tools: install-git-hooks
 	cd $(TOOLS_MOD_DIR) && go install honnef.co/go/tools/cmd/staticcheck
 	cd $(TOOLS_MOD_DIR) && go install github.com/client9/misspell/cmd/misspell
 	cd $(TOOLS_MOD_DIR) && go install github.com/ory/go-acc
-	cd $(TOOLS_MOD_DIR) && go install github.com/vektra/mockery/v2@v2.20.0
+	cd $(TOOLS_MOD_DIR) && go install github.com/vektra/mockery/v2
 
 .PHONY: install-ui # [ui] npm install
 install-ui:

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package semver provides a model and functions for working with semantic versions.
 package semver
 
 import (

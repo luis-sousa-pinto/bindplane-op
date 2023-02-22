@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package get provides the get command, which displays one or more resources,
+// as well as subcommands for each resource type.
 package get
 
 import (

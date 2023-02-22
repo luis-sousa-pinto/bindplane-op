@@ -1,4 +1,4 @@
-// Copyright  observIQ, Inc.
+// Copyright observIQ, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package update contains the update command, which upgrades a specific agent
-package update
-
-import (
-	"github.com/spf13/cobra"
-
-	"github.com/observiq/bindplane-op/internal/cli"
-)
-
-// Command returns the iris update cobra command
-func Command(bindplane *cli.BindPlane) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "update",
-		Aliases: []string{"upgrade"},
-		Short:   "Update an existing agent",
-	}
-
-	cmd.AddCommand(
-		AgentCommand(bindplane),
-	)
-
-	return cmd
-}
+// Package trace provides trace providers for various backends
+package trace

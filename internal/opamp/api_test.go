@@ -324,7 +324,7 @@ func TestServerOnConnecting(t *testing.T) {
 					"Opamp-Version": []string{"v0.2.0"},
 				},
 			}
-	
+
 			if tc.authorization != "" {
 				request.Header["Authorization"] = []string{tc.authorization}
 			}
