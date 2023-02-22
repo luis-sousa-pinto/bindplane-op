@@ -100,11 +100,35 @@ spec:
         metricCategories:
           - label: Process Metrics
             metrics:
+              - name: process.context_switches
+                defaultDisabled: true
               - name: process.cpu.time
+              - name: process.cpu.utilization
+                defaultDisabled: true
               - name: process.disk.io
+              - name: process.disk.operations
+                defaultDisabled: true
               - name: process.memory.physical_usage
+              - name: process.memory.utilization
+                defaultDisabled: true
               - name: process.memory.virtual_usage
-      default: []
+              - name: process.open_file_descriptors
+                defaultDisabled: true
+              - name: process.paging.faults
+                defaultDisabled: true
+              - name: process.signals_pending
+                defaultDisabled: true
+              - name: process.threads
+                defaultDisabled: true
+      default:
+        - process.context_switches
+        - process.cpu.utilization
+        - process.disk.operations
+        - process.memory.utilization
+        - process.open_file_descriptors
+        - process.paging.faults
+        - process.signals_pending
+        - process.threads
       relevantIf:
         - name: enable_process
           operator: equals
@@ -263,8 +287,12 @@ spec:
 
             {{ if .enable_process }}
             process:
-              {{ if .process_metrics_filtering }}
               metrics:
+              {{ range $m := bpDefaultDisabledCategoryMetrics .process_metrics_filtering "process_metrics_filtering" "Process Metrics" }}
+                {{ $m }}:
+                  enabled: true
+              {{ end }}
+              {{ if .process_metrics_filtering }}
                 {{ range $m := .process_metrics_filtering }}
                 {{ $m }}:
                   enabled: false
