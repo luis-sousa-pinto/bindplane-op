@@ -59,7 +59,7 @@ func fileResource[T model.Resource](t *testing.T, path string) T {
 }
 
 func TestServerSendHeartbeat(t *testing.T) {
-	manager := serverMocks.NewManager(t)
+	manager := serverMocks.NewMockManager(t)
 	conn := mocks.NewMockConnection(t)
 	server := testServer(manager)
 	server.connections.connect(conn, "known")
@@ -251,7 +251,7 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Missing key",
 			authorization: "",
 			createManager: func(t *testing.T) server.Manager {
-				manager := serverMocks.NewManager(t)
+				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
 				return manager
 			},
@@ -264,7 +264,7 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Invalid key",
 			authorization: "Secret-Key bad-key",
 			createManager: func(t *testing.T) server.Manager {
-				manager := serverMocks.NewManager(t)
+				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "bad-key").Return(false)
 				return manager
 			},
@@ -277,7 +277,7 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Valid key",
 			authorization: "Secret-Key good-key",
 			createManager: func(t *testing.T) server.Manager {
-				manager := serverMocks.NewManager(t)
+				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(true)
 				return manager
 			},
@@ -290,7 +290,7 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Missing prefix",
 			authorization: "good-key",
 			createManager: func(t *testing.T) server.Manager {
-				manager := serverMocks.NewManager(t)
+				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
 				return manager
 			},
@@ -303,7 +303,7 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Invalid prefix",
 			authorization: "Secret-Key: good-key",
 			createManager: func(t *testing.T) server.Manager {
-				manager := serverMocks.NewManager(t)
+				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
 				return manager
 			},

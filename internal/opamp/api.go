@@ -34,7 +34,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/observiq/bindplane-op/internal/server"
-	"github.com/observiq/bindplane-op/internal/server/report"
+	"github.com/observiq/bindplane-op/internal/server/protocol"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
 )
@@ -90,7 +90,7 @@ type opampServer struct {
 	logger                  *zap.Logger
 }
 
-var _ server.Protocol = (*opampServer)(nil)
+var _ protocol.Protocol = (*opampServer)(nil)
 var _ opamp.Callbacks = (*opampServer)(nil)
 
 func newServer(manager server.Manager, logger *zap.Logger) *opampServer {
@@ -281,7 +281,7 @@ func (s *opampServer) Connected(agentID string) bool {
 
 // UpdateAgent should send a message to the specified agent to update the configuration to match the
 // specified configuration.
-func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updates *server.AgentUpdates) error {
+func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updates *protocol.AgentUpdates) error {
 	conn := s.connections.connection(agent.ID)
 	if conn == nil {
 		// agent not connected, nothing to do
@@ -404,20 +404,20 @@ func (s *opampServer) SendHeartbeat(agentID string) error {
 }
 
 // RequestReport sends report configuration to the specified agent
-func (s *opampServer) RequestReport(_ context.Context, agentID string, configuration report.Configuration) error {
+func (s *opampServer) RequestReport(_ context.Context, agentID string, configuration protocol.Report) error {
 	conn := s.connections.connection(agentID)
 	if conn != nil {
 		body, err := configuration.YAML()
 		if err != nil {
 			return err
 		}
-		s.logger.Info("RequestReport", zap.String(report.ConfigurationName, string(body)))
+		s.logger.Info("RequestReport", zap.String(protocol.ReportName, string(body)))
 		return s.send(context.Background(), conn, &protobufs.ServerToAgent{
 			RemoteConfig: &protobufs.AgentRemoteConfig{
 				ConfigHash: computeReportConfigurationHash(body),
 				Config: &protobufs.AgentConfigMap{
 					ConfigMap: map[string]*protobufs.AgentConfigFile{
-						report.ConfigurationName: {
+						protocol.ReportName: {
 							Body:        body,
 							ContentType: "text/yaml",
 						},
@@ -513,7 +513,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 	return nil
 }
 
-func (s *opampServer) updatedConfiguration(ctx context.Context, agent *model.Agent, agentConfiguration *observiq.AgentConfiguration, updates *server.AgentUpdates) (diff observiq.AgentConfiguration, err error) {
+func (s *opampServer) updatedConfiguration(ctx context.Context, agent *model.Agent, agentConfiguration *observiq.AgentConfiguration, updates *protocol.AgentUpdates) (diff observiq.AgentConfiguration, err error) {
 	// Configuration => collector.yaml
 	if updates.Configuration != nil {
 		newCollectorYAML, err := updates.Configuration.Render(ctx, agent, s.manager.BindPlaneConfiguration(), s.manager.ResourceStore())

@@ -12,29 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+// Package protocol defines communication to agents
+package protocol
 
 import (
 	"context"
 
-	"github.com/observiq/bindplane-op/internal/server/report"
 	"github.com/observiq/bindplane-op/model"
 )
 
-// AgentUpdates contains fields that can be modified on an Agent and should be sent to the agent. The model.Agent should
-// not be updated directly and will be updated when the agent reports its new status after the update is complete.
-type AgentUpdates struct {
-	// Labels changes are only supported by OpAMP
-	Labels *model.Labels
-
-	// Configuration changes are only supported by OpAMP
-	Configuration *model.Configuration
-
-	// Version instructs the agent to install a specific version
-	Version string
-}
-
 // Protocol represents a communication protocol for managing agents
+//
+//go:generate mockery --name Protocol --filename mock_protocol.go --structname MockProtocol
 type Protocol interface {
 	// Name is the name for the protocol use mostly for logging
 	Name() string
@@ -55,10 +44,5 @@ type Protocol interface {
 	SendHeartbeat(agentID string) error
 
 	// RequestReport sends report configuration to the specified agent
-	RequestReport(ctx context.Context, agentID string, configuration report.Configuration) error
-}
-
-// Empty returns true if the updates are empty because no changes need to be made to the agent
-func (u *AgentUpdates) Empty() bool {
-	return u.Labels == nil && u.Configuration == nil && u.Version == ""
+	RequestReport(ctx context.Context, agentID string, report Report) error
 }

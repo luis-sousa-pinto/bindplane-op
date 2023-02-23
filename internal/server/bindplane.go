@@ -24,6 +24,8 @@ import (
 )
 
 // BindPlane is the interface for the BindPlane Server
+//
+//go:generate mockery --name BindPlane --filename mock_bindplane.go --structname MockBindPlane
 type BindPlane interface {
 	// Store TODO(doc)
 	Store() store.Store

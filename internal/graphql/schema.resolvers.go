@@ -29,7 +29,7 @@ import (
 	"github.com/observiq/bindplane-op/internal/graphql/generated"
 	model1 "github.com/observiq/bindplane-op/internal/graphql/model"
 	"github.com/observiq/bindplane-op/internal/server"
-	"github.com/observiq/bindplane-op/internal/server/report"
+	"github.com/observiq/bindplane-op/internal/server/protocol"
 	"github.com/observiq/bindplane-op/internal/store"
 	"github.com/observiq/bindplane-op/internal/util/semver"
 	"github.com/observiq/bindplane-op/model"
@@ -494,12 +494,12 @@ func (r *queryResolver) Snapshot(ctx context.Context, agentID string, pipelineTy
 		return signals, fmt.Errorf("no configuration available for agent %s", agentID)
 	}
 
-	reportRequest := func(id string) report.Configuration {
-		rc := report.Configuration{
-			Snapshot: report.Snapshot{
+	reportRequest := func(id string) protocol.Report {
+		rc := protocol.Report{
+			Snapshot: protocol.Snapshot{
 				Processor:    string(otel.SnapshotProcessorName),
 				PipelineType: pipelineType,
-				Endpoint: report.Endpoint{
+				Endpoint: protocol.ReportEndpoint{
 					URL: fmt.Sprintf("%s/v1/otlphttp/v1/%s", r.bindplane.Config().BindPlaneURL(), pipelineType),
 					Header: http.Header{
 						server.HeaderSessionID: []string{id},

@@ -1,4 +1,4 @@
-// Copyright  observIQ, Inc.
+// Copyright observIQ, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package report provides the Configuration for requesting a snapshot report from an agent.
-package report
+package protocol
 
 import (
 	"net/http"
@@ -22,11 +21,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ConfigurationName is the name of the configuration file name
-const ConfigurationName = "report.yaml"
+// ReportName is the name of the configuration file name
+const ReportName = "report.yaml"
 
-// Configuration represents the "report.yaml" config sent to the agent via opamp
-type Configuration struct {
+// Report represents the "report.yaml" config sent to the agent via opamp
+type Report struct {
 	Snapshot Snapshot `json:"snapshot" yaml:"snapshot"`
 }
 
@@ -39,11 +38,11 @@ type Snapshot struct {
 	PipelineType otel.PipelineType `json:"pipeline_type" yaml:"pipeline_type"`
 
 	// Endpoint indicates where OTLP telemetry should be sent
-	Endpoint Endpoint `json:"endpoint" yaml:"endpoint,omitempty"`
+	Endpoint ReportEndpoint `json:"endpoint" yaml:"endpoint,omitempty"`
 }
 
-// Endpoint contains the headers and url where OTLP data should be sent
-type Endpoint struct {
+// ReportEndpoint contains the headers and url where OTLP data should be sent
+type ReportEndpoint struct {
 	// Header should be added as HTTP headers with the payload sent to the endpoint
 	Header http.Header `json:"headers" yaml:"headers,omitempty"`
 
@@ -52,7 +51,7 @@ type Endpoint struct {
 }
 
 // YAML returns the encoded Configuration
-func (c *Configuration) YAML() ([]byte, error) {
-	bytes, err := yaml.Marshal(c)
+func (r *Report) YAML() ([]byte, error) {
+	bytes, err := yaml.Marshal(r)
 	return bytes, err
 }

@@ -27,7 +27,7 @@ import (
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/agent"
 	"github.com/observiq/bindplane-op/internal/eventbus"
-	"github.com/observiq/bindplane-op/internal/server/report"
+	"github.com/observiq/bindplane-op/internal/server/protocol"
 	"github.com/observiq/bindplane-op/internal/store"
 	"github.com/observiq/bindplane-op/model"
 )
@@ -44,17 +44,19 @@ const (
 )
 
 // Manager manages agent connects and communications with them
+//
+//go:generate mockery --name Manager --filename mock_manager.go --structname MockManager
 type Manager interface {
 	// Start starts the manager and allows it to begin processing configuration changes
 	Start(ctx context.Context)
 	// EnableProtocol adds the protocol to the manager
-	EnableProtocol(Protocol)
+	EnableProtocol(protocol.Protocol)
 	// Agent returns the agent with the specified agentID.
 	Agent(ctx context.Context, agentID string) (*model.Agent, error)
 	// UpsertAgent adds a new Agent to the Store or updates an existing one
 	UpsertAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error)
 	// AgentUpdates returns the updates that should be applied to an agent based on the current bindplane configuration
-	AgentUpdates(ctx context.Context, agent *model.Agent) (*AgentUpdates, error)
+	AgentUpdates(ctx context.Context, agent *model.Agent) (*protocol.AgentUpdates, error)
 	// VerifySecretKey checks to see if the specified secretKey matches configured secretKey
 	VerifySecretKey(ctx context.Context, secretKey string) bool
 	// ResourceStore provides access to the store to render configurations
@@ -62,7 +64,7 @@ type Manager interface {
 	// BindPlaneConfiguration provides access to the config to render configurations
 	BindPlaneConfiguration() model.BindPlaneConfiguration
 	// RequestReport sends report configuration to the specified agent
-	RequestReport(ctx context.Context, agentID string, configuration report.Configuration) error
+	RequestReport(ctx context.Context, agentID string, configuration protocol.Report) error
 	// AgentVersion returns information about a version of an agent
 	AgentVersion(ctx context.Context, version string) (*model.AgentVersion, error)
 }
@@ -76,7 +78,7 @@ type manager struct {
 	store     store.Store
 	versions  agent.Versions
 	logger    *zap.Logger
-	protocols []Protocol
+	protocols []protocol.Protocol
 	secretKey string
 }
 
@@ -91,12 +93,12 @@ func NewManager(config *common.Server, store store.Store, versions agent.Version
 		store:     store,
 		versions:  versions,
 		logger:    logger,
-		protocols: []Protocol{},
+		protocols: []protocol.Protocol{},
 		secretKey: config.SecretKey,
 	}, nil
 }
 
-func (m *manager) EnableProtocol(protocol Protocol) {
+func (m *manager) EnableProtocol(protocol protocol.Protocol) {
 	m.protocols = append(m.protocols, protocol)
 }
 
@@ -133,7 +135,7 @@ func (m *manager) Start(ctx context.Context) {
 // helper for bookkeeping during updates
 type pendingAgentUpdate struct {
 	agent   *model.Agent
-	updates *AgentUpdates
+	updates *protocol.AgentUpdates
 }
 
 type pendingAgentUpdates map[string]pendingAgentUpdate
@@ -145,7 +147,7 @@ func (p pendingAgentUpdates) agent(agent *model.Agent) pendingAgentUpdate {
 	}
 	u = pendingAgentUpdate{
 		agent:   agent,
-		updates: &AgentUpdates{},
+		updates: &protocol.AgentUpdates{},
 	}
 	p[agent.ID] = u
 	return u
@@ -300,13 +302,13 @@ func (m *manager) UpsertAgent(ctx context.Context, agentID string, updater store
 }
 
 // AgentUpdates returns the updates that should be applied to an agent based on the current bindplane configuration
-func (m *manager) AgentUpdates(ctx context.Context, agent *model.Agent) (*AgentUpdates, error) {
+func (m *manager) AgentUpdates(ctx context.Context, agent *model.Agent) (*protocol.AgentUpdates, error) {
 	newConfiguration, err := m.store.AgentConfiguration(ctx, agent.ID)
 	if err != nil {
 		return nil, err
 	}
 	newLabels := agent.Labels.Custom()
-	return &AgentUpdates{
+	return &protocol.AgentUpdates{
 		Labels:        &newLabels,
 		Configuration: newConfiguration,
 	}, nil
@@ -329,7 +331,7 @@ func (m *manager) BindPlaneConfiguration() model.BindPlaneConfiguration {
 }
 
 // RequestReport sends report configuration to the specified agent
-func (m *manager) RequestReport(ctx context.Context, agentID string, configuration report.Configuration) error {
+func (m *manager) RequestReport(ctx context.Context, agentID string, configuration protocol.Report) error {
 	ctx, span := tracer.Start(ctx, "manager/RequestReport")
 	defer span.End()
 
@@ -426,7 +428,7 @@ func (m *manager) connectedAgentIDs(ctx context.Context) []string {
 	return ids
 }
 
-func (m *manager) updateAgent(ctx context.Context, agent *model.Agent, updates *AgentUpdates) {
+func (m *manager) updateAgent(ctx context.Context, agent *model.Agent, updates *protocol.AgentUpdates) {
 	for _, p := range m.protocols {
 		err := p.UpdateAgent(ctx, agent, updates)
 		if err != nil {
