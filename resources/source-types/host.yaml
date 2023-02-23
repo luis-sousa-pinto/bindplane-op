@@ -108,10 +108,10 @@ spec:
               - name: process.disk.io
               - name: process.disk.operations
                 defaultDisabled: true
-              - name: process.memory.physical_usage
+              - name: process.memory.usage
               - name: process.memory.utilization
                 defaultDisabled: true
-              - name: process.memory.virtual_usage
+              - name: process.memory.virtual
               - name: process.open_file_descriptors
                 defaultDisabled: true
               - name: process.paging.faults
