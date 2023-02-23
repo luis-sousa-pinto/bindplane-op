@@ -28,8 +28,9 @@ import (
 
 // OpenTelemetryTracing is configuration for tracing to an Open Telemetry Collector
 type OpenTelemetryTracing struct {
-	Endpoint string `mapstructure:"endpoint,omitempty" yaml:"endpoint,omitempty"`
-	TLS      struct {
+	Endpoint     string   `mapstructure:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+	SamplingRate *float64 `mapstructure:"samplingRate,omitempty" yaml:"samplingRate,omitempty"`
+	TLS          struct {
 		Insecure bool `mapstructure:"insecure,omitempty" yaml:"insecure,omitempty"`
 	} `mapstructure:"tls,omitempty" yaml:"tls,omitempty"`
 }
@@ -61,5 +62,6 @@ func NewOTLPExporter(config OpenTelemetryTracing, resource *resource.Resource) (
 	return trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
 		trace.WithResource(resource),
+		trace.WithSampler(trace.TraceIDRatioBased(samplingRateOrDefault(config.SamplingRate))),
 	), nil
 }

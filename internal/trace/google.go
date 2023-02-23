@@ -23,8 +23,9 @@ import (
 
 // GoogleCloudTracing is configuration for tracing to Google Cloud Monitoring
 type GoogleCloudTracing struct {
-	ProjectID       string `mapstructure:"projectID,omitempty" yaml:"projectID,omitempty"`
-	CredentialsFile string `mapstructure:"credentialsFile,omitempty" yaml:"credentialsFile,omitempty"`
+	ProjectID       string   `mapstructure:"projectID,omitempty" yaml:"projectID,omitempty"`
+	CredentialsFile string   `mapstructure:"credentialsFile,omitempty" yaml:"credentialsFile,omitempty"`
+	SamplingRate    *float64 `mapstructure:"samplingRate,omitempty" yaml:"samplingRate,omitempty"`
 }
 
 // NewGoogleCloudExporter returns a new Google Cloud TracerProvider.
@@ -42,5 +43,6 @@ func NewGoogleCloudExporter(config GoogleCloudTracing, resource *resource.Resour
 	return trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
 		trace.WithResource(resource),
+		trace.WithSampler(trace.TraceIDRatioBased(samplingRateOrDefault(config.SamplingRate))),
 	), nil
 }

@@ -14,3 +14,11 @@
 
 // Package trace provides trace providers for various backends
 package trace
+
+// samplingRateOrDefault defaults to 1 if not set, but can be set to 0
+func samplingRateOrDefault(samplingRate *float64) float64 {
+	if samplingRate == nil || *samplingRate < 0 || *samplingRate > 1 {
+		return 1
+	}
+	return *samplingRate
+}

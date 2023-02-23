@@ -111,7 +111,7 @@ type Common struct {
 	// It is read-only and available via BindPlaneHomePath()
 	bindplaneHomePath string
 
-	// TraceType enables tracing
+	// TraceType specifies the type of tracing to use. Valid values are "google" or "otlp".
 	TraceType string `mapstructure:"traceType,omitempty" yaml:"traceType,omitempty"`
 
 	// GoogleCloudTracing is used to send traces to Google Cloud when TraceType is set to "google".
