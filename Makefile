@@ -27,12 +27,10 @@ help:
 gomoddownload:
 	go mod download
 
-.PHONY: install-git-hooks # installs git pre-commit hooks
-install-git-hooks:
-	cp scripts/git_hooks/* .git/hooks/
+
 
 .PHONY: install-tools # installs build tools
-install-tools: install-git-hooks
+install-tools: 
 	cd $(TOOLS_MOD_DIR) && go install github.com/securego/gosec/v2/cmd/gosec
 	cd $(TOOLS_MOD_DIR) && go install github.com/google/addlicense
 	cd $(TOOLS_MOD_DIR) && go install github.com/swaggo/swag/cmd/swag
