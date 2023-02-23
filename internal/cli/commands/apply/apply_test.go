@@ -16,7 +16,6 @@ package apply
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -25,26 +24,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/observiq/bindplane-op/client"
+	clientMocks "github.com/observiq/bindplane-op/client/mocks"
 	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/model"
 )
-
-type mockClient struct {
-	client.BindPlane
-	mock.Mock
-}
-
-func (s *mockClient) Agents(ctx context.Context, options ...client.QueryOption) ([]*model.Agent, error) {
-	args := s.Called(ctx, options)
-	return nil, args.Error(1)
-}
-
-func (s *mockClient) Apply(ctx context.Context, r []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
-	args := s.Called(ctx, r)
-	result, _ := args.Get(0).([]*model.AnyResourceStatus)
-	return result, args.Error(1)
-}
 
 func TestApply(t *testing.T) {
 	destinationStatus := &model.AnyResourceStatus{
@@ -60,7 +43,7 @@ func TestApply(t *testing.T) {
 		Status:   model.StatusUnchanged,
 	}
 
-	client := &mockClient{}
+	client := &clientMocks.MockBindPlane{}
 	resourceStatuses := []*model.AnyResourceStatus{
 		destinationStatus,
 		sourceStatus,
@@ -86,7 +69,7 @@ func TestApply(t *testing.T) {
 	})
 
 	t.Run("error when client.Apply fails", func(t *testing.T) {
-		errClient := &mockClient{}
+		errClient := &clientMocks.MockBindPlane{}
 		errClient.On("Apply", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("unexpected error"))
 		stub := &cli.BindPlane{
 			Config: nil,

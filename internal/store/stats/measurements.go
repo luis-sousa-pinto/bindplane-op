@@ -55,6 +55,8 @@ type MetricData []*record.Metric
 // ----------------------------------------------------------------------
 
 // Measurements provides query and storage of time-series metrics associated with agents and configurations.
+//
+//go:generate mockery --name Measurements --filename mock_measurements.go --structname MockMeasurements
 type Measurements interface {
 	// Clear clears the store and is mostly used for testing.
 	Clear()

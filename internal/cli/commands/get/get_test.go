@@ -23,8 +23,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/internal/cli/commands"
 	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
 	"github.com/stretchr/testify/assert"
@@ -119,8 +117,7 @@ func TestGetIndividualCommand(t *testing.T) {
 	buffer := bytes.NewBufferString("")
 
 	// Initialize the BindPlane CLI
-	bindplane := cli.NewBindPlane(common.InitConfig(home), buffer)
-	bindplane.SetClient(&mockClient{})
+	bindplane := setupBindPlane(buffer)
 
 	// root command is neccessary to inherit error handling behavior
 	rootCmd := commands.Command(bindplane, "bindplanectl")

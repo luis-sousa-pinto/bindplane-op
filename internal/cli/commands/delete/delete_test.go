@@ -16,7 +16,6 @@ package delete
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -27,7 +26,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/observiq/bindplane-op/client"
+	clientMocks "github.com/observiq/bindplane-op/client/mocks"
 	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/model"
 )
@@ -39,36 +38,6 @@ func TestDeleteCommand(t *testing.T) {
 		assert.NotNil(t, cmd)
 		assert.IsType(t, &cobra.Command{}, cmd)
 	})
-}
-
-type mockClient struct {
-	client.BindPlane
-	mock.Mock
-}
-
-func (m *mockClient) DeletePipeline(ctx context.Context, name string) error {
-	args := m.Called(ctx, name)
-	return args.Error(0)
-}
-
-func (m *mockClient) DeleteExporter(ctx context.Context, name string) error {
-	args := m.Called(ctx, name)
-	return args.Error(0)
-}
-
-func (m *mockClient) DeleteReceiver(ctx context.Context, name string) error {
-	args := m.Called(ctx, name)
-	return args.Error(0)
-}
-
-func (m *mockClient) DeleteConfiguration(ctx context.Context, name string) error {
-	args := m.Called(ctx, name)
-	return args.Error(0)
-}
-
-func (m *mockClient) Delete(ctx context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
-	args := m.Called(ctx, resources)
-	return args.Get(0).([]*model.AnyResourceStatus), args.Error(1)
 }
 
 type deleteReturn struct {
@@ -116,7 +85,7 @@ func TestDeleteFile(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			// set up mock client
-			client := &mockClient{}
+			client := &clientMocks.MockBindPlane{}
 			stub := cli.NewBindPlaneForTesting()
 			stub.SetClient(client)
 
@@ -168,7 +137,7 @@ func TestDeleteSubCommands(t *testing.T) {
 
 func runDeleteTests(t *testing.T, resourceType string, mockFuncName string) {
 	t.Run(fmt.Sprintf("%s: error with no name arg", resourceType), func(t *testing.T) {
-		client := &mockClient{}
+		client := &clientMocks.MockBindPlane{}
 		stub := cli.NewBindPlaneForTesting()
 		stub.SetClient(client)
 
@@ -179,7 +148,7 @@ func runDeleteTests(t *testing.T, resourceType string, mockFuncName string) {
 	})
 
 	t.Run(fmt.Sprintf("error when %s fails", mockFuncName), func(t *testing.T) {
-		client := &mockClient{}
+		client := &clientMocks.MockBindPlane{}
 		stub := cli.NewBindPlaneForTesting()
 		stub.SetClient(client)
 		client.On(mockFuncName, mock.Anything, mock.Anything).Return(fmt.Errorf("unexpected error"))
@@ -192,7 +161,7 @@ func runDeleteTests(t *testing.T, resourceType string, mockFuncName string) {
 	})
 
 	t.Run(fmt.Sprintf("%s: prints message on successful deletion", resourceType), func(t *testing.T) {
-		client := &mockClient{}
+		client := &clientMocks.MockBindPlane{}
 		stub := cli.NewBindPlaneForTesting()
 		stub.SetClient(client)
 		client.On(mockFuncName, mock.Anything, mock.Anything).Return(nil)

@@ -16,16 +16,16 @@ package get
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"io/ioutil"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/observiq/bindplane-op/client"
+	clientMocks "github.com/observiq/bindplane-op/client/mocks"
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/model"
@@ -37,50 +37,37 @@ var yamlOutput = "yaml"
 
 func setupBindPlane(buffer *bytes.Buffer) *cli.BindPlane {
 	bindplane := cli.NewBindPlane(common.InitConfig(""), buffer)
-	bindplane.SetClient(&mockClient{})
-	return bindplane
-}
-
-type mockClient struct {
-	client.BindPlane
-	mock.Mock
-}
-
-// Agents TODO(doc)
-func (c *mockClient) Agents(_ context.Context, _ ...client.QueryOption) ([]*model.Agent, error) {
-	return []*model.Agent{
-		{
-			ID:              "1",
-			Architecture:    "amd64",
-			HostName:        "local",
-			Platform:        "linux",
-			SecretKey:       "secret",
-			Version:         "1.0.0",
-			Name:            "Agent 1",
-			Home:            "/stanza",
-			OperatingSystem: "Ubuntu 20.10",
-			MacAddress:      "00:00:ac:00:00:00",
-			Type:            "stanza",
-			Status:          model.Connected,
-		},
-		{
-			ID:      "2",
-			Name:    "Agent 2",
-			Version: "1.0.0",
-			Status:  model.Disconnected,
-		},
-	}, nil
-}
-
-// Agent TODO(doc)
-func (c *mockClient) Agent(ctx context.Context, id string) (*model.Agent, error) {
-	agents, _ := c.Agents(ctx)
-	for _, agent := range agents {
-		if id == agent.ID {
-			return agent, nil
-		}
+	agent1 := &model.Agent{
+		ID:              "1",
+		Architecture:    "amd64",
+		HostName:        "local",
+		Platform:        "linux",
+		SecretKey:       "secret",
+		Version:         "1.0.0",
+		Name:            "Agent 1",
+		Home:            "/stanza",
+		OperatingSystem: "Ubuntu 20.10",
+		MacAddress:      "00:00:ac:00:00:00",
+		Type:            "stanza",
+		Status:          model.Connected,
 	}
-	return nil, errors.New("unable to get agents, got 404 Not Found	")
+	agent2 := &model.Agent{
+		ID:      "2",
+		Name:    "Agent 2",
+		Version: "1.0.0",
+		Status:  model.Disconnected,
+	}
+	agents := []*model.Agent{agent1, agent2}
+
+	client := &clientMocks.MockBindPlane{}
+	client.On("Agents", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(agents, nil)
+	client.On("Agent", mock.Anything, "1").Return(agent1, nil)
+	client.On("Agent", mock.Anything, "2").Return(agent2, nil)
+	client.On("Agent", mock.Anything, "3").Return(nil, multierror.Append(errors.New("unable to get agents, got 404 Not Found\t")))
+	client.On("Agent", mock.Anything, "badId").Return(nil, errors.New("unable to get agents, got 404 Not Found\t"))
+
+	bindplane.SetClient(client)
+	return bindplane
 }
 
 func executeAndAssertOutput(t *testing.T, cmd *cobra.Command, buffer *bytes.Buffer, expected string) {

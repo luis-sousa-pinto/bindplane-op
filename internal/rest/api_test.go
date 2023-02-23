@@ -38,6 +38,7 @@ import (
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/server"
 	"github.com/observiq/bindplane-op/internal/store"
+	storeMocks "github.com/observiq/bindplane-op/internal/store/mocks"
 	"github.com/observiq/bindplane-op/model"
 )
 
@@ -955,7 +956,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "ApplyResources",
-			mockArgs:     []interface{}{mock.Anything, mock.Anything},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything, mock.Anything},
 			mockReturn: []interface{}{
 				[]model.ResourceStatus{
 					{
@@ -1019,7 +1020,7 @@ func TestRESTMock(t *testing.T) {
 			expectStatus: 500,
 
 			mockFunction: "ApplyResources",
-			mockArgs:     []interface{}{mock.Anything},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything},
 			mockReturn:   []interface{}{[]model.ResourceStatus{}, errors.New("internal server error")},
 		},
 
@@ -1037,7 +1038,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "DeleteResources",
-			mockArgs:     []interface{}{mock.Anything},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything},
 			mockReturn: []interface{}{
 				[]model.ResourceStatus{
 					{Status: model.StatusDeleted, Resource: destination1},
@@ -1077,7 +1078,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteResources",
-			mockArgs:     []interface{}{mock.Anything},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything},
 			mockReturn:   []interface{}{[]model.ResourceStatus{}, errors.New("internal server error")},
 		},
 		/* --------------------------- Source Endpoints --------------------------- */
@@ -1092,7 +1093,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Sources",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Source{source1, source2}, nil},
 		},
 		{
@@ -1106,7 +1107,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Sources",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Source{}, errors.New("internal server error")},
 		},
 		{
@@ -1120,7 +1121,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Source",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{source1, nil},
 		},
 		{
@@ -1134,7 +1135,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Source",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1148,7 +1149,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Source",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 		{
@@ -1160,7 +1161,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "DeleteSource",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{source1, nil},
 		},
 		{
@@ -1174,7 +1175,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteSource",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
 		},
 		{
@@ -1188,7 +1189,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteSource",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 
@@ -1226,7 +1227,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agents",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything, mock.Anything, mock.Anything},
 			mockReturn:   []interface{}{[]*model.Agent{agent1, agent2}, nil},
 		},
 		{
@@ -1240,7 +1241,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agents",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything, mock.Anything, mock.Anything, mock.Anything},
 			mockReturn:   []interface{}{[]*model.Agent{}, errors.New("internal server error")},
 		},
 		{
@@ -1254,7 +1255,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agent",
-			mockArgs:     []interface{}{"id"},
+			mockArgs:     []interface{}{mock.Anything, "id"},
 			mockReturn:   []interface{}{agent1, nil},
 		},
 		{
@@ -1270,7 +1271,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agent",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1284,7 +1285,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agent",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1298,7 +1299,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Agent",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 
@@ -1314,7 +1315,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configurations",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Configuration{configuration1, configuration2}, nil},
 		},
 		{
@@ -1328,7 +1329,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configurations",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Configuration{}, errors.New("internal server error")},
 		},
 		{
@@ -1343,7 +1344,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{configuration1, nil},
 		},
 		{
@@ -1357,7 +1358,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1371,7 +1372,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 		{
@@ -1383,7 +1384,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{configuration1, nil},
 		},
 		{
@@ -1397,7 +1398,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
 		},
 		{
@@ -1411,7 +1412,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 
@@ -1427,7 +1428,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Destinations",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Destination{destination1, destination2}, nil},
 		},
 		{
@@ -1441,7 +1442,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Destinations",
-			mockArgs:     []interface{}{},
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Destination{}, errors.New("internal server error")},
 		},
 		{
@@ -1455,7 +1456,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Destination",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{destination1, nil},
 		},
 		{
@@ -1469,7 +1470,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Destination",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1483,7 +1484,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Destination",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 		{
@@ -1495,7 +1496,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "DeleteDestination",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{destination1, nil},
 		},
 		{
@@ -1509,7 +1510,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteDestination",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
 		},
 		{
@@ -1523,7 +1524,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteDestination",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 		/* --------------------------- Configuration Endpoints --------------------------- */
@@ -1538,6 +1539,7 @@ func TestRESTMock(t *testing.T) {
 			expectStatus: 200,
 
 			mockFunction: "Configurations",
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Configuration{testConfig1, testConfig2}, nil},
 		},
 		{
@@ -1549,6 +1551,7 @@ func TestRESTMock(t *testing.T) {
 			expectStatus: 500,
 
 			mockFunction: "Configurations",
+			mockArgs:     []interface{}{mock.Anything},
 			mockReturn:   []interface{}{[]*model.Configuration{}, errors.New("internal server error")},
 		},
 		{
@@ -1563,7 +1566,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{testConfig1, nil},
 		},
 		{
@@ -1577,7 +1580,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, nil},
 		},
 		{
@@ -1591,7 +1594,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "Configuration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 		{
@@ -1603,7 +1606,7 @@ func TestRESTMock(t *testing.T) {
 			expectResult: nil,
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{configuration1, nil},
 		},
 		{
@@ -1617,7 +1620,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"does-not-exist"},
+			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
 			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
 		},
 		{
@@ -1631,7 +1634,7 @@ func TestRESTMock(t *testing.T) {
 			},
 
 			mockFunction: "DeleteConfiguration",
-			mockArgs:     []interface{}{"name"},
+			mockArgs:     []interface{}{mock.Anything, "name"},
 			mockReturn:   []interface{}{nil, errors.New("internal server error")},
 		},
 	}
@@ -1642,7 +1645,7 @@ func TestRESTMock(t *testing.T) {
 			svr := httptest.NewServer(router)
 			defer svr.Close()
 
-			store := &mockStore{}
+			store := &storeMocks.MockStore{}
 			bindplane, err := server.NewBindPlane(&common.Server{}, zaptest.NewLogger(t), store, nil)
 			require.NoError(t, err)
 			AddRestRoutes(router, bindplane)
@@ -1677,111 +1680,5 @@ func TestRESTMock(t *testing.T) {
 			}
 			assert.Equal(t, test.expectStatus, resp.StatusCode())
 		})
-	}
-}
-
-/* ------------------------- Mock Store + Functions ------------------------- */
-type mockStore struct {
-	store.Store
-	mock.Mock
-}
-
-func (m *mockStore) ApplyResources(_ context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
-	args := m.Called(resources)
-	return args.Get(0).([]model.ResourceStatus), args.Error(1)
-}
-
-func (m *mockStore) DeleteResources(_ context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
-	args := m.Called(resources)
-	return args.Get(0).([]model.ResourceStatus), args.Error(1)
-}
-
-func (m *mockStore) Sources(_ context.Context) ([]*model.Source, error) {
-	args := m.Called()
-	return args.Get(0).([]*model.Source), args.Error(1)
-}
-
-func (m *mockStore) Source(_ context.Context, name string) (*model.Source, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Source), args.Error(1)
-	}
-}
-
-func (m *mockStore) DeleteSource(_ context.Context, name string) (*model.Source, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Source), args.Error(1)
-	}
-}
-
-func (m *mockStore) Agents(_ context.Context, _ ...store.QueryOption) ([]*model.Agent, error) {
-	args := m.Called()
-	return args.Get(0).([]*model.Agent), args.Error(1)
-}
-
-func (m *mockStore) Agent(_ context.Context, id string) (*model.Agent, error) {
-	args := m.Called(id)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Agent), args.Error(1)
-	}
-}
-
-func (m *mockStore) Destinations(_ context.Context) ([]*model.Destination, error) {
-	args := m.Called()
-	return args.Get(0).([]*model.Destination), args.Error(1)
-}
-
-func (m *mockStore) Destination(_ context.Context, name string) (*model.Destination, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Destination), args.Error(1)
-	}
-}
-
-func (m *mockStore) DeleteDestination(_ context.Context, name string) (*model.Destination, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Destination), args.Error(1)
-	}
-}
-
-func (m *mockStore) Configurations(_ context.Context, _ ...store.QueryOption) ([]*model.Configuration, error) {
-	args := m.Called()
-	return args.Get(0).([]*model.Configuration), args.Error(1)
-}
-
-func (m *mockStore) Configuration(_ context.Context, name string) (*model.Configuration, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Configuration), args.Error(1)
-	}
-}
-
-func (m *mockStore) DeleteConfiguration(_ context.Context, name string) (*model.Configuration, error) {
-	args := m.Called(name)
-	switch args.Get(0).(type) {
-	case nil:
-		return nil, args.Error(1)
-	default:
-		return args.Get(0).(*model.Configuration), args.Error(1)
 	}
 }

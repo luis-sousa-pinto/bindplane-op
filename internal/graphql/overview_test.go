@@ -801,7 +801,7 @@ func Test_overviewGraph(t *testing.T) {
 		t.Run(test.description, func(t *testing.T) {
 			b := mocks.NewMockBindPlane(t)
 			s := storeMocks.NewMockStore(t)
-			measurementsMocks := measurementsMocks.NewMeasurements(t)
+			measurementsMocks := measurementsMocks.NewMockMeasurements(t)
 			measurementsMocks.On("OverviewMetrics", mock.Anything, mock.Anything).Return(test.testData.measurements, nil)
 
 			b.On("Store").Return(s)

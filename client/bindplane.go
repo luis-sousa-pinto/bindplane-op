@@ -120,6 +120,8 @@ func WithSort(field string) QueryOption {
 }
 
 // BindPlane is a REST client for BindPlane OP.
+//
+//go:generate mockery --name=BindPlane --filename=mock_bindplane.go --structname=MockBindPlane
 type BindPlane interface {
 	// Agents returns a list of Agents.
 	Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error)
