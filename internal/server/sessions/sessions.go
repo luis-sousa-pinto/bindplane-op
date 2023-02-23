@@ -37,8 +37,8 @@ func login(ctx *gin.Context, bindplane server.BindPlane) {
 		return
 	}
 
-	username := ctx.PostForm("username")
-	password := ctx.PostForm("password")
+	username := ctx.PostForm("u")
+	password := ctx.PostForm("p")
 
 	if password != bindplane.Config().Password || username != bindplane.Config().Username {
 		ctx.AbortWithError(http.StatusUnauthorized, errors.New("incorrect username or password"))

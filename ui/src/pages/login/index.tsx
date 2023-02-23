@@ -34,8 +34,8 @@ export const LoginPage: React.FC = () => {
     }
 
     const data = new FormData();
-    data.append("username", username);
-    data.append("password", password);
+    data.append("u", username);
+    data.append("p", password);
     const resp = await fetch("/login", {
       method: "POST",
       body: data,

@@ -104,8 +104,8 @@ func TestHandleLogin(t *testing.T) {
 
 		resp, err := client.R().SetFormData(
 			map[string]string{
-				"username": "user",
-				"password": "secret",
+				"u": "user",
+				"p": "secret",
 			},
 		).Post("/login")
 
@@ -128,8 +128,8 @@ func TestHandleLogin(t *testing.T) {
 
 		resp, err := client.R().SetFormData(
 			map[string]string{
-				"username": "user",
-				"password": "bad-secret",
+				"u": "user",
+				"p": "bad-secret",
 			},
 		).Post("/login")
 
@@ -161,8 +161,8 @@ func TestLogin(t *testing.T) {
 		// Create a Post Form Request with username and password
 		req := httptest.NewRequest("POST", "/login", nil)
 		req.PostForm = url.Values{
-			"username": []string{"user"},
-			"password": []string{"bad-secret"},
+			"u": []string{"user"},
+			"p": []string{"bad-secret"},
 		}
 
 		w := httptest.NewRecorder()
@@ -182,8 +182,8 @@ func TestLogin(t *testing.T) {
 		// Create a Post Form Request with username and password
 		req := httptest.NewRequest("POST", "/login", nil)
 		req.PostForm = url.Values{
-			"username": []string{"user"},
-			"password": []string{"secret"},
+			"u": []string{"user"},
+			"p": []string{"secret"},
 		}
 
 		w := httptest.NewRecorder()
@@ -287,8 +287,8 @@ func getLoggedInContext(_ *testing.T, bindplane server.BindPlane, w http.Respons
 	// Make a login request
 	loginRequest := httptest.NewRequest("POST", "/login", nil)
 	loginRequest.PostForm = url.Values{
-		"username": []string{"user"},
-		"password": []string{"secret"},
+		"u": []string{"user"},
+		"p": []string{"secret"},
 	}
 
 	ctx, _ := gin.CreateTestContext(w)
