@@ -42,13 +42,6 @@ func (c *Config) Validate() (errGroup error) {
 }
 
 func (s *Server) validate() (errGroup error) {
-	if s.StorageFilePath != "" {
-		if _, err := os.Stat(s.StorageFilePath); err != nil {
-			err = fmt.Errorf("failed to lookup storage file path %s: %w", s.StorageFilePath, err)
-			errGroup = multierror.Append(errGroup, err)
-		}
-	}
-
 	if err := validateUUID(s.SecretKey); err != nil {
 		err = fmt.Errorf("failed to validate secret key: %w", err)
 		errGroup = multierror.Append(errGroup, err)

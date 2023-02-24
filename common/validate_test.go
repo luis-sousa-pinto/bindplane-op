@@ -449,16 +449,6 @@ func TestValidate(t *testing.T) {
 			},
 			"failed to lookup tls certificate authority file",
 		},
-		{
-			"invalid-storage-file-path",
-			Config{
-				Server: Server{
-					StorageFilePath: "/invalid/storage/path",
-				},
-				Client: Client{},
-			},
-			"failed to lookup storage file path",
-		},
 	}
 
 	for _, tc := range cases {

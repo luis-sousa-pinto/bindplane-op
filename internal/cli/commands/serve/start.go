@@ -70,6 +70,10 @@ func (s *Server) Start(ctx context.Context, bindplane *cli.BindPlane, h profile.
 		config.SessionsSecret = uuid.NewString()
 	}
 
+	if err := bindplane.Config.Validate(); err != nil {
+		return err
+	}
+
 	// initialize the store which stores bindplane resources
 	st, err := s.createStore(config)
 	if err != nil {
