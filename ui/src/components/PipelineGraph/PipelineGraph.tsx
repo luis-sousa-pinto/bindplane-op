@@ -27,7 +27,7 @@ interface PipelineGraphProps {
   refetchConfiguration: () => void;
   agent: string;
   yamlValue: string;
-  rawOrTopology: string;
+  rawOrTopology: "raw" | "topology";
 }
 
 export const PipelineGraph: React.FC<PipelineGraphProps> = ({

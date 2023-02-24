@@ -8,12 +8,12 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
   rawOrTopology,
   setTopologyOrRaw,
 }) => {
-  
+
   const toggleRawOrTopology = (
     _: React.MouseEvent<HTMLElement>,
     newValue: "topology" | "raw",
-    ) => {
-      setTopologyOrRaw(newValue);
+  ) => {
+    setTopologyOrRaw(newValue);
   };
   return (
     <ToggleButtonGroup
@@ -26,8 +26,8 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
       exclusive
       onChange={toggleRawOrTopology}
     >
-      <ToggleButton 
-        value="topology" 
+      <ToggleButton
+        value="topology"
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -35,11 +35,11 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
           paddingRight: 15,
           textTransform: "none",
         }}
-      >                    
+      >
         Topology
       </ToggleButton>
-      <ToggleButton 
-        value="raw" 
+      <ToggleButton
+        value="raw"
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -47,11 +47,9 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
           paddingRight: 15,
           textTransform: "none",
         }}
-      >                    
+      >
         Raw
-      </ToggleButton>                  
+      </ToggleButton>
     </ToggleButtonGroup>
   )
 };
-      
-      

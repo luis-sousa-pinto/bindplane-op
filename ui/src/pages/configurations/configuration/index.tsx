@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { IconButton, Stack, Typography } from "@mui/material";
+import { IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CardContainer } from "../../../components/CardContainer";
@@ -22,7 +22,6 @@ import { withRequireLogin } from "../../../contexts/RequireLogin";
 import { withNavBar } from "../../../components/NavBar";
 import { PipelineGraph } from "../../../components/PipelineGraph/PipelineGraph";
 import { ConfigurationPageContextProvider } from "./ConfigurationPageContext";
-import { RawOrTopologyControl } from "../../../components/PipelineGraph/RawOrTopologyControl";
 
 import styles from "./configuration-page.module.scss";
 
@@ -101,7 +100,6 @@ gql`
           target
         }
       }
-      rendered
     }
   }
 `;
@@ -124,8 +122,6 @@ const ConfigPageContent: React.FC = () => {
   const [showApplyDialog, setShowApply] = useState(false);
   const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false);
   const [addDestDialogOpen, setAddDestDialogOpen] = useState(false);
-  const [rawOrTopology, setTopologyOrRaw] =
-    useState<"topology" | "raw">("topology");
 
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -191,16 +187,33 @@ const ConfigPageContent: React.FC = () => {
       {!isRaw && (
         <CardContainer>
           <Stack spacing={2}>
-            <RawOrTopologyControl
-              rawOrTopology={rawOrTopology}
-              setTopologyOrRaw={setTopologyOrRaw}
-            />
+            <ToggleButtonGroup
+              color="primary"
+              value={"topology"}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}>
+              <ToggleButton
+                value="topology"
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  textTransform: "none",
+                }}
+                disabled
+              >
+                Topology
+              </ToggleButton>
+            </ToggleButtonGroup>
             <PipelineGraph
               configuration={data.configuration}
               refetchConfiguration={refetch}
               agent={""}
-              rawOrTopology={rawOrTopology}
-              yamlValue={data.configuration.rendered ?? ""}
+              rawOrTopology={"topology"}
+              yamlValue={""}
             />
           </Stack>
         </CardContainer>
