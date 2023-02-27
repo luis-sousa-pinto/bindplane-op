@@ -25,6 +25,7 @@ gql`
   query getProcessorType($type: String!) {
     processorType(name: $type) {
       metadata {
+        id
         displayName
         name
         description

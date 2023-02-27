@@ -6,6 +6,7 @@ function createAgent(): AgentsTableAgent {
   const id = makeId();
   const configurationResource: AgentsTableConfiguration = {
     metadata: {
+      id: "configuration-id",
       name: "configuration-name",
     },
   };

@@ -4,6 +4,7 @@ import {
   InMemoryCache,
   split,
   from,
+  FieldMergeFunction,
 } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
@@ -55,6 +56,16 @@ const authErrorLink = onError(({ operation }) => {
 // Chain the auth link and request link together
 const link = from([authErrorLink, requestLink]);
 
+/**
+ *
+ * merge is used to merge fields that do not have a unique identifier.
+ * This is discussed in apollo documentation here:
+ * https://www.apollographql.com/docs/react/caching/cache-field-behavior
+ */
+const merge: FieldMergeFunction = (existing, incoming, { mergeObjects }) => {
+  return mergeObjects(existing, incoming);
+};
+
 const APOLLO_CLIENT = new ApolloClient({
   link: link,
   cache: new InMemoryCache({
@@ -67,12 +78,22 @@ const APOLLO_CLIENT = new ApolloClient({
       },
       SourceType: {
         keyFields: ["metadata"],
+        fields: {
+          spec: {
+            merge,
+          },
+        },
       },
       DestinationType: {
         keyFields: ["metadata"],
+        fields: {
+          spec: {
+            merge,
+          },
+        },
       },
       Metadata: {
-        keyFields: ["name"],
+        keyFields: ["id", "name"],
       },
     },
   }),

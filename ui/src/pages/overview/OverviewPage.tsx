@@ -30,6 +30,7 @@ gql`
     destinationsInConfigs {
       kind
       metadata {
+        id
         name
       }
       spec {

@@ -14,6 +14,7 @@ const TEST_CONFIGS: GetConfigurationTableQuery["configurations"]["configurations
   [
     {
       metadata: {
+        id: "config-1",
         name: "config-1",
         description: "description for config-1",
         labels: {
@@ -25,6 +26,7 @@ const TEST_CONFIGS: GetConfigurationTableQuery["configurations"]["configurations
     },
     {
       metadata: {
+        id: "config-2",
         name: "config-2",
         description: "description for config-2",
         labels: {

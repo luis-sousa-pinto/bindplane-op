@@ -101,6 +101,7 @@ gql`
     }
     destinations {
       metadata {
+        id
         name
       }
       spec {

@@ -33,6 +33,7 @@ gql`
     ) {
       configurations {
         metadata {
+          id
           name
           labels
           description
@@ -51,6 +52,7 @@ gql`
     configurationChanges(selector: $selector, query: $query) {
       configuration {
         metadata {
+          id
           name
           description
           labels

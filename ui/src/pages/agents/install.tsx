@@ -27,6 +27,7 @@ gql`
     configurations {
       configurations {
         metadata {
+          id
           name
           labels
         }

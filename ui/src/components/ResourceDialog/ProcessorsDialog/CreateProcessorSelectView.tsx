@@ -17,6 +17,7 @@ gql`
   query getProcessorTypes {
     processorTypes {
       metadata {
+        id
         displayName
         description
         name

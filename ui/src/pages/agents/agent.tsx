@@ -70,6 +70,7 @@ gql`
       }
       configurationResource {
         metadata {
+          id
           name
         }
       }
@@ -84,6 +85,7 @@ gql`
     configurations {
       configurations {
         metadata {
+          id
           name
           labels
         }

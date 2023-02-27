@@ -10,9 +10,7 @@ import { useSnackbar } from "notistack";
 import { useState } from "react";
 import { ConfirmDeleteResourceDialog } from "../ConfirmDeleteResourceDialog";
 import { EditResourceDialog } from "../ResourceDialog/EditResourceDialog";
-import {
-  useDestinationTypeQuery,
-} from "../../graphql/generated";
+import { useDestinationTypeQuery } from "../../graphql/generated";
 import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration } from "../../utils/classes/configuration";
 import { BPResourceConfiguration } from "../../utils/classes/resource-configuration";
@@ -25,8 +23,9 @@ gql`
   query DestinationType($name: String!) {
     destinationType(name: $name) {
       metadata {
-        displayName
+        id
         name
+        displayName
         icon
         displayName
         description

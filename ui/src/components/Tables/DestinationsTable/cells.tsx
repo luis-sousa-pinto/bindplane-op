@@ -32,6 +32,7 @@ gql`
   query getDestinationTypeDisplayInfo($name: String!) {
     destinationType(name: $name) {
       metadata {
+        id
         displayName
         icon
         name
@@ -44,6 +45,7 @@ gql`
   query getSourceTypeDisplayInfo($name: String!) {
     sourceType(name: $name) {
       metadata {
+        id
         displayName
         icon
         name

@@ -28,8 +28,8 @@ gql`
     destinationWithType(name: $name) {
       destination {
         metadata {
-          name
           id
+          name
           labels
         }
         spec {
@@ -43,6 +43,7 @@ gql`
       }
       destinationType {
         metadata {
+          id
           name
           icon
           description

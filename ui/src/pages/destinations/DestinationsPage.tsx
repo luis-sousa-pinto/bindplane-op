@@ -34,6 +34,7 @@ gql`
     destinations {
       kind
       metadata {
+        id
         name
       }
       spec {

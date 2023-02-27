@@ -30,6 +30,7 @@ gql`
   query processorDialogSourceType($name: String!) {
     sourceType(name: $name) {
       metadata {
+        id
         name
         displayName
         description
@@ -44,6 +45,7 @@ gql`
     destinationWithType(name: $name) {
       destinationType {
         metadata {
+          id
           name
           displayName
           description

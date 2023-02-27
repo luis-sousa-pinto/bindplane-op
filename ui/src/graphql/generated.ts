@@ -593,21 +593,21 @@ export type DestinationTypeQueryVariables = Exact<{
 }>;
 
 
-export type DestinationTypeQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type DestinationTypeQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type SourceTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetDestinationWithTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type RemoveAgentConfigurationMutationVariables = Exact<{
   input: RemoveAgentConfigurationInput;
@@ -628,28 +628,28 @@ export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', co
 export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, description?: string | null, name: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetProcessorTypeQueryVariables = Exact<{
   type: Scalars['String'];
 }>;
 
 
-export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, name: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type ProcessorDialogSourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null };
+export type ProcessorDialogSourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null };
 
 export type ProcessorDialogDestinationTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type ProcessorDialogDestinationTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null } };
+export type ProcessorDialogDestinationTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null } };
 
 export type UpdateProcessorsMutationVariables = Exact<{
   input: UpdateProcessorsInput;
@@ -672,7 +672,7 @@ export type AgentsTableQueryVariables = Exact<{
 }>;
 
 
-export type AgentsTableQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', query?: string | null, latestVersion: string, agents: Array<{ __typename?: 'Agent', id: string, architecture?: string | null, hostName?: string | null, labels?: any | null, platform?: string | null, version?: string | null, name: string, home?: string | null, operatingSystem?: string | null, macAddress?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } } | null }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
+export type AgentsTableQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', query?: string | null, latestVersion: string, agents: Array<{ __typename?: 'Agent', id: string, architecture?: string | null, hostName?: string | null, labels?: any | null, platform?: string | null, version?: string | null, name: string, home?: string | null, operatingSystem?: string | null, macAddress?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type AgentsTableMetricsSubscriptionVariables = Exact<{
   period: Scalars['String'];
@@ -689,7 +689,7 @@ export type GetConfigurationTableQueryVariables = Exact<{
 }>;
 
 
-export type GetConfigurationTableQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', query?: string | null, configurations: Array<{ __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, labels?: any | null, description?: string | null } }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
+export type GetConfigurationTableQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', query?: string | null, configurations: Array<{ __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null, description?: string | null } }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type ConfigurationChangesSubscriptionVariables = Exact<{
   selector?: InputMaybe<Scalars['String']>;
@@ -697,7 +697,7 @@ export type ConfigurationChangesSubscriptionVariables = Exact<{
 }>;
 
 
-export type ConfigurationChangesSubscription = { __typename?: 'Subscription', configurationChanges: Array<{ __typename?: 'ConfigurationChange', eventType: EventType, configuration: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, description?: string | null, labels?: any | null } } }> };
+export type ConfigurationChangesSubscription = { __typename?: 'Subscription', configurationChanges: Array<{ __typename?: 'ConfigurationChange', eventType: EventType, configuration: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null } } }> };
 
 export type ConfigurationTableMetricsSubscriptionVariables = Exact<{
   period: Scalars['String'];
@@ -711,14 +711,14 @@ export type GetDestinationTypeDisplayInfoQueryVariables = Exact<{
 }>;
 
 
-export type GetDestinationTypeDisplayInfoQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', displayName?: string | null, icon?: string | null, name: string } } | null };
+export type GetDestinationTypeDisplayInfoQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, icon?: string | null, name: string } } | null };
 
 export type GetSourceTypeDisplayInfoQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type GetSourceTypeDisplayInfoQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', displayName?: string | null, icon?: string | null, name: string } } | null };
+export type GetSourceTypeDisplayInfoQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, icon?: string | null, name: string } } | null };
 
 export type AgentChangesSubscriptionVariables = Exact<{
   selector?: InputMaybe<Scalars['String']>;
@@ -726,19 +726,19 @@ export type AgentChangesSubscriptionVariables = Exact<{
 }>;
 
 
-export type AgentChangesSubscription = { __typename?: 'Subscription', agentChanges: Array<{ __typename?: 'AgentChange', changeType: AgentChangeType, agent: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, home?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } } | null } }> };
+export type AgentChangesSubscription = { __typename?: 'Subscription', agentChanges: Array<{ __typename?: 'AgentChange', changeType: AgentChangeType, agent: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, home?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null } }> };
 
 export type GetAgentAndConfigurationsQueryVariables = Exact<{
   agentId: Scalars['ID'];
 }>;
 
 
-export type GetAgentAndConfigurationsQuery = { __typename?: 'Query', agent?: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, remoteAddress?: string | null, home?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, errorMessage?: string | null, upgradeAvailable?: string | null, features: number, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } } | null, upgrade?: { __typename?: 'AgentUpgrade', status: number, version: string, error?: string | null } | null } | null, configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string, labels?: any | null }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null } }> } };
+export type GetAgentAndConfigurationsQuery = { __typename?: 'Query', agent?: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, remoteAddress?: string | null, home?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, errorMessage?: string | null, upgradeAvailable?: string | null, features: number, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null, upgrade?: { __typename?: 'AgentUpgrade', status: number, version: string, error?: string | null } | null } | null, configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null } }> } };
 
 export type GetConfigurationNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetConfigurationNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string, labels?: any | null } }> } };
+export type GetConfigurationNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null } }> } };
 
 export type GetConfigurationQueryVariables = Exact<{
   name: Scalars['String'];
@@ -750,7 +750,7 @@ export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __
 export type DestinationsAndTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
+export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
 
 export type SourceTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -760,12 +760,12 @@ export type SourceTypesQuery = { __typename?: 'Query', sourceTypes: Array<{ __ty
 export type GetConfigNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetConfigNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } }> } };
+export type GetConfigNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } }> } };
 
 export type DestinationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
+export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 export type GetOverviewPageQueryVariables = Exact<{
   configIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
@@ -789,15 +789,16 @@ export type OverviewMetricsSubscription = { __typename?: 'Subscription', overvie
 export type DestinationsInConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
+export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 
 export const DestinationTypeDocument = gql`
     query DestinationType($name: String!) {
   destinationType(name: $name) {
     metadata {
-      displayName
+      id
       name
+      displayName
       icon
       displayName
       description
@@ -875,8 +876,9 @@ export const SourceTypeDocument = gql`
     query SourceType($name: String!) {
   sourceType(name: $name) {
     metadata {
-      displayName
+      id
       name
+      displayName
       icon
       displayName
       description
@@ -954,8 +956,8 @@ export const GetDestinationWithTypeDocument = gql`
   destinationWithType(name: $name) {
     destination {
       metadata {
-        name
         id
+        name
         labels
       }
       spec {
@@ -969,6 +971,7 @@ export const GetDestinationWithTypeDocument = gql`
     }
     destinationType {
       metadata {
+        id
         name
         icon
         description
@@ -1123,6 +1126,7 @@ export const GetProcessorTypesDocument = gql`
     query getProcessorTypes {
   processorTypes {
     metadata {
+      id
       displayName
       description
       name
@@ -1204,6 +1208,7 @@ export const GetProcessorTypeDocument = gql`
     query getProcessorType($type: String!) {
   processorType(name: $type) {
     metadata {
+      id
       displayName
       name
       description
@@ -1285,6 +1290,7 @@ export const ProcessorDialogSourceTypeDocument = gql`
     query processorDialogSourceType($name: String!) {
   sourceType(name: $name) {
     metadata {
+      id
       name
       displayName
       description
@@ -1328,6 +1334,7 @@ export const ProcessorDialogDestinationTypeDocument = gql`
   destinationWithType(name: $name) {
     destinationType {
       metadata {
+        id
         name
         displayName
         description
@@ -1479,6 +1486,7 @@ export const AgentsTableDocument = gql`
       disconnectedAt
       configurationResource {
         metadata {
+          id
           name
         }
       }
@@ -1568,6 +1576,7 @@ export const GetConfigurationTableDocument = gql`
   ) {
     configurations {
       metadata {
+        id
         name
         labels
         description
@@ -1617,6 +1626,7 @@ export const ConfigurationChangesDocument = gql`
   configurationChanges(selector: $selector, query: $query) {
     configuration {
       metadata {
+        id
         name
         description
         labels
@@ -1691,6 +1701,7 @@ export const GetDestinationTypeDisplayInfoDocument = gql`
     query getDestinationTypeDisplayInfo($name: String!) {
   destinationType(name: $name) {
     metadata {
+      id
       displayName
       icon
       name
@@ -1730,6 +1741,7 @@ export const GetSourceTypeDisplayInfoDocument = gql`
     query getSourceTypeDisplayInfo($name: String!) {
   sourceType(name: $name) {
     metadata {
+      id
       displayName
       icon
       name
@@ -1788,6 +1800,7 @@ export const AgentChangesDocument = gql`
       }
       configurationResource {
         metadata {
+          id
           name
         }
       }
@@ -1843,6 +1856,7 @@ export const GetAgentAndConfigurationsDocument = gql`
     }
     configurationResource {
       metadata {
+        id
         name
       }
     }
@@ -1857,6 +1871,7 @@ export const GetAgentAndConfigurationsDocument = gql`
   configurations {
     configurations {
       metadata {
+        id
         name
         labels
       }
@@ -1900,6 +1915,7 @@ export const GetConfigurationNamesDocument = gql`
   configurations {
     configurations {
       metadata {
+        id
         name
         labels
       }
@@ -2096,6 +2112,7 @@ export const DestinationsAndTypesDocument = gql`
   }
   destinations {
     metadata {
+      id
       name
     }
     spec {
@@ -2224,6 +2241,7 @@ export const GetConfigNamesDocument = gql`
   configurations {
     configurations {
       metadata {
+        id
         name
       }
     }
@@ -2262,6 +2280,7 @@ export const DestinationsDocument = gql`
   destinations {
     kind
     metadata {
+      id
       name
     }
     spec {
@@ -2412,6 +2431,7 @@ export const DestinationsInConfigsDocument = gql`
   destinationsInConfigs {
     kind
     metadata {
+      id
       name
     }
     spec {

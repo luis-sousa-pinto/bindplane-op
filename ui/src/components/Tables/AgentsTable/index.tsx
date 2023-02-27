@@ -50,6 +50,7 @@ gql`
 
         configurationResource {
           metadata {
+            id
             name
           }
         }

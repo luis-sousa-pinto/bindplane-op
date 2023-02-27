@@ -23,8 +23,9 @@ gql`
   query SourceType($name: String!) {
     sourceType(name: $name) {
       metadata {
-        displayName
+        id
         name
+        displayName
         icon
         displayName
         description

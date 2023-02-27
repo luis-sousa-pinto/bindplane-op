@@ -181,6 +181,7 @@ const CONFIG_WITH_PROCESSORS = {
 
 const CUSTOM_PROCESSOR = {
   metadata: {
+    id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc7",
     name: "custom",
     displayName: "Custom",
     description: "Insert a custom OpenTelemetry processor configuration.",
@@ -237,6 +238,7 @@ const SOURCE_TYPE_MOCK: MockedResponse = {
       sourceType: {
         __typename: "SourceType",
         metadata: {
+          id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc4",
           name: "file",
           displayName: "File",
           description: "Reads logs from a file",
@@ -261,6 +263,7 @@ const DESTINATION_TYPE_MOCK: MockedResponse = {
       destinationWithType: {
         destinationType: {
           metadata: {
+            id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc8",
             name: "google",
             displayName: "Google Cloud",
             description: "Google cloud destination",
