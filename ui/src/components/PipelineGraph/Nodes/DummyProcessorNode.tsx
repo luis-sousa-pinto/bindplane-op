@@ -9,7 +9,7 @@ export function DummyProcessorNode() {
   return (
     <>
       <Handle type="target" position={Position.Left} />
-      <Card className={styles["processor-card"]}>
+      <Card className={styles["dummy-processor-card"]}>
         <Stack
           width="100%"
           height="100%"

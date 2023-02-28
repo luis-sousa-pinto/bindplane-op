@@ -69,15 +69,20 @@
   height: 120px;
 }
 
-.processor-card {
+.dummy-processor-card {
   height: 50px;
   width: 100px;
-  cursor: pointer;
+  cursor: default;
 
   background-color: #fff;
   transition: background-color 0.2s ease-in-out;
 
   padding: 13px;
+}
+
+.processor-card {
+  @extend .dummy-processor-card;
+  cursor: pointer;
 }
 
 .button {
