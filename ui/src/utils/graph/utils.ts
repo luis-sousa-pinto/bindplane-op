@@ -20,6 +20,22 @@ export const enum MetricPosition {
   Configuration,
 }
 
+/**
+ * Calculate the position and connections of Nodes and Edges in the given configuration's
+ * graph.
+ * If there are no sources or destinations, add buttons to allow the user to add them.
+ * Otherwise, add smaller buttons below the sources and destinations columns.
+ *
+ * @param page Page on which the graph is being rendered
+ * @param graph Configuration graph
+ * @param targetOffsetMultiplier Offset multiplier for x-coordinate of target nodes
+ * @param configuration Configuration the graph is being rendered for
+ * @param refetchConfiguration Function to refetch the configuration
+ * @param setAddSourceDialogOpen Callback to set the add source dialog open
+ * @param setAddDestDialogOpen Callback to set the add destination dialog open
+ * @param isConfigurationPage Is the graph being rendered on the configuration page?
+ * @returns Nodes and Edges calculated from the configuration graph
+ */
 export function getNodesAndEdges(
   page: Page,
   graph: Graph,
@@ -54,7 +70,6 @@ export function getNodesAndEdges(
 
   // if there's only one source or one destination we need to layout add source and add destination cards
   // we also need to add edges between the source/destination and the add source/add destination cards
-
   const addSourceCard = graph.sources?.length === 0;
   const addDestinationCard = graph.targets?.length === 0;
 
@@ -500,6 +515,17 @@ function getMetricPosition(nodeID: string): MetricPosition | undefined {
   }
 }
 
+/**
+ * Update the metric data of nodes and edges in a configuration's graph.
+ * The nodes and edges are mutated in place.
+ *
+ * @param page Page on which the graph is being rendered
+ * @param nodes Nodes of the graph
+ * @param edges Edges of the graph
+ * @param metrics Measurement metrics fetched for the configuration
+ * @param rate Period/rate to convert metrics to, e.g. "1m", "1h", ...
+ * @param telemetryType Telemetry type to filter metrics by
+ */
 export function updateMetricData(
   page: Page,
   nodes: Node<any>[],
@@ -509,10 +535,7 @@ export function updateMetricData(
   telemetryType: string
 ) {
   for (const node of nodes) {
-    const metric = metrics.find(
-      (m) =>
-        m.nodeID === node.id && m.name === TELEMETRY_SIZE_METRICS[telemetryType]
-    );
+    const metric = getMetricForNode(node.id, metrics, telemetryType);
     if (metric != null) {
       const formattedMetric = formatMetric(metric, rate);
 
@@ -608,11 +631,72 @@ export function updateMetricData(
   }
 }
 
+/**
+ * Try to find a metric of the given telemetry type for a node
+ * It's possible a source has metrics from both itself and a route receiver,
+ * in that case sum the metric values
+ *
+ * @param node Node to find metric for
+ * @param metrics All available metrics
+ * @param telemetryType Type of telemetry to find metric for
+ */
+export function getMetricForNode(
+  nodeID: string,
+  metrics: GraphMetric[],
+  telemetryType: string
+): GraphMetric | undefined {
+  const metric = metrics.find(
+    (m) =>
+      m.nodeID === nodeID && m.name === TELEMETRY_SIZE_METRICS[telemetryType]
+  );
+  const routeMetric = findRouteReceiverMetric(nodeID, metrics, telemetryType);
+
+  if (metric === undefined && routeMetric === undefined) {
+    return undefined;
+  }
+
+  return {
+    agentID: metric?.agentID ?? routeMetric?.agentID,
+    name: TELEMETRY_SIZE_METRICS[telemetryType],
+    nodeID: (metric?.nodeID ?? routeMetric?.nodeID) ?? nodeID,
+    pipelineType: (metric?.pipelineType ?? routeMetric?.pipelineType)!,
+    unit: (metric?.unit ?? routeMetric?.unit)!,
+    value: (metric?.value ?? 0) + (routeMetric?.value ?? 0),
+  };
+}
+
+// If a metric wasn't found for a node, check if it's a source node with processors.
+// If it is, look for a metric from a corresponding route receiver
+export function findRouteReceiverMetric(
+  nodeID: string,
+  metrics: GraphMetric[],
+  telemetryType: string,
+): GraphMetric | undefined {
+  const processorID = /^source\/source(?<sourceNum>[0-9]+)\/processors$/;
+  const match = nodeID.match(processorID);
+
+  if (match?.groups != null) {
+    const expected = `source/source${match.groups.sourceNum}__processor`;
+    return metrics.find((m) =>
+      m.nodeID.startsWith(expected) &&
+      m.name === TELEMETRY_SIZE_METRICS[telemetryType]
+    );
+  }
+
+  return undefined;
+}
+
 export interface MetricValue {
   value: number;
   unit: string;
 }
 
+/**
+ * Format a metric as a human readable string
+ * e.g. 1024 B => 1 KiB
+ * @param metric Metric to format
+ * @param rate Rate to format metric for
+ */
 export function formatMetric(metric: MetricValue, rate: string): string {
   let { value, unit } = metric;
   let units: string[];
@@ -638,6 +722,10 @@ function getUnits(rate: string): string[] {
     (size) => `${size}${rate}`
   );
 }
+
+/**
+ * Recursively convert a metric to the next largest unit until the value is less than 1024
+ */
 export function convertUnits(
   metric: MetricValue,
   units: string[]
@@ -655,6 +743,13 @@ export function convertUnits(
   const round = 10;
   return { value: Math.round(metric.value * round) / round, unit: metric.unit };
 }
+
+/**
+ * Truncate a label if it is longer than the maximum length.
+ * If the label contains spaces, it will not be truncated.
+ * @param label Label to truncate
+ * @param maxLength Maximum length of label before truncation
+ */
 export function truncateLabel(label: string, maxLength: number): string {
   if (label.length > maxLength && !label.includes(" ")) {
     return label.slice(0, maxLength) + "...";
