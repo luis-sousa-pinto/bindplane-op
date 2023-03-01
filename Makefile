@@ -246,6 +246,10 @@ ui/build:
 ui-test:
 	cd ui && CI=true npm run test --watchAll
 
+.PHONY: ui-test-with-cover # [ui] runs ui tests with coverage
+ui-test-with-cover:
+	cd ui && CI=true npm test -- --coverage
+
 # ui-build builds the static site to be embeded into the Go binary.
 # make install should be called before, if you are not up to date.
 .PHONY: ui-build # [ui] builds the static site to be embeded into the Go binary

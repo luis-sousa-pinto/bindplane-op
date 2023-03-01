@@ -37,7 +37,12 @@
     ],
     "moduleNameMapper": {
       "\\.(css|scss)$": "<rootDir>/__mocks__/styleMock.js"
-    }
+    },
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "html"
+    ]
   },
   "eslintConfig": {
     "extends": [
