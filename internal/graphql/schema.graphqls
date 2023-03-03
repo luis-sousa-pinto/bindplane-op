@@ -505,7 +505,12 @@ input RemoveAgentConfigurationInput {
   agentId: String!
 }
 
+input ClearAgentUpgradeErrorInput {
+  agentId: String!
+}
+
 type Mutation {
   updateProcessors(input: UpdateProcessorsInput!): Boolean
   removeAgentConfiguration(input: RemoveAgentConfigurationInput): Agent
+  clearAgentUpgradeError(input: ClearAgentUpgradeErrorInput!): Boolean
 }

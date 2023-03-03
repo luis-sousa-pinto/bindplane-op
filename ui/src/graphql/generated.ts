@@ -82,6 +82,10 @@ export type Agents = {
   suggestions?: Maybe<Array<Suggestion>>;
 };
 
+export type ClearAgentUpgradeErrorInput = {
+  agentId: Scalars['String'];
+};
+
 export type Configuration = {
   __typename?: 'Configuration';
   agentCount?: Maybe<Scalars['Int']>;
@@ -227,8 +231,14 @@ export type MetricOption = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  clearAgentUpgradeError?: Maybe<Scalars['Boolean']>;
   removeAgentConfiguration?: Maybe<Agent>;
   updateProcessors?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationClearAgentUpgradeErrorArgs = {
+  input: ClearAgentUpgradeErrorInput;
 };
 
 
@@ -719,6 +729,13 @@ export type GetSourceTypeDisplayInfoQueryVariables = Exact<{
 
 
 export type GetSourceTypeDisplayInfoQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, icon?: string | null, name: string } } | null };
+
+export type ClearAgentUpgradeErrorMutationVariables = Exact<{
+  input: ClearAgentUpgradeErrorInput;
+}>;
+
+
+export type ClearAgentUpgradeErrorMutation = { __typename?: 'Mutation', clearAgentUpgradeError?: boolean | null };
 
 export type AgentChangesSubscriptionVariables = Exact<{
   selector?: InputMaybe<Scalars['String']>;
@@ -1777,6 +1794,37 @@ export function useGetSourceTypeDisplayInfoLazyQuery(baseOptions?: Apollo.LazyQu
 export type GetSourceTypeDisplayInfoQueryHookResult = ReturnType<typeof useGetSourceTypeDisplayInfoQuery>;
 export type GetSourceTypeDisplayInfoLazyQueryHookResult = ReturnType<typeof useGetSourceTypeDisplayInfoLazyQuery>;
 export type GetSourceTypeDisplayInfoQueryResult = Apollo.QueryResult<GetSourceTypeDisplayInfoQuery, GetSourceTypeDisplayInfoQueryVariables>;
+export const ClearAgentUpgradeErrorDocument = gql`
+    mutation ClearAgentUpgradeError($input: ClearAgentUpgradeErrorInput!) {
+  clearAgentUpgradeError(input: $input)
+}
+    `;
+export type ClearAgentUpgradeErrorMutationFn = Apollo.MutationFunction<ClearAgentUpgradeErrorMutation, ClearAgentUpgradeErrorMutationVariables>;
+
+/**
+ * __useClearAgentUpgradeErrorMutation__
+ *
+ * To run a mutation, you first call `useClearAgentUpgradeErrorMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useClearAgentUpgradeErrorMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [clearAgentUpgradeErrorMutation, { data, loading, error }] = useClearAgentUpgradeErrorMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useClearAgentUpgradeErrorMutation(baseOptions?: Apollo.MutationHookOptions<ClearAgentUpgradeErrorMutation, ClearAgentUpgradeErrorMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ClearAgentUpgradeErrorMutation, ClearAgentUpgradeErrorMutationVariables>(ClearAgentUpgradeErrorDocument, options);
+      }
+export type ClearAgentUpgradeErrorMutationHookResult = ReturnType<typeof useClearAgentUpgradeErrorMutation>;
+export type ClearAgentUpgradeErrorMutationResult = Apollo.MutationResult<ClearAgentUpgradeErrorMutation>;
+export type ClearAgentUpgradeErrorMutationOptions = Apollo.BaseMutationOptions<ClearAgentUpgradeErrorMutation, ClearAgentUpgradeErrorMutationVariables>;
 export const AgentChangesDocument = gql`
     subscription AgentChanges($selector: String, $query: String) {
   agentChanges(selector: $selector, query: $query) {

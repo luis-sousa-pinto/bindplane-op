@@ -217,6 +217,12 @@ func (r *mutationResolver) RemoveAgentConfiguration(ctx context.Context, input *
 	return newAgent, nil
 }
 
+// ClearAgentUpgradeError is the resolver for the clearAgentUpgradeError field.
+func (r *mutationResolver) ClearAgentUpgradeError(ctx context.Context, input model1.ClearAgentUpgradeErrorInput) (*bool, error) {
+	_, err := r.bindplane.Store().UpsertAgent(ctx, input.AgentID, model1.ClearCurrentAgentUpgradeError)
+	return nil, err
+}
+
 // Type is the resolver for the type field.
 func (r *parameterDefinitionResolver) Type(ctx context.Context, obj *model.ParameterDefinition) (model1.ParameterType, error) {
 	switch obj.Type {

@@ -16,21 +16,22 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
-
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/agent"
 	agentMocks "github.com/observiq/bindplane-op/internal/agent/mocks"
 	model1 "github.com/observiq/bindplane-op/internal/graphql/model"
 	"github.com/observiq/bindplane-op/internal/server"
 	"github.com/observiq/bindplane-op/internal/store"
+	"github.com/observiq/bindplane-op/internal/store/mocks"
 	"github.com/observiq/bindplane-op/model"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func addAgent(s store.Store, agent *model.Agent) (*model.Agent, error) {
@@ -258,4 +259,53 @@ func TestConfigForAgent(t *testing.T) {
 	}
 
 	require.Equal(t, mockLatestVersion, resp.Agents.LatestVersion)
+}
+
+func Test_mutationResolver_ClearAgentUpgradeError(t *testing.T) {
+	tests := []struct {
+		name    string
+		store   func(t *testing.T) store.Store
+		input   *model1.ClearAgentUpgradeErrorInput
+		wantErr bool
+	}{
+		{
+			"error when upsert fails",
+			func(t *testing.T) store.Store {
+				s := mocks.NewMockStore(t)
+				s.On("UpsertAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(nil, errors.New("error"))
+				return s
+			},
+			&model1.ClearAgentUpgradeErrorInput{
+				AgentID: "1",
+			},
+			true,
+		},
+		{
+			"upsert succeeds",
+			func(t *testing.T) store.Store {
+				s := mocks.NewMockStore(t)
+				s.On("UpsertAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(&model.Agent{}, nil)
+				return s
+			},
+			&model1.ClearAgentUpgradeErrorInput{
+				AgentID: "1",
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindplane, err := server.NewBindPlane(&common.Server{}, zaptest.NewLogger(t), tt.store(t), mockVersions())
+			resolver := &Resolver{bindplane: bindplane}
+			r := &mutationResolver{
+				Resolver: resolver,
+			}
+
+			_, err = r.ClearAgentUpgradeError(context.Background(), *tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("mutationResolver.ClearAgentUpgradeError() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
 }

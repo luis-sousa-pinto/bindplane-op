@@ -37,15 +37,15 @@ import { withRequireLogin } from "../../contexts/RequireLogin";
 import { withNavBar } from "../../components/NavBar";
 import { AgentChangesProvider } from "../../contexts/AgentChanges";
 import { RecentTelemetryDialog } from "../../components/RecentTelemetryDialog/RecentTelemetryDialog";
-
 import { PipelineGraph } from "../../components/PipelineGraph/PipelineGraph";
 import { renderAgentStatus } from "../../components/Tables/utils";
-
-import mixins from "../../styles/mixins.module.scss";
 import { RawOrTopologyControl } from "../../components/PipelineGraph/RawOrTopologyControl";
 import { Config } from "../../components/ManageConfigForm/types";
 import { ConfigurationSelect } from "../../components/ManageConfigForm/ConfigurationSelect";
 import { classes } from "../../utils/styles";
+import { UpgradeError } from "../../components/UpgradeError";
+
+import mixins from "../../styles/mixins.module.scss";
 
 gql`
   query GetAgentAndConfigurations($agentId: ID!) {
@@ -260,6 +260,8 @@ const AgentPageContent: React.FC = () => {
     return null;
   }
 
+  const upgradeError = data.agent?.upgrade?.error;
+
   const EditConfiguration: React.FC = () => {
     return (
       <>
@@ -302,6 +304,24 @@ const AgentPageContent: React.FC = () => {
               </Box>
             </Box>
           </Grid>
+
+          {upgradeError && (
+            <Grid item xs={12}>
+              <UpgradeError
+                agentId={data.agent.id}
+                upgradeError={data.agent?.upgrade?.error}
+                onClearFailure={() => {
+                  snackbar.enqueueSnackbar("Oops! Something went wrong.", {
+                    variant: "error",
+                    key: "clear-upgrade-error",
+                  });
+                }}
+                onClearSuccess={() => {
+                  refetch();
+                }}
+              />
+            </Grid>
+          )}
           <Grid item xs={12} lg={12}>
             <AgentTable agent={data.agent} />
           </Grid>

@@ -98,3 +98,11 @@ func ToGraphMetric(m *record.Metric) (*GraphMetric, error) {
 		Unit:  m.Unit,
 	}, nil
 }
+
+// ClearCurrentAgentUpgradeError clears the current agent upgrade error
+func ClearCurrentAgentUpgradeError(cur *model.Agent) {
+	if cur.Upgrade == nil {
+		return
+	}
+	cur.Upgrade.Error = ""
+}

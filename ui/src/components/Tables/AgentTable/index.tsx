@@ -1,26 +1,15 @@
-import {
-  Alert,
-  AlertTitle,
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Collapse, Grid, Stack, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { GetAgentAndConfigurationsQuery } from "../../../graphql/generated";
 import { AgentStatus } from "../../../types/agents";
 import { renderAgentDate, renderAgentLabels } from "../utils";
-import { classes } from "../../../utils/styles";
 import { ArrowUpIcon, ChevronDown, ChevronUp } from "../../Icons";
+import { upgradeAgent } from "../../../utils/rest/upgrade-agent";
+import { isEmpty } from "lodash";
 
 import styles from "./agent-table.module.scss";
 import mixins from "../../../styles/mixins.module.scss";
 import globals from "../../../styles/global.module.scss";
-
-import { upgradeAgent } from "../../../utils/rest/upgrade-agent";
-import { isEmpty } from "lodash";
 
 type AgentTableAgent = NonNullable<GetAgentAndConfigurationsQuery["agent"]>;
 interface AgentTableProps {
@@ -122,8 +111,6 @@ export const AgentTable: React.FC<AgentTableProps> = ({ agent }) => {
 };
 
 function renderVersionRow(key: string, agent: AgentTableAgent): JSX.Element {
-  const upgradeError = agent.upgrade?.error;
-
   async function handleUpgrade() {
     if (!agent.upgradeAvailable) {
       return;
@@ -163,22 +150,6 @@ function renderVersionRow(key: string, agent: AgentTableAgent): JSX.Element {
           </Stack>
         </Stack>
       </Grid>
-
-      {upgradeError && (
-        <Grid item xs="auto" lg="auto">
-          <Stack sx={{ width: 200 }}>
-            <Box>
-              <Alert
-                severity="error"
-                classes={{ root: classes([mixins["mt-3"], mixins["mb-3"]]) }}
-              >
-                <AlertTitle>Upgrade Error</AlertTitle>
-                {agent.upgrade?.error}
-              </Alert>
-            </Box>
-          </Stack>
-        </Grid>
-      )}
     </>
   );
 }

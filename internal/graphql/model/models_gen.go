@@ -31,6 +31,10 @@ type Agents struct {
 	LatestVersion string               `json:"latestVersion"`
 }
 
+type ClearAgentUpgradeErrorInput struct {
+	AgentID string `json:"agentId"`
+}
+
 type ConfigurationChange struct {
 	Configuration *model.Configuration `json:"configuration"`
 	EventType     EventType            `json:"eventType"`
