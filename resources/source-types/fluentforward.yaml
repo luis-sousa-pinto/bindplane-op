@@ -1,0 +1,33 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: fluentforward
+  displayName: Fluent Forward
+  icon: /icons/sources/fluent.svg
+  description: Receive logs from fluentd, fluentbit, and other systems which support emitting logs using the Forward Protocol.
+spec:
+  version: 0.0.1
+  supported_platforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+    - name: listen_address
+      label: Listen Address
+      description: The IP address to listen on.
+      type: string
+      default: "0.0.0.0"
+
+    - name: port
+      label: Port
+      description: Port to listen on.
+      type: int
+      default: 24224
+      documentation:
+        - text: Read more
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/fluentforwardreceiver/README.md
+
+  logs:
+    receivers: |
+      - fluentforward:
+          endpoint: {{ .listen_address }}:{{ .port }}
