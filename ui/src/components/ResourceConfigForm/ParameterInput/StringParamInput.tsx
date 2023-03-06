@@ -1,5 +1,5 @@
 import { FormHelperText, Stack, TextField } from "@mui/material";
-import { isFunction } from "lodash";
+import { isEmpty, isFunction } from "lodash";
 import { ChangeEvent, memo } from "react";
 import { validateStringField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
@@ -49,13 +49,18 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
               <br />
             </>
           )}
-          <FormHelperText sx={{ marginLeft: 0 }} component="span">
-            {definition.description}
-          </FormHelperText>
+
+          {!isEmpty(definition.description) && (
+            <FormHelperText sx={{ marginLeft: 0 }} component="span">
+              {definition.description}
+            </FormHelperText>
+          )}
           {definition.documentation && (
             <Stack component={"span"}>
               {definition.documentation.map((d) => (
-                <a href={d.url} rel="noreferrer" target="_blank">{d.text}</a>
+                <a href={d.url} rel="noreferrer" target="_blank">
+                  {d.text}
+                </a>
               ))}
             </Stack>
           )}
