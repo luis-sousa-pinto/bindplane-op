@@ -25,6 +25,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/observiq/bindplane-op/model/otel"
 	"github.com/observiq/bindplane-op/model/validation"
+	"github.com/observiq/bindplane-op/resources/helpers"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 )
@@ -271,6 +272,7 @@ func (rt *ResourceType) evalTemplate(r ResourceTypeTemplate, nameProvider otel.C
 		Option("missingkey=error").
 		Funcs(template.FuncMap(sprig.FuncMap())).
 		Funcs(rt.templateFuncMap(nameProvider)).
+		Funcs(template.FuncMap(helpers.ResourceHelperFuncMap())).
 		Parse(string(r))
 	if err != nil {
 		errorHandler(err)
@@ -420,6 +422,7 @@ func (s ResourceTypeTemplate) validate(errs validation.Errors, name string, para
 		Option("missingkey=error").
 		Funcs(template.FuncMap(sprig.FuncMap())).
 		Funcs(bpTemplateFuncMap()).
+		Funcs(helpers.ResourceHelperFuncMap()).
 		Parse(string(s))
 	if err != nil {
 		errs.Add(err)

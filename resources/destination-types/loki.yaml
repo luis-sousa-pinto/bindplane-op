@@ -1,0 +1,225 @@
+apiVersion: bindplane.observiq.com/v1
+kind: DestinationType
+metadata:
+  name: loki
+  displayName: Grafana Loki
+  description: Send logs to Loki.
+  icon: /icons/destinations/loki.svg
+
+spec:
+  version: 0.0.1
+  parameters:
+    - name: endpoint
+      label: Endpoint
+      type: string
+      description: "The target URL to send Loki log streams to (e.g. http://loki:3100/loki/api/v1/push)."
+      required: true
+      default: ""
+
+    # Advanced Options
+    - name: headers
+      label: Additional HTTP Headers
+      description: Additional headers to attach to each HTTP Request.
+      type: map
+      default: {}
+      advancedConfig: true
+      options:
+        gridColumns: 12
+
+    # TLS
+    - name: enable_tls
+      label: Enable TLS
+      description: Whether or not to use TLS.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+
+    - name: insecure_skip_verify
+      label: Skip TLS Certificate Verification
+      description: Enable to skip TLS certificate verification.
+      type: bool
+      default: false
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: ca_file
+      label: TLS Certificate Authority File
+      description: Certificate authority used to validate TLS certificates.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+        - name: insecure_skip_verify
+          operator: equals
+          value: false
+      advancedConfig: true
+
+    - name: mutual_tls
+      label: Mutual TLS
+      description: Whether or not to use mutual TLS authentication.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: cert_file
+      label: Mutual TLS Client Certificate File
+      description: A TLS certificate used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+        - name: mutual_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: key_file
+      label: Mutual TLS Client Private Key File
+      description: A TLS private key used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+        - name: mutual_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    # Retry on failure
+    - name: retry_on_failure_enabled
+      label: Enable Retry on Failure
+      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      default: true
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: retry_on_failure_initial_interval
+      label: Initial interval
+      description: Time (in seconds) to wait after the first failure before retrying.
+      type: int
+      default: 5
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_interval
+      label: Max interval
+      description: The upper bound (in seconds) on backoff.
+      type: int
+      default: 30
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_elapsed_time
+      label: Max elapsed time
+      description: The maximum amount of time (in seconds) spent trying to send a batch, used to avoid a never-ending retry loop.
+      type: int
+      default: 300
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    # Sending Queue Options
+    - name: sending_queue_enabled
+      label: Enable Sending Queue
+      description: |
+        Buffer telemetry data temporarily before sending to help ensure
+        telemetry data is not lost in case of a temporary network outage.
+      type: bool
+      default: true
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: sending_queue_num_consumers
+      label: Number of consumers
+      description: Number of consumers that dequeue batches.
+      type: int
+      default: 10
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+    - name: sending_queue_queue_size
+      label: Queue size
+      description: Maximum number of batches kept in memory before dropping.
+      type: int
+      default: 5000
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+  logs:
+    exporters: |
+      - loki:
+          endpoint: {{ .endpoint }}
+
+          {{ $length := len .headers }} {{ if ne $length 0 }}
+          headers:
+            {{ range $k, $v := .headers }}
+            {{ $k }}: {{ $v }}
+            {{ end }}
+          {{ end }}
+
+          tls:
+          {{ if .enable_tls }}
+            insecure: false
+            insecure_skip_verify: {{ .insecure_skip_verify }}
+            ca_file: "{{ .ca_file }}"
+            {{ if .mutual_tls }}
+            cert_file: "{{ .cert_file }}"
+            key_file: "{{ .key_file }}"
+            {{ end }}
+          {{ else }}
+            insecure: true
+          {{ end }}
+
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time 6 }} 
+          
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .sending_queue_num_consumers .sending_queue_queue_size  6 }}

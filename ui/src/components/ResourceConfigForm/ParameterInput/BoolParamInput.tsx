@@ -50,6 +50,20 @@ const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
                 </Badge>
               </Tooltip>
             )}
+            {!isEmpty(definition.documentation) && (
+              <>
+                {definition.documentation?.map((doc) => (
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={doc.url}
+                    style={{ marginLeft: 18, fontSize: 12 }}
+                  >
+                    {doc.text}
+                  </a>
+                ))}
+              </>
+            )}
           </Stack>
         ) : (
           definition.label
