@@ -16,16 +16,16 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/token"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/mitchellh/mapstructure"
 	"github.com/observiq/bindplane-op/model/validation"
-	"github.com/observiq/stanza/errors"
+	stanzaerrors "github.com/observiq/stanza/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -199,7 +199,7 @@ func (p ParameterDefinition) validateSpecialParameters(kind Kind, errs validatio
 		// use full width for paths
 		if p.Name != "jar_path" && (strings.HasSuffix(p.Name, "_path") || strings.HasSuffix(p.Name, "_paths")) {
 			if p.Options.GridColumns == nil || *p.Options.GridColumns != 12 {
-				errs.Warn(errors.NewError(fmt.Sprintf("%s parameter appears to be a path and should use the full width. ", p.Name), "specify gridColumns: 12 in options"))
+				errs.Warn(stanzaerrors.NewError(fmt.Sprintf("%s parameter appears to be a path and should use the full width. ", p.Name), "specify gridColumns: 12 in options"))
 			}
 		}
 	}
@@ -233,13 +233,13 @@ func (p ParameterDefinition) validateSpecialParameter(errs validation.Errors, ex
 
 func (p ParameterDefinition) validateName() error {
 	if p.Name == "" {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			"missing name for parameter",
 			"ensure that the name is a valid go identifier that can be used in go templates",
 		)
 	}
 	if !token.IsIdentifier(p.Name) {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("invalid name '%s' for parameter", p.Name),
 			"ensure that the name is a valid go identifier that can be used in go templates",
 		)
@@ -249,7 +249,7 @@ func (p ParameterDefinition) validateName() error {
 
 func (p ParameterDefinition) validateType() error {
 	if p.Type == "" {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("missing type for '%s'", p.Name),
 			"ensure that the type is one of 'string', 'int', 'bool', 'strings', or 'enum'",
 		)
@@ -257,7 +257,7 @@ func (p ParameterDefinition) validateType() error {
 	switch p.Type {
 	case stringType, intType, boolType, stringsType, enumType, enumsType, mapType, yamlType, timezoneType, metricsType, awsCloudwatchNamedFieldType: // ok
 	default:
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("invalid type '%s' for '%s'", p.Type, p.Name),
 			"ensure that the type is one of 'string', 'int', 'bool', 'strings', or 'enum'",
 		)
@@ -268,7 +268,7 @@ func (p ParameterDefinition) validateType() error {
 func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 	if p.Options.Creatable && p.Type != "enum" {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				fmt.Sprintf("creatable is true for parameter of type '%s'", p.Type),
 				"remove 'creatable' field or change type to 'enum'",
 			))
@@ -276,7 +276,7 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 
 	if p.Options.TrackUnchecked && p.Type != "enums" {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				fmt.Sprintf("trackUnchecked is true for parameter of type `%s`", p.Type),
 				"remove 'trackUnchecked' field or change type to 'enums`",
 			),
@@ -285,7 +285,7 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 
 	if p.Options.Multiline && p.Type != "string" {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				fmt.Sprintf("multiline is true for parameter of type `%s`", p.Type),
 				"remove 'multiline' field or change type to 'string`",
 			),
@@ -300,7 +300,7 @@ func (p ParameterDefinition) validateMetricCategories(errs validation.Errors) {
 	case metricsType:
 		if p.Options.MetricCategories == nil {
 			errs.Add(
-				errors.NewError("options.metricCategories is required for type metrics",
+				stanzaerrors.NewError("options.metricCategories is required for type metrics",
 					"include a metricCategories field under options or change the type from 'metrics'",
 				),
 			)
@@ -313,7 +313,7 @@ func (p ParameterDefinition) validateMetricCategories(errs validation.Errors) {
 	default:
 		if p.Options.MetricCategories != nil {
 			errs.Add(
-				errors.NewError(fmt.Sprintf("options.metricCategories is not a valid option for type '%s'", p.Type),
+				stanzaerrors.NewError(fmt.Sprintf("options.metricCategories is not a valid option for type '%s'", p.Type),
 					"remove metricCategories field under options or change the type to 'metrics'",
 				),
 			)
@@ -326,7 +326,7 @@ func (p ParameterDefinition) validateMetricCategories(errs validation.Errors) {
 func (m *MetricCategory) validateMetricCategory(errs validation.Errors) {
 	if m.Label == "" {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				"missing required field Label in metric category",
 				"make sure all metric categories contain a label field",
 			))
@@ -334,7 +334,7 @@ func (m *MetricCategory) validateMetricCategory(errs validation.Errors) {
 
 	if m.Column != 0 && m.Column != 1 {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				"metric category value is neither 0 nor 1",
 				"make sure metric category column field is either 0 or 1",
 			))
@@ -342,7 +342,7 @@ func (m *MetricCategory) validateMetricCategory(errs validation.Errors) {
 
 	if m.Metrics == nil || len(m.Metrics) == 0 {
 		errs.Add(
-			errors.NewError(
+			stanzaerrors.NewError(
 				"missing required field metrics on metricCategory",
 				"add a an array of MetricOptions to the metricCategory",
 			))
@@ -351,7 +351,7 @@ func (m *MetricCategory) validateMetricCategory(errs validation.Errors) {
 	for _, metricOption := range m.Metrics {
 		if metricOption.Name == "" {
 			errs.Add(
-				errors.NewError(
+				stanzaerrors.NewError(
 					"missing required name field for metric option",
 					"add a name field for each metric option in a metric category",
 				))
@@ -363,14 +363,14 @@ func (p ParameterDefinition) validateValidValues() error {
 	switch p.Type {
 	case stringType, intType, boolType, stringsType, yamlType, mapType:
 		if len(p.ValidValues) > 0 {
-			return errors.NewError(
+			return stanzaerrors.NewError(
 				fmt.Sprintf("validValues is undefined for parameter of type '%s'", p.Type),
 				"remove 'validValues' field or change type to 'enum' or 'enums",
 			)
 		}
 	case enumType, enumsType:
 		if len(p.ValidValues) == 0 {
-			return errors.NewError(
+			return stanzaerrors.NewError(
 				"parameter of type 'enum' or 'enums' must have 'validValues' specified",
 				"specify an array that includes one or more valid values",
 			)
@@ -384,7 +384,7 @@ func (p ParameterDefinition) validateValidValues() error {
 func (p ParameterDefinition) validateDefault() error {
 	switch {
 	case p.Type == metricsType && p.Default == nil:
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			"default is required for parameter type 'metrics'",
 			"set the default value to an empty array",
 		)
@@ -429,7 +429,7 @@ func (p ParameterDefinition) validateValueType(fieldType parameterFieldType, val
 	case awsCloudwatchNamedFieldType:
 		return p.validateAwsCloudwatchNamedFieldType(fieldType, value)
 	default:
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			"invalid type for parameter",
 			"ensure that the type is one of 'string', 'int', 'bool', 'strings', or 'enum'",
 		)
@@ -438,7 +438,7 @@ func (p ParameterDefinition) validateValueType(fieldType parameterFieldType, val
 
 func (p ParameterDefinition) validateStringValue(fieldType parameterFieldType, value any) error {
 	if _, ok := value.(string); !ok {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for '%s' must be a string", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is a string", fieldType),
 		)
@@ -466,7 +466,7 @@ func (p ParameterDefinition) validateIntValue(fieldType parameterFieldType, valu
 	}
 
 	if !isIntValue {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for '%s' must be an integer", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is an integer", fieldType),
 		)
@@ -485,7 +485,7 @@ func (p ParameterDefinition) validateBoolValue(fieldType parameterFieldType, val
 	}
 
 	if !isBoolValue {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for '%s' must be a bool", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is a bool", fieldType),
 		)
@@ -499,14 +499,14 @@ func (p ParameterDefinition) validateStringArrayValue(fieldType parameterFieldTy
 	}
 	valueList, ok := value.([]interface{})
 	if !ok {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for '%s' must be an array of strings", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is an array of string", fieldType),
 		)
 	}
 	for _, s := range valueList {
 		if _, ok := s.(string); !ok {
-			return errors.NewError(
+			return stanzaerrors.NewError(
 				fmt.Sprintf("%s value for '%s' must be an array of strings", fieldType, p.Name),
 				fmt.Sprintf("ensure that the %s value is an array of string", fieldType),
 			)
@@ -518,7 +518,7 @@ func (p ParameterDefinition) validateStringArrayValue(fieldType parameterFieldTy
 func (p ParameterDefinition) validateEnumValue(fieldType parameterFieldType, value any) error {
 	def, ok := value.(string)
 	if !ok {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for enumerated parameter '%s'.", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is a string", fieldType),
 		)
@@ -534,7 +534,7 @@ func (p ParameterDefinition) validateEnumValue(fieldType parameterFieldType, val
 			return nil
 		}
 	}
-	return errors.NewError(
+	return stanzaerrors.NewError(
 		fmt.Sprintf("%s value for '%s' must be one of %v", fieldType, p.Name, p.ValidValues),
 		fmt.Sprintf("ensure %s value is listed as a valid value", fieldType),
 	)
@@ -543,14 +543,14 @@ func (p ParameterDefinition) validateEnumValue(fieldType parameterFieldType, val
 func (p ParameterDefinition) validateEnumsValue(fieldType parameterFieldType, value any) error {
 	def, ok := value.([]any)
 	if !ok {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("%s value for enums parameter '%s'", fieldType, p.Name),
 			fmt.Sprintf("ensure that the %s value is a string array", fieldType),
 		)
 	}
 
 	// Make sure all strings in the value are a validValue
-	err := &multierror.Error{}
+	var errs error
 	for _, str := range def {
 		var containsValue bool
 		for _, validValue := range p.ValidValues {
@@ -561,8 +561,8 @@ func (p ParameterDefinition) validateEnumsValue(fieldType parameterFieldType, va
 		}
 
 		if !containsValue {
-			multierror.Append(err,
-				errors.NewError(
+			errs = errors.Join(errs,
+				stanzaerrors.NewError(
 					fmt.Sprintf("%s value for '%s' must be one of %v", fieldType, p.Name, p.ValidValues),
 					fmt.Sprintf("ensure that all values for %s are in %v", p.Name, p.ValidValues),
 				),
@@ -570,11 +570,11 @@ func (p ParameterDefinition) validateEnumsValue(fieldType parameterFieldType, va
 		}
 	}
 
-	return err.ErrorOrNil()
+	return errs
 }
 
 func (p ParameterDefinition) validateTimezoneType(_ parameterFieldType, value any) error {
-	tzErr := errors.NewError(fmt.Sprintf("invalid value for timezone for parameter %s", p.Name),
+	tzErr := stanzaerrors.NewError(fmt.Sprintf("invalid value for timezone for parameter %s", p.Name),
 		"ensure that the value is one of the possible timezone values found here: https://github.com/observIQ/observiq-otel-collector/blob/main/receiver/pluginreceiver/timezone.go",
 	)
 
@@ -597,7 +597,7 @@ func (p ParameterDefinition) validateMetricsType(fieldType parameterFieldType, v
 func (p ParameterDefinition) validateYamlValue(_ parameterFieldType, value any) error {
 	str, ok := value.(string)
 	if !ok {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("expected a string for parameter %s", p.Name),
 			fmt.Sprintf("ensure that the value is a string"),
 		)
@@ -611,7 +611,7 @@ func (p ParameterDefinition) validateMapValue(_ parameterFieldType, value any) e
 	reflectValue := reflect.ValueOf(value)
 	kind := reflectValue.Kind()
 	if kind != reflect.Map {
-		return errors.NewError(
+		return stanzaerrors.NewError(
 			fmt.Sprintf("expected type map for parameter %s but got %s", p.Name, kind),
 			"ensure parameter is map[string]string",
 		)
@@ -620,7 +620,7 @@ func (p ParameterDefinition) validateMapValue(_ parameterFieldType, value any) e
 	if m, ok := value.(map[string]any); ok {
 		for _, v := range m {
 			if k, ok := v.(string); !ok {
-				return errors.NewError(
+				return stanzaerrors.NewError(
 					fmt.Sprintf("expected type string for value for key %s in map", k),
 					fmt.Sprintf("ensure all values in map are strings"),
 				)
@@ -644,7 +644,7 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 	reflectValue := reflect.ValueOf(value)
 	kind := reflectValue.Kind()
 	if kind != reflect.Slice {
-		return errors.NewError("malformed value for parameter of type awsCloudwatchNamedField",
+		return stanzaerrors.NewError("malformed value for parameter of type awsCloudwatchNamedField",
 			"value should be in the form of AwsCloudWatchNamedFieldValue struct",
 		)
 	}
@@ -655,7 +655,7 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 		result := map[string]interface{}{}
 		err := mapstructure.Decode(item.Interface(), &result)
 		if err != nil {
-			return errors.NewError("malformed value for parameter of type awsCloudwatchNamedField",
+			return stanzaerrors.NewError("malformed value for parameter of type awsCloudwatchNamedField",
 				"value should be in the form of AwsCloudWatchNamedFieldValue struct",
 			)
 		}
@@ -665,18 +665,18 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 			case "id":
 				_, ok := n.(string)
 				if !ok {
-					return errors.NewError("incorrect type included in 'id' field",
+					return stanzaerrors.NewError("incorrect type included in 'id' field",
 						"awsCloudwatchNamedField"+s+"should be of type string")
 				}
 
 			case "names", "prefixes":
 				_, ok := n.([]interface{})
 				if !ok {
-					return errors.NewError("incorrect type included in "+s+" field",
+					return stanzaerrors.NewError("incorrect type included in "+s+" field",
 						"awsCloudwatchNamedField"+s+"should be of type []string")
 				}
 			default:
-				return errors.NewError("unexpected field "+s+" included in struct",
+				return stanzaerrors.NewError("unexpected field "+s+" included in struct",
 					s+"should not be an included field in awsCloudWatchNamedField")
 
 			}

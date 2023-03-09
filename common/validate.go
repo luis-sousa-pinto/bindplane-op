@@ -22,7 +22,6 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-multierror"
 )
 
 // Validate checks the runtime configuration for issues and returns all
@@ -30,12 +29,12 @@ import (
 func (c *Config) Validate() (errGroup error) {
 	// Validate server config
 	if err := c.Server.validate(); err != nil {
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, err)
 	}
 
 	// Validate client config
 	if err := c.Client.validate(); err != nil {
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, err)
 	}
 
 	return errGroup
@@ -43,17 +42,15 @@ func (c *Config) Validate() (errGroup error) {
 
 func (s *Server) validate() (errGroup error) {
 	if err := validateUUID(s.SecretKey); err != nil {
-		err = fmt.Errorf("failed to validate secret key: %w", err)
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate secret key: %w", err))
 	}
 
 	if err := validateURL(s.RemoteURL, []string{"ws", "wss"}); err != nil {
-		err = fmt.Errorf("failed to validate remote address %s: %w", s.RemoteURL, err)
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate remote address %s: %w", s.RemoteURL, err))
 	}
 
 	if err := s.Common.validate(); err != nil {
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, err)
 	}
 
 	return errGroup
@@ -66,22 +63,20 @@ func (c *Client) validate() (errGroup error) {
 func (c *Common) validate() (errGroup error) {
 	if c.BindPlaneHomePath() != "" {
 		if _, err := os.Stat(c.BindPlaneHomePath()); err != nil {
-			err = fmt.Errorf("failed to lookup directory %s: %w", c.BindPlaneHomePath(), err)
-			errGroup = multierror.Append(errGroup, err)
+			errGroup = errors.Join(errGroup, fmt.Errorf("failed to lookup directory %s: %w", c.BindPlaneHomePath(), err))
 		}
 	}
 
 	if err := validPort(c.Port); err != nil {
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, err)
 	}
 
 	if err := validateURL(c.ServerURL, []string{"http", "https"}); err != nil {
-		err = fmt.Errorf("failed to validate server address %s: %w", c.ServerURL, err)
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate server address %s: %w", c.ServerURL, err))
 	}
 
 	if err := c.validateTLSConfig(); err != nil {
-		errGroup = multierror.Append(errGroup, err)
+		errGroup = errors.Join(errGroup, err)
 	}
 
 	return errGroup

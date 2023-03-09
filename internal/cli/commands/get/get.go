@@ -18,9 +18,9 @@ package get
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/observiq/bindplane-op/client"
@@ -74,7 +74,7 @@ func getImpl[T model.Printable](bindplane *cli.BindPlane, resourceName string, g
 	return func(cmd *cobra.Command, args []string) error {
 		c, err := bindplane.Client()
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return cli.FormatError(fmt.Errorf("error creating client: %w", err))
 		}
 
 		var errGroup error
@@ -83,10 +83,10 @@ func getImpl[T model.Printable](bindplane *cli.BindPlane, resourceName string, g
 			for _, name := range args {
 				item, exists, err := g.some(cmd.Context(), c, name)
 				if err != nil {
-					errGroup = multierror.Append(errGroup, err)
+					errGroup = errors.Join(errGroup, err)
 				}
 				if !exists {
-					errGroup = multierror.Append(errGroup, fmt.Errorf("no %s found with name %s", resourceName, name))
+					errGroup = errors.Join(errGroup, fmt.Errorf("no %s found with name %s", resourceName, name))
 				} else {
 					items = append(items, item)
 				}
@@ -97,12 +97,12 @@ func getImpl[T model.Printable](bindplane *cli.BindPlane, resourceName string, g
 				// PrintResources will print an error if there are no items
 				printer.PrintResources(bindplane.Printer(), items)
 			}
-			return errGroup
+			return cli.FormatError(errGroup)
 		}
 
 		items, err := g.all(cmd.Context(), c)
 		if err != nil {
-			return err
+			return cli.FormatError(err)
 		}
 
 		printer.PrintResources(bindplane.Printer(), items)

@@ -22,7 +22,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -683,13 +682,12 @@ func copyConfig(c *gin.Context, bindplane server.BindPlane) {
 		return
 	}
 
-	errs := &multierror.Error{}
-	multierror.Append(errs, fmt.Errorf("failed to apply copied configuration, got status %s", update.Status))
+	err = fmt.Errorf("failed to apply copied configuration, got status %s", update.Status)
 
 	if update.Reason != "" {
-		multierror.Append(errs, errors.New(update.Reason))
+		err = errors.Join(err, errors.New(update.Reason))
 	}
-	handleErrorResponse(c, http.StatusBadRequest, errs.ErrorOrNil())
+	handleErrorResponse(c, http.StatusBadRequest, err)
 }
 
 // ----------------------------------------------------------------------

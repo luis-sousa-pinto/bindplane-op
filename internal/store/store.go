@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
-	"github.com/hashicorp/go-multierror"
 	"github.com/observiq/bindplane-op/internal/eventbus"
 	"github.com/observiq/bindplane-op/internal/store/search"
 	"github.com/observiq/bindplane-op/internal/store/stats"
@@ -206,7 +205,7 @@ func Seed(ctx context.Context, store Store, logger *zap.Logger) error {
 	for _, dir := range embedded.SeedFolders {
 		err := seedDir(ctx, dir, store, logger)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	}
 	return errs

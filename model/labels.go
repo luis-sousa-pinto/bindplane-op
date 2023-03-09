@@ -16,10 +16,10 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/validation"
 
@@ -70,12 +70,12 @@ func LabelsFromMap(labels map[string]string) (Labels, error) {
 
 	valid := map[string]string{}
 	for name, value := range labels {
-		if errors := validation.IsQualifiedName(name); len(errors) > 0 {
-			err = multierror.Append(err, fmt.Errorf("%s is not a valid label name: %s", name, strings.Join(errors, "; ")))
+		if errs := validation.IsQualifiedName(name); len(errs) > 0 {
+			err = errors.Join(err, fmt.Errorf("%s is not a valid label name: %s", name, strings.Join(errs, "; ")))
 			continue
 		}
-		if errors := validation.IsValidLabelValue(value); len(errors) > 0 {
-			err = multierror.Append(err, fmt.Errorf("%s is not a valid label value: %s", value, strings.Join(errors, "; ")))
+		if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+			err = errors.Join(err, fmt.Errorf("%s is not a valid label value: %s", value, strings.Join(errs, "; ")))
 			continue
 		}
 		valid[name] = value

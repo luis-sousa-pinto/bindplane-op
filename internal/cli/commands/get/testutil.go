@@ -20,7 +20,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -63,8 +62,8 @@ func setupBindPlane(buffer *bytes.Buffer) *cli.BindPlane {
 	client.On("Agents", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(agents, nil)
 	client.On("Agent", mock.Anything, "1").Return(agent1, nil)
 	client.On("Agent", mock.Anything, "2").Return(agent2, nil)
-	client.On("Agent", mock.Anything, "3").Return(nil, multierror.Append(errors.New("unable to get agents, got 404 Not Found\t")))
-	client.On("Agent", mock.Anything, "badId").Return(nil, errors.New("unable to get agents, got 404 Not Found\t"))
+	client.On("Agent", mock.Anything, "3").Return(nil, errors.New("unable to get agents, got 404 Not Found"))
+	client.On("Agent", mock.Anything, "badId").Return(nil, errors.New("unable to get agents, got 404 Not Found"))
 
 	bindplane.SetClient(client)
 	return bindplane

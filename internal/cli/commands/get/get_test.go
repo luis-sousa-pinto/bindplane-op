@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
+	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/internal/cli/commands"
 	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
 	"github.com/stretchr/testify/assert"
@@ -95,10 +95,15 @@ func TestGetIndividualCommand(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			description:   "get agent 3",
-			args:          []string{"get", "agent", "3"},
-			expectOutput:  "No matching resources found.\n",
-			expectedError: multierror.Append(errors.New("unable to get agents, got 404 Not Found\t"), errors.New("no agents found with name 3")),
+			description:  "get agent 3",
+			args:         []string{"get", "agent", "3"},
+			expectOutput: "No matching resources found.\n",
+			expectedError: cli.FormatError(
+				errors.Join(
+					errors.New("unable to get agents, got 404 Not Found"),
+					errors.New("no agents found with name 3"),
+				),
+			),
 		},
 	}
 
@@ -141,7 +146,11 @@ func TestGetIndividualCommand(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expectOutput, string(out))
-			assert.Equal(t, test.expectedError, cmdError)
+			if test.expectedError == nil {
+				assert.NoError(t, cmdError)
+			} else {
+				assert.EqualError(t, cmdError, test.expectedError.Error())
+			}
 		})
 	}
 }

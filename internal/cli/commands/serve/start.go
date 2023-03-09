@@ -27,7 +27,6 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-multierror"
 	cors "github.com/itsjamie/gin-cors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
@@ -309,7 +308,7 @@ func seedIndex[T search.Indexed](indexed []T, index search.Index) error {
 	for _, i := range indexed {
 		err := index.Upsert(i)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	}
 	return errs

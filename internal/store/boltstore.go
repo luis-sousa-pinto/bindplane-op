@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
-	"github.com/hashicorp/go-multierror"
 	jsoniter "github.com/json-iterator/go"
 	"go.etcd.io/bbolt"
 	"go.opentelemetry.io/otel"
@@ -275,7 +274,7 @@ func (s *boltstore) ApplyResources(ctx context.Context, resources []model.Resour
 			return nil
 		})
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	}
 
@@ -979,7 +978,7 @@ func resourcesByName[R model.Resource](s *boltstore, kind model.Kind, names []st
 
 	for _, name := range names {
 		if result, exists, err := resource[R](s, kind, name); err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		} else {
 			if exists && opts.selector.Matches(result.GetLabels()) {
 				results = append(results, result)
@@ -1184,7 +1183,7 @@ func (s *boltstore) retrieveMetrics(_ context.Context, metricNames []string, obj
 			for idIndex, id := range ids {
 				endMetrics, err := findEndMetrics(cursor, endDateString, objectType, id)
 				if err != nil {
-					errs = multierror.Append(errs, err)
+					errs = errors.Join(errs, err)
 					continue
 				}
 
@@ -1222,7 +1221,7 @@ func (s *boltstore) retrieveMetrics(_ context.Context, metricNames []string, obj
 
 				startMetrics, err := findStartMetrics(cursor, startDateString, endDate, objectType, id, desiredKeys)
 				if err != nil {
-					errs = multierror.Append(errs, err)
+					errs = errors.Join(errs, err)
 					continue
 				}
 
@@ -1347,7 +1346,7 @@ func (s *boltstore) SaveAgentMetrics(ctx context.Context, metrics []*record.Metr
 		if group, ok := groupedMetrics[metricName]; ok {
 			err := s.storeMeasurements(ctx, metricName, group)
 			if err != nil {
-				errs = multierror.Append(errs, err)
+				errs = errors.Join(errs, err)
 			}
 		}
 	}
@@ -1360,7 +1359,7 @@ func (s *boltstore) ProcessMetrics(ctx context.Context) error {
 	var errs error
 	for _, m := range stats.SupportedMetricNames {
 		if err := s.cleanupMeasurements(ctx, m); err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	}
 	return errs
@@ -1398,12 +1397,12 @@ func (s *boltstore) storeMeasurements(_ context.Context, metricName string, metr
 		for _, m := range metrics {
 			data, err := json.Marshal(m)
 			if err != nil {
-				errs = multierror.Append(errs, err)
+				errs = errors.Join(errs, err)
 				continue
 			}
 			for _, key := range metricsKeys(m) {
 				if err = b.Put(key, data); err != nil {
-					errs = multierror.Append(errs, err)
+					errs = errors.Join(errs, err)
 				}
 			}
 		}
@@ -1425,7 +1424,7 @@ func (s *boltstore) cleanupMeasurements(_ context.Context, metricName string) er
 		// Iterate through all points in the bucket, due to ordering we can't just scan by date
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
 			if ts, err := time.Parse(measurementsDateFormat, keyTimestamp(k)); err != nil {
-				errs = multierror.Append(errs, err)
+				errs = errors.Join(errs, err)
 			} else {
 				// Assume anything older than the cutoff is being deleted, unless the
 				// normalized timestamp matches one of the rollup times
@@ -1441,7 +1440,7 @@ func (s *boltstore) cleanupMeasurements(_ context.Context, metricName string) er
 
 				if !keep {
 					if err := c.Delete(); err != nil {
-						errs = multierror.Append(errs, err)
+						errs = errors.Join(errs, err)
 					}
 				}
 			}

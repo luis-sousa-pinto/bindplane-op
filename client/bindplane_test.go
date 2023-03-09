@@ -327,7 +327,7 @@ func TestCopyConfig(t *testing.T) {
 		{
 			"409 Conflict, error",
 			true,
-			"1 error occurred:\n\t* failed to copy configuration, got status 400\n\n",
+			"failed to copy configuration, got status 400",
 			400,
 		},
 	}

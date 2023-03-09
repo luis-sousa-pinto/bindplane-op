@@ -62,8 +62,8 @@ func TestConfigurationValidate(t *testing.T) {
 		},
 		{
 			testfile:                     "configuration-bad-selector.yaml",
-			expectValidateError:          "1 error occurred:\n\t* selector is invalid: 1 error occurred:\n\t* bad key is not a valid label name: name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')\n\n\n\n",
-			expectValidateWithStoreError: "1 error occurred:\n\t* selector is invalid: 1 error occurred:\n\t* bad key is not a valid label name: name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')\n\n\n\n",
+			expectValidateError:          "1 error occurred:\n\t* selector is invalid: bad key is not a valid label name: name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')\n\n",
+			expectValidateWithStoreError: "1 error occurred:\n\t* selector is invalid: bad key is not a valid label name: name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')\n\n",
 		},
 		{
 			testfile:                     "configuration-ok.yaml",

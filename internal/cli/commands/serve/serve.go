@@ -42,7 +42,7 @@ func Command(bindplane *cli.BindPlane, h profile.Helper) *cobra.Command {
 			}
 			if err := s.Start(context.Background(), bindplane, h, forceConsoleColor, skipSeed); err != nil {
 				bindplane.Logger().Error("unable to Start the server", zap.Error(err))
-				return err
+				return cli.FormatError(err)
 			}
 			return nil
 		},
