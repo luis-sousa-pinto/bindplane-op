@@ -1,0 +1,129 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: w3c
+  displayName: W3C
+  icon: /icons/sources/w3c.svg
+  description: Collect W3C formatted logs.
+spec:
+  version: 0.0.1
+  supported_platforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+    - name: file_path
+      label: File Path(s)
+      description: File or directory paths to tail for logs.
+      type: strings
+      options:
+        gridColumns: 12
+      default: []
+
+    - name: exclude_file_log_path
+      label: Exclude File Path(s)
+      description: File or directory paths to exclude.
+      type: strings
+      options:
+        gridColumns: 12
+      default: []
+    
+    - name: delimiter
+      label: Delimiter
+      description: Delimiter character used between the fields of the W3C log line.
+      type: enum
+      validValues:
+        - tab
+        - space
+      default: "tab"
+
+    # Advanced config options
+    - name: encoding
+      label: Encoding
+      description: The encoding of the file being read.
+      type: enum
+      default: utf-8
+      validValues:
+        - nop
+        - utf-8
+        - utf-16le
+        - utf-16be
+        - ascii
+        - big5
+      advancedConfig: true
+
+    - name: header_delimiter
+      label: Header Delimiter
+      description: Delimiter character used between fields in the W3C Field header. The value of the "Delimiter" parameter is used by default.
+      type: enum
+      validValues:
+        - default
+        - tab
+        - space
+      default: "default"
+      advancedConfig: true
+
+    - name: include_file_name_attribute
+      label: Include File Name Attribute
+      description: Whether to add the file name as the attribute "log.file.name".
+      type: bool
+      default: true
+      advancedConfig: true
+
+    - name: include_file_path_attribute
+      label: Include File Path Attribute
+      description: Whether to add the file path as the attribute "log.file.path".
+      type: bool
+      default: false
+      advancedConfig: true
+
+    - name: include_file_name_resolved_attribute
+      label: Include File Name Resolved Attribute
+      description: Whether to add the file name after symlinks resolution as the attribute "log.file.name_resolved".
+      type: bool
+      default: false
+      advancedConfig: true
+
+    - name: include_file_path_resolved_attribute
+      label: Include File Path Resolved Attribute
+      description: Whether to add the file path after symlinks resolution as the attribute "log.file.path_resolved".
+      type: bool
+      default: false
+      advancedConfig: true
+
+  logs:
+    receivers: |
+      - plugin:
+          path: $OIQ_OTEL_COLLECTOR_HOME/plugins/w3c_logs.yaml
+          parameters:
+            file_log_path:
+              {{ range $fp := .file_path }}
+              - {{ $fp | quote }}
+              {{ end }}
+            {{ if .exclude_file_log_path }}
+            exclude_file_log_path:
+              {{ range $fp := .exclude_file_log_path }}
+              - {{ $fp | quote }}
+              {{ end }}
+            {{ end }}
+            {{ if eq .delimiter "tab" }}
+            delimiter: "\t"
+            {{ else }}
+            delimiter: " "
+            {{ end }}
+            {{ if eq .header_delimiter "tab" }}
+            header_delimiter: "\t"
+            {{ else if eq .header_delimiter "space" }}
+            header_delimiter: " "
+            {{ end }}
+            encoding: {{ .encoding }}
+            include_file_name: {{ .include_file_name_attribute }}
+            include_file_name_resolved: {{ .include_file_name_resolved_attribute }}
+            include_file_path: {{ .include_file_path_attribute }}
+            include_file_path_resolved: {{ .include_file_path_resolved_attribute }}
+
+    processors: |
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]

@@ -27,9 +27,9 @@ spec:
         gridColumns: 12
 
     # TLS
-    - name: enable_tls
-      label: Enable TLS
-      description: Whether or not to use TLS.
+    - name: configure_tls
+      label: Configure TLS
+      description: Configure advanced TLS settings.
       type: bool
       default: false
       options:
@@ -42,7 +42,7 @@ spec:
       type: bool
       default: false
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
       advancedConfig: true
@@ -54,7 +54,7 @@ spec:
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
         - name: insecure_skip_verify
@@ -70,7 +70,7 @@ spec:
       options:
         sectionHeader: true
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
       advancedConfig: true
@@ -82,7 +82,7 @@ spec:
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
         - name: mutual_tls
@@ -97,7 +97,7 @@ spec:
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
         - name: mutual_tls
@@ -208,16 +208,13 @@ spec:
           {{ end }}
 
           tls:
-          {{ if .enable_tls }}
-            insecure: false
+          {{ if .configure_tls }}
             insecure_skip_verify: {{ .insecure_skip_verify }}
             ca_file: "{{ .ca_file }}"
             {{ if .mutual_tls }}
             cert_file: "{{ .cert_file }}"
             key_file: "{{ .key_file }}"
             {{ end }}
-          {{ else }}
-            insecure: true
           {{ end }}
 
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time 6 }} 

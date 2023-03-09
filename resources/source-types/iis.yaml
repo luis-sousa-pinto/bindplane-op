@@ -6,7 +6,7 @@ metadata:
   icon: /icons/sources/microsoft_iis.svg
   description: Collect metrics and logs from Microsoft IIS.
 spec:
-  version: 0.0.1
+  version: 0.0.2
   supported_platforms:
     - windows
   parameters:
@@ -108,20 +108,6 @@ spec:
           operator: equals
           value: true
 
-    - name: start_at
-      label: Start At
-      description: Start reading logs from 'beginning' or 'end'.
-      type: enum
-      validValues:
-        - beginning
-        - end
-      default: end
-      advancedConfig: true
-      relevantIf:
-        - name: enable_logs
-          operator: equals
-          value: true
-
   metrics:
     receivers: |
       {{ if .enable_metrics }}
@@ -159,7 +145,6 @@ spec:
               {{ end }}
             {{ end }}
             timezone: {{ .timezone }}
-            start_at: {{ .start_at }}
       {{ end }}
 
     processors: |

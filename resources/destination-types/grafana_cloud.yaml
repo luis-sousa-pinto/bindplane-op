@@ -71,5 +71,8 @@ spec:
             {{ $k }}: {{ $v }}
             {{ end }}
           {{ end }}
+
+          resource_to_telemetry_conversion:
+            enabled: true
     processors: |
       - batch:
