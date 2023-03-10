@@ -41,6 +41,7 @@ install-tools:
 	cd $(TOOLS_MOD_DIR) && go install github.com/client9/misspell/cmd/misspell
 	cd $(TOOLS_MOD_DIR) && go install github.com/ory/go-acc
 	cd $(TOOLS_MOD_DIR) && go install github.com/vektra/mockery/v2
+	cd $(TOOLS_MOD_DIR) && go install github.com/goreleaser/goreleaser
 
 .PHONY: install-ui # [ui] npm install
 install-ui:
@@ -260,7 +261,7 @@ ui-build:
 # is up to date. goreleaser will not call `make install`.
 .PHONY: build # builds bindplane and bindplanectl using goreleaser
 build:
-	goreleaser build --rm-dist --skip-validate --single-target --snapshot
+	goreleaser build --clean --skip-validate --single-target --snapshot
 
 .PHONY: clean # removes the dist folder
 clean:
@@ -268,7 +269,7 @@ clean:
 
 .PHONY: release-test
 release-test:
-	goreleaser release --rm-dist --skip-publish --skip-validate --snapshot
+	goreleaser release --clean --skip-publish --skip-validate --snapshot
 
 # Kitchen prep will build a release and ensure the required
 # gems are installed for using Kitchen with GCE
