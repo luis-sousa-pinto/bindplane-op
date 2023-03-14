@@ -66,3 +66,6 @@ spec:
           {{ else if eq .auth_type "file" }}
           credentials_file: "{{ .credentials_file }}"
           {{ end }}
+          log:
+            resource_filters:
+              - regex: .*
