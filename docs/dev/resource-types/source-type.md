@@ -40,7 +40,7 @@ In it's current form, it is not all that useful as the user cannot configure
 the `otlp` receiver. Perhaps you wish to allow the "listen address" and "port" to be configurable.
 
 In this example, the source type contains `listen_address` and `port` parameters. These allow the
-user to configure an address and port if the default values are not suitable. Paramter values are
+user to configure an address and port if the default values are not suitable. Parameter values are
 injected into the metrics pipeline using the `{{ }}` templating syntax.
 
 ```yaml

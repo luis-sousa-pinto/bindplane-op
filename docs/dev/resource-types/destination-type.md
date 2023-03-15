@@ -31,8 +31,8 @@ bindplanectl apply -f ./mydestinationtype.yaml
 
 > **_NOTE:_**  Refresh the browser in order to see the new destination type.
 
-Lets say you want to expose the `project` paramter for the Google exporter. You can add a
-`project` paramter to the destination type and make it `required`.
+Lets say you want to expose the `project` parameter for the Google exporter. You can add a
+`project` parameter to the destination type and make it `required`.
 
 ```yaml
 # mydestinationtype.yaml

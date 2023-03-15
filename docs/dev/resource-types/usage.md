@@ -50,7 +50,7 @@ Make the following changes:
 - Remove `metadata.id` field
 - Change `metadata.name` to something other than `host`
 - Modify `metadata.displayName` and `metadata.description`
-- Make your desired changes to the remainder of the source type, such as changes to paramters.
+- Make your desired changes to the remainder of the source type, such as changes to parameters.
 
 Once you have reconfigured your source type, you can apply it to create a new source type:
 
@@ -79,5 +79,5 @@ automatically.
 ### Can built in resources be modified?
 
 No. Changes to built in resource types will be overwritten when BindPlane is restarted. It
-is recomended that users copy a built in resource type and use it to create a new
+is recommended that users copy a built in resource type and use it to create a new
 unique resource type.

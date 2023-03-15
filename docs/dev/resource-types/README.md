@@ -39,11 +39,11 @@ Resources have the following fields
 | `metadata.displayName` | Friendly name, which can contain spaces. Displayed in the BindPlane web UI. |
 | `metadata.description` | Description of the resource. Should indicate the usecase and the underlying collector component(s) that it implements. |
 | `metadata.icon`        | Optional path to the icon. See the [example section](./README.md#example). |
-| `metadata.labels`      | Optional labels. Currently, labels are ignored but can be used for specifiying friendly metadata, such as `datacenter=us-east1`. |
+| `metadata.labels`      | Optional labels. Currently, labels are ignored but can be used for specifying friendly metadata, such as `datacenter=us-east1`. |
 | `spec`                 | Spec fields which define the resource configuration options. |
 | `spec.version`         | The resource type's version. Currently, resource versions are ignored. |
 | `spec.supported_platforms`       | An array of supported platforms. Valid values include `linux`, `windows`, `macos` |
-| `spec.parameters`                | Parameters define a resource paramter, such as "collection interval". See [parameter types](./README.md#parameter-types). |
+| `spec.parameters`                | Parameters define a resource parameter, such as "collection interval". See [parameter types](./README.md#parameter-types). |
 | `spec.parameters.name`           | The name of the parameter.    |
 | `spec.parameters.label`          | A friendly name for the parameter. Shown in the UI. |
 | `spec.parameters.description`    | A summary of the parameter's purpose and usage. |
@@ -79,6 +79,6 @@ Parameters can have the following types:
 
 ## References
 
-- [Built in source type documentation](https://github.com/observIQ/bindplane-op/tree/main/docs/www/integrations/sources)
-- [Built in processor type documentation](https://github.com/observIQ/bindplane-op/tree/main/docs/www/integrations/processors)
-- [Built in destination type docuemtnation](https://github.com/observIQ/bindplane-op/tree/main/docs/www/integrations/destinations)
+- [Built in source type documentation](https://docs.bindplane.observiq.com/docs/sources)
+- [Built in processor type documentation](https://docs.bindplane.observiq.com/docs/processors)
+- [Built in destination type docuemtnation](https://docs.bindplane.observiq.com/docs/destinations)
