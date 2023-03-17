@@ -30,8 +30,9 @@ spec:
       type: int
       default: 4318
 
+    # TLS
     - name: enable_tls
-      label: Custom TLS
+      label: Enable TLS
       description: Whether or not to use TLS.
       type: bool
       default: false
@@ -39,34 +40,11 @@ spec:
         sectionHeader: true
       advancedConfig: true
 
-    - name: insecure_skip_verify
-      label: Skip TLS Certificate Verification
-      description: Enable to skip TLS certificate verification.
-      type: bool
-      default: false
-      relevantIf:
-        - name: enable_tls
-          operator: equals
-          value: true
-      advancedConfig: true
-
-    - name: ca_file
-      label: TLS Certificate Authority File
-      description: Certificate authority used to validate TLS certificates.
-      type: string
-      required: false
-      default: ""
-      relevantIf:
-        - name: enable_tls
-          operator: equals
-          value: true
-      advancedConfig: true
-
     - name: cert_file
-      label: Mutual TLS Client Certificate File
-      description: A TLS certificate used for client authentication, if mutual TLS is enabled.
+      label: Server Certificate File
+      description: A path to the server certificate to be used for TLS.
       type: string
-      required: false
+      required: true
       default: ""
       relevantIf:
         - name: enable_tls
@@ -75,13 +53,41 @@ spec:
       advancedConfig: true
 
     - name: key_file
-      label: Mutual TLS Client Private Key File
-      description: A TLS private key used for client authentication, if mutual TLS is enabled.
+      label: Server Private Key
+      description: A path to the server private key to be used for TLS.
       type: string
-      required: false
+      required: true
       default: ""
       relevantIf:
         - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: mutual_tls
+      label: Mutual TLS
+      description: Whether or not to require client TLS authentication (mTLS).
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: ca_file
+      label: Certificate Authority
+      description: A path to the certificate authority to use for authenticating client certificates.
+      type: string
+      required: true
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+        - name: mutual_tls
           operator: equals
           value: true
       advancedConfig: true
@@ -95,10 +101,11 @@ spec:
               endpoint: {{ .listen_address }}:{{ .grpc_port }}
               {{ if .enable_tls }}
               tls:
-                insecure_skip_verify: {{ .insecure_skip_verify }}
-                ca_file: "{{ .ca_file }}"
                 cert_file: "{{ .cert_file }}"
                 key_file: "{{ .key_file }}"
+                {{ if .mutual_tls }}
+                ca_file: "{{ .ca_file }}"
+                {{ end }}
               {{ end }}
             {{ end }}
 
@@ -107,9 +114,10 @@ spec:
               endpoint: {{ .listen_address }}:{{ .http_port }}
               {{ if .enable_tls }}
               tls:
-                insecure_skip_verify: {{ .insecure_skip_verify }}
-                ca_file: "{{ .ca_file }}"
                 cert_file: "{{ .cert_file }}"
                 key_file: "{{ .key_file }}"
+                {{ if .mutual_tls }}
+                ca_file: "{{ .ca_file }}"
+                {{ end }}
               {{ end }}
             {{ end }}
