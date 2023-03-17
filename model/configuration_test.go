@@ -2145,7 +2145,7 @@ exporters:
             num_consumers: 1
             queue_size: 60
         tls:
-            insecure: true
+            insecure_skip_verify: true
 service:
     pipelines:
         logs/source0__destination0:

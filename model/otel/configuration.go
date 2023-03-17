@@ -397,7 +397,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 	}
 	if strings.HasPrefix(endpoint, "https") && rc.BindPlaneInsecureSkipVerify {
 		otlphttp["tls"] = map[string]any{
-			"insecure": true,
+			"insecure_skip_verify": true,
 		}
 	}
 
