@@ -50,6 +50,7 @@ func defaultServerEnv() map[string]string {
 		"BINDPLANE_CONFIG_USERNAME":        "oiq",
 		"BINDPLANE_CONFIG_PASSWORD":        "password",
 		"BINDPLANE_CONFIG_SESSIONS_SECRET": uuid.NewString(),
+		"BINDPLANE_CONFIG_SECRET_KEY":      uuid.NewString(),
 		"BINDPLANE_CONFIG_LOG_OUTPUT":      "stdout",
 	}
 }

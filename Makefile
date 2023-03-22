@@ -163,12 +163,12 @@ docker-http:
 		--name "bindplane-server-${GIT_SHA}-http" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		"observiq/bindplane-$(GOARCH):${GIT_SHA}" \
 		--host 0.0.0.0 \
 		--port "3001" \
 		--server-url http://localhost:3010 \
-		--remote-url ws://localhost:3010 \
-		--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+		--remote-url ws://localhost:3010
 	docker logs "bindplane-server-${GIT_SHA}-http"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
@@ -182,14 +182,14 @@ docker-https: tls
 		--name "bindplane-server-${GIT_SHA}-https" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
 		"observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key \
 			--host 0.0.0.0 \
 			--port "3001" \
 			--server-url https://localhost:3011 \
-			--remote-url wss://localhost:3011 \
-			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+			--remote-url wss://localhost:3011
 	docker logs "bindplane-server-${GIT_SHA}-https"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https \
@@ -204,14 +204,14 @@ docker-https-mtls: tls
 		--name "bindplane-server-${GIT_SHA}-https-mtls" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
 		"observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key --tls-ca /tls/bindplane-ca.crt --tls-ca /tls/test-ca.crt \
 			--host 0.0.0.0 \
 			--port "3001" \
 			--server-url https://localhost:3012 \
-			--remote-url wss://localhost:3012 \
-			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+			--remote-url wss://localhost:3012
 	docker logs  "bindplane-server-${GIT_SHA}-https-mtls"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https-mtls \

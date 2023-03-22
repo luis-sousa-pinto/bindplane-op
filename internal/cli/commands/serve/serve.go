@@ -23,12 +23,11 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
 	"github.com/observiq/bindplane-op/internal/cli/flags"
 )
 
 // Command returns the BindPlane serve cobra command
-func Command(bindplane *cli.BindPlane, h profile.Helper) *cobra.Command {
+func Command(bindplane *cli.BindPlane) *cobra.Command {
 	var forceConsoleColor bool
 	var skipSeed bool
 
@@ -40,7 +39,7 @@ func Command(bindplane *cli.BindPlane, h profile.Helper) *cobra.Command {
 			s := Server{
 				logger: bindplane.Logger(),
 			}
-			if err := s.Start(context.Background(), bindplane, h, forceConsoleColor, skipSeed); err != nil {
+			if err := s.Start(context.Background(), bindplane, forceConsoleColor, skipSeed); err != nil {
 				bindplane.Logger().Error("unable to Start the server", zap.Error(err))
 				return cli.FormatError(err)
 			}
