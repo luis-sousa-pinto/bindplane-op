@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/hashicorp/go-multierror"
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 
@@ -569,7 +568,7 @@ func (c *bindplaneClient) AgentUpgrade(_ context.Context, id string, version str
 		if len(errResponse.Errors) > 0 {
 			var errs error
 			for _, e := range errResponse.Errors {
-				errs = multierror.Append(errs, errors.New(e))
+				errs = errors.Join(errs, errors.New(e))
 			}
 			return errs
 		}
@@ -654,8 +653,7 @@ func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 	case http.StatusConflict:
 		return fmt.Errorf("a configuration with name '%s' already exists", copyName)
 	default:
-		err := &multierror.Error{}
-		multierror.Append(err, fmt.Errorf("failed to copy configuration, got status %v", resp.StatusCode()))
+		errs := fmt.Errorf("failed to copy configuration, got status %v", resp.StatusCode())
 
 		// check for errors field in response
 		errResponse := &model.ErrorResponse{}
@@ -665,11 +663,11 @@ func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 
 		if len(errResponse.Errors) > 0 {
 			for _, e := range errResponse.Errors {
-				multierror.Append(err, errors.New(e))
+				errs = errors.Join(err, errors.New(e))
 			}
 		}
 
-		return err.ErrorOrNil()
+		return errs
 	}
 }
 

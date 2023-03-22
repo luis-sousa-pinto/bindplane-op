@@ -16,6 +16,7 @@ package model
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -940,28 +941,31 @@ func TestEvalConfigurationFailsMissingResource(t *testing.T) {
 	tests := []struct {
 		name            string
 		deleteResources func()
-		expectError     string
+		expectError     error
 		expect          string
 	}{
 		{
 			name:            "deletes sourceType",
 			deleteResources: func() { delete(store.sourceTypes, postgresql.Name()) },
-			expectError:     "1 error occurred:\n\t* unknown SourceType: MacOS\n\n",
+			expectError:     errors.New("unknown SourceType: MacOS"),
 		},
 		{
 			name:            "deletes googleCloudType",
 			deleteResources: func() { delete(store.destinationTypes, googleCloudType.Name()) },
-			expectError:     "1 error occurred:\n\t* unknown DestinationType: googlecloud\n\n",
+			expectError:     errors.New("unknown DestinationType: googlecloud"),
 		},
 		{
 			name:            "deletes destination",
 			deleteResources: func() { delete(store.destinations, googleCloud.Name()) },
-			expectError:     "1 error occurred:\n\t* unknown Destination: googlecloud\n\n",
+			expectError:     errors.New("unknown Destination: googlecloud"),
 		},
 		{
 			name:            "deletes processorType",
 			deleteResources: func() { delete(store.processorTypes, resourceAttributeTransposerType.Name()) },
-			expectError:     "2 errors occurred:\n\t* unknown ProcessorType: resource-attribute-transposer\n\t* unknown ProcessorType: resource-attribute-transposer\n\n",
+			expectError: errors.Join(
+				errors.New("unknown ProcessorType: resource-attribute-transposer"),
+				errors.New("unknown ProcessorType: resource-attribute-transposer"),
+			),
 		},
 	}
 
@@ -972,7 +976,7 @@ func TestEvalConfigurationFailsMissingResource(t *testing.T) {
 
 			_, err := configuration.Render(context.TODO(), nil, config, store)
 			require.Error(t, err)
-			require.Equal(t, test.expectError, err.Error())
+			require.EqualError(t, test.expectError, err.Error())
 
 			// reset for next iteration
 			store.sourceTypes[postgresql.Name()] = postgresql
@@ -2141,7 +2145,7 @@ exporters:
             num_consumers: 1
             queue_size: 60
         tls:
-            insecure: true
+            insecure_skip_verify: true
 service:
     pipelines:
         logs/source0__destination0:

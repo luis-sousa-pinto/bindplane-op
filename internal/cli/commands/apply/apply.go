@@ -16,9 +16,9 @@
 package apply
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/observiq/bindplane-op/internal/cli"
@@ -36,7 +36,7 @@ func Command(bindplane *cli.BindPlane) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := bindplane.Client()
 			if err != nil {
-				return fmt.Errorf("error creating client: %w", err)
+				return cli.FormatError(fmt.Errorf("error creating client: %w", err))
 			}
 
 			// any positional args are treated as if they were prefixed with -f/--file. this allows shell globs to be used
@@ -57,7 +57,7 @@ func Command(bindplane *cli.BindPlane) *cobra.Command {
 			for _, fileArg := range fileArgs {
 				fileResources, err := readResources(cmd, fileArg)
 				if err != nil {
-					errs = multierror.Append(errs, err)
+					errs = errors.Join(errs, err)
 					continue
 				}
 				resources = append(resources, fileResources...)
@@ -65,13 +65,13 @@ func Command(bindplane *cli.BindPlane) *cobra.Command {
 
 			// fail if any file cannot be read
 			if errs != nil {
-				return errs
+				return cli.FormatError(errs)
 			}
 
 			// apply them all together
 			resourceStatuses, err := c.Apply(cmd.Context(), resources)
 			if err != nil {
-				return err
+				return cli.FormatError(err)
 			}
 
 			model.PrintResourceUpdates(cmd.OutOrStdout(), resourceStatuses)

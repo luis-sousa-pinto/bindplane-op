@@ -66,8 +66,8 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: v1.9.0
-          args: release --rm-dist --parallelism 1
+          version: v1.16.1
+          args: release --clean --parallelism 1
         env:
           # github token requires permission to observiq/bindplane-op and observiq/homebrew-bindplane-op
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}

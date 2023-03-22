@@ -1,0 +1,78 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: cloudflare
+  displayName: Cloudflare
+  icon: /icons/sources/cloudflare.svg
+  description: Receive logs from Cloudflare LogPush jobs
+spec:
+  version: 0.0.1
+  supported_platforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+    - name: listen_address
+      label: Listen Address
+      description: The IP address to listen on.
+      type: string
+      default: "0.0.0.0"
+
+    - name: https_port
+      label: HTTPS Port
+      description: TCP port to receive incoming uploads from the LogPush jobs.
+      type: int
+      default: 8443
+
+    - name: cert_file
+      label: TLS Certificate File
+      description: A TLS certificate used to encrypt communications on the listening server.
+      type: string
+      required: true
+
+    - name: key_file
+      label: TLS Private Key File
+      description: A TLS private key used to encrypt communications on the listening server.
+      type: string
+      required: true
+
+    - name: secret
+      label: Shared Secret
+      description: "String used to validate that message is coming from an expected source. If set, it must be also be configured in the LogPush job's destination field like the following: `\"destination_conf\": \"https://example.com?header_X-CF-Secret=abcd1234\"`"
+      type: string
+      default: ""
+      required: false
+
+    - name: attributes
+      label: Attributes
+      description: Any Cloudflare LogPush field names provided as keys will be mapped to log record attributes using the map value as the attribute name.
+      type: map
+      default: {}
+      advancedConfig: true
+      options:
+        gridColumns: 12
+
+    - name: timestamp_field
+      label: Timestamp Field
+      description: The name of the field that should be parsed to represent the Timestamp of the log record.
+      type: string
+      required: true
+      default: "EdgeStartTimestamp"
+      advancedConfig: true
+
+  logs:
+    receivers: |
+      - cloudflare:
+          logs:
+            secret: {{ .secret }}
+            endpoint: {{ .listen_address }}:{{ .https_port }}
+            timestamp_field: {{ .timestamp_field }}
+            tls:
+              key_file: {{ .key_file }}
+              cert_file: {{ .cert_file }}
+            {{ if .attributes }}
+            attributes:
+              {{ range $k, $v := .attributes }}
+              {{ $k }}: {{ $v }}
+              {{ end }}
+            {{ end }}

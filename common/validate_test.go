@@ -15,6 +15,7 @@
 package common
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,14 +23,14 @@ import (
 
 func TestValidate(t *testing.T) {
 	cases := []struct {
-		name         string
-		config       Config
-		expectErrStr string
+		name        string
+		config      Config
+		expectedErr error
 	}{
 		{
 			"empty",
 			Config{},
-			"",
+			nil,
 		},
 		{
 			"valid-directory",
@@ -45,7 +46,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-port",
@@ -61,7 +62,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-server-address",
@@ -77,7 +78,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-server-address-tls",
@@ -93,7 +94,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-secret-key-uuid-v1",
@@ -102,7 +103,7 @@ func TestValidate(t *testing.T) {
 					SecretKey: "5696de96-95ab-11ec-b909-0242ac120002",
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-secret-key-uuid-v1",
@@ -111,7 +112,7 @@ func TestValidate(t *testing.T) {
 					SecretKey: "603ecef5-32ef-4e78-9e84-beef8a96cdb9",
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-remote-url",
@@ -120,7 +121,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "ws://github.com:5555",
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-remote-url-tls",
@@ -129,7 +130,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "wss://github.com:5555",
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-tls",
@@ -151,7 +152,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-tls-mtls",
@@ -175,7 +176,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"",
+			nil,
 		},
 		{
 			"valid-storage-file-path",
@@ -185,7 +186,7 @@ func TestValidate(t *testing.T) {
 				},
 				Client: Client{},
 			},
-			"",
+			nil,
 		},
 		{
 			"invalid-directory",
@@ -201,7 +202,10 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"2 errors occurred:\n\t* failed to lookup directory /badpath/root: stat /badpath/root: no such file or directory\n\t* failed to lookup directory ./badrel/path: stat ./badrel/path: no such file or directory",
+			errors.Join(
+				errors.New("failed to lookup directory /badpath/root: stat /badpath/root: no such file or directory"),
+				errors.New("failed to lookup directory ./badrel/path: stat ./badrel/path: no such file or directory"),
+			),
 		},
 		{
 			"invalid-port",
@@ -212,7 +216,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to convert port ten to an",
+			errors.New("failed to convert port ten to an"),
 		},
 		{
 			"invalid-server-port",
@@ -223,7 +227,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"port must be between",
+			errors.New("port must be between"),
 		},
 		{
 			"invalid-client-port",
@@ -239,7 +243,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"port must be between",
+			errors.New("port must be between"),
 		},
 		{
 			"invalid-server-address",
@@ -255,7 +259,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to validate server address localhost:3000: scheme localhost is invalid: valid schemes are [http https]",
+			errors.New("failed to validate server address localhost:3000: scheme localhost is invalid: valid schemes are [http https]"),
 		},
 		{
 			"invalid-server-address-malformed-url",
@@ -271,7 +275,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to validate server address 6:3000: failed to parse url 6:3000: parse \"6:3000\": first path segment in URL cannot contain",
+			errors.New("failed to validate server address 6:3000: failed to parse url 6:3000: parse \"6:3000\": first path segment in URL cannot contain"),
 		},
 		{
 			"invalid-secret-key-uuid",
@@ -280,7 +284,7 @@ func TestValidate(t *testing.T) {
 					SecretKey: "603ecef5",
 				},
 			},
-			"failed to validate secret key: invalid UUID ",
+			errors.New("failed to validate secret key: invalid UUID"),
 		},
 		{
 			"invalid-remote-url",
@@ -289,7 +293,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "github.com:5555",
 				},
 			},
-			"failed to validate remote address github.com:5555: scheme github.com is invalid: valid schemes are [ws wss]",
+			errors.New("failed to validate remote address github.com:5555: scheme github.com is invalid: valid schemes are [ws wss]"),
 		},
 		{
 			"invalid-remote-url-scheme",
@@ -298,7 +302,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "http://github.com:5555",
 				},
 			},
-			"scheme http is invalid: valid schemes are [ws wss]",
+			errors.New("scheme http is invalid: valid schemes are [ws wss]"),
 		},
 		{
 			"missing-scheme",
@@ -307,7 +311,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "github.com",
 				},
 			},
-			"scheme is not set",
+			errors.New("scheme is not set"),
 		},
 		{
 			"invalid-remote-url-malformed-url",
@@ -316,7 +320,7 @@ func TestValidate(t *testing.T) {
 					RemoteURL: "5:github.com",
 				},
 			},
-			"first path segment in URL cannot contain colon",
+			errors.New("first path segment in URL cannot contain colon"),
 		},
 		{
 			"invalid-valid-tls-missing-private-key",
@@ -336,7 +340,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"private key must be set when tls certificate is set",
+			errors.New("private key must be set when tls certificate is set"),
 		},
 		{
 			"invalid-valid-tls-missing-certificate-key",
@@ -356,7 +360,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"tls certificate must be set when tls private key is set",
+			errors.New("tls certificate must be set when tls private key is set"),
 		},
 		{
 			"invalid-tls-mtls-missing-keypair",
@@ -376,7 +380,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"certificate and private key must be set when tls certificate authority is set",
+			errors.New("certificate and private key must be set when tls certificate authority is set"),
 		},
 		{
 			"invalid-tls-mtls-missing-cert-file",
@@ -398,7 +402,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to lookup tls certificate file",
+			errors.New("failed to lookup tls certificate file"),
 		},
 		{
 			"invalid-tls-mtls-missing-key-file",
@@ -420,7 +424,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to lookup tls private key file",
+			errors.New("failed to lookup tls private key file"),
 		},
 		{
 			"invalid-tls-mtls-missing-ca-file",
@@ -447,21 +451,18 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			"failed to lookup tls certificate authority file",
+			errors.New("failed to lookup tls certificate authority file"),
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.config.Validate()
-
-			if tc.expectErrStr != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), tc.expectErrStr)
-				return
+			if tc.expectedErr == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tc.expectedErr.Error())
 			}
-
-			require.NoError(t, err)
 		})
 	}
 }

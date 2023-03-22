@@ -15,17 +15,18 @@
 package profile
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/observiq/bindplane-op/internal/agent"
+	"github.com/observiq/bindplane-op/internal/cli"
 	"github.com/observiq/bindplane-op/internal/cli/flags"
 	"github.com/observiq/bindplane-op/model"
 )
@@ -37,7 +38,7 @@ func SetCommand(h Helper) *cobra.Command {
 		Short: "set a parameter on a saved profile",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return fmt.Errorf("missing required argument <name>")
+				return errors.New("missing required argument <name>")
 			}
 
 			name := args[0]
@@ -54,12 +55,12 @@ func SetCommand(h Helper) *cobra.Command {
 			cmd.Flags().VisitAll(modifiers.handleFlag(profile))
 
 			if modifiers.errs != nil {
-				return modifiers.errs
+				return cli.FormatError(modifiers.errs)
 			}
 
 			err = f.WriteProfile(profile)
 			if err != nil {
-				return err
+				return cli.FormatError(err)
 			}
 
 			for _, m := range modifiers.messages() {
@@ -250,7 +251,7 @@ func (p *profileSettingModifiers) handleFlag(profile *model.Profile) func(f *pfl
 				if err := modifier(f.Name, f, profile); err == nil {
 					p.modified[f.Name] = present
 				} else {
-					p.errs = multierror.Append(p.errs, err)
+					p.errs = errors.Join(p.errs, err)
 				}
 			}
 			p.visited[f.Name] = present

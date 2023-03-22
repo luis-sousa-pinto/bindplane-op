@@ -21,22 +21,22 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-multierror"
 	cors "github.com/itsjamie/gin-cors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/docs/swagger"
 	"github.com/observiq/bindplane-op/internal/agent"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
 	"github.com/observiq/bindplane-op/internal/graphql"
 	"github.com/observiq/bindplane-op/internal/opamp"
 	"github.com/observiq/bindplane-op/internal/otlp"
@@ -46,6 +46,7 @@ import (
 	"github.com/observiq/bindplane-op/internal/server/sessions"
 	"github.com/observiq/bindplane-op/internal/store"
 	"github.com/observiq/bindplane-op/internal/store/search"
+	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/ui"
 )
 
@@ -56,15 +57,15 @@ type Server struct {
 }
 
 // Start starts the BindPlane using the specified Config.
-func (s *Server) Start(ctx context.Context, bindplane *cli.BindPlane, h profile.Helper, forceConsoleColor, skipSeed bool) error {
-	config := &bindplane.Config.Server
+func (s *Server) Start(ctx context.Context, bindplane *cli.BindPlane, forceConsoleColor, skipSeed bool) error {
 
 	// ensure that we have a secret key
-	err := s.ensureSecretKey(config, h)
+	err := s.ensureSecretKey(bindplane.Config, bindplane.ConfigFile)
 	if err != nil {
 		return err
 	}
 
+	config := &bindplane.Config.Server
 	// If session secret is not set, set it randomly at startup.
 	if config.SessionsSecret == "" {
 		config.SessionsSecret = uuid.NewString()
@@ -261,18 +262,44 @@ func (s *Server) createVersions(ctx context.Context, config *common.Server, st s
 	})
 }
 
-func (s *Server) ensureSecretKey(config *common.Server, _ profile.Helper) error {
-	//revive:disable:empty-block Until the TODO below is handled
-	if config.SecretKey == "" {
-		// TODO(andy): generate a new secret key and save it.
-		//
-		// * this needs to be handled by serve_test.go
-		//
-		// * it should create the secretKey and save it for the current profile. that means if we run with --profile
-		// some-profile-name, we should save the secretKey to some-profile-name even if it isn't the current profile. we
-		// don't have enough information to do that here right now.
-		// return fmt.Errorf("no secret key set in configuration, run bindplanectl init server to initialize a configuration")
+func (s *Server) ensureSecretKey(c *common.Config, configPath string) error {
+	if c.SecretKey != "" {
+		// Secret key is already set, no need to generate a new one
+		return nil
 	}
+
+	if configPath == "" {
+		// We can't rewrite the config with a new secret key if there is no config
+		return errors.New("secret key is required")
+	}
+
+	s.logger.Info("Generating secret key...")
+
+	c.SecretKey = uuid.NewString()
+
+	// Rewrite current config
+	cleanPath := filepath.Clean(configPath)
+	confBytes, err := os.ReadFile(cleanPath)
+	if err != nil {
+		return fmt.Errorf("read file: %w", err)
+	}
+
+	var newProfile model.ProfileSpec
+	if err := yaml.Unmarshal(confBytes, &newProfile); err != nil {
+		return fmt.Errorf("unmarshal: %w", err)
+	}
+
+	newProfile.SecretKey = c.SecretKey
+
+	newProfileBytes, err := yaml.Marshal(newProfile)
+	if err != nil {
+		return fmt.Errorf("marshal: %w", err)
+	}
+
+	if err := os.WriteFile(cleanPath, newProfileBytes, 0600); err != nil {
+		return fmt.Errorf("open file: %w", err)
+	}
+
 	return nil
 }
 
@@ -309,7 +336,7 @@ func seedIndex[T search.Indexed](indexed []T, index search.Index) error {
 	for _, i := range indexed {
 		err := index.Upsert(i)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	}
 	return errs

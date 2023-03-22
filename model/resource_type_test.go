@@ -73,7 +73,7 @@ func TestEvalGoogleCloud(t *testing.T) {
 	require.Len(t, values[otel.Traces].Extensions, 0)
 }
 
-func TestValidateNoDuplicateParamterNames(t *testing.T) {
+func TestValidateNoDuplicateParameterNames(t *testing.T) {
 	testCases := []struct {
 		description string
 		spec        ResourceTypeSpec

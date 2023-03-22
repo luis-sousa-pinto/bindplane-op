@@ -16,12 +16,12 @@ package model
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/go-multierror"
 	"github.com/observiq/bindplane-op/internal/store/search"
 	"github.com/observiq/bindplane-op/model/graph"
 	"github.com/observiq/bindplane-op/model/otel"
@@ -247,7 +247,7 @@ func (c *Configuration) otelConfigurationWithRenderContext(ctx context.Context, 
 func (c *Configuration) evalComponents(ctx context.Context, store ResourceStore, rc *renderContext) (sources map[string]otel.Partials, destinations map[string]otel.Partials, err error) {
 	errorHandler := func(e error) {
 		if e != nil {
-			err = multierror.Append(err, e)
+			err = errors.Join(err, e)
 		}
 	}
 

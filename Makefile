@@ -41,6 +41,7 @@ install-tools:
 	cd $(TOOLS_MOD_DIR) && go install github.com/client9/misspell/cmd/misspell
 	cd $(TOOLS_MOD_DIR) && go install github.com/ory/go-acc
 	cd $(TOOLS_MOD_DIR) && go install github.com/vektra/mockery/v2
+	cd $(TOOLS_MOD_DIR) && go install github.com/goreleaser/goreleaser
 
 .PHONY: install-ui # [ui] npm install
 install-ui:
@@ -162,12 +163,12 @@ docker-http:
 		--name "bindplane-server-${GIT_SHA}-http" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		"observiq/bindplane-$(GOARCH):${GIT_SHA}" \
 		--host 0.0.0.0 \
 		--port "3001" \
 		--server-url http://localhost:3010 \
-		--remote-url ws://localhost:3010 \
-		--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+		--remote-url ws://localhost:3010
 	docker logs "bindplane-server-${GIT_SHA}-http"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
@@ -181,14 +182,14 @@ docker-https: tls
 		--name "bindplane-server-${GIT_SHA}-https" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
 		"observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key \
 			--host 0.0.0.0 \
 			--port "3001" \
 			--server-url https://localhost:3011 \
-			--remote-url wss://localhost:3011 \
-			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+			--remote-url wss://localhost:3011
 	docker logs "bindplane-server-${GIT_SHA}-https"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https \
@@ -203,14 +204,14 @@ docker-https-mtls: tls
 		--name "bindplane-server-${GIT_SHA}-https-mtls" \
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
 		"observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key --tls-ca /tls/bindplane-ca.crt --tls-ca /tls/test-ca.crt \
 			--host 0.0.0.0 \
 			--port "3001" \
 			--server-url https://localhost:3012 \
-			--remote-url wss://localhost:3012 \
-			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce
+			--remote-url wss://localhost:3012
 	docker logs  "bindplane-server-${GIT_SHA}-https-mtls"
 
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https-mtls \
@@ -260,7 +261,7 @@ ui-build:
 # is up to date. goreleaser will not call `make install`.
 .PHONY: build # builds bindplane and bindplanectl using goreleaser
 build:
-	goreleaser build --rm-dist --skip-validate --single-target --snapshot
+	goreleaser build --clean --skip-validate --single-target --snapshot
 
 .PHONY: clean # removes the dist folder
 clean:
@@ -268,7 +269,7 @@ clean:
 
 .PHONY: release-test
 release-test:
-	goreleaser release --rm-dist --skip-publish --skip-validate --snapshot
+	goreleaser release --clean --skip-publish --skip-validate --snapshot
 
 # Kitchen prep will build a release and ensure the required
 # gems are installed for using Kitchen with GCE

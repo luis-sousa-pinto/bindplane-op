@@ -23,20 +23,19 @@ import (
 
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
 )
 
 func TestServe(t *testing.T) {
-	h := profile.NewHelper("")
 	bindplaneConfig := common.InitConfig("")
 	bindplaneConfig.SessionsSecret = "super-secret-key"
+	bindplaneConfig.SecretKey = "A3C8DD10-2CF8-4D39-B8E4-63FD5932A169"
 	bindplane := cli.NewBindPlane(bindplaneConfig, os.Stdout)
 
 	t.Run("default server", func(t *testing.T) {
 		defer func() {
 			_ = os.Remove(bindplaneConfig.BoltDatabasePath())
 		}()
-		serve := Command(bindplane, h)
+		serve := Command(bindplane)
 		var err error
 		go func() {
 			err = serve.Execute()

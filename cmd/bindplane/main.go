@@ -63,7 +63,7 @@ func main() {
 		get.Command(bindplane),
 		label.Command(bindplane),
 		delete.Command(bindplane),
-		serve.Command(bindplane, h),
+		serve.Command(bindplane),
 		profile.Command(h),
 		version.Command(bindplane),
 		initialize.Command(bindplane, h, initialize.DualMode),
