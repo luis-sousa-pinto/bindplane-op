@@ -16,7 +16,7 @@
 package helpers
 
 import (
-	exporterHelper "github.com/observiq/bindplane-op/resources/helpers/exporter-helper"
+	"github.com/observiq/bindplane-op/resources/helpers/exporterhelper"
 
 	"text/template"
 )
@@ -24,7 +24,7 @@ import (
 // ResourceHelperFuncMap returns a map of helper functions for use in templates.
 func ResourceHelperFuncMap() template.FuncMap {
 	return map[string]interface{}{
-		"bpRenderOtelRetryOnFailureConfig": exporterHelper.BPRenderOtelRetryOnFailureConfig,
-		"bpRenderOtelSendingQueueConfig":   exporterHelper.BPRenderOtelSendingQueueConfig,
+		"bpRenderOtelRetryOnFailureConfig": exporterhelper.BPRenderOtelRetryOnFailureConfig,
+		"bpRenderOtelSendingQueueConfig":   exporterhelper.BPRenderOtelSendingQueueConfig,
 	}
 }
