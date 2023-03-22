@@ -55,11 +55,11 @@ github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1/go.mod h1:xomTg6
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.11.0 h1:H+n5i7aVENiTGEr4fqfw4akY5nwAAVvvo6HZU7aYtjM=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.11.0/go.mod h1:qTIu7f/AlQOQ8OANsKLnrc0mLsld6RY7hq5/kR3wUxM=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/cloudmock v0.35.0 h1:6KWug9hBDdc7s9a0BxnxtTXPwFcLpVx7IUKO1SLIaDE=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.35.0 h1:vjtrvX7B3S+uqTIOvOUfqsMCa3eEtEOOQWm7ERI1pxg=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.35.0/go.mod h1:H785fvlgotVZqht+1rHhXSs8EJ8uPVmpBYkTYO3ccpc=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.12.0 h1:VqRrsKqdr9rEDAqu3Rowg63OAQU3r8cIAFpbLxCbBtA=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.12.0/go.mod h1:5+A4DITfFAc62a48+Tolz/7Pvnn7LitOwlqRQnOtrlY=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/cloudmock v0.36.0 h1:X80uwIJN1QTdM/Ou7V/flg7YmY36mQGsEEhNb9+hQkI=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.36.0 h1:0AXq7h5nGMp+9HEyBg6bmRfrP4h8OE/TbX8/sM/zqHk=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.36.0/go.mod h1:PyZfB7cJvIzvwjkHdW5XexMK6S9StvCGHsfWbKI7o40=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
