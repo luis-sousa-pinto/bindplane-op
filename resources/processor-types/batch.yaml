@@ -1,0 +1,36 @@
+apiVersion: bindplane.observiq.com/v1
+kind: ProcessorType
+metadata:
+  name: batch
+  displayName: Batch
+  description: The batch processor accepts spans, metrics, or logs and places them into batches. Batching helps better compress the data and reduce the number of outgoing connections required to transmit the data. This processor supports both size and time based batching.
+spec:
+  version: 0.0.1
+  parameters:
+    - name: send_batch_size
+      label: Send Batch Size
+      type: int
+      default: 8192
+      description: Number of spans, metric data points, or log records after which a batch will be sent regardless of the timeout.
+      required: true
+
+    - name: send_batch_max_size
+      label: Send Batch Max Size
+      type: int
+      default: 0
+      description: The upper limit of the batch size. 0 means no upper limit of the batch size. This property ensures that larger batches are split into smaller units. It must be greater than or equal to send batch size.
+      required: true
+
+    - name: timeout
+      label: Timeout
+      type: string
+      default: 200ms
+      description: "Time duration after which a batch will be sent regardless of size. Example: 2s (two seconds)"
+      required: true
+
+  logs+metrics+traces:
+    processors: |
+      - batch:
+          send_batch_size: {{ .send_batch_size }}
+          send_batch_max_size: {{ .send_batch_max_size }}
+          timeout: {{ .timeout }}
