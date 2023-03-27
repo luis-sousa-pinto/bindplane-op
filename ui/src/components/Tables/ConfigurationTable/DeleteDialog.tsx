@@ -6,14 +6,14 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import React from "react";
 import { ResourceKind } from "../../../types/resources";
 import { deleteResources } from "../../../utils/rest/delete-resources";
 
 interface DeleteModalProps {
   open: boolean;
-  selected: GridSelectionModel;
+  selected: GridRowSelectionModel;
   onClose: () => void;
   onDeleteSuccess: () => void;
 }

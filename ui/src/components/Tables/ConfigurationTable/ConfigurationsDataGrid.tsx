@@ -3,9 +3,9 @@ import {
   DataGrid,
   DataGridProps,
   GridCellParams,
-  GridColumns,
-  GridDensityTypes,
-  GridSelectionModel,
+  GridColDef,
+  GridDensity,
+  GridRowSelectionModel,
   GridValueFormatterParams,
   GridValueGetterParams,
 } from "@mui/x-data-grid";
@@ -38,14 +38,14 @@ type Configurations =
   GetConfigurationTableQuery["configurations"]["configurations"];
 interface ConfigurationsDataGridProps
   extends Omit<DataGridProps, "columns" | "rows"> {
-  setSelectionModel?: (configurationIds: GridSelectionModel) => void;
-  density?: GridDensityTypes;
+  setSelectionModel?: (configurationIds: GridRowSelectionModel) => void;
+  density?: GridDensity;
   loading: boolean;
   configurations: Configurations;
   configurationMetrics?: ConfigurationTableMetricsSubscription;
   columnFields?: ConfigurationsTableField[];
   minHeight?: string;
-  selectionModel?: GridSelectionModel;
+  selectionModel?: GridRowSelectionModel;
 }
 
 const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
@@ -55,12 +55,12 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
     configurations,
     configurationMetrics,
     columnFields,
-    density = GridDensityTypes.Standard,
+    density = "standard",
     minHeight,
     selectionModel,
     ...dataGridProps
   }) => {
-    const columns: GridColumns = (columnFields || []).map((field) => {
+    const columns: GridColDef[] = (columnFields || []).map((field) => {
       switch (field) {
         case ConfigurationsTableField.AGENT_COUNT:
           return {
@@ -122,7 +122,7 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
       <DataGrid
         {...dataGridProps}
         checkboxSelection={isFunction(setSelectionModel)}
-        onSelectionModelChange={setSelectionModel}
+        onRowSelectionModelChange={setSelectionModel}
         components={{
           NoRowsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
@@ -131,11 +131,11 @@ const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
           ),
         }}
         style={{ minHeight }}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
         getRowId={(row) => row.metadata.name}
         columns={columns}
         rows={configurations}
-        selectionModel={selectionModel}
+        rowSelectionModel={selectionModel}
       />
     );
   };
@@ -155,7 +155,7 @@ function ensureSortValue(labelsCellValue: {
 }
 
 function renderLabels(
-  cellParams: GridCellParams<Record<string, string>>
+  cellParams: GridCellParams<any, Record<string, string>>
 ): JSX.Element {
   const labels = cellParams.value?.labels;
   return (
@@ -173,7 +173,7 @@ function abbreviateName(limit: number, name?: string): string {
   return name.length > limit ? name.substring(0, limit) + "..." : name;
 }
 
-function renderNameDataCell(cellParams: GridCellParams<string>): JSX.Element {
+function renderNameDataCell(cellParams: GridCellParams<any, string>): JSX.Element {
   return (
     <NoMaxWidthTooltip
       title={`${cellParams.value} (Click to view configuration)`}
@@ -200,7 +200,7 @@ function createMetricRateColumn(
   field: string,
   telemetryType: string,
   configurationMetrics?: ConfigurationTableMetricsSubscription
-): GridColumns[0] {
+): GridColDef[][0] {
   return {
     field,
     width: 100,

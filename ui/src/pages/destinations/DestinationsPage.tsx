@@ -1,6 +1,6 @@
 import { gql, QueryHookOptions, QueryResult } from "@apollo/client";
 import { Typography, FormControl, Button } from "@mui/material";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
 import { CardContainer } from "../../components/CardContainer";
@@ -47,9 +47,9 @@ gql`
 export interface DestinationsPageContentProps {
   destinationsPage: boolean;
   // grid selection model
-  selected: GridSelectionModel;
+  selected: GridRowSelectionModel;
   // function to set grid selection model
-  setSelected: (selected: GridSelectionModel) => void;
+  setSelected: (selected: GridRowSelectionModel) => void;
   columnFields?: DestinationsTableField[];
   minHeight?: string;
   editingDestination: string | null;
@@ -168,7 +168,7 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
           loading={loading}
           setSelectionModel={setSelected}
           selectionModel={selected}
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           checkboxSelection
           onEditDestination={(name: string) => setEditingDestination(name)}
           columnFields={columnFields}
@@ -212,7 +212,7 @@ export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
   };
 
 export function resourcesFromSelected(
-  selected: GridSelectionModel
+  selected: GridRowSelectionModel
 ): MinimumDeleteResource[] {
   return selected.reduce<MinimumDeleteResource[]>((prev, cur) => {
     if (typeof cur !== "string") {
@@ -235,7 +235,7 @@ export const DestinationsPage = withRequireLogin(
   withNavBar((props) => {
     // Selected is an array of names of destinations in the form
     // <Kind>|<Name>
-    const [selected, setSelected] = useState<GridSelectionModel>([]);
+    const [selected, setSelected] = useState<GridRowSelectionModel>([]);
     const [editingDestination, setEditingDestination] =
       useState<string | null>(null);
 

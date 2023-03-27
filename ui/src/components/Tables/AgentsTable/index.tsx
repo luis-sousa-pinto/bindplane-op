@@ -12,9 +12,9 @@ import {
 import { SearchBar } from "../../SearchBar";
 import { AgentsDataGrid, AgentsTableField } from "./AgentsDataGrid";
 import {
-  GridDensityTypes,
+  GridDensity,
   GridRowParams,
-  GridSelectionModel,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import { mergeAgents } from "./merge-agents";
 import { AgentStatus } from "../../../types/agents";
@@ -80,15 +80,15 @@ gql`
 `;
 
 interface Props {
-  onAgentsSelected?: (agentIds: GridSelectionModel) => void;
-  onDeletableAgentsSelected?: (agentIds: GridSelectionModel) => void;
-  onUpdatableAgentsSelected?: (agentIds: GridSelectionModel) => void;
+  onAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
+  onDeletableAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
+  onUpdatableAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
   isRowSelectable?: (params: GridRowParams<AgentsTableAgent>) => boolean;
   clearSelectionModelFnRef?: React.MutableRefObject<(() => void) | null>;
   selector?: string;
   minHeight?: string;
   columnFields?: AgentsTableField[];
-  density?: GridDensityTypes;
+  density?: GridDensity;
   initQuery?: string;
 }
 
@@ -107,7 +107,7 @@ const AgentsTableComponent: React.FC<Props> = ({
   selector,
   minHeight,
   columnFields,
-  density = GridDensityTypes.Standard,
+  density = "standard",
   initQuery = "",
 }) => {
   const { data, loading, refetch, subscribeToMore } = useAgentsTableQuery({
@@ -161,7 +161,7 @@ const AgentsTableComponent: React.FC<Props> = ({
   }, [selector, subQuery, subscribeToMore]);
 
   const handleSelect = useMemo(
-    () => (agentIds: GridSelectionModel) => {
+    () => (agentIds: GridRowSelectionModel) => {
       if (isFunction(onAgentsSelected)) {
         onAgentsSelected(agentIds);
       }
