@@ -61,6 +61,16 @@ spec:
       default: "UTC"
       advancedConfig: true
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      advancedConfig: true
+
     - name: enable_octet_counting
       label: Enable Octet Counting
       description: |
@@ -215,8 +225,8 @@ spec:
           {{ if and (.enable_non_transparent_framing_trailer) (eq .connection_type "tcp") (eq .protocol "rfc5424")}}
           non_transparent_framing_trailer: {{ .non_transparent_framing_trailer }}
           {{ end}}
-          {{ if eq .data_flow "low" }}
           operators:
+          {{ if eq .data_flow "low" }}
             - type: filter
               expr: 'attributes.priority != nil && attributes.priority % 8 == 7'
             - type: retain
@@ -226,6 +236,64 @@ spec:
                 - attributes.msg_id
                 - attributes.structured_data
                 - attributes.version
+          {{ end }}
+          {{ if eq .parse_to "body" }}
+            # Move all retained attributes to the body
+            - id: move_appname
+              type: move
+              if: "attributes.appname != nil"
+              from: attributes.appname
+              to: body.appname
+            - id: move_facility
+              type: move
+              if: "attributes.facility != nil"
+              from: attributes.facility
+              to: body.facility
+            - id: move_hostname
+              type: move
+              if: "attributes.hostname != nil"
+              from: attributes.hostname
+              to: body.hostname
+            - id: move_message
+              type: move
+              if: "attributes.message != nil"
+              from: attributes.message
+              to: body.message
+            - id: move_msg_id
+              type: move
+              if: "attributes.msg_id != nil"
+              from: attributes.msg_id
+              to: body.msg_id
+            - id: move_priority
+              type: move
+              if: "attributes.priority != nil"
+              from: attributes.priority
+              to: body.priority
+            - id: move_proc_id
+              type: move
+              if: "attributes.proc_id != nil"
+              from: attributes.proc_id
+              to: body.proc_id
+            - id: move_severity
+              type: move
+              if: "attributes.severity != nil"
+              from: attributes.severity
+              to: body.severity
+            - id: move_structured_data
+              type: move
+              if: "attributes.structured_data != nil"
+              from: attributes.structured_data
+              to: body.structured_data
+            - id: move_timestamp
+              type: move
+              if: "attributes.timestamp != nil"
+              from: attributes.timestamp
+              to: body.timestamp
+            - id: move_version
+              type: move
+              if: "attributes.version != nil"
+              from: attributes.version
+              to: body.version
           {{ end }}
 
     processors: |
