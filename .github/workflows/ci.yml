@@ -312,6 +312,8 @@ jobs:
           docker tag observiq/bindplane-arm64:latest observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
           docker tag ghcr.io/observiq/bindplane-amd64:latest ghcr.io/observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
           docker tag ghcr.io/observiq/bindplane-arm64:latest ghcr.io/observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag observiq/bindplane-amd64:latest-ubi8 observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}-ubi8
+          docker tag observiq/bindplane-arm64:latest-ubi8 observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}-ubi8
 
       - name: Push Container Images to Dockerhub
         run: |

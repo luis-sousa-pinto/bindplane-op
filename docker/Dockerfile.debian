@@ -26,13 +26,17 @@ RUN useradd \
     --shell /sbin/nologin \
     --system "$USER" -g "$USER" -u "$UID"
 
+RUN mkdir /licenses
+COPY LICENSE /licenses/bindplane.license
+
 COPY bindplane /bindplane
 
 # Default home is /data. A volume should be mounted here in order
 # to persist data.
-RUN mkdir /data
-RUN chown bindplane:bindplane /data
-RUN chmod 0750 /data
+RUN \
+    mkdir /data && \
+    chown bindplane:bindplane /data && \
+    chmod 0750 /data
 ENV BINDPLANE_CONFIG_HOME="/data"
 ENV BINDPLANE_CONFIG_LOG_OUTPUT="stdout"
 

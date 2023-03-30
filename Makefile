@@ -175,6 +175,24 @@ docker-http:
 		--server-url http://localhost:3010 --remote-url ws://localhost:3010
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-http
 
+.PHONY: docker-ubi8-http
+docker-ubi8-http:
+	docker run -d -p 3011:3001 \
+		--name "bindplane-server-${GIT_SHA}-ubi8-http" \
+		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		"observiq/bindplane-$(GOARCH):${GIT_SHA}-ubi8" \
+		--host 0.0.0.0 \
+		--port "3001" \
+		--server-url http://localhost:3010 \
+		--remote-url ws://localhost:3010
+	docker logs "bindplane-server-${GIT_SHA}-http"
+
+	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
+		--server-url http://localhost:3010 --remote-url ws://localhost:3010
+	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-http
+
 .PHONY: docker-https
 docker-https: tls
 	docker run -d \
@@ -228,10 +246,13 @@ docker-clean:
 
 # Call 'release-test' first.
 .PHONY: inspec-continer-image
-inspec-continer-image: prep docker-http
+inspec-continer-image: prep docker-http docker-ubi8-http
 	docker exec -u root bindplane-server-${GIT_SHA}-http apt-get update -qq
 	docker exec -u root bindplane-server-${GIT_SHA}-http apt-get install -qq -y procps net-tools
 	cinc-auditor exec test/inspec/docker/integration.rb -t "docker://bindplane-server-${GIT_SHA}-http"
+
+	docker exec -u root bindplane-server-${GIT_SHA}-ubi8-http dnf install -y procps net-tools
+	cinc-auditor exec test/inspec/docker/integration.rb -t "docker://bindplane-server-${GIT_SHA}-ubi8-http"
 
 .PHONY: run
 run: docker-http
@@ -267,9 +288,15 @@ build:
 clean:
 	rm -rf $(OUTDIR)
 
+# Build all binaries, packages, and container images. Add current git hash
+# tags for use with "make inspec-continer-image".
 .PHONY: release-test
 release-test:
 	goreleaser release --clean --skip-publish --skip-validate --snapshot
+	@docker tag observiq/bindplane-arm64:latest observiq/bindplane-arm64:${GIT_SHA}
+	@docker tag observiq/bindplane-amd64:latest observiq/bindplane-amd64:${GIT_SHA}
+	@docker tag observiq/bindplane-arm64:latest-ubi8 observiq/bindplane-arm64:${GIT_SHA}-ubi8
+	@docker tag observiq/bindplane-amd64:latest-ubi8 observiq/bindplane-amd64:${GIT_SHA}-ubi8
 
 # Kitchen prep will build a release and ensure the required
 # gems are installed for using Kitchen with GCE
