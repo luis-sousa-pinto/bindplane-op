@@ -4,27 +4,76 @@ metadata:
   name: elasticsearch
   displayName: Elasticsearch
   icon: /icons/destinations/elasticsearch.svg
-  description: Send logs to Elasticsearch.
+  description: Send logs and traces to Elasticsearch.
 spec:
   parameters:
+    - name: enable_elastic_cloud
+      label: Enable Elastic Cloud
+      description: Whether or not to enable support for Elastic Cloud.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+
     - name: endpoints
       label: Endpoints
-      description: List of Elasticsearch URLs. If endpoints and Cloud ID is missing, the ELASTICSEARCH_URL environment variable will be used.
+      description: List of Elasticsearch URLs. e.g https://elastic.corp.net:9200.
       type: strings
+      required: true
       default: []
-
-    - name: index
-      label: Index
-      description: The index or datastream name to publish events to.
-      type: string
-      default: "logs-generic-default"
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_elastic_cloud
+          operator: equals
+          value: false
 
     - name: cloudid
       label: CloudID
       description: ID of the Elastic Cloud Cluster to publish events to. The cloudid can be used instead of endpoints.
       type: string
+      required: true
       default: ""
-      advancedConfig: true
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_elastic_cloud
+          operator: equals
+          value: true
+
+    - name: enable_logs
+      label: Enable Logs
+      description: Enable to send logs to Elasticsearch.
+      type: bool
+      default: true
+
+    - name: logs_index
+      label: Logs Index
+      description: The index or datastream name to publish logs to.
+      type: string
+      required: true
+      default: "logs-generic-default"
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_traces
+      label: Enable Tracing
+      description: Enable to send spans to Elasticsearch.
+      type: bool
+      default: true
+
+    - name: traces_index
+      label: Traces Index
+      description: The index or datastream name to publish traces to.
+      type: string
+      required: true
+      default: "traces-generic-default"
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
 
     - name: pipeline
       label: Pipeline
@@ -33,12 +82,43 @@ spec:
       default: ""
       advancedConfig: true
 
+    - name: enable_auth
+      label: Enable Authentication
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+
+    - name: auth_type
+      label: Authentication Type
+      type: enum
+      validValues:
+        - basic
+        - apikey
+      default: basic
+      advancedConfig: true
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_auth
+          operator: equals
+          value: true
+
     - name: user
       label: Username
       description: Username used for HTTP Basic Authentication.
       type: string
       default: ""
       advancedConfig: true
+      required: true
+      relevantIf:
+        - name: enable_auth
+          operator: equals
+          value: true
+        - name: auth_type
+          operator: equals
+          value: basic
 
     - name: password
       label: Password
@@ -46,6 +126,14 @@ spec:
       type: string
       default: ""
       advancedConfig: true
+      required: true
+      relevantIf:
+        - name: enable_auth
+          operator: equals
+          value: true
+        - name: auth_type
+          operator: equals
+          value: basic
 
     - name: api_key
       label: API Key
@@ -53,10 +141,18 @@ spec:
       type: string
       default: ""
       advancedConfig: true
+      relevantIf:
+        - name: enable_auth
+          operator: equals
+          value: true
+        - name: auth_type
+          operator: equals
+          value: apikey
 
-    - name: enable_tls
-      label: Enable TLS
-      description: Whether or not to use TLS.
+    # TLS
+    - name: configure_tls
+      label: Configure TLS
+      description: Configure advanced TLS settings.
       type: bool
       default: false
       options:
@@ -69,7 +165,7 @@ spec:
       type: bool
       default: false
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
           operator: equals
           value: true
       advancedConfig: true
@@ -81,57 +177,150 @@ spec:
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
+          operator: equals
+          value: true
+        - name: insecure_skip_verify
+          operator: equals
+          value: false
+      advancedConfig: true
+
+    - name: mutual_tls
+      label: Mutual TLS
+      description: Whether or not to use mutual TLS authentication.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      relevantIf:
+        - name: configure_tls
           operator: equals
           value: true
       advancedConfig: true
 
     - name: cert_file
       label: Mutual TLS Client Certificate File
-      description: A TLS certificate used for client authentication, if mutual TLS is enabled.
+      description: A TLS certificate used for client authentication.
       type: string
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
+          operator: equals
+          value: true
+        - name: mutual_tls
           operator: equals
           value: true
       advancedConfig: true
 
     - name: key_file
       label: Mutual TLS Client Private Key File
-      description: A TLS private key used for client authentication, if mutual TLS is enabled.
+      description: A TLS private key used for client authentication.
       type: string
       required: false
       default: ""
       relevantIf:
-        - name: enable_tls
+        - name: configure_tls
+          operator: equals
+          value: true
+        - name: mutual_tls
           operator: equals
           value: true
       advancedConfig: true
 
+    - name: retry_on_failure_enabled
+      label: Enable Retry on Failure
+      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+      type: bool
+      default: true
+      advancedConfig: true
+
+    # See https://pkg.go.dev/github.com/elastic/go-elasticsearch/v7@v7.17.7/esutil?utm_source=gopls#BulkIndexerConfig.
+    - name: num_workers
+      label: Number of Workers
+      description: Number of workers publishing bulk requests concurrently. If 0, defaults to the number of CPU cores.
+      type: int
+      default: 0
+      advancedConfig: true
+
   logs:
     exporters: |
-      - elasticsearch:
+      {{ if .enable_logs }}
+      - elasticsearch/logs:
+          {{ if .enable_elastic_cloud }}
+          cloudid: {{ .cloudid }}
+          {{ else }}
           endpoints:
             {{ range $endpoint := .endpoints }}
             - '{{ $endpoint }}'
             {{end}}
-          cloudid: {{ .cloudid }}
-          index: {{ .index }}
+          {{ end }}
+
+          logs_index: {{ .logs_index }}
           pipeline: {{ .pipeline }}
+
+          {{ if .enable_auth }}
+          {{ if eq .auth_type "basic" }}
           user: {{ .user }}
           password: {{ .password }}
+          {{ else if eq .auth_type "apikey" }}
           api_key: {{ .api_key }}
+          {{ end }}
+          {{ end }}
+
           tls:
-          {{ if .enable_tls }}
-            insecure: false
+          {{ if .configure_tls }}
             insecure_skip_verify: {{ .insecure_skip_verify }}
             ca_file: "{{ .ca_file }}"
+            {{ if .mutual_tls }}
             cert_file: "{{ .cert_file }}"
             key_file: "{{ .key_file }}"
-          {{ else }}
-            insecure: true
+            {{ end }}
           {{ end }}
-    processors: |
-      - batch:
+
+          retry:
+            enabled: {{ .retry_on_failure_enabled }}
+
+          num_workers: {{ .num_workers }}
+      {{ end }}
+
+  traces:
+    exporters: |
+      {{ if .enable_traces }}
+      - elasticsearch/traces:
+          {{ if .enable_elastic_cloud }}
+          cloudid: {{ .cloudid }}
+          {{ else }}
+          endpoints:
+            {{ range $endpoint := .endpoints }}
+            - '{{ $endpoint }}'
+            {{end}}
+          {{ end }}
+
+          traces_index: {{ .traces_index }}
+          pipeline: {{ .pipeline }}
+
+          {{ if .enable_auth }}
+          {{ if eq .auth_type "basic" }}
+          user: {{ .user }}
+          password: {{ .password }}
+          {{ else if eq .auth_type "apikey" }}
+          api_key: {{ .api_key }}
+          {{ end }}
+          {{ end }}
+
+          tls:
+          {{ if .configure_tls }}
+            insecure_skip_verify: {{ .insecure_skip_verify }}
+            ca_file: "{{ .ca_file }}"
+            {{ if .mutual_tls }}
+            cert_file: "{{ .cert_file }}"
+            key_file: "{{ .key_file }}"
+            {{ end }}
+          {{ end }}
+
+          retry:
+            enabled: {{ .retry_on_failure_enabled }}
+
+          num_workers: {{ .num_workers }}
+      {{ end }}
