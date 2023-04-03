@@ -148,6 +148,11 @@ dockers:
   - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
   - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
   - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}"
+  # GAR
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}"
   dockerfile: ./docker/Dockerfile.debian
   use: buildx
   build_flag_templates:
@@ -174,6 +179,11 @@ dockers:
   - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
   - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
   - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}"
+  # GAR
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}"
   dockerfile: ./docker/Dockerfile.debian
   use: buildx
   build_flag_templates:
@@ -194,6 +204,8 @@ dockers:
   - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
   - "ghcr.io/observiq/bindplane-amd64:latest-ubi8"
   - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest-ubi8"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
   dockerfile: ./docker/Dockerfile.ubi8
   use: buildx
   build_flag_templates:
@@ -214,6 +226,8 @@ dockers:
   - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
   - "ghcr.io/observiq/bindplane-arm64:latest-ubi8"
   - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest-ubi8"
+  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
   dockerfile: ./docker/Dockerfile.ubi8
   use: buildx
   build_flag_templates:
@@ -276,6 +290,32 @@ docker_manifests:
     image_templates:
       - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
       - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+
+  # GAR
+  - name_template: "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:latest"
+    image_templates:
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest"
+    skip_push: false
+  - name_template: "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    image_templates:
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    skip_push: false
+  - name_template: "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
+    skip_push: false
+  - name_template: "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:{{ .Major }}"
+    image_templates:
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}"
+    skip_push: false
+  - name_template: "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+    image_templates:
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
 
 checksum:
   name_template: '{{ .ProjectName }}-v{{ .Version }}-SHA256SUMS'
