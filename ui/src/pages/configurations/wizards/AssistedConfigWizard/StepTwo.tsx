@@ -80,6 +80,7 @@ gql`
                 kpi
               }
             }
+            password
           }
         }
         supportedPlatforms

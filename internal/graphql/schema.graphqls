@@ -275,6 +275,7 @@ type ParameterOptions {
   metricCategories: [MetricCategory!]
   multiline: Boolean
   labels: Map
+  password: Boolean
 }
 
 type MetricCategory {

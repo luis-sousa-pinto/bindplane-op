@@ -107,6 +107,8 @@ spec:
           operator: equals
           value: basic
       advancedConfig: true
+      options:
+        password: true
 
     - name: sasl_username
       label: Username

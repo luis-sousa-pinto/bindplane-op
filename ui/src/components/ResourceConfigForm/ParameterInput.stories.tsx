@@ -7,6 +7,7 @@ import {
   stringsDef,
   boolDef,
   intDef,
+  stringPasswordDef,
 } from "./__test__/dummyResources";
 
 export default {
@@ -22,6 +23,7 @@ const Template: ComponentStory<typeof StringParamInput> = (args) => (
 
 export const String = Template.bind({});
 export const StringRequired = Template.bind({});
+export const Password = Template.bind({});
 export const Strings = Template.bind({});
 export const Enum = Template.bind({});
 export const Bool = Template.bind({});
@@ -33,6 +35,10 @@ String.args = {
 
 StringRequired.args = {
   definition: stringDefRequired,
+};
+
+Password.args = {
+  definition: stringPasswordDef,
 };
 
 Enum.args = {

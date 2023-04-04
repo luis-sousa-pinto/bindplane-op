@@ -14,6 +14,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   gridColumns: null,
   metricCategories: null,
   labels: null,
+  password: null,
   __typename: "ParameterOptions",
 };
 

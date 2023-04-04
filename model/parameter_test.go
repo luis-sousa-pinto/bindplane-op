@@ -259,6 +259,28 @@ func TestValidateOptions(t *testing.T) {
 				},
 			},
 		},
+		{
+			"Password for string OK",
+			false,
+			"",
+			ParameterDefinition{
+				Type: "string",
+				Options: ParameterOptions{
+					Password: true,
+				},
+			},
+		},
+		{
+			"Password for non-string Error",
+			true,
+			"1 error occurred:\n\t* password is true for parameter of type `int`\n\n",
+			ParameterDefinition{
+				Type: "int",
+				Options: ParameterOptions{
+					Password: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range testCases {

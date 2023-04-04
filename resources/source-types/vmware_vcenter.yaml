@@ -63,6 +63,8 @@ spec:
         - name: enable_metrics
           operator: equals
           value: true
+      options:
+        password: true
 
     - name: collection_interval
       label: Collection Interval

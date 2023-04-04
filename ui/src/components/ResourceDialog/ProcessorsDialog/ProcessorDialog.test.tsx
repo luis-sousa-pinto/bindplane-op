@@ -25,6 +25,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   multiline: false,
   metricCategories: null,
   labels: null,
+  password: null,
 };
 
 const CONFIG_NO_PROCESSORS = {

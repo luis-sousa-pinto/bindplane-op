@@ -64,6 +64,7 @@ gql`
                 kpi
               }
             }
+            password
           }
         }
       }

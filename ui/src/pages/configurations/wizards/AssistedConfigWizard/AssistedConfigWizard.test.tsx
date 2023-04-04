@@ -25,6 +25,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   gridColumns: null,
   metricCategories: null,
   labels: null,
+  password: null,
 };
 
 const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {

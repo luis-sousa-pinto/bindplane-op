@@ -28,6 +28,7 @@ spec:
       type: string
       options:
         gridColumns: 12
+        password: true
       documentation:
         - text: Read more
           url: https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication

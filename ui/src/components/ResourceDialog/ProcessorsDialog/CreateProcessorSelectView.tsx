@@ -57,6 +57,7 @@ gql`
                 kpi
               }
             }
+            password
           }
           documentation {
             text

@@ -280,6 +280,7 @@ type ComplexityRoot struct {
 		Labels           func(childComplexity int) int
 		MetricCategories func(childComplexity int) int
 		Multiline        func(childComplexity int) int
+		Password         func(childComplexity int) int
 		SectionHeader    func(childComplexity int) int
 		TrackUnchecked   func(childComplexity int) int
 	}
@@ -1422,6 +1423,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ParameterOptions.Multiline(childComplexity), true
 
+	case "ParameterOptions.password":
+		if e.complexity.ParameterOptions.Password == nil {
+			break
+		}
+
+		return e.complexity.ParameterOptions.Password(childComplexity), true
+
 	case "ParameterOptions.sectionHeader":
 		if e.complexity.ParameterOptions.SectionHeader == nil {
 			break
@@ -2419,6 +2427,7 @@ type ParameterOptions {
   metricCategories: [MetricCategory!]
   multiline: Boolean
   labels: Map
+  password: Boolean
 }
 
 type MetricCategory {
@@ -8930,6 +8939,8 @@ func (ec *executionContext) fieldContext_ParameterDefinition_options(ctx context
 				return ec.fieldContext_ParameterOptions_multiline(ctx, field)
 			case "labels":
 				return ec.fieldContext_ParameterOptions_labels(ctx, field)
+			case "password":
+				return ec.fieldContext_ParameterOptions_password(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ParameterOptions", field.Name)
 		},
@@ -9274,6 +9285,47 @@ func (ec *executionContext) fieldContext_ParameterOptions_labels(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Map does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ParameterOptions_password(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterOptions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ParameterOptions_password(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Password, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ParameterOptions_password(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ParameterOptions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -16834,6 +16886,10 @@ func (ec *executionContext) _ParameterOptions(ctx context.Context, sel ast.Selec
 				return innerFunc(ctx)
 
 			})
+		case "password":
+
+			out.Values[i] = ec._ParameterOptions_password(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18439,12 +18495,12 @@ func (ec *executionContext) marshalNAgents2ᚖgithubᚗcomᚋobserviqᚋbindplan
 	return ec._Agents(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAny2interface(ctx context.Context, v interface{}) (any, error) {
+func (ec *executionContext) unmarshalNAny2interface(ctx context.Context, v interface{}) (interface{}, error) {
 	res, err := graphql.UnmarshalAny(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAny2interface(ctx context.Context, sel ast.SelectionSet, v any) graphql.Marshaler {
+func (ec *executionContext) marshalNAny2interface(ctx context.Context, sel ast.SelectionSet, v interface{}) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

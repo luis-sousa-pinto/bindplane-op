@@ -25,6 +25,8 @@ spec:
         - text: Read more
           url: https://grafana.com/docs/grafana-cloud/data-configuration/otlp/send-data-otlp/
       required: true
+      options:
+        password: true
 
     - name: gcp_zone
       label: Zone

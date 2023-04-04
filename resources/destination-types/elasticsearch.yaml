@@ -126,6 +126,8 @@ spec:
       type: string
       default: ""
       advancedConfig: true
+      options:
+        password: true
       required: true
       relevantIf:
         - name: enable_auth
@@ -141,6 +143,8 @@ spec:
       type: string
       default: ""
       advancedConfig: true
+      options:
+        password: true
       relevantIf:
         - name: enable_auth
           operator: equals

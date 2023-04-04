@@ -87,6 +87,8 @@ spec:
         - name: auth_type
           operator: equals
           value: basic
+      options:
+        password: true
 
     - name: sasl_username
       label: Username
@@ -115,6 +117,8 @@ spec:
         - name: auth_type
           operator: equals
           value: sasl
+      options:
+        password: true
 
     - name: sasl_mechanism
       label: Mechanism
@@ -241,6 +245,8 @@ spec:
         - name: kerberos_auth_type
           operator: equals
           value: basic
+      options:
+        password: true
 
     - name: enable_metrics
       label: Enable Metrics

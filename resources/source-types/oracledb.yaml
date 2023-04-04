@@ -57,6 +57,8 @@ spec:
         - name: enable_metrics
           operator: equals
           value: true
+      options:
+        password: true
 
     - name: database_identification
       label: Database Identification

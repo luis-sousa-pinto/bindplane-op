@@ -105,6 +105,8 @@ spec:
         - name: aerospike_enterprise
           operator: equals
           value: true
+      options:
+        password: true
       advancedConfig: true
 
     - name: disable_metrics
