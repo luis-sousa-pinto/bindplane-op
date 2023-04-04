@@ -12,7 +12,7 @@ require (
 	github.com/securego/gosec/v2 v2.15.0
 	github.com/swaggo/swag v1.8.6
 	github.com/uw-labs/lichen v0.1.7
-	github.com/vektra/mockery/v2 v2.21.6
+	github.com/vektra/mockery/v2 v2.23.1
 	honnef.co/go/tools v0.4.2
 )
 
@@ -161,6 +161,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/jsonschema v0.7.0 // indirect
