@@ -27,7 +27,7 @@ spec:
       options:
         gridColumns: 12
       default: []
-    
+
     - name: delimiter
       label: Delimiter
       description: Delimiter character used between the fields of the W3C log line.
@@ -91,6 +91,16 @@ spec:
       default: false
       advancedConfig: true
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      advancedConfig: true
+
   logs:
     receivers: |
       - plugin:
@@ -121,6 +131,7 @@ spec:
             include_file_name_resolved: {{ .include_file_name_resolved_attribute }}
             include_file_path: {{ .include_file_path_attribute }}
             include_file_path_resolved: {{ .include_file_path_resolved_attribute }}
+            parse_to: {{ .parse_to }}
 
     processors: |
       - resourcedetection:

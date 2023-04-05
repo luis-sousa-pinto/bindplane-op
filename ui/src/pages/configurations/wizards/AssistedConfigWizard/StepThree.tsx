@@ -93,6 +93,7 @@ gql`
                 kpi
               }
             }
+            password
           }
         }
         supportedPlatforms

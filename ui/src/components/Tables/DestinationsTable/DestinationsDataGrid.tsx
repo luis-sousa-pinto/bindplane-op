@@ -3,8 +3,8 @@ import {
   DataGrid,
   DataGridProps,
   GridCellParams,
-  GridColumns,
-  GridSelectionModel,
+  GridColDef,
+  GridRowSelectionModel,
   GridValueGetterParams,
 } from "@mui/x-data-grid";
 import { isFunction } from "lodash";
@@ -19,12 +19,12 @@ export enum DestinationsTableField {
 }
 
 interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
-  setSelectionModel?: (names: GridSelectionModel) => void;
+  setSelectionModel?: (names: GridRowSelectionModel) => void;
   onEditDestination: (name: string) => void;
   loading: boolean;
   columnFields?: DestinationsTableField[];
   minHeight?: string;
-  selectionModel?: GridSelectionModel;
+  selectionModel?: GridRowSelectionModel;
   destinationsPage?: boolean;
 }
 
@@ -38,7 +38,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
     destinationsPage,
     ...dataGridProps
   }) => {
-    function renderNameCell(cellParams: GridCellParams<string>): JSX.Element {
+    function renderNameCell(cellParams: GridCellParams<any, string>): JSX.Element {
       if (cellParams.row.kind === "Destination") {
         return (
           <button
@@ -53,7 +53,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
       return renderStringCell(cellParams);
     }
 
-    const columns: GridColumns = (columnFields || []).map((field) => {
+    const columns: GridColDef[] = (columnFields || []).map((field) => {
       switch (field) {
         case DestinationsTableField.NAME:
           return {
@@ -83,7 +83,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
       <DataGrid
         {...dataGridProps}
         checkboxSelection={isFunction(setSelectionModel)}
-        onSelectionModelChange={setSelectionModel}
+        onRowSelectionModelChange={setSelectionModel}
         components={{
           NoRowsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
@@ -92,20 +92,20 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
           ),
         }}
         style={{ minHeight }}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
         getRowId={(row) => `${row.kind}|${row.metadata.name}`}
         columns={columns}
-        selectionModel={selectionModel}
+        rowSelectionModel={selectionModel}
       />
     );
   }
 );
 
-function renderTypeCell(cellParams: GridCellParams<string>): JSX.Element {
+function renderTypeCell(cellParams: GridCellParams<any, string>): JSX.Element {
   return <DestinationTypeCell type={cellParams.value ?? ""} />;
 }
 
-function renderStringCell(cellParams: GridCellParams<string>): JSX.Element {
+function renderStringCell(cellParams: GridCellParams<any, string>): JSX.Element {
   return <>{cellParams.value}</>;
 }
 

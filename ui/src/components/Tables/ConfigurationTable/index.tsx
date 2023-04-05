@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { Button, FormControl, Stack, Typography } from "@mui/material";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { debounce } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -110,8 +110,8 @@ interface ConfigurationTableProps {
   selector?: string;
   initQuery?: string;
   columns?: ConfigurationsTableField[];
-  setSelected: (selected: GridSelectionModel) => void;
-  selected: GridSelectionModel;
+  setSelected: (selected: GridRowSelectionModel) => void;
+  selected: GridRowSelectionModel;
   enableDelete?: boolean;
   minHeight?: string;
   overviewPage?: boolean;

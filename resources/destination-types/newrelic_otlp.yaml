@@ -26,6 +26,8 @@ spec:
       type: string
       required: true
       default: ""
+      options:
+        password: true
 
   logs+metrics+traces:
     exporters: |

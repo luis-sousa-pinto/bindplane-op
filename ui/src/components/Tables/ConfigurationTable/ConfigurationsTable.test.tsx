@@ -6,7 +6,7 @@ import {
 } from "../../../graphql/generated";
 import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 import { render, screen } from "@testing-library/react";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 import { ConfigurationsTable } from ".";
 
@@ -88,7 +88,7 @@ const mocks: MockedResponse<Record<string, any>>[] = [
 
 describe("OverviewConfigurationsTable", () => {
   const Wrapper = () => {
-    const [selected, setSelected] = useState<GridSelectionModel>([]);
+    const [selected, setSelected] = useState<GridRowSelectionModel>([]);
     return (
       <MemoryRouter>
         <MockedProvider mocks={mocks} addTypename={false}>
@@ -123,7 +123,7 @@ describe("OverviewConfigurationsTable", () => {
 
 describe("ConfigurationsTable", () => {
   const Wrapper = () => {
-    const [selected, setSelected] = useState<GridSelectionModel>([]);
+    const [selected, setSelected] = useState<GridRowSelectionModel>([]);
     return (
       <MemoryRouter>
         <MockedProvider mocks={mocks} addTypename={false}>

@@ -2,10 +2,10 @@ import { Stack } from "@mui/material";
 import {
   DataGrid,
   GridCellParams,
-  GridColumns,
-  GridDensityTypes,
+  GridColDef,
+  GridDensity,
   GridRowParams,
-  GridSelectionModel,
+  GridRowSelectionModel,
   GridValueFormatterParams,
   GridValueGetterParams,
 } from "@mui/x-data-grid";
@@ -36,10 +36,10 @@ export enum AgentsTableField {
 }
 
 interface AgentsDataGridProps {
-  onAgentsSelected?: (agentIds: GridSelectionModel) => void;
+  onAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
   isRowSelectable?: (params: GridRowParams<AgentsTableAgent>) => boolean;
   clearSelectionModelFnRef?: React.MutableRefObject<(() => void) | null>;
-  density?: GridDensityTypes;
+  density?: GridDensity;
   loading: boolean;
   minHeight?: string;
   agents?: AgentsTableAgent[];
@@ -58,7 +58,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
   columnFields,
   density,
 }) => {
-  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
 
   useEffect(() => {
     if (clearSelectionModelFnRef == null) {
@@ -69,7 +69,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
     };
   }, [setSelectionModel, clearSelectionModelFnRef]);
 
-  const columns: GridColumns = (columnFields || []).map((field) => {
+  const columns: GridColDef[] = (columnFields || []).map((field) => {
     switch (field) {
       case AgentsTableField.STATUS:
         return {
@@ -131,7 +131,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
     }
   });
 
-  function handleSelect(s: GridSelectionModel) {
+  function handleSelect(s: GridRowSelectionModel) {
     setSelectionModel(s);
 
     isFunction(onAgentsSelected) && onAgentsSelected(s);
@@ -141,8 +141,8 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
     <DataGrid
       checkboxSelection={isFunction(onAgentsSelected)}
       isRowSelectable={isRowSelectable}
-      onSelectionModelChange={handleSelect}
-      selectionModel={selectionModel}
+      onRowSelectionModelChange={handleSelect}
+      rowSelectionModel={selectionModel}
       density={density}
       components={{
         NoRowsOverlay: () => (
@@ -153,14 +153,14 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
       }}
       style={{ minHeight }}
       loading={loading}
-      disableSelectionOnClick
+      disableRowSelectionOnClick
       columns={columns}
       rows={agents ?? []}
     />
   );
 };
 
-function renderConfigurationCell(cellParams: GridCellParams<string>) {
+function renderConfigurationCell(cellParams: GridCellParams<any, string>) {
   const configName = cellParams.value;
   if (configName == null) {
     return <></>;
@@ -185,13 +185,13 @@ function renderNameDataCell(
 }
 
 function renderLabelDataCell(
-  cellParams: GridCellParams<Record<string, string>>
+  cellParams: GridCellParams<any, Record<string, string>>
 ): JSX.Element {
   return renderAgentLabels(cellParams.value);
 }
 
 function renderStatusDataCell(
-  cellParams: GridCellParams<AgentStatus>
+  cellParams: GridCellParams<any, AgentStatus>
 ): JSX.Element {
   return renderAgentStatus(cellParams.value);
 }
@@ -201,7 +201,7 @@ function createMetricRateColumn(
   telemetryType: string,
   width: number,
   agentMetrics?: AgentsTableMetricsSubscription
-): GridColumns[0] {
+): GridColDef[][0] {
   return {
     field,
     width: width,

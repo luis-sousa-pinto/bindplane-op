@@ -63,6 +63,8 @@ spec:
         - name: enable_metrics
           operator: equals
           value: true
+      options:
+        password: true
 
     - name: collection_interval
       label: Collection Interval
@@ -268,6 +270,20 @@ spec:
           operator: equals
           value: true
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+      advancedConfig: true
+
     - name: logs_cert_file
       label: TLS Certificate File
       description: Path to the x509 PEM certificate.
@@ -348,6 +364,7 @@ spec:
             certificate_file: "{{ .logs_cert_file }}"
             key_file: "{{ .logs_key_file }}"
             {{ end }}
+            parse_to: {{ .parse_to }}
       {{ end }}
 
     processors: |

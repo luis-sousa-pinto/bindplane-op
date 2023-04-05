@@ -1,5 +1,5 @@
 import { MockedProvider, MockedResponse } from "@apollo/client/testing";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { render, screen, waitFor } from "@testing-library/react";
 import { GetDestinationTypeDisplayInfoDocument } from "../../../graphql/generated";
 import { resourcesFromSelected } from "../../../pages/destinations/DestinationsPage";
@@ -77,7 +77,7 @@ describe("DestinationsDataGrid", () => {
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           checkboxSelection
           onEditDestination={() => {}}
         />
@@ -92,7 +92,7 @@ describe("DestinationsDataGrid", () => {
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           checkboxSelection
           onEditDestination={() => {}}
         />
@@ -103,8 +103,8 @@ describe("DestinationsDataGrid", () => {
     screen.getByText(Destination2.metadata.name);
   });
 
-  it("uses the expected GridSelectionModel", () => {
-    function onDestinationsSelected(m: GridSelectionModel) {
+  it("uses the expected GridRowSelectionModel", () => {
+    function onDestinationsSelected(m: GridRowSelectionModel) {
       expect(m).toEqual([
         `Destination|${Destination1.metadata.name}`,
         `Destination|${Destination2.metadata.name}`,
@@ -116,7 +116,7 @@ describe("DestinationsDataGrid", () => {
           loading={false}
           rows={destinationData}
           setSelectionModel={onDestinationsSelected}
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           checkboxSelection
           onEditDestination={() => {}}
         />
@@ -137,7 +137,7 @@ describe("DestinationsDataGrid", () => {
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           checkboxSelection
           onEditDestination={onEditDestination}
         />

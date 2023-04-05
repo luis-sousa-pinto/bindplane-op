@@ -36,6 +36,8 @@ spec:
       type: string
       required: true
       default: ""
+      options:
+        password: true
 
     - name: collection_interval
       label: Collection Interval
@@ -194,7 +196,6 @@ spec:
           operator: equals
           value: true
       advancedConfig: true
-
 
   metrics:
     receivers: |

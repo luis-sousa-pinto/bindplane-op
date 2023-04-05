@@ -1,6 +1,13 @@
-import { FormHelperText, Stack, TextField } from "@mui/material";
+import {
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+} from "@mui/material";
 import { isEmpty, isFunction } from "lodash";
-import { ChangeEvent, memo } from "react";
+import { ChangeEvent, memo, useState } from "react";
+import { EyeIcon, EyeOffIcon } from "../../Icons";
 import { validateStringField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
 import { ParamInputProps } from "./ParameterInput";
@@ -11,6 +18,13 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
   onValueChange,
 }) => {
   const { errors, setError, touched, touch } = useValidationContext();
+  const [hideField, setHideField] = useState(
+    definition.options.password === true
+  );
+
+  if (definition.name === "password") {
+    console.log({ definition });
+  }
 
   function handleValueChange(e: ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
@@ -29,6 +43,18 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
   return (
     <TextField
       multiline={definition.options.multiline ?? undefined}
+      type={hideField ? "password" : "text"}
+      InputProps={{
+        endAdornment: definition.options.password && (
+          <HideFieldToggle
+            hideField={hideField}
+            onToggle={() => {
+              setHideField(!hideField);
+            }}
+          />
+        ),
+        autoComplete: definition.options.password ? "new-password" : "off",
+      }}
       value={value}
       onChange={handleValueChange}
       onBlur={() => touch(definition.name)}
@@ -72,6 +98,23 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
       autoCapitalize="off"
       spellCheck="false"
     />
+  );
+};
+
+interface HideFieldToggleProps {
+  hideField: boolean;
+  onToggle: () => void;
+}
+const HideFieldToggle: React.FC<HideFieldToggleProps> = ({
+  hideField,
+  onToggle,
+}) => {
+  return (
+    <InputAdornment position="end">
+      <IconButton onClick={onToggle}>
+        {hideField ? <EyeIcon /> : <EyeOffIcon />}
+      </IconButton>
+    </InputAdornment>
   );
 };
 

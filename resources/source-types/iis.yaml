@@ -108,6 +108,20 @@ spec:
           operator: equals
           value: true
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      advancedConfig: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
   metrics:
     receivers: |
       {{ if .enable_metrics }}
@@ -145,6 +159,7 @@ spec:
               {{ end }}
             {{ end }}
             timezone: {{ .timezone }}
+            parse_to: {{ .parse_to }}
       {{ end }}
 
     processors: |

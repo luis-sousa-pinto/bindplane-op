@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 permissions:
   # Make sure package write permission is always enabled, even
@@ -17,8 +18,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Cache all Go and Node tools, dependencies, etc.
-  # The cached artifacts will be used by all dependant jobs.
   setup-environment:
     runs-on: ubuntu-latest
     steps:
@@ -27,21 +26,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Setup Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - name: Cache Go
-        id: module-cache
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/pkg/mod
-          key: go-pkg-mod-${{ runner.os }}-${{ hashFiles('**/go.mod', '**/go.sum') }}
       - name: Install dependencies
-        if: steps.module-cache.outputs.cache-hit != 'true'
         run: make gomoddownload
       - name: Cache Tools
         id: tool-cache
@@ -98,19 +90,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - name: Cache Go
-        id: module-cache
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/pkg/mod
-          key: go-pkg-mod-${{ runner.os }}-${{ hashFiles('**/go.mod', '**/go.sum') }}
       - name: Prep UI Dir
         run: make prep
       - name: Vet
@@ -127,7 +113,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
@@ -154,7 +140,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
@@ -181,7 +167,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
@@ -239,19 +225,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - name: Cache Go
-        id: module-cache
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/pkg/mod
-          key: go-pkg-mod-${{ runner.os }}-${{ hashFiles('**/go.mod', '**/go.sum') }}
       - run: make test
 
   # Run Goreleaser to build binaries, packages, and container images.
@@ -265,19 +245,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - name: Cache Go
-        id: module-cache
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/pkg/mod
-          key: go-pkg-mod-${{ runner.os }}-${{ hashFiles('**/go.mod', '**/go.sum') }}
       - name: Cache Tools
         id: tool-cache
         uses: actions/cache@v3
@@ -327,6 +301,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to GAR
+        uses: docker/login-action@v2
+        with:
+          registry: us-central1-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.ORG_OBSERVIQ_PUBLIC_GCR_JSON_KEY }}
+
       # Goreleaser uses a 7 character short commit hash for the `ShortCommit`
       # template variable. This conflicts with ArgoCD's 8 character hash.
       # To get around this, add the short commit tag here instead of within
@@ -338,6 +319,14 @@ jobs:
           docker tag observiq/bindplane-arm64:latest observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
           docker tag ghcr.io/observiq/bindplane-amd64:latest ghcr.io/observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
           docker tag ghcr.io/observiq/bindplane-arm64:latest ghcr.io/observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag \
+            us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest \
+            us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag \
+            us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest \
+            us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
+          docker tag observiq/bindplane-amd64:latest-ubi8 observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}-ubi8
+          docker tag observiq/bindplane-arm64:latest-ubi8 observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}-ubi8
 
       - name: Push Container Images to Dockerhub
         run: |
@@ -356,6 +345,15 @@ jobs:
                   "ghcr.io/observiq/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}" \
                   "ghcr.io/observiq/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}"
           docker manifest push "ghcr.io/observiq/bindplane:${{ env.GITHUB_SHA_SHORT }}"
+
+      - name: Push Container Images to Google Artifact Registry
+        run: |
+          docker push us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}
+          docker push us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}
+          docker manifest create "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:${{ env.GITHUB_SHA_SHORT }}" \
+                  "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:${{ env.GITHUB_SHA_SHORT }}" \
+                  "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:${{ env.GITHUB_SHA_SHORT }}"
+          docker manifest push "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane:${{ env.GITHUB_SHA_SHORT }}"
 
       # Scan binaries for invalid 3rd party licenses
       - name: Scan Binaries
@@ -402,19 +400,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Go
-        uses: actions/setup-go@v3.5.0
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: "1.20"
       - name: Setup Go Environment
         run: |
           echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - name: Cache Go
-        id: module-cache
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/pkg/mod
-          key: go-pkg-mod-${{ runner.os }}-${{ hashFiles('**/go.mod', '**/go.sum') }}
       - name: Cache Tools
         id: tool-cache
         uses: actions/cache@v3

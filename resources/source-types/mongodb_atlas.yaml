@@ -27,6 +27,8 @@ spec:
       type: string
       default: ""
       required: true
+      options:
+        password: true
 
     # Metrics
     #

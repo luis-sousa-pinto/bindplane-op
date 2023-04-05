@@ -17,6 +17,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   gridColumns: null,
   metricCategories: null,
   labels: null,
+  password: null,
 };
 
 // This file contains dummy resources used for testing the ResourceConfigForm
@@ -48,6 +49,19 @@ export const stringDefRequired: ParameterDefinition = {
   type: ParameterType.String,
 
   default: "default-required-value",
+};
+
+export const stringPasswordDef: ParameterDefinition = {
+  name: "string_password_name",
+  label: "String Password Input",
+  description: "Here is the description.",
+  required: false,
+  options: {
+    ...DEFAULT_PARAMETER_OPTIONS,
+    password: true,
+  },
+
+  type: ParameterType.String,
 };
 
 export const enumDef: ParameterDefinition = {

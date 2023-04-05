@@ -1,5 +1,4 @@
-import { GridSelectionModel } from "@mui/x-data-grid";
-
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { createContext, useContext, useState } from "react";
 import {
   CONFIGS_PARAM_NAME,
@@ -16,10 +15,10 @@ export interface OverviewPageContextValue {
   setHoveredNodeAndEdgeSet: React.Dispatch<React.SetStateAction<string[]>>;
   selectedTelemetry: string | null | undefined;
   setSelectedTelemetry: (t: string) => void;
-  selectedConfigs: GridSelectionModel;
-  setSelectedConfigs: (d: GridSelectionModel) => void;
-  selectedDestinations: GridSelectionModel;
-  setSelectedDestinations: (d: GridSelectionModel) => void;
+  selectedConfigs: GridRowSelectionModel;
+  setSelectedConfigs: (d: GridRowSelectionModel) => void;
+  selectedDestinations: GridRowSelectionModel;
+  setSelectedDestinations: (d: GridRowSelectionModel) => void;
   selectedPeriod: string | null | undefined;
   setPeriod: (p: string) => void;
   editingDestination: string | null;
@@ -69,9 +68,9 @@ export const OverviewPageProvider: React.FC = ({ children }) => {
   };
 
   const [selectedConfigs, setSelectedConfigs] =
-    useQueryParamWrapper<GridSelectionModel>(CONFIGS_PARAM_NAME, []);
+    useQueryParamWrapper<GridRowSelectionModel>(CONFIGS_PARAM_NAME, []);
   const [selectedDestinations, setSelectedDestinations] =
-    useQueryParamWrapper<GridSelectionModel>(DESTINATIONS_PARAM_NAME, []);
+    useQueryParamWrapper<GridRowSelectionModel>(DESTINATIONS_PARAM_NAME, []);
   const [loadTop, setLoadTop] = useQueryParamWrapper<boolean>("loadTop", true);
 
   const [editingDestination, setEditingDestination] =

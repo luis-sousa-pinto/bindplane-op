@@ -1,5 +1,5 @@
 import { Button, Typography } from "@mui/material";
-import { GridSelectionModel } from "@mui/x-data-grid";
+import { GridRowSelectionModel } from "@mui/x-data-grid";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CardContainer } from "../../components/CardContainer";
@@ -17,18 +17,18 @@ import { upgradeAgents } from "../../utils/rest/upgrade-agent";
 import mixins from "../../styles/mixins.module.scss";
 
 export const AgentsPageContent: React.FC = () => {
-  const [updatable, setUpdatable] = useState<GridSelectionModel>([]);
-  const [deletable, setDeletable] = useState<GridSelectionModel>([]);
+  const [updatable, setUpdatable] = useState<GridRowSelectionModel>([]);
+  const [deletable, setDeletable] = useState<GridRowSelectionModel>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const clearSelectionModelFnRef = useRef<(() => void) | null>(null);
 
   const { enqueueSnackbar } = useSnackbar();
 
-  function handleSelectUpdatable(agentIds: GridSelectionModel) {
+  function handleSelectUpdatable(agentIds: GridRowSelectionModel) {
     setUpdatable(agentIds);
   }
-  function handleSelectDeletable(agentIds: GridSelectionModel) {
+  function handleSelectDeletable(agentIds: GridRowSelectionModel) {
     setDeletable(agentIds);
   }
 

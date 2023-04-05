@@ -63,7 +63,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
     } catch (err) {
       console.error("Failed to apply new configuration", err);
       snackbar.enqueueSnackbar("Failed to change configuration.", {
-        color: "error",
+        variant: "error",
         autoHideDuration: 5000,
       });
     }
@@ -85,7 +85,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
       setEditing(false);
       console.error("Failed to remove configuration", err);
       snackbar.enqueueSnackbar("Failed to change configuration.", {
-        color: "error",
+        variant: "error",
         autoHideDuration: 5000,
       });
     }

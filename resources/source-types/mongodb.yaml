@@ -92,6 +92,8 @@ spec:
           operator: equals
           value: true
       advancedConfig: true
+      options:
+        password: true
 
     - name: collection_interval
       label: Collection Interval
@@ -189,6 +191,20 @@ spec:
           value: true
       advancedConfig: true
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+      advancedConfig: true
+
     - name: start_at
       label: Start At
       description: Start reading logs from 'beginning' or 'end'.
@@ -252,6 +268,7 @@ spec:
             - '{{ $fp }}'
             {{end}}
             start_at: {{ .start_at }}
+            parse_to: {{ .parse_to }}
       {{ end }}
 
     processors: |

@@ -14,7 +14,7 @@
 
 // package exporterHelper provides helper functions to use the Exporter Helper fields in
 // BindPlane OP DestinationTypes.
-package exporterHelper
+package exporterhelper
 
 import (
 	"testing"

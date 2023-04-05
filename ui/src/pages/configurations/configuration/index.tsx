@@ -7,7 +7,6 @@ import {
   GetConfigurationQuery,
   useGetConfigurationQuery,
 } from "../../../graphql/generated";
-import { GridDensityTypes } from "@mui/x-data-grid";
 import { AgentsTable } from "../../../components/Tables/AgentsTable";
 import { AgentsTableField } from "../../../components/Tables/AgentsTable/AgentsDataGrid";
 import { PlusCircleIcon } from "../../../components/Icons";
@@ -258,7 +257,7 @@ const ConfigPageContent: React.FC = () => {
               AgentsTableField.STATUS,
               AgentsTableField.OPERATING_SYSTEM,
             ]}
-            density={GridDensityTypes.Compact}
+            density="standard"
             minHeight="300px"
           />
         </CardContainer>

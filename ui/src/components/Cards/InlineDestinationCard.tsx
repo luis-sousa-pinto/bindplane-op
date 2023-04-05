@@ -65,6 +65,7 @@ gql`
                 kpi
               }
             }
+            password
           }
         }
       }
@@ -206,7 +207,12 @@ export const InlineDestinationCard: React.FC<{
                 {displayName}
               </Typography>
               {destination?.disabled && (
-                <Typography component="div" fontWeight={400} fontSize={14} variant="overline">
+                <Typography
+                  component="div"
+                  fontWeight={400}
+                  fontSize={14}
+                  variant="overline"
+                >
                   Paused
                 </Typography>
               )}

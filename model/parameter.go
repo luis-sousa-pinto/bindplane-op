@@ -101,6 +101,10 @@ type ParameterOptions struct {
 	// Labels indicate labels that can be used when rendering the parameter. This was added for the "map" parameter type
 	// to make the "key" and "value" labels configurable.
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
+
+	// Password indicates the string field is for a password and will be hidden by the UI.
+	// Only applies to string parameters.
+	Password bool `json:"password,omitempty" yaml:"password,omitempty"`
 }
 
 // MetricCategory consists of the label, optional column, and metrics for a metricsType Parameter
@@ -288,6 +292,15 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 			stanzaerrors.NewError(
 				fmt.Sprintf("multiline is true for parameter of type `%s`", p.Type),
 				"remove 'multiline' field or change type to 'string`",
+			),
+		)
+	}
+
+	if p.Options.Password && p.Type != "string" {
+		errs.Add(
+			stanzaerrors.NewError(
+				fmt.Sprintf("password is true for parameter of type `%s`", p.Type),
+				"remove 'password' field or change type to 'string`",
 			),
 		)
 	}

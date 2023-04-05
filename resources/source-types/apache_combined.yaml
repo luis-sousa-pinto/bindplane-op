@@ -20,6 +20,16 @@ spec:
         gridColumns: 12
       default: ["/var/log/apache_combined.log"]
 
+    - name: parse_to
+      label: Parse To
+      description: Parse structured log parts to either body or attributes.
+      type: enum
+      validValues:
+        - body
+        - attributes
+      default: body
+      advancedConfig: true
+
     - name: start_at
       label: Start At
       description: Start reading logs from 'beginning' or 'end'.
@@ -40,3 +50,4 @@ spec:
               {{ range $fp := .file_path }}
               - '{{ $fp }}'
               {{ end }}
+            parse_to: {{ .parse_to }}

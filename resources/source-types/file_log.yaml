@@ -88,6 +88,124 @@ spec:
           operator: equals
           value: specify line end
 
+    - name: parse_timestamp
+      label: Parse Timestamp
+      description: Whether to parse the timestamp from the log entry.
+      type: bool
+      default: false
+      relevantIf:
+        - name: parse_format
+          operator: notEquals
+          value: none
+      options:
+        gridColumns: 12
+
+    - name: timestamp_field
+      label: Timestamp Field
+      description: The field containing the timestamp in the log entry.
+      type: string
+      default: timestamp
+      required: true
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+
+    - name: parse_timestamp_format
+      label: Timestamp Format
+      description: The format of the timestamp in the log entry. Choose a common format, or specify a custom format.
+      type: enum
+      default: ISO8601
+      validValues:
+        - ISO8601
+        - RFC3339
+        - Epoch
+        - Manual
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+
+    - name: epoch_timestamp_format
+      label: Epoch Layout
+      description: The layout of the epoch-based timestamp.
+      type: enum
+      required: true
+      validValues:
+        - s
+        - ms
+        - us
+        - ns
+        - s.ms
+        - s.us
+        - s.ns
+      default: s
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_timestamp_format
+          operator: equals
+          value: Epoch
+        - name: parse_format
+          operator: notEquals
+          value: none
+      documentation:
+        - text: Supported Epoch Layouts
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/stanza/docs/types/timestamp.md#parse-a-timestamp-using-an-epoch-layout
+
+    - name: manual_timestamp_format
+      label: Timestamp Layout
+      description: The strptime layout of the timestamp.
+      type: string
+      required: true
+      default: '%Y-%m-%dT%H:%M:%S.%f%z'
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_timestamp_format
+          operator: equals
+          value: Manual
+        - name: parse_format
+          operator: notEquals
+          value: none
+      documentation:
+        - text: Supported Layout Directives
+          url: https://github.com/observiq/ctimefmt/blob/3e07deba22cf7a753f197ef33892023052f26614/ctimefmt.go#L63
+
+    - name: parse_severity
+      label: Parse Severity
+      description: Whether to parse severity from the log entry.
+      type: bool
+      default: false
+      relevantIf:
+        - name: parse_format
+          operator: notEquals
+          value: none
+      options:
+        gridColumns: 12
+
+    - name: severity_field
+      label: Severity Field
+      description: The field containing the severity in the log entry.
+      type: string
+      default: severity
+      required: true
+      relevantIf:
+        - name: parse_severity
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+
     - name: include_file_name_attribute
       label: Include File Name Attribute
       description: Whether to add the file name as the attribute "log.file.name".
@@ -210,11 +328,41 @@ spec:
             {{ if eq .parse_format "json" }}
             - type: json_parser
               parse_to: {{ .parse_to }}
+            {{ if .parse_timestamp }}
+              timestamp:
+                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
+                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
+                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
+                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
+                {{ if eq .parse_timestamp_format "Epoch" }}
+                layout_type: epoch
+                layout: {{ .epoch_timestamp_format }}
+                {{ end }}
+            {{ end }}
+            {{ if .parse_severity }}
+              severity:
+                parse_from: {{ .parse_to }}.{{ .severity_field }}
+            {{ end }}
             {{ end }}
             {{ if eq .parse_format "regex" }}
             - type: regex_parser
               regex: '{{ .regex_pattern }}'
               parse_to: {{ .parse_to }}
+            {{ if .parse_timestamp }}
+              timestamp:
+                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
+                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
+                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
+                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
+                {{ if eq .parse_timestamp_format "Epoch" }}
+                layout_type: epoch
+                layout: {{ .epoch_timestamp_format }}
+                {{ end }}
+            {{ end }}
+            {{ if .parse_severity }}
+              severity:
+                parse_from: {{ .parse_to }}.{{ .severity_field }}
+            {{ end }}
             {{ end }}
             - type: add
               field: attributes.log_type

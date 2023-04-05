@@ -4,7 +4,7 @@ metadata:
   name: grafana_cloud
   displayName: Grafana Cloud
   icon: /icons/destinations/grafana-cloud.svg
-  description: Send metrics to Grafana Cloud.
+  description: Send metrics, traces, and logs to Grafana Cloud.
 spec:
   parameters:
     - name: metric_instance_id
@@ -13,7 +13,7 @@ spec:
       default: ""
       documentation:
         - text: Read more
-          url: https://grafana.com/docs/grafana-cloud/data-configuration/metrics/metrics-prometheus/#sending-data-from-prometheus
+          url: https://grafana.com/docs/grafana-cloud/data-configuration/otlp/send-data-otlp/
       required: true
 
     - name: api_key
@@ -23,56 +23,38 @@ spec:
       default: ""
       documentation:
         - text: Read more
-          url: https://grafana.com/docs/grafana-cloud/data-configuration/metrics/metrics-prometheus/#sending-data-from-prometheus
+          url: https://grafana.com/docs/grafana-cloud/data-configuration/otlp/send-data-otlp/
       required: true
-
-    - name: endpoint
-      label: Endpoint
-      description: The target URL to send metrics to (e.g. https://prometheus-us-central1.grafana.net/api/prom/push).
-      type: string
-      default: ""
-      documentation:
-        - text: Read more
-          url: https://grafana.com/docs/grafana-cloud/data-configuration/metrics/metrics-prometheus/#sending-data-from-prometheus
-      required: true
-
-    # Advanced Options
-    - name: namespace
-      label: Namespace
-      description: When set, exports metrics under the provided value.
-      type: string
-      advancedConfig: true
-      required: false
-      default: ""
-
-    - name: external_labels
-      label: External Labels
-      description: Label names and values to be attached as metric attributes.
-      type: map
-      default: {}
-      advancedConfig: true
       options:
-        gridColumns: 12
+        password: true
 
-  metrics:
+    - name: gcp_zone
+      label: Zone
+      description: The GCP zone associated with your Grafana Cloud instance.
+      type: enum
+      default: prod-us-central-0
+      required: true
+      options:
+          creatable: true
+      validValues: 
+          - prod-au-southeast-0
+          - prod-eu-west-0
+          - prod-sa-east-0
+          - prod-ap-south-0
+          - prod-ap-southeast-0
+          - prod-gb-south-0
+          - prod-us-central-0
+
+  logs+metrics+traces:
+    extensions: |
+      - basicauth:
+          client_auth:
+            username: {{ .metric_instance_id }}
+            password: {{ .api_key }}
     exporters: |
-      - prometheusremotewrite:
-          endpoint: "{{ .endpoint }}"
-          headers:
-            Authorization: "Basic {{ printf "%s:%s" .metric_instance_id .api_key | b64enc }}"
-                    
-          {{ if ne .namespace "" }}
-          namespace: {{ .namespace }}
-          {{ end }}
-
-          {{ $length := len .external_labels }} {{ if ne $length 0 }}
-          external_labels:
-            {{ range $k, $v := .external_labels }}
-            {{ $k }}: {{ $v }}
-            {{ end }}
-          {{ end }}
-
-          resource_to_telemetry_conversion:
-            enabled: true
+      - otlphttp:
+          endpoint: https://otlp-gateway-{{ .gcp_zone}}.grafana.net/otlp
+          auth:
+            authenticator: {{ bpComponentID "basicauth" }}
     processors: |
       - batch:
