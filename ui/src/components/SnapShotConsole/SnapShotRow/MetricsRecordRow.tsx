@@ -23,6 +23,9 @@ export const MetricsRecordRow: React.FC<MetricsRecordRowProps> = ({
     [message]
   );
 
+  // value could be an object for type Summary metrics
+  const stringifiedValue = JSON.stringify(message.value);
+
   return (
     <Card classes={{ root: styles.card }}>
       <RowSummary
@@ -39,7 +42,7 @@ export const MetricsRecordRow: React.FC<MetricsRecordRowProps> = ({
             overflow={"hidden"}
             textOverflow="ellipsis"
           >
-            {message.value} {message.unit}
+            {stringifiedValue} {message.unit}
           </Typography>
         </Stack>
       </RowSummary>
@@ -57,7 +60,7 @@ export const MetricsRecordRow: React.FC<MetricsRecordRowProps> = ({
           </TableRow>
           <TableRow>
             <CellLabel>value</CellLabel>
-            <CellValue>{message.value}</CellValue>
+            <CellValue>{stringifiedValue}</CellValue>
           </TableRow>
           <TableRow>
             <CellLabel>type</CellLabel>
