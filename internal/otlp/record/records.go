@@ -178,11 +178,11 @@ func getDataPointValue(point pmetric.NumberDataPoint) interface{} {
 }
 
 // getSummaryPointValue gets the value of a summary point
-func getSummaryPointValue(point pmetric.SummaryDataPoint) map[float64]interface{} {
-	value := make(map[float64]interface{})
+func getSummaryPointValue(point pmetric.SummaryDataPoint) map[string]interface{} {
+	value := make(map[string]interface{})
 	for i := 0; i < point.QuantileValues().Len(); i++ {
 		q := point.QuantileValues().At(i)
-		value[q.Quantile()] = q.Value()
+		value[fmt.Sprintf("%v", q.Quantile())] = q.Value()
 	}
 	return value
 }
