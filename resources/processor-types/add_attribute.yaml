@@ -2,8 +2,8 @@ apiVersion: bindplane.observiq.com/v1
 kind: ProcessorType
 metadata:
   name: add_attribute
-  displayName: Add Log Record Attribute
-  description: Insert, update, or upsert log record attributes.
+  displayName: Add an Attribute to Telemetry
+  description: Insert, update, or upsert telemetry attributes.
 spec:
   version: 0.0.1
   parameters:
@@ -24,7 +24,7 @@ spec:
       options:
         gridColumns: 12
 
-  logs:
+  logs+metrics+traces:
     processors: |
       - attributes:
           actions:
