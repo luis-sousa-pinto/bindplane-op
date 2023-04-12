@@ -6,7 +6,7 @@ metadata:
   icon: /icons/sources/mongodb.svg
   description: Collect metrics, logs, and alert events from MongoDB Atlas.
 spec:
-  version: 0.0.1
+  version: 0.0.2
   supported_platforms:
     - macos
     - linux
@@ -40,9 +40,9 @@ spec:
 
     - name: collection_interval
       label: Collection Interval
-      description: How often (seconds) to scrape for metrics.
+      description: How often (minutes) to scrape for metrics.
       type: int
-      default: 60
+      default: 3
       relevantIf:
         - name: enable_metrics
           operator: equals
@@ -437,7 +437,7 @@ spec:
       - mongodbatlas/metrics:
           public_key: {{ .public_key }}
           private_key: {{ .private_key }}
-          collection_interval: "{{ .collection_interval }}s"
+          collection_interval: "{{ .collection_interval }}m"
           granularity: {{ .granularity }}
           metrics:
             {{ range $m := .disable_metrics }}
