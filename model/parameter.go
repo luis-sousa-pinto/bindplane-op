@@ -179,7 +179,6 @@ func (p ParameterDefinition) validateSpecialParameters(kind Kind, errs validatio
 					Label:          "Collection Interval",
 					Description:    "How often (seconds) to scrape for metrics.",
 					Type:           "int",
-					Default:        60,
 					AdvancedConfig: true,
 				})
 			}
