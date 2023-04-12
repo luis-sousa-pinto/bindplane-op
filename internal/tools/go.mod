@@ -12,7 +12,7 @@ require (
 	github.com/securego/gosec/v2 v2.15.0
 	github.com/swaggo/swag v1.8.6
 	github.com/uw-labs/lichen v0.1.7
-	github.com/vektra/mockery/v2 v2.23.1
+	github.com/vektra/mockery/v2 v2.24.0
 	honnef.co/go/tools v0.4.2
 )
 
