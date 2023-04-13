@@ -128,6 +128,9 @@ type Agent struct {
 	// SecretKey is provided by the agent to authenticate
 	SecretKey string `json:"-" yaml:"-"`
 
+	// TLS from the agent's manager.yaml
+	TLS *ManagerTLS `json:"tls,omitempty" yaml:"tls,omitempty"`
+
 	// Upgrade stores information about an agent upgrade
 	Upgrade *AgentUpgrade `json:"upgrade,omitempty" yaml:"upgrade,omitempty"`
 
@@ -143,6 +146,14 @@ type Agent struct {
 	// used by the agent management protocol
 	Protocol string      `json:"protocol,omitempty" yaml:"protocol,omitempty"`
 	State    interface{} `json:"state,omitempty" yaml:"state,omitempty"`
+}
+
+// ManagerTLS are the TLS settings for the agent when connecting to BPOP
+type ManagerTLS struct {
+	InsecureSkipVerify bool    `json:"insecure_skip_verify,omitempty" yaml:"insecure_skip_verify,omitempty"`
+	CAFile             *string `json:"ca_file,omitempty" yaml:"ca_file,omitempty"`
+	CertFile           *string `json:"cert_file,omitempty" yaml:"cert_file,omitempty"`
+	KeyFile            *string `json:"key_file,omitempty" yaml:"key_file,omitempty"`
 }
 
 var _ search.Indexed = (*Agent)(nil)

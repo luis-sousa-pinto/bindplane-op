@@ -55,6 +55,18 @@ func (s *effectiveConfigSyncer) update(_ context.Context, _ *zap.Logger, state *
 		return fmt.Errorf("unable to parse the current agent configuration: %w", err)
 	}
 
+	if agentConfiguration.Manager != nil && agentConfiguration.Manager.TLS != nil {
+		// Synchronize TLS settings
+
+		managerTLS := agentConfiguration.Manager.TLS
+		agent.TLS = &model.ManagerTLS{
+			InsecureSkipVerify: managerTLS.InsecureSkipVerify,
+			CAFile:             managerTLS.CAFile,
+			CertFile:           managerTLS.CertFile,
+			KeyFile:            managerTLS.KeyFile,
+		}
+	}
+
 	// save the entire configuration so we have it to report
 	agent.Configuration = agentConfiguration
 

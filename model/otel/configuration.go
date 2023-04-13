@@ -113,20 +113,30 @@ type RenderContext struct {
 	IncludeMeasurements         bool
 	IncludeRouteReceiver        bool
 	AgentID                     string
+	TLS                         *MeasurementsTLS
 	ConfigurationName           string
 	BindPlaneURL                string
 	BindPlaneInsecureSkipVerify bool
 	measurementProcessors       map[ComponentID]struct{}
 }
 
+// MeasurementsTLS are the TLS setting for measurements reporting
+type MeasurementsTLS struct {
+	InsecureSkipVerify bool
+	CertFile           *string
+	KeyFile            *string
+	CAFile             *string
+}
+
 // NewRenderContext creates a new render context used to render configurations
-func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool) *RenderContext {
+func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool, tls *MeasurementsTLS) *RenderContext {
 	return &RenderContext{
 		AgentID:                     agentID,
 		ConfigurationName:           configurationName,
 		BindPlaneURL:                bindplaneURL,
 		BindPlaneInsecureSkipVerify: bindplaneInsecureSkipVerify,
 		measurementProcessors:       map[ComponentID]struct{}{},
+		TLS:                         tls,
 	}
 }
 
@@ -376,6 +386,22 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 		return
 	}
 
+	var tls map[string]any
+	if rc.TLS != nil {
+		// Use TLS options from the agent's manager.yaml.
+		// We allow BindPlaneInsecureSkipVerify to override the manager.yaml's InsecureSkipVerify.
+		tls = map[string]any{
+			"insecure_skip_verify": rc.TLS.InsecureSkipVerify || rc.BindPlaneInsecureSkipVerify,
+			"cert_file":            rc.TLS.CertFile,
+			"key_file":             rc.TLS.KeyFile,
+			"ca_file":              rc.TLS.CAFile,
+		}
+	} else if rc.BindPlaneInsecureSkipVerify {
+		tls = map[string]any{
+			"insecure_skip_verify": true,
+		}
+	}
+
 	endpoint := fmt.Sprintf("%s/v1/otlphttp", rc.BindPlaneURL)
 	otlphttp := map[string]any{
 		"endpoint": endpoint,
@@ -395,10 +421,9 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 			"queue_size":    60,
 		},
 	}
-	if strings.HasPrefix(endpoint, "https") && rc.BindPlaneInsecureSkipVerify {
-		otlphttp["tls"] = map[string]any{
-			"insecure_skip_verify": true,
-		}
+
+	if tls != nil {
+		otlphttp["tls"] = tls
 	}
 
 	parts := Partial{
