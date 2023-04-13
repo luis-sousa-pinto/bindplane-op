@@ -15,10 +15,10 @@
 package opamp
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/open-telemetry/opamp-go/protobufs"
 	"github.com/stretchr/testify/require"
@@ -91,11 +91,11 @@ func TestSerializeState(t *testing.T) {
 				State: encodeState(test.state),
 			}
 			// simulate storage with serialization and deserialization
-			data, err := json.Marshal(agentBefore)
+			data, err := jsoniter.Marshal(agentBefore)
 			require.NoError(t, err)
 
 			agentAfter := &model.Agent{}
-			err = json.Unmarshal(data, agentAfter)
+			err = jsoniter.Unmarshal(data, agentAfter)
 			require.NoError(t, err)
 
 			actual, err := decodeState(agentAfter.State)

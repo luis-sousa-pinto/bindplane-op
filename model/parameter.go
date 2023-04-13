@@ -15,7 +15,6 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"go/token"
@@ -23,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/mitchellh/mapstructure"
 	"github.com/observiq/bindplane-op/model/validation"
 	stanzaerrors "github.com/observiq/stanza/errors"
@@ -472,7 +472,7 @@ func (p ParameterDefinition) validateIntValue(fieldType parameterFieldType, valu
 	} else if stringValue, ok := value.(string); ok {
 		_, err := strconv.Atoi(stringValue)
 		isIntValue = err == nil
-	} else if jsonNumberValue, ok := value.(json.Number); ok {
+	} else if jsonNumberValue, ok := value.(jsoniter.Number); ok {
 		_, err := jsonNumberValue.Int64()
 		isIntValue = err == nil
 	}

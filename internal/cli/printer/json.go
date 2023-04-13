@@ -15,11 +15,11 @@
 package printer
 
 import (
-	"encoding/json"
 	"io"
 
 	"go.uber.org/zap"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/model"
 )
 
@@ -57,7 +57,7 @@ func (jp *JSONPrinter) PrintResources(list []model.Printable) {
 }
 
 func (jp *JSONPrinter) printIndentedJSONLine(resource interface{}, resourceName string) {
-	val, err := json.MarshalIndent(resource, "", "  ")
+	val, err := jsoniter.MarshalIndent(resource, "", "  ")
 	if err != nil {
 		jp.logger.Error("could not marshal resource as json", zap.String("resource", resourceName))
 		return

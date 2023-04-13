@@ -15,10 +15,10 @@
 package model
 
 import (
-	"encoding/json"
 	"strconv"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/model/validation"
 	"github.com/stretchr/testify/require"
 )
@@ -341,22 +341,22 @@ func TestValidateValue(t *testing.T) {
 			"test",
 		},
 		{
-			"Valid json.Number",
+			"Valid jsoniter.Number",
 			false,
 			ParameterDefinition{
 				Type:    "int",
 				Default: 5,
 			},
-			json.Number(strconv.FormatInt(60, 10)),
+			jsoniter.Number(strconv.FormatInt(60, 10)),
 		},
 		{
-			"Invalid json.Number",
+			"Invalid jsoniter.Number",
 			true,
 			ParameterDefinition{
 				Type:    "int",
 				Default: 5,
 			},
-			json.Number(strconv.FormatFloat(60.104824, 'e', -1, 64)),
+			jsoniter.Number(strconv.FormatFloat(60.104824, 'e', -1, 64)),
 		},
 		{
 			"ValidBool",

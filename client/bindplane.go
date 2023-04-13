@@ -18,7 +18,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -511,7 +510,7 @@ func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 		return nil, fmt.Errorf("%s", dr.Errors[0])
 	}
 
-	err = json.Unmarshal(resp.Body(), dr)
+	err = jsoniter.Unmarshal(resp.Body(), dr)
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +559,7 @@ func (c *bindplaneClient) AgentUpgrade(_ context.Context, id string, version str
 	// look for errors
 	if resp.StatusCode() != http.StatusNoContent {
 		errResponse := &model.ErrorResponse{}
-		err = json.Unmarshal(resp.Body(), errResponse)
+		err = jsoniter.Unmarshal(resp.Body(), errResponse)
 		if err != nil {
 			return fmt.Errorf("unable to parse api response: %w", err)
 		}
@@ -617,7 +616,7 @@ func (c *bindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels 
 	}
 
 	var response model.AgentLabelsResponse
-	err = json.Unmarshal(resp.Body(), &response)
+	err = jsoniter.Unmarshal(resp.Body(), &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse api response: %w", err)
 	}
@@ -657,7 +656,7 @@ func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 
 		// check for errors field in response
 		errResponse := &model.ErrorResponse{}
-		if err := json.Unmarshal(resp.Body(), errResponse); err != nil {
+		if err := jsoniter.Unmarshal(resp.Body(), errResponse); err != nil {
 			c.Logger.Error("failed to unmarshal error response when copying config", zap.Error(err))
 		}
 
@@ -715,7 +714,7 @@ func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string,
 		return fmt.Errorf("%s not found", deleteEndpoint)
 	case http.StatusBadRequest:
 		dr := &model.DeleteResponse{}
-		err = json.Unmarshal(resp.Body(), dr)
+		err = jsoniter.Unmarshal(resp.Body(), dr)
 		if err != nil {
 			return err
 		}
@@ -727,7 +726,7 @@ func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string,
 		return errors.New("bad request")
 	case http.StatusConflict:
 		errorResponse := &rest.ErrorResponse{}
-		err = json.Unmarshal(resp.Body(), errorResponse)
+		err = jsoniter.Unmarshal(resp.Body(), errorResponse)
 		if err != nil {
 			return errors.New("failed to parse response, status 409 Conflict")
 		}

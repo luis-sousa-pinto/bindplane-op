@@ -15,7 +15,6 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -23,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/validation"
 
+	jsoniter "github.com/json-iterator/go"
 	modelValidation "github.com/observiq/bindplane-op/model/validation"
 )
 
@@ -158,18 +158,18 @@ func (l Labels) filtered(hasBindPlanePrefix bool) Labels {
 // without custom marshalling, we end up with "labels": { "Set": {} } and we want to avoid the "Set" but json:",inline"
 // isn't a thing
 
-// MarshalJSON marshals the Labels as JSON. An empty Labels will be marshalled as `{}`
+// MarshalJSON marshals the Labels as jsoniter. An empty Labels will be marshalled as `{}`
 func (l *Labels) MarshalJSON() ([]byte, error) {
 	// serialize null as empty
 	if l.Set == nil {
 		return []byte("{}"), nil
 	}
-	return json.Marshal(l.Set)
+	return jsoniter.Marshal(l.Set)
 }
 
 // UnmarshalJSON unmarshals JSON bytes into the Label's internal Set
 func (l *Labels) UnmarshalJSON(b []byte) error {
-	return json.Unmarshal(b, &l.Set)
+	return jsoniter.Unmarshal(b, &l.Set)
 }
 
 func (l *Labels) validate(errs modelValidation.Errors) {
