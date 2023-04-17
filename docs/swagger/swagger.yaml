@@ -36,6 +36,9 @@ definitions:
       status:
         description: reported by Status messages
         type: integer
+      tls:
+        $ref: '#/definitions/model.ManagerTLS'
+        description: TLS from the agent's manager.yaml
       type:
         type: string
       upgrade:
@@ -302,6 +305,17 @@ definitions:
     type: object
   model.Labels:
     type: object
+  model.ManagerTLS:
+    properties:
+      ca_file:
+        type: string
+      cert_file:
+        type: string
+      insecure_skip_verify:
+        type: boolean
+      key_file:
+        type: string
+    type: object
   model.Metadata:
     properties:
       description:
@@ -410,6 +424,11 @@ definitions:
       multiline:
         description: Multiline indicates that a multiline textarea should be used
           for editing a "string" parameter.
+        type: boolean
+      password:
+        description: |-
+          Password indicates the string field is for a password and will be hidden by the UI.
+          Only applies to string parameters.
         type: boolean
       sectionHeader:
         description: |-

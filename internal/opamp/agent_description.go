@@ -17,6 +17,7 @@ package opamp
 
 import (
 	"context"
+	"strings"
 
 	"github.com/open-telemetry/opamp-go/protobufs"
 	opamp "github.com/open-telemetry/opamp-go/server/types"
@@ -38,6 +39,7 @@ type agentDescription struct {
 	Version         string
 }
 
+// parseAgentDescription parses an agentDescription from the protobuf message.
 func parseAgentDescription(desc *protobufs.AgentDescription) *agentDescription {
 	labels := stringValue("service.labels", desc.NonIdentifyingAttributes)
 	if labels == "" {
@@ -45,6 +47,18 @@ func parseAgentDescription(desc *protobufs.AgentDescription) *agentDescription {
 		// TODO: remove when those agents are no longer supported
 		labels = stringValue("service.labels", desc.IdentifyingAttributes)
 	}
+
+	// If the agent is running in a container, the container platform will be provided as a label.
+	platform := stringValue("os.family", desc.NonIdentifyingAttributes)
+	for _, kv := range strings.Split(labels, ",") {
+		if part := strings.Split(kv, "="); len(part) == 2 {
+			if part[0] == model.LabelAgentContainerPlatform && part[1] != "" {
+				platform = part[1]
+				break
+			}
+		}
+	}
+
 	return &agentDescription{
 		AgentID:         stringValue("service.instance.id", desc.IdentifyingAttributes),
 		AgentName:       stringValue("service.instance.name", desc.IdentifyingAttributes),
@@ -53,7 +67,7 @@ func parseAgentDescription(desc *protobufs.AgentDescription) *agentDescription {
 		Labels:          labels,
 		Architecture:    stringValue("os.arch", desc.NonIdentifyingAttributes),
 		OperatingSystem: stringValue("os.details", desc.NonIdentifyingAttributes),
-		Platform:        stringValue("os.family", desc.NonIdentifyingAttributes),
+		Platform:        platform,
 		Hostname:        stringValue("host.name", desc.NonIdentifyingAttributes),
 		MacAddress:      stringValue("host.mac_address", desc.NonIdentifyingAttributes),
 	}

@@ -47,6 +47,9 @@ const (
 
 	// LabelBindPlaneAgentArch is the label name for agent cpu architecture
 	LabelBindPlaneAgentArch = "bindplane/agent-arch"
+
+	// LabelAgentContainerPlatform is the label name for specifying a container platform (k8s, openshift, etc...)
+	LabelAgentContainerPlatform = "container-platform"
 )
 
 // Labeled TODO(doc)
