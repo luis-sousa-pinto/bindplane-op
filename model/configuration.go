@@ -196,13 +196,24 @@ func (c *Configuration) otelConfiguration(ctx context.Context, agent *Agent, con
 
 	agentID := ""
 	agentFeatures := AgentFeaturesDefault
+	var measurementsTLS *otel.MeasurementsTLS
 	if agent != nil {
 		agentID = agent.ID
 		agentFeatures = agent.Features()
+
+		// Use agent TLS options if defined
+		if agent.TLS != nil {
+			measurementsTLS = &otel.MeasurementsTLS{
+				InsecureSkipVerify: agent.TLS.InsecureSkipVerify,
+				CAFile:             agent.TLS.CAFile,
+				CertFile:           agent.TLS.CertFile,
+				KeyFile:            agent.TLS.KeyFile,
+			}
+		}
 	}
 
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext(agentID, c.Name(), config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify()),
+		RenderContext:     otel.NewRenderContext(agentID, c.Name(), config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), measurementsTLS),
 		pipelineTypeUsage: newPipelineTypeUsage(),
 	}
 	rc.IncludeSnapshotProcessor = agentFeatures.Has(AgentSupportsSnapshots)
@@ -830,9 +841,9 @@ func newPipelineTypeUsage() *PipelineTypeUsage {
 func (c *Configuration) determinePipelineTypeUsage(ctx context.Context, store ResourceStore) *PipelineTypeUsage {
 	p := newPipelineTypeUsage()
 
-	// the agent ID and URL values aren't important
+	// the agent ID, URL, and tls values aren't important
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false),
+		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false, nil),
 		pipelineTypeUsage: p,
 	}
 	config, err := c.otelConfigurationWithRenderContext(ctx, rc, store)

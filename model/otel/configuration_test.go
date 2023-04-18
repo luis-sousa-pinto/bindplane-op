@@ -128,7 +128,7 @@ func TestPipelineTypeFlags_Set(t *testing.T) {
 // TODO(jsirianni): Refactor this test to include all measurement cases, including tls,
 // prometheus scraper, etc.
 func TestAddAgentMetricsPipeline(t *testing.T) {
-	rc := NewRenderContext("testid", "testname", "http://test", false)
+	rc := NewRenderContext("testid", "testname", "http://test", false, nil)
 	rc.IncludeMeasurements = true
 	c := NewConfiguration()
 	c.AddAgentMetricsPipeline(rc)

@@ -17,7 +17,6 @@ package observiq
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -112,19 +111,15 @@ func TestAgentConfigurationParse(t *testing.T) {
 			raw: RawAgentConfiguration{
 				Manager: []byte(`
 endpoint: endpoint
-protocol: protocol
-cacert: cacert
-tlscert: tlscert
-tlskey: tlskey
 agent_name: agent_name
 agent_id: agent_id
 secret_key: secret_key
-status_interval: 1s
-reconnect_interval: 2s
-max_connect_backoff: 3s
-buffer_size: 4
-template_id: template_id
 labels: labels
+tls_config:
+    ca_file: cacert
+    key_file: tlskey
+    cert_file: tlscert
+    insecure_skip_verify: true
 `),
 				Collector: []byte("collector"),
 				Logging:   []byte("logging"),
@@ -138,18 +133,13 @@ labels: labels
 
 				// validate fields
 				require.Equal(t, "endpoint", config.Manager.Endpoint)
-				require.Equal(t, "protocol", config.Manager.Protocol)
-				require.Equal(t, "cacert", config.Manager.CACertFile)
-				require.Equal(t, "tlscert", config.Manager.TLSCertFile)
-				require.Equal(t, "tlskey", config.Manager.TLSKeyFile)
+				require.Equal(t, strp("cacert"), config.Manager.TLS.CAFile)
+				require.Equal(t, strp("tlscert"), config.Manager.TLS.CertFile)
+				require.Equal(t, strp("tlskey"), config.Manager.TLS.KeyFile)
+				require.Equal(t, true, config.Manager.TLS.InsecureSkipVerify)
 				require.Equal(t, "agent_name", config.Manager.AgentName)
 				require.Equal(t, "agent_id", config.Manager.AgentID)
 				require.Equal(t, "secret_key", config.Manager.SecretKey)
-				require.Equal(t, 1*time.Second, config.Manager.StatusInterval)
-				require.Equal(t, 2*time.Second, config.Manager.ReconnectInterval)
-				require.Equal(t, 3*time.Second, config.Manager.MaxConnectBackoff)
-				require.Equal(t, 4, config.Manager.BufferSize)
-				require.Equal(t, "template_id", config.Manager.TemplateID)
 				require.Equal(t, "labels", config.Manager.Labels)
 			},
 		},
@@ -193,20 +183,18 @@ func TestAgentConfigurationMarshal(t *testing.T) {
 				Logging:   "logging",
 				Collector: "collector",
 				Manager: &ManagerConfig{
-					Endpoint:          "endpoint",
-					Protocol:          "protocol",
-					CACertFile:        "cacert",
-					TLSCertFile:       "tlscert",
-					TLSKeyFile:        "tlskey",
-					AgentName:         "agent_name",
-					AgentID:           "agent_id",
-					SecretKey:         "secret_key",
-					StatusInterval:    1 * time.Second,
-					ReconnectInterval: 2 * time.Second,
-					MaxConnectBackoff: 3 * time.Second,
-					BufferSize:        4,
-					TemplateID:        "template_id",
-					Labels:            "labels",
+					Endpoint: "endpoint",
+
+					AgentName: "agent_name",
+					AgentID:   "agent_id",
+					SecretKey: "secret_key",
+					Labels:    "labels",
+					TLS: &ManagerTLSConfig{
+						CAFile:             strp("cacert"),
+						CertFile:           strp("tlscert"),
+						KeyFile:            strp("tlskey"),
+						InsecureSkipVerify: true,
+					},
 				},
 			},
 			verify: func(t *testing.T, raw *RawAgentConfiguration) {
@@ -214,19 +202,15 @@ func TestAgentConfigurationMarshal(t *testing.T) {
 				require.Equal(t, "collector", string(raw.Collector))
 				require.Equal(t, strings.TrimLeft(`
 endpoint: endpoint
-protocol: protocol
-cacert: cacert
-tlscert: tlscert
-tlskey: tlskey
-agent_name: agent_name
-agent_id: agent_id
 secret_key: secret_key
-status_interval: 1s
-reconnect_interval: 2s
-max_connect_backoff: 3s
-buffer_size: 4
-template_id: template_id
+agent_id: agent_id
 labels: labels
+agent_name: agent_name
+tls_config:
+    insecure_skip_verify: true
+    key_file: tlskey
+    cert_file: tlscert
+    ca_file: cacert
 `, "\n"), string(raw.Manager))
 			},
 		},
@@ -260,14 +244,14 @@ func TestAgentConfigurationComputeConfigurationUpdates(t *testing.T) {
 				Collector: "collector",
 				Logging:   "logging",
 				Manager: &ManagerConfig{
-					BufferSize: 10,
+					AgentName: "my-agent",
 				},
 			},
 			agent: AgentConfiguration{
 				Collector: "collector",
 				Logging:   "logging",
 				Manager: &ManagerConfig{
-					BufferSize: 10,
+					AgentName: "my-agent",
 				},
 			},
 			expect:      AgentConfiguration{},
@@ -301,12 +285,12 @@ func TestAgentConfigurationComputeConfigurationUpdates(t *testing.T) {
 			name: "non-label manager changes ignored",
 			server: AgentConfiguration{
 				Manager: &ManagerConfig{
-					BufferSize: 1,
+					AgentName: "my-agent",
 				},
 			},
 			agent: AgentConfiguration{
 				Manager: &ManagerConfig{
-					BufferSize: 2,
+					AgentName: "new-name",
 				},
 			},
 			expect:      AgentConfiguration{},
@@ -367,19 +351,21 @@ func verifyAgentConfiguration(t *testing.T, expect AgentConfiguration, diff *Age
 
 	// compare individual manager fields
 	require.Equal(t, expect.Manager.Endpoint, diff.Manager.Endpoint)
-	require.Equal(t, expect.Manager.Protocol, diff.Manager.Protocol)
-	require.Equal(t, expect.Manager.CACertFile, diff.Manager.CACertFile)
-	require.Equal(t, expect.Manager.TLSCertFile, diff.Manager.TLSCertFile)
-	require.Equal(t, expect.Manager.TLSKeyFile, diff.Manager.TLSKeyFile)
+
 	require.Equal(t, expect.Manager.AgentName, diff.Manager.AgentName)
 	require.Equal(t, expect.Manager.AgentID, diff.Manager.AgentID)
 	require.Equal(t, expect.Manager.SecretKey, diff.Manager.SecretKey)
-	require.Equal(t, expect.Manager.StatusInterval, diff.Manager.StatusInterval)
-	require.Equal(t, expect.Manager.ReconnectInterval, diff.Manager.ReconnectInterval)
-	require.Equal(t, expect.Manager.MaxConnectBackoff, diff.Manager.MaxConnectBackoff)
-	require.Equal(t, expect.Manager.BufferSize, diff.Manager.BufferSize)
-	require.Equal(t, expect.Manager.TemplateID, diff.Manager.TemplateID)
 	require.Equal(t, expect.Manager.Labels, diff.Manager.Labels)
+	if expect.Manager.TLS != nil {
+		require.NotNil(t, diff.Manager.TLS)
+		require.Equal(t, expect.Manager.TLS.CertFile, diff.Manager.TLS.CertFile)
+		require.Equal(t, expect.Manager.TLS.CAFile, diff.Manager.TLS.CAFile)
+		require.Equal(t, expect.Manager.TLS.KeyFile, diff.Manager.TLS.KeyFile)
+		require.Equal(t, expect.Manager.TLS.InsecureSkipVerify, diff.Manager.TLS.InsecureSkipVerify)
+	} else {
+		require.Nil(t, diff.Manager.TLS)
+	}
+
 }
 
 func TestAgentConfigurationApplyUpdates(t *testing.T) {
@@ -484,32 +470,39 @@ func TestDecodeAgentConfiguration(t *testing.T) {
 		},
 		{
 			name: "complete",
-			configuration: map[string]interface{}{
+			configuration: map[string]any{
 				"collector": "collector contents",
 				"logging":   "logging contents",
-				"manager": map[string]interface{}{
-					"endpoint":            "endpoint",
-					"protocol":            "protocol",
-					"cacert":              "cacert",
-					"tlscert":             "tlscert",
-					"tlskey":              "tlskey",
-					"agent_name":          "agent_name",
-					"agent_id":            "agent_id",
-					"secret_key":          "secret_key",
-					"status_interval":     1 * time.Second,
-					"reconnect_interval":  2 * time.Second,
-					"max_connect_backoff": 3 * time.Second,
-					"buffer_size":         4,
-					"template_id":         "template_id",
-					"labels":              "labels",
+				"manager": map[string]any{
+					"endpoint":   "endpoint",
+					"agent_name": "agent_name",
+					"agent_id":   "agent_id",
+					"secret_key": "secret_key",
+					"labels":     "labels",
+					"tls_config": map[string]any{
+						"key_file":             "keyfile",
+						"cert_file":            "certfile",
+						"ca_file":              "cafile",
+						"insecure_skip_verify": true,
+					},
 				},
 			},
 			expect: AgentConfiguration{
 				Logging:   "logging contents",
 				Collector: "collector contents",
 				Manager: &ManagerConfig{
-					Endpoint: "endpoint",
-					Protocol: "protocol", CACertFile: "cacert", TLSCertFile: "tlscert", TLSKeyFile: "tlskey", AgentName: "agent_name", AgentID: "agent_id", SecretKey: "secret_key", StatusInterval: 1000000000, ReconnectInterval: 2000000000, MaxConnectBackoff: 3000000000, BufferSize: 4, TemplateID: "template_id", Labels: "labels", Headless: false},
+					Endpoint:  "endpoint",
+					AgentName: "agent_name",
+					AgentID:   "agent_id",
+					SecretKey: "secret_key",
+					Labels:    "labels",
+					TLS: &ManagerTLSConfig{
+						CAFile:             strp("cafile"),
+						KeyFile:            strp("keyfile"),
+						CertFile:           strp("certfile"),
+						InsecureSkipVerify: true,
+					},
+				},
 			},
 		},
 	}
@@ -524,4 +517,12 @@ func TestDecodeAgentConfiguration(t *testing.T) {
 			verifyAgentConfiguration(t, test.expect, config)
 		})
 	}
+}
+
+func strp(s string) *string {
+	return &s
+}
+
+func boolp(b bool) *bool {
+	return &b
 }

@@ -17,7 +17,6 @@ package store
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -152,7 +151,7 @@ func (s *boltstore) AgentConfiguration(ctx context.Context, agentID string) (*mo
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			configuration := &model.Configuration{}
-			if err := json.Unmarshal(v, configuration); err != nil {
+			if err := jsoniter.Unmarshal(v, configuration); err != nil {
 				s.logger.Error("unable to unmarshal configuration, ignoring", zap.Error(err))
 				continue
 			}
@@ -452,7 +451,7 @@ func (s *boltstore) Agents(ctx context.Context, options ...QueryOption) ([]*mode
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			agent := &model.Agent{}
-			if err := json.Unmarshal(v, agent); err != nil {
+			if err := jsoniter.Unmarshal(v, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -496,7 +495,7 @@ func (s *boltstore) DeleteAgents(ctx context.Context, agentIDs []string) ([]*mod
 
 				// Save the agent to return and set its status to deleted.
 				agent := &model.Agent{}
-				err := json.Unmarshal(v, agent)
+				err := jsoniter.Unmarshal(v, agent)
 				if err != nil {
 					return err
 				}
@@ -545,7 +544,7 @@ func (s *boltstore) agentsByID(ids []string, opts queryOptions) ([]*model.Agent,
 				return nil
 			}
 			agent := &model.Agent{}
-			if err := json.Unmarshal(data, agent); err != nil {
+			if err := jsoniter.Unmarshal(data, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -576,7 +575,7 @@ func (s *boltstore) Agent(_ context.Context, id string) (*model.Agent, error) {
 			return nil
 		}
 		agent = &model.Agent{}
-		return json.Unmarshal(data, agent)
+		return jsoniter.Unmarshal(data, agent)
 	})
 
 	return agent, err
@@ -854,7 +853,7 @@ func upsertResource(tx *bbolt.Tx, r model.Resource, kind model.Kind) (model.Upda
 	// preserve the id (if possible)
 	if len(existing) > 0 {
 		var cur model.AnyResource
-		if err := json.Unmarshal(existing, &cur); err == nil {
+		if err := jsoniter.Unmarshal(existing, &cur); err == nil {
 			r.SetID(cur.ID())
 		}
 	}
@@ -892,7 +891,7 @@ func upsertAgentTx(tx *bbolt.Tx, agentID string, updater AgentUpdater, updates *
 	// load the existing agent or create it
 	if data := bucket.Get(key); data != nil {
 		// existing agent, unmarshal
-		if err := json.Unmarshal(data, agent); err != nil {
+		if err := jsoniter.Unmarshal(data, agent); err != nil {
 			return agent, err
 		}
 		agentEventType = EventTypeUpdate
@@ -912,7 +911,7 @@ func upsertAgentTx(tx *bbolt.Tx, agentID string, updater AgentUpdater, updates *
 	}
 
 	// marshal it back to to json
-	data, err := json.Marshal(agent)
+	data, err := jsoniter.Marshal(agent)
 	if err != nil {
 		return agent, err
 	}
@@ -937,7 +936,7 @@ func resource[R model.Resource](s *boltstore, kind model.Kind, name string) (res
 			return nil
 		}
 		exists = true
-		return json.Unmarshal(data, &resource)
+		return jsoniter.Unmarshal(data, &resource)
 	})
 	return resource, exists, err
 }
@@ -954,7 +953,7 @@ func resourcesWithFilter[R model.Resource](s *boltstore, kind model.Kind, includ
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			var resource R
-			if err := json.Unmarshal(v, &resource); err != nil {
+			if err := jsoniter.Unmarshal(v, &resource); err != nil {
 				// TODO(andy): if it can't be unmarshaled, it should probably be removed from the store. ignore it for now.
 				s.logger.Error("failed to unmarshal resource", zap.String("key", string(k)), zap.String("kind", string(kind)), zap.Error(err))
 				continue
@@ -1015,7 +1014,7 @@ func deleteResource[R model.Resource](ctx context.Context, s *boltstore, kind mo
 
 		if bytes.Equal(k, key) {
 			// populate the emptyResource with the data before deleting
-			err := json.Unmarshal(v, emptyResource)
+			err := jsoniter.Unmarshal(v, emptyResource)
 			if err != nil {
 				return err
 			}
@@ -1250,7 +1249,7 @@ func findEndMetrics(c *bbolt.Cursor, time, objectType, id string) (map[string]*r
 	for k, v = c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 		metrics[removeTimestampFromKey(k)] = m
@@ -1292,7 +1291,7 @@ func findStartMetrics(c *bbolt.Cursor, time string, endTime time.Time, objectTyp
 		}
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 
@@ -1395,7 +1394,7 @@ func (s *boltstore) storeMeasurements(_ context.Context, metricName string, metr
 		b := measurementsBucket(tx, metricName)
 
 		for _, m := range metrics {
-			data, err := json.Marshal(m)
+			data, err := jsoniter.Marshal(m)
 			if err != nil {
 				errs = errors.Join(errs, err)
 				continue
@@ -1535,7 +1534,7 @@ func sanitizeKey(key string) string {
 
 func getNameFromResource[R model.Resource](_ context.Context, v []byte) (string, error) {
 	var resource R
-	if err := json.Unmarshal(v, &resource); err != nil {
+	if err := jsoniter.Unmarshal(v, &resource); err != nil {
 		return "", err
 	}
 	return resource.Name(), nil

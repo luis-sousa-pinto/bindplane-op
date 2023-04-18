@@ -16,7 +16,6 @@ package rest
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -28,6 +27,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -351,7 +351,7 @@ func TestREST(t *testing.T) {
 		require.Equal(t, http.StatusConflict, resp.StatusCode())
 
 		body := &ErrorResponse{}
-		err = json.Unmarshal(resp.Body(), body)
+		err = jsoniter.Unmarshal(resp.Body(), body)
 		require.NoError(t, err)
 
 		expectBody := ErrorResponse{
@@ -470,7 +470,7 @@ func TestREST(t *testing.T) {
 		require.Equal(t, http.StatusConflict, resp.StatusCode())
 
 		body := &ErrorResponse{}
-		err = json.Unmarshal(resp.Body(), body)
+		err = jsoniter.Unmarshal(resp.Body(), body)
 		require.NoError(t, err)
 
 		expectBody := ErrorResponse{
@@ -1671,7 +1671,7 @@ func TestRESTMock(t *testing.T) {
 
 			if test.resultPtr != nil {
 				// parse the body directly because SetResult only works for status codes 200-299
-				err = json.Unmarshal(resp.Body(), test.resultPtr)
+				err = jsoniter.Unmarshal(resp.Body(), test.resultPtr)
 				require.NoError(t, err)
 			}
 

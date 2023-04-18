@@ -1402,6 +1402,10 @@ const docTemplate = `{
                     "description": "reported by Status messages",
                     "type": "integer"
                 },
+                "tls": {
+                    "description": "TLS from the agent's manager.yaml",
+                    "$ref": "#/definitions/model.ManagerTLS"
+                },
                 "type": {
                     "type": "string"
                 },
@@ -1806,6 +1810,23 @@ const docTemplate = `{
         "model.Labels": {
             "type": "object"
         },
+        "model.ManagerTLS": {
+            "type": "object",
+            "properties": {
+                "ca_file": {
+                    "type": "string"
+                },
+                "cert_file": {
+                    "type": "string"
+                },
+                "insecure_skip_verify": {
+                    "type": "boolean"
+                },
+                "key_file": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Metadata": {
             "type": "object",
             "properties": {
@@ -1953,6 +1974,10 @@ const docTemplate = `{
                 },
                 "multiline": {
                     "description": "Multiline indicates that a multiline textarea should be used for editing a \"string\" parameter.",
+                    "type": "boolean"
+                },
+                "password": {
+                    "description": "Password indicates the string field is for a password and will be hidden by the UI.\nOnly applies to string parameters.",
                     "type": "boolean"
                 },
                 "sectionHeader": {

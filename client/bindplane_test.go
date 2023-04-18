@@ -16,12 +16,13 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/model"
@@ -339,7 +340,7 @@ func TestCopyConfig(t *testing.T) {
 			require.Equal(t, fmt.Sprintf("/configurations/%s/copy", configName), r.URL.Path)
 
 			payload := &model.PostCopyConfigRequest{}
-			err := json.NewDecoder(r.Body).Decode(payload)
+			err := jsoniter.NewDecoder(r.Body).Decode(payload)
 
 			// Verify the expected payload
 			require.NoError(t, err)

@@ -17,7 +17,6 @@ package store
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,6 +24,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/bbolt"
@@ -88,7 +88,7 @@ func TestAddAgent(t *testing.T) {
 		prefix := []byte("Agent")
 		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
 			agent := &model.Agent{}
-			json.Unmarshal(v, agent)
+			jsoniter.Unmarshal(v, agent)
 			agents = append(agents, agent)
 		}
 		return nil

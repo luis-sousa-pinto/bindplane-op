@@ -18,7 +18,6 @@ package observiq
 import (
 	"crypto/sha256"
 	"fmt"
-	"time"
 
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
@@ -51,25 +50,22 @@ type RawAgentConfiguration struct {
 }
 
 // ManagerConfig is the unmarshaled contents of manager.yaml
-// This comes from observiq/observiq-agent.git:pkg/manager/config.go
+// This comes from https://github.com/observIQ/observiq-otel-collector/blob/main/opamp/config.go
 type ManagerConfig struct {
-	Endpoint          string        `mapstructure:"endpoint" json:"endpoint" yaml:"endpoint,omitempty"`
-	Protocol          string        `mapstructure:"protocol" json:"protocol" yaml:"protocol,omitempty"`
-	CACertFile        string        `mapstructure:"cacert" json:"cacert" yaml:"cacert,omitempty"`
-	TLSCertFile       string        `mapstructure:"tlscert" json:"tlscert" yaml:"tlscert,omitempty"`
-	TLSKeyFile        string        `mapstructure:"tlskey" json:"tlskey" yaml:"tlskey,omitempty"`
-	AgentName         string        `mapstructure:"agent_name" json:"agent_name" yaml:"agent_name,omitempty"`
-	AgentID           string        `mapstructure:"agent_id" json:"agent_id" yaml:"agent_id,omitempty"`
-	SecretKey         string        `mapstructure:"secret_key" json:"secret_key" yaml:"secret_key,omitempty"`
-	StatusInterval    time.Duration `mapstructure:"status_interval" json:"status_interval" yaml:"status_interval,omitempty"`
-	ReconnectInterval time.Duration `mapstructure:"reconnect_interval" json:"reconnect_interval" yaml:"reconnect_interval,omitempty"`
-	MaxConnectBackoff time.Duration `mapstructure:"max_connect_backoff" json:"max_connect_backoff" yaml:"max_connect_backoff,omitempty"`
-	BufferSize        int           `mapstructure:"buffer_size" json:"buffer_size" yaml:"buffer_size,omitempty"`
-	TemplateID        string        `mapstructure:"template_id" json:"template_id" yaml:"template_id,omitempty"`
-	Labels            string        `mapstructure:"labels" json:"labels" yaml:"labels,omitempty"`
+	Endpoint  string            `mapstructure:"endpoint" json:"endpoint" yaml:"endpoint,omitempty"`
+	SecretKey string            `mapstructure:"secret_key" json:"secret_key" yaml:"secret_key,omitempty"`
+	AgentID   string            `mapstructure:"agent_id" json:"agent_id" yaml:"agent_id,omitempty"`
+	Labels    string            `mapstructure:"labels" json:"labels" yaml:"labels,omitempty"`
+	AgentName string            `mapstructure:"agent_name" json:"agent_name" yaml:"agent_name,omitempty"`
+	TLS       *ManagerTLSConfig `mapstructure:"tls_config" json:"tls_config" yaml:"tls_config,omitempty"`
+}
 
-	// When true, the manger will not attempt to connect to a platform
-	Headless bool `mapstructure:"headless" json:"headless" yaml:"headless,omitempty"`
+// ManagerTLSConfig is tls configuration for the collector's manager config
+type ManagerTLSConfig struct {
+	InsecureSkipVerify bool    `mapstructure:"insecure_skip_verify" json:"insecure_skip_verify" yaml:"insecure_skip_verify,omitempty"`
+	KeyFile            *string `mapstructure:"key_file" json:"key_file" yaml:"key_file,omitempty"`
+	CertFile           *string `mapstructure:"cert_file" json:"cert_file" yaml:"cert_file,omitempty"`
+	CAFile             *string `mapstructure:"ca_file" json:"ca_file" yaml:"ca_file,omitempty"`
 }
 
 func parseManagerConfig(bytes []byte) (*ManagerConfig, error) {
