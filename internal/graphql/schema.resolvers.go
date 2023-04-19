@@ -185,7 +185,7 @@ func (r *mutationResolver) UpdateProcessors(ctx context.Context, input model1.Up
 		return nil, err
 	}
 
-	if statuses[0].Status == model.StatusError {
+	if statuses[0].Status == model.StatusError || statuses[0].Status == model.StatusInvalid {
 		return nil, errors.New(statuses[0].Reason)
 	}
 
