@@ -44,8 +44,8 @@ func Command(bindplane *cli.BindPlane) *cobra.Command {
 
 			fmt.Fprintf(cmd.OutOrStdout(),
 				"client: %s\nserver: %s\n",
-				version.NewVersion().String(),
-				sv.String())
+				version.NewVersion().FullString(),
+				sv.FullString())
 
 			return nil
 		},

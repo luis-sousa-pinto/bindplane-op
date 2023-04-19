@@ -63,6 +63,49 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestFullString(t *testing.T) {
+	cases := []struct {
+		name    string
+		version Version
+		expect  string
+	}{
+		{
+			"commit",
+			Version{
+				Commit: "a0486ebd9f33a2b110ecb7d08e863c37413b9894",
+			},
+			"a0486ebd9f33a2b110ecb7d08e863c37413b9894",
+		},
+		{
+			"tag",
+			Version{
+				Tag: "v5.0.1",
+			},
+			"v5.0.1",
+		},
+		{
+			"both",
+			Version{
+				Commit: "a0486ebd9f33a2b110ecb7d08e863c37413b9894",
+				Tag:    "v5.0.1",
+			},
+			"v5.0.1 (a0486ebd9f33a2b110ecb7d08e863c37413b9894)",
+		},
+		{
+			"unknown",
+			Version{},
+			"unknown",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			output := tc.version.FullString()
+			require.Equal(t, tc.expect, output)
+		})
+	}
+}
+
 func TestNewVersion(t *testing.T) {
 	cases := []struct {
 		name   string

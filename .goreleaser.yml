@@ -23,6 +23,7 @@ builds:
   binary: 'bindplane'
   ldflags:
     - -X github.com/observiq/bindplane-op/internal/version.gitTag=v{{ .Version }}
+    - -X github.com/observiq/bindplane-op/internal/version.gitCommit={{ .FullCommit }}
 - id: bindplanectl
   main: ./cmd/bindplanectl
   env:
@@ -42,6 +43,7 @@ builds:
   binary: 'bindplanectl'
   ldflags:
     - -X github.com/observiq/bindplane-op/internal/version.gitTag=v{{ .Version }}
+    - -X github.com/observiq/bindplane-op/internal/version.gitCommit={{ .FullCommit }}
 
 archives:
 - format: zip
