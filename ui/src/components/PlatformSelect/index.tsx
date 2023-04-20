@@ -24,6 +24,11 @@ const PLATFORMS: Platform[] = [
     backgroundImage: "url('/icons/linux-platform-icon.svg",
   },
   {
+    label: "Kubernetes (DaemonSet)",
+    value: "kubernetes-daemonset",
+    backgroundImage: "url('/icons/kubernetes-platform-icon.svg",
+  },
+  {
     label: "macOS",
     value: "macos",
     backgroundImage: "url('/icons/macos-platform-icon.svg",

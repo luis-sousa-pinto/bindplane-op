@@ -1120,6 +1120,7 @@ func getInstallCommand(c *gin.Context, bindplane server.BindPlane) {
 		handleErrorResponse(c, http.StatusBadRequest,
 			fmt.Errorf("unknown platform: %s", c.Query("platform")),
 		)
+		return
 	}
 
 	params := installCommandParameters{
@@ -1130,8 +1131,16 @@ func getInstallCommand(c *gin.Context, bindplane server.BindPlane) {
 		remoteURL: remoteURL,
 		serverURL: serverURL,
 	}
+	cmd, err := params.installCommand()
+	if err != nil {
+		handleErrorResponse(c, http.StatusInternalServerError,
+			fmt.Errorf("failed to generate the install command: %w", err),
+		)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 	response := model.InstallCommandResponse{
-		Command: params.installCommand(),
+		Command: cmd,
 	}
 	c.JSON(http.StatusOK, response)
 }

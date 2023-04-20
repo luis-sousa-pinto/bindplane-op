@@ -15,9 +15,12 @@
 package rest
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
+	"text/template"
 )
 
 type installCommandParameters struct {
@@ -32,22 +35,27 @@ type installCommandParameters struct {
 type supportedPlatform string
 
 const (
-	linuxArm64   supportedPlatform = "linux-arm64"
-	linuxAmd64                     = "linux-amd64"
-	linuxArm                       = "linux-arm"
-	darwinArm64                    = "darwin-arm64"
-	darwinAmd64                    = "darwin-amd64"
-	windowsAmd64                   = "windows-amd64"
+	kubernetesDaemonset supportedPlatform = "kubernetes-daemonset"
+	linuxArm64                            = "linux-arm64"
+	linuxAmd64                            = "linux-amd64"
+	linuxArm                              = "linux-arm"
+	darwinArm64                           = "darwin-arm64"
+	darwinAmd64                           = "darwin-amd64"
+	windowsAmd64                          = "windows-amd64"
 )
+
+// ErrConfigurationNotSet is returned when a platform requires an initial configuration but one is not set
+var ErrConfigurationNotSet = errors.New("configuration must be set for kubernetes installation")
 
 var platformAliases = map[string]supportedPlatform{
 	// aliases
-	"windows":     windowsAmd64,
-	"linux":       linuxAmd64,
-	"darwin":      darwinArm64,
-	"macos":       darwinArm64,
-	"macos-arm64": darwinArm64,
-	"macos-amd64": darwinAmd64,
+	"windows":              windowsAmd64,
+	"linux":                linuxAmd64,
+	"darwin":               darwinArm64,
+	"macos":                darwinArm64,
+	"macos-arm64":          darwinArm64,
+	"macos-amd64":          darwinAmd64,
+	"kubernetes-daemonset": kubernetesDaemonset,
 
 	// include supportedPlatform here for validation
 	"linux-arm64":   linuxArm64,
@@ -152,21 +160,50 @@ func (p *installCommandParameters) installerURL() string {
 	)
 }
 
-func (p *installCommandParameters) installCommand() string {
+func (p *installCommandParameters) installCommand() (string, error) {
 	switch p.platform {
 	case windowsAmd64:
 		return fmt.Sprintf(`msiexec /i "%s" /quiet%s`,
 			p.installerURL(),
 			p.args(),
-		)
+		), nil
+	case kubernetesDaemonset:
+		t, err := template.New("deployment").Parse(k8sDaemonsetChart)
+		if err != nil {
+			return "", err
+		}
+		configuration := configurationFromLabels(p.labels)
+		if configuration == "" {
+			return "", ErrConfigurationNotSet
+		}
+		values := map[string]any{
+			"version":       p.versionNoV(),
+			"configuration": configuration,
+			"remoteURL":     p.remoteURL,
+			"secretKey":     p.secretKey,
+		}
+		var buf bytes.Buffer
+		if err := t.Execute(&buf, values); err != nil {
+			return "", err
+		}
+		return buf.String(), nil
 
 	default:
 		return fmt.Sprintf(`sudo sh -c "$(curl -fsSlL %s)" %s%s`,
 			p.installerURL(),
 			p.installerFilename(),
 			p.args(),
-		)
+		), nil
 	}
+}
+
+func configurationFromLabels(labels string) string {
+	for _, kv := range strings.Split(labels, ",") {
+		if part := strings.Split(kv, "="); len(part) == 2 && part[0] == "configuration" {
+			return part[1]
+		}
+	}
+	return ""
 }
 
 // Windows:

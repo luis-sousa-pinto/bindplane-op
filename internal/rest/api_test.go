@@ -928,7 +928,8 @@ func TestRESTMock(t *testing.T) {
 		secretKey: "uuid",
 		remoteURL: "localhost:3001",
 	}
-	expectInstallText := installCommandParams.installCommand()
+	expectInstallText, err := installCommandParams.installCommand()
+	require.NoError(t, err)
 
 	tests := []struct {
 		method       string
