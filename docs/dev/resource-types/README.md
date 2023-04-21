@@ -42,7 +42,7 @@ Resources have the following fields
 | `metadata.labels`      | Optional labels. Currently, labels are ignored but can be used for specifying friendly metadata, such as `datacenter=us-east1`. |
 | `spec`                 | Spec fields which define the resource configuration options. |
 | `spec.version`         | The resource type's version. Currently, resource versions are ignored. |
-| `spec.supported_platforms`       | An array of supported platforms. Valid values include `linux`, `windows`, `macos` |
+| `spec.supportedPlatforms`       | An array of supported platforms. Valid values include `linux`, `windows`, `macos` |
 | `spec.parameters`                | Parameters define a resource parameter, such as "collection interval". See [parameter types](./README.md#parameter-types). |
 | `spec.parameters.name`           | The name of the parameter.    |
 | `spec.parameters.label`          | A friendly name for the parameter. Shown in the UI. |

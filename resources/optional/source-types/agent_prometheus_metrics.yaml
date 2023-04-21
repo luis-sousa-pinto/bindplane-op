@@ -7,7 +7,7 @@ metadata:
   description: Collect metrics from Prometheus exporters.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows

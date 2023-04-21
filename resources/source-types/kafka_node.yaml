@@ -7,7 +7,7 @@ metadata:
   description: Collect metrics (JMX) and logs from Kafka nodes.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows
