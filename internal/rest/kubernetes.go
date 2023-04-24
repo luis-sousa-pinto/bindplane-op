@@ -118,10 +118,37 @@ spec:
         app.kubernetes.io/name: observiq-node-collector
     spec:
       serviceAccount: observiq-node-collector
+      initContainers:
+        - name: setup-volumes
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          securityContext:
+            # Required for changing permissions from
+            # root to otel user in emptyDir volume.
+            runAsUser: 0
+          command:
+            - "chown"
+            - "otel:"
+            - "/etc/otel/config"
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
+        - name: copy-configs
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'cp config.yaml config/ && cp logging.yaml config/ && chown -R otel:otel config/'
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
       containers:
         - name: opentelemetry-collector
-          image: observiq/observiq-otel-collector:{{ .version }}
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
           imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            # Required for reading container logs hostPath.
+            runAsUser: 0
           resources:
             requests:
               memory: 200Mi
@@ -143,7 +170,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # The collector process updates config.yaml
+            # and manager.yaml when receiving changes
+            # from the OpAMP server.
+            - name: CONFIG_YAML_PATH
+              value: /etc/otel/config/config.yaml
+            - name: MANAGER_YAML_PATH
+              value: /etc/otel/config/manager.yaml
+            - name: LOGGING_YAML_PATH
+              value: /etc/otel/config/logging.yaml
           volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
             - mountPath: /run/log/journal
               name: runlog
               readOnly: true
@@ -156,6 +194,8 @@ spec:
             - mountPath: /etc/otel/storage
               name: storage
       volumes:
+        - name: config
+          emptyDir: {}
         - name: runlog
           hostPath:
             path: /run/log/journal
@@ -168,15 +208,13 @@ spec:
         - name: storage
           hostPath:
             path: /var/lib/observiq/otelcol/container
-      securityContext:
-        runAsUser: 0
 `
 
 const k8sDeploymentChart = `apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app: observiq-cluster-collector
+    app.kubernetes.io/name: observiq-cluster-collector
   name: observiq-cluster-collector
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -250,7 +288,7 @@ kind: ClusterRoleBinding
 metadata:
   name: observiq-cluster-collector
   labels:
-    app: observiq-cluster-collector
+    app.kubernetes.io/name: observiq-cluster-collector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -265,22 +303,47 @@ kind: Deployment
 metadata:
   name: observiq-cluster-collector
   labels:
-    app: observiq-cluster-collector
+    app.kubernetes.io/name: observiq-cluster-collector
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: observiq-cluster-collector
+      app.kubernetes.io/name: observiq-cluster-collector
   template:
     metadata:
       labels:
-        app: observiq-cluster-collector
+        app.kubernetes.io/name: observiq-cluster-collector
     spec:
       serviceAccount: observiq-cluster-collector
+      initContainers:
+        - name: setup-volumes
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          securityContext:
+            # Required for changing permissions from
+            # root to otel user in emptyDir volume.
+            runAsUser: 0
+          command:
+            - "chown"
+            - "otel:"
+            - "/etc/otel/config"
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
+        - name: copy-configs
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'cp config.yaml config/ && cp logging.yaml config/ && chown -R otel:otel config/'
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
       containers:
         - name: opentelemetry-container
-          image: observiq/observiq-otel-collector:{{ .version }}
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
           imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
           resources:
             requests:
               memory: 200Mi
@@ -302,4 +365,19 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # The collector process updates config.yaml
+            # and manager.yaml when receiving changes
+            # from the OpAMP server.
+            - name: CONFIG_YAML_PATH
+              value: /etc/otel/config/config.yaml
+            - name: MANAGER_YAML_PATH
+              value: /etc/otel/config/manager.yaml
+            - name: LOGGING_YAML_PATH
+              value: /etc/otel/config/logging.yaml
+          volumeMounts:
+          - mountPath: /etc/otel/config
+            name: config
+      volumes:
+        - name: config
+          emptyDir: {}
 `
