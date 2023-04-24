@@ -35,13 +35,14 @@ type installCommandParameters struct {
 type supportedPlatform string
 
 const (
-	kubernetesDaemonset supportedPlatform = "kubernetes-daemonset"
-	linuxArm64                            = "linux-arm64"
-	linuxAmd64                            = "linux-amd64"
-	linuxArm                              = "linux-arm"
-	darwinArm64                           = "darwin-arm64"
-	darwinAmd64                           = "darwin-amd64"
-	windowsAmd64                          = "windows-amd64"
+	kubernetesDaemonset  supportedPlatform = "kubernetes-daemonset"
+	kubernetesDeployment                   = "kubernetes-deployment"
+	linuxArm64                             = "linux-arm64"
+	linuxAmd64                             = "linux-amd64"
+	linuxArm                               = "linux-arm"
+	darwinArm64                            = "darwin-arm64"
+	darwinAmd64                            = "darwin-amd64"
+	windowsAmd64                           = "windows-amd64"
 )
 
 // ErrConfigurationNotSet is returned when a platform requires an initial configuration but one is not set
@@ -49,13 +50,14 @@ var ErrConfigurationNotSet = errors.New("configuration must be set for kubernete
 
 var platformAliases = map[string]supportedPlatform{
 	// aliases
-	"windows":              windowsAmd64,
-	"linux":                linuxAmd64,
-	"darwin":               darwinArm64,
-	"macos":                darwinArm64,
-	"macos-arm64":          darwinArm64,
-	"macos-amd64":          darwinAmd64,
-	"kubernetes-daemonset": kubernetesDaemonset,
+	"windows":               windowsAmd64,
+	"linux":                 linuxAmd64,
+	"darwin":                darwinArm64,
+	"macos":                 darwinArm64,
+	"macos-arm64":           darwinArm64,
+	"macos-amd64":           darwinAmd64,
+	"kubernetes-daemonset":  kubernetesDaemonset,
+	"kubernetes-deployment": kubernetesDeployment,
 
 	// include supportedPlatform here for validation
 	"linux-arm64":   linuxArm64,
@@ -168,25 +170,9 @@ func (p *installCommandParameters) installCommand() (string, error) {
 			p.args(),
 		), nil
 	case kubernetesDaemonset:
-		t, err := template.New("deployment").Parse(k8sDaemonsetChart)
-		if err != nil {
-			return "", err
-		}
-		configuration := configurationFromLabels(p.labels)
-		if configuration == "" {
-			return "", ErrConfigurationNotSet
-		}
-		values := map[string]any{
-			"version":       p.versionNoV(),
-			"configuration": configuration,
-			"remoteURL":     p.remoteURL,
-			"secretKey":     p.secretKey,
-		}
-		var buf bytes.Buffer
-		if err := t.Execute(&buf, values); err != nil {
-			return "", err
-		}
-		return buf.String(), nil
+		return k8sInstallCommand(p, k8sDaemonsetChart)
+	case kubernetesDeployment:
+		return k8sInstallCommand(p, k8sDeploymentChart)
 
 	default:
 		return fmt.Sprintf(`sudo sh -c "$(curl -fsSlL %s)" %s%s`,
@@ -195,6 +181,28 @@ func (p *installCommandParameters) installCommand() (string, error) {
 			p.args(),
 		), nil
 	}
+}
+
+func k8sInstallCommand(params *installCommandParameters, chart string) (string, error) {
+	t, err := template.New("deployment").Parse(chart)
+	if err != nil {
+		return "", err
+	}
+	configuration := configurationFromLabels(params.labels)
+	if configuration == "" {
+		return "", ErrConfigurationNotSet
+	}
+	values := map[string]any{
+		"version":       params.versionNoV(),
+		"configuration": configuration,
+		"remoteURL":     params.remoteURL,
+		"secretKey":     params.secretKey,
+	}
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, values); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func configurationFromLabels(labels string) string {

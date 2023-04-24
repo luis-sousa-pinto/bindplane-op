@@ -41,6 +41,7 @@ gql`
  */
 export enum Platform {
   KubernetesDaemonset = "kubernetes-daemonset",
+  KubernetesDeployment = "kubernetes-deployment",
   Linux = "linux",
   macOS = "macos",
   Windows = "windows",
@@ -54,7 +55,7 @@ export const InstallPageContent: React.FC = () => {
   const { data } = useGetConfigurationNamesQuery();
 
   // Don't show the command if the platform is k8s and no config is selected
-  const shouldShowCommand = platform !== Platform.KubernetesDaemonset || selectedConfig !== "";
+  const shouldShowCommand = !platformIsKubernetes(platform) || selectedConfig !== "";
 
   useEffect(() => {
     if (data) {
@@ -73,7 +74,7 @@ export const InstallPageContent: React.FC = () => {
   useEffect(() => {
     async function fetchInstallText() {
       // If the platform is k8s, don't show the command until a config is selected
-      if (platform === Platform.KubernetesDaemonset && selectedConfig === "") {
+      if (platformIsKubernetes(platform) && selectedConfig === "") {
         setCommand("");
         return
       }
@@ -105,7 +106,10 @@ export const InstallPageContent: React.FC = () => {
         <PlatformSelect
           value={platform}
           helperText="Select the platform the agent will run on."
-          onPlatformSelected={(v) => setPlatform(v)}
+          onPlatformSelected={(v) => {
+            setPlatform(v);
+            setSelectedConfig("");
+          }}
         />
         <ConfigurationSelect
           configs={configs}
@@ -115,11 +119,14 @@ export const InstallPageContent: React.FC = () => {
         />
       </Box>
 
-      {(platform === Platform.KubernetesDaemonset && shouldShowCommand) && (
-        <Typography>
+      {(platformIsKubernetes(platform) && shouldShowCommand) && (
+        <Typography fontSize="18px" fontWeight="bold">
           To deploy the agent to Kubernetes:<br></br>
+          <Typography fontSize="16px">
           1. Copy the YAML below to a file<br></br>
           2. Apply with kubectl: <code>kubectl apply -f &lt;filename&gt;</code>
+          </Typography>
+          <br></br>
         </Typography>
       )}
       {shouldShowCommand && (
@@ -152,7 +159,7 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
   selectedConfig,
   setSelectedConfig,
 }: configurationSelectProps) => {
-  const configRequired = platform === Platform.KubernetesDaemonset;
+  const configRequired = platformIsKubernetes(platform);
   const label = configRequired ? "Select Configuration" : "Select Configuration (optional)";
 
   return (
@@ -214,6 +221,8 @@ function filterConfigurationsByPlatform(
   switch (platform) {
     case Platform.KubernetesDaemonset:
       return configs.filter((c) => c.metadata.labels?.platform === Platform.KubernetesDaemonset);
+    case Platform.KubernetesDeployment:
+      return configs.filter((c) => c.metadata.labels?.platform === Platform.KubernetesDeployment);
     case Platform.Linux:
       return configs.filter((c) => c.metadata.labels?.platform === "linux");
     case Platform.macOS:
@@ -223,6 +232,14 @@ function filterConfigurationsByPlatform(
     default:
       return configs;
   }
+}
+
+/**
+ * Check if the platform is a k8s platform
+ * @param platform Reported platform
+ */
+export function platformIsKubernetes(platform: string): boolean {
+  return platform === Platform.KubernetesDaemonset || platform === Platform.KubernetesDeployment;
 }
 
 export const InstallPage = withRequireLogin(withNavBar(InstallPageContent));

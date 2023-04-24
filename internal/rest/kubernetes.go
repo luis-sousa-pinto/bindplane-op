@@ -171,3 +171,135 @@ spec:
       securityContext:
         runAsUser: 0
 `
+
+const k8sDeploymentChart = `apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: observiq-cluster-collector
+  name: observiq-cluster-collector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: observiq-cluster-collector
+  labels:
+    app.kubernetes.io/name: observiq-cluster-collector
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  - namespaces/status
+  - nodes
+  - nodes/spec
+  - nodes/stats
+  - nodes/proxy
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+    - autoscaling
+  resources:
+    - horizontalpodautoscalers
+  verbs:
+    - get
+    - list
+    - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: observiq-cluster-collector
+  labels:
+    app: observiq-cluster-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: observiq-cluster-collector
+subjects:
+- kind: ServiceAccount
+  name: observiq-cluster-collector
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: observiq-cluster-collector
+  labels:
+    app: observiq-cluster-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: observiq-cluster-collector
+  template:
+    metadata:
+      labels:
+        app: observiq-cluster-collector
+    spec:
+      serviceAccount: observiq-cluster-collector
+      containers:
+        - name: opentelemetry-container
+          image: observiq/observiq-otel-collector:{{ .version }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+          env:
+            - name: OPAMP_ENDPOINT
+              value: {{ .remoteURL }}
+            - name: OPAMP_SECRET_KEY
+              value: {{ .secretKey }}
+            - name: OPAMP_AGENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPAMP_LABELS
+              value: configuration={{ .configuration }},container-platform=kubernetes-deployment
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+`
