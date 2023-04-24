@@ -1,0 +1,110 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: k8s_container
+  displayName: Kubernetes Container
+  icon: /icons/kubernetes-platform-icon.svg
+  description: Collect Kubernetes container logs.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - kubernetes-daemonset
+  parameters:
+    - name: cluster_name
+      label: Cluster Name
+      description: The cluster name which will be added as the `k8s.cluster.name` resource attribute. 
+      type: string
+      required: true
+      documentation:
+        - text: Read more
+          url: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/k8s/
+
+    - name: log_source
+      label: Log Source
+      description: Where to read logs from. Generally this is `file`. `file` source supports Docker json-file and Containerd cri-o log formats. 
+      type: enum
+      validValues:
+        - file
+        - journald
+      default: file
+
+    - name: file_path
+      label: File Path(s)
+      description: File or directory paths to tail for logs.
+      options:
+        gridColumns: 12
+      type: strings
+      default:
+        - "/var/log/containers/*.log"
+      relevantIf:
+        - name: log_source
+          operator: equals
+          value: file
+      required: true
+
+    - name: exclude_file_path
+      label: Exclude File Path(s)
+      description: File or directory paths to exclude. Generally, the collector's own log should be excluded.
+      options:
+        gridColumns: 12
+      type: strings
+      default:
+        - "/var/log/containers/observiq-*-collector-*"
+      relevantIf:
+        - name: log_source
+          operator: equals
+          value: file
+
+    - name: journald_path
+      label: Journald Path
+      description: The directory containing Journald's log files.
+      type: string
+      default: ""
+      relevantIf:
+        - name: log_source
+          operator: equals
+          value: journald
+      options:
+        gridColumns: 12
+      required: true
+
+    - name: start_at
+      label: Start At
+      description: Start reading logs from 'beginning' or 'end'.
+      type: enum
+      validValues:
+        - beginning
+        - end
+      default: end
+      advancedConfig: true
+
+  logs:
+    receivers: |
+      - plugin/container:
+          path: $OIQ_OTEL_COLLECTOR_HOME/plugins/container_logs.yaml
+          parameters:
+            start_at: {{ .start_at }}
+            body_json_parsing: true
+            log_source: {{ .log_source }}
+            {{ if eq .log_source "file" }}
+            log_paths:
+              {{ range $fp := .file_path }}
+                - '{{ $fp }}'
+              {{ end }}
+            exclude_file_log_path:
+              {{ range $fp := .exclude_file_path }}
+              - '{{ $fp }}'
+              {{end}}
+            {{ else }}
+            journald_path: {{ .journald_path }}
+            {{ end }}
+
+    processors: |
+      - resource:
+          attributes:
+            - key: k8s.cluster.name
+              value: '{{ .cluster_name }}'
+              action: insert
+            - key: k8s.node.name
+              value: '${KUBE_NODE_NAME}'
+              action: insert
