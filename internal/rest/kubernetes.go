@@ -15,18 +15,26 @@
 package rest
 
 const k8sDaemonsetChart = `apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+  name: bindplane-agent
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/name: observiq-node-collector
-  name: observiq-node-collector
+    app.kubernetes.io/name: bindplane-agent
+  name: bindplane-agent
+  namespace: bindplane-agent
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: observiq-node-collector
+  name: bindplane-agent
   labels:
-    app.kubernetes.io/name: observiq-node-collector
+    app.kubernetes.io/name: bindplane-agent
 rules:
 - apiGroups:
   - ""
@@ -90,34 +98,35 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: observiq-node-collector
+  name: bindplane-agent
   labels:
-    app.kubernetes.io/name: observiq-node-collector
+    app.kubernetes.io/name: bindplane-agent
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: observiq-node-collector
+  name: bindplane-agent
 subjects:
 - kind: ServiceAccount
-  name: observiq-node-collector
-  namespace: default
+  name: bindplane-agent
+  namespace: bindplane-agent
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: observiq-node-collector
+  name: bindplane-node-agent
   labels:
-    app.kubernetes.io/name: observiq-node-collector
+    app.kubernetes.io/name: bindplane-agent
+  namespace: bindplane-agent
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: observiq-node-collector
+      app.kubernetes.io/name: bindplane-agent
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: observiq-node-collector
+        app.kubernetes.io/name: bindplane-agent
     spec:
-      serviceAccount: observiq-node-collector
+      serviceAccount: bindplane-agent
       initContainers:
         - name: setup-volumes
           image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
@@ -163,7 +172,7 @@ spec:
             - name: OPAMP_AGENT_NAME
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.name
+                  fieldPath: spec.nodeName
             - name: OPAMP_LABELS
               value: configuration={{ .configuration }},container-platform=kubernetes-daemonset
             - name: KUBE_NODE_NAME
@@ -211,18 +220,27 @@ spec:
 `
 
 const k8sDeploymentChart = `apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+  name: bindplane-agent
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/name: observiq-cluster-collector
-  name: observiq-cluster-collector
+    app.kubernetes.io/name: bindplane-agent
+  name: bindplane-agent
+  namespace: bindplane-agent
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: observiq-cluster-collector
+  name: bindplane-agent
   labels:
-    app.kubernetes.io/name: observiq-cluster-collector
+    app.kubernetes.io/name: bindplane-agent
+  namespace: bindplane-agent
 rules:
 - apiGroups:
   - ""
@@ -286,35 +304,36 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: observiq-cluster-collector
+  name: bindplane-agent
   labels:
-    app.kubernetes.io/name: observiq-cluster-collector
+    app.kubernetes.io/name: bindplane-agent
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: observiq-cluster-collector
+  name: bindplane-agent
 subjects:
 - kind: ServiceAccount
-  name: observiq-cluster-collector
-  namespace: default
+  name: bindplane-agent
+  namespace: bindplane-agent
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: observiq-cluster-collector
+  name: bindplane-cluster-agent
   labels:
-    app.kubernetes.io/name: observiq-cluster-collector
+    app.kubernetes.io/name: bindplane-agent
+  namespace: bindplane-agent
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: observiq-cluster-collector
+      app.kubernetes.io/name: bindplane-agent
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: observiq-cluster-collector
+        app.kubernetes.io/name: bindplane-agent
     spec:
-      serviceAccount: observiq-cluster-collector
+      serviceAccount: bindplane-agent
       initContainers:
         - name: setup-volumes
           image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
