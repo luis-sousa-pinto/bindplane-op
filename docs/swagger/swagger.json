@@ -1374,18 +1374,30 @@
                 "state": {},
                 "status": {
                     "description": "reported by Status messages",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AgentStatus"
+                        }
+                    ]
                 },
                 "tls": {
                     "description": "TLS from the agent's manager.yaml",
-                    "$ref": "#/definitions/model.ManagerTLS"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ManagerTLS"
+                        }
+                    ]
                 },
                 "type": {
                     "type": "string"
                 },
                 "upgrade": {
                     "description": "Upgrade stores information about an agent upgrade",
-                    "$ref": "#/definitions/model.AgentUpgrade"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AgentUpgrade"
+                        }
+                    ]
                 },
                 "version": {
                     "type": "string"
@@ -1445,7 +1457,33 @@
             }
         },
         "model.AgentSelector": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "matchLabels": {
+                    "$ref": "#/definitions/model.MatchLabels"
+                }
+            }
+        },
+        "model.AgentStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                4,
+                5,
+                6,
+                7
+            ],
+            "x-enum-varnames": [
+                "Disconnected",
+                "Connected",
+                "Error",
+                "ComponentFailed",
+                "Deleted",
+                "Configuring",
+                "Upgrading"
+            ]
         },
         "model.AgentUpgrade": {
             "type": "object",
@@ -1463,13 +1501,30 @@
                 },
                 "status": {
                     "description": "Status indicates the progress of the agent upgrade",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AgentUpgradeStatus"
+                        }
+                    ]
                 },
                 "version": {
                     "description": "Version is used to indicate that an agent should be or is being upgraded. The agent status will be set to Upgrading\nwhen the upgrade begins.",
                     "type": "string"
                 }
             }
+        },
+        "model.AgentUpgradeStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "UpgradePending",
+                "UpgradeStarted",
+                "UpgradeFailed"
+            ]
         },
         "model.AgentVersion": {
             "type": "object",
@@ -1478,14 +1533,18 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
                     "description": "Spec TODO(doc)",
-                    "$ref": "#/definitions/model.AgentVersionSpec"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AgentVersionSpec"
+                        }
+                    ]
                 }
             }
         },
@@ -1562,7 +1621,7 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
@@ -1602,14 +1661,18 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
                     "description": "Spec TODO(doc)",
-                    "$ref": "#/definitions/model.ConfigurationSpec"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ConfigurationSpec"
+                        }
+                    ]
                 }
             }
         },
@@ -1696,14 +1759,18 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
                     "description": "Spec TODO(doc)",
-                    "$ref": "#/definitions/model.ParameterizedSpec"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ParameterizedSpec"
+                        }
+                    ]
                 }
             }
         },
@@ -1722,7 +1789,7 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
@@ -1781,6 +1848,37 @@
                 }
             }
         },
+        "model.Kind": {
+            "type": "string",
+            "enum": [
+                "Profile",
+                "Context",
+                "Configuration",
+                "Agent",
+                "AgentVersion",
+                "Source",
+                "Processor",
+                "Destination",
+                "SourceType",
+                "ProcessorType",
+                "DestinationType",
+                "Unknown"
+            ],
+            "x-enum-varnames": [
+                "KindProfile",
+                "KindContext",
+                "KindConfiguration",
+                "KindAgent",
+                "KindAgentVersion",
+                "KindSource",
+                "KindProcessor",
+                "KindDestination",
+                "KindSourceType",
+                "KindProcessorType",
+                "KindDestinationType",
+                "KindUnknown"
+            ]
+        },
         "model.Labels": {
             "type": "object"
         },
@@ -1799,6 +1897,12 @@
                 "key_file": {
                     "type": "string"
                 }
+            }
+        },
+        "model.MatchLabels": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
             }
         },
         "model.Metadata": {
@@ -2016,14 +2120,18 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
                     "description": "Spec TODO(doc)",
-                    "$ref": "#/definitions/model.ParameterizedSpec"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ParameterizedSpec"
+                        }
+                    ]
                 }
             }
         },
@@ -2042,7 +2150,7 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
@@ -2132,7 +2240,11 @@
                 },
                 "status": {
                     "description": "Status TODO(doc)",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.UpdateStatus"
+                        }
+                    ]
                 }
             }
         },
@@ -2158,15 +2270,27 @@
             "properties": {
                 "logs": {
                     "description": "individual",
-                    "$ref": "#/definitions/model.ResourceTypeOutput"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ResourceTypeOutput"
+                        }
+                    ]
                 },
                 "logs+metrics": {
                     "description": "pairs (alphabetical order)",
-                    "$ref": "#/definitions/model.ResourceTypeOutput"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ResourceTypeOutput"
+                        }
+                    ]
                 },
                 "logs+metrics+traces": {
                     "description": "all three (alphabetical order)",
-                    "$ref": "#/definitions/model.ResourceTypeOutput"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ResourceTypeOutput"
+                        }
+                    ]
                 },
                 "logs+traces": {
                     "$ref": "#/definitions/model.ResourceTypeOutput"
@@ -2205,14 +2329,18 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
                     "description": "Spec TODO(doc)",
-                    "$ref": "#/definitions/model.ParameterizedSpec"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ParameterizedSpec"
+                        }
+                    ]
                 }
             }
         },
@@ -2231,7 +2359,7 @@
                     "type": "string"
                 },
                 "kind": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Kind"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.Metadata"
@@ -2270,6 +2398,27 @@
                     }
                 }
             }
+        },
+        "model.UpdateStatus": {
+            "type": "string",
+            "enum": [
+                "unchanged",
+                "configured",
+                "created",
+                "deleted",
+                "invalid",
+                "error",
+                "in-use"
+            ],
+            "x-enum-varnames": [
+                "StatusUnchanged",
+                "StatusConfigured",
+                "StatusCreated",
+                "StatusDeleted",
+                "StatusInvalid",
+                "StatusError",
+                "StatusInUse"
+            ]
         },
         "rest.ErrorResponse": {
             "type": "object",

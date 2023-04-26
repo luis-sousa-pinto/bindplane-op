@@ -34,15 +34,18 @@ definitions:
         type: string
       state: {}
       status:
+        allOf:
+        - $ref: '#/definitions/model.AgentStatus'
         description: reported by Status messages
-        type: integer
       tls:
-        $ref: '#/definitions/model.ManagerTLS'
+        allOf:
+        - $ref: '#/definitions/model.ManagerTLS'
         description: TLS from the agent's manager.yaml
       type:
         type: string
       upgrade:
-        $ref: '#/definitions/model.AgentUpgrade'
+        allOf:
+        - $ref: '#/definitions/model.AgentUpgrade'
         description: Upgrade stores information about an agent upgrade
       version:
         type: string
@@ -81,7 +84,28 @@ definitions:
         $ref: '#/definitions/model.Agent'
     type: object
   model.AgentSelector:
+    properties:
+      matchLabels:
+        $ref: '#/definitions/model.MatchLabels'
     type: object
+  model.AgentStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 4
+    - 5
+    - 6
+    - 7
+    type: integer
+    x-enum-varnames:
+    - Disconnected
+    - Connected
+    - Error
+    - ComponentFailed
+    - Deleted
+    - Configuring
+    - Upgrading
   model.AgentUpgrade:
     properties:
       allPackagesHash:
@@ -94,24 +118,36 @@ definitions:
         description: Error is set if there were errors upgrading the agent
         type: string
       status:
+        allOf:
+        - $ref: '#/definitions/model.AgentUpgradeStatus'
         description: Status indicates the progress of the agent upgrade
-        type: integer
       version:
         description: |-
           Version is used to indicate that an agent should be or is being upgraded. The agent status will be set to Upgrading
           when the upgrade begins.
         type: string
     type: object
+  model.AgentUpgradeStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - UpgradePending
+    - UpgradeStarted
+    - UpgradeFailed
   model.AgentVersion:
     properties:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
-        $ref: '#/definitions/model.AgentVersionSpec'
+        allOf:
+        - $ref: '#/definitions/model.AgentVersionSpec'
         description: Spec TODO(doc)
     type: object
   model.AgentVersionResponse:
@@ -162,7 +198,7 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
@@ -188,11 +224,12 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
-        $ref: '#/definitions/model.ConfigurationSpec'
+        allOf:
+        - $ref: '#/definitions/model.ConfigurationSpec'
         description: Spec TODO(doc)
     type: object
   model.ConfigurationResponse:
@@ -249,11 +286,12 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
-        $ref: '#/definitions/model.ParameterizedSpec'
+        allOf:
+        - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
     type: object
   model.DestinationResponse:
@@ -266,7 +304,7 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
@@ -303,6 +341,34 @@ definitions:
       command:
         type: string
     type: object
+  model.Kind:
+    enum:
+    - Profile
+    - Context
+    - Configuration
+    - Agent
+    - AgentVersion
+    - Source
+    - Processor
+    - Destination
+    - SourceType
+    - ProcessorType
+    - DestinationType
+    - Unknown
+    type: string
+    x-enum-varnames:
+    - KindProfile
+    - KindContext
+    - KindConfiguration
+    - KindAgent
+    - KindAgentVersion
+    - KindSource
+    - KindProcessor
+    - KindDestination
+    - KindSourceType
+    - KindProcessorType
+    - KindDestinationType
+    - KindUnknown
   model.Labels:
     type: object
   model.ManagerTLS:
@@ -315,6 +381,10 @@ definitions:
         type: boolean
       key_file:
         type: string
+    type: object
+  model.MatchLabels:
+    additionalProperties:
+      type: string
     type: object
   model.Metadata:
     properties:
@@ -475,11 +545,12 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
-        $ref: '#/definitions/model.ParameterizedSpec'
+        allOf:
+        - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
     type: object
   model.ProcessorResponse:
@@ -492,7 +563,7 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
@@ -550,8 +621,9 @@ definitions:
       resource:
         description: Resource TODO(doc)
       status:
+        allOf:
+        - $ref: '#/definitions/model.UpdateStatus'
         description: Status TODO(doc)
-        type: string
     type: object
   model.ResourceTypeOutput:
     properties:
@@ -567,13 +639,16 @@ definitions:
   model.ResourceTypeSpec:
     properties:
       logs:
-        $ref: '#/definitions/model.ResourceTypeOutput'
+        allOf:
+        - $ref: '#/definitions/model.ResourceTypeOutput'
         description: individual
       logs+metrics:
-        $ref: '#/definitions/model.ResourceTypeOutput'
+        allOf:
+        - $ref: '#/definitions/model.ResourceTypeOutput'
         description: pairs (alphabetical order)
       logs+metrics+traces:
-        $ref: '#/definitions/model.ResourceTypeOutput'
+        allOf:
+        - $ref: '#/definitions/model.ResourceTypeOutput'
         description: all three (alphabetical order)
       logs+traces:
         $ref: '#/definitions/model.ResourceTypeOutput'
@@ -602,11 +677,12 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
-        $ref: '#/definitions/model.ParameterizedSpec'
+        allOf:
+        - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
     type: object
   model.SourceResponse:
@@ -619,7 +695,7 @@ definitions:
       apiVersion:
         type: string
       kind:
-        type: string
+        $ref: '#/definitions/model.Kind'
       metadata:
         $ref: '#/definitions/model.Metadata'
       spec:
@@ -644,6 +720,24 @@ definitions:
           $ref: '#/definitions/model.Source'
         type: array
     type: object
+  model.UpdateStatus:
+    enum:
+    - unchanged
+    - configured
+    - created
+    - deleted
+    - invalid
+    - error
+    - in-use
+    type: string
+    x-enum-varnames:
+    - StatusUnchanged
+    - StatusConfigured
+    - StatusCreated
+    - StatusDeleted
+    - StatusInvalid
+    - StatusError
+    - StatusInUse
   rest.ErrorResponse:
     properties:
       errors:

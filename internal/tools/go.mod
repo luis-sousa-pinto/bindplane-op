@@ -10,7 +10,7 @@ require (
 	github.com/mgechev/revive v1.3.1
 	github.com/ory/go-acc v0.2.8
 	github.com/securego/gosec/v2 v2.15.0
-	github.com/swaggo/swag v1.8.6
+	github.com/swaggo/swag v1.16.1
 	github.com/uw-labs/lichen v0.1.7
 	github.com/vektra/mockery/v2 v2.25.1
 	honnef.co/go/tools v0.4.3
@@ -145,7 +145,6 @@ require (
 	github.com/firefart/nonamedreturns v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-critic/go-critic v0.7.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
