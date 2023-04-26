@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { Step, WizardComponent } from ".";
 import { useWizard, WizardContextProvider } from "./WizardContext";
 import { Button, Typography } from "@mui/material";
@@ -13,9 +13,9 @@ export default {
       </WizardContextProvider>
     ),
   ],
-} as ComponentMeta<typeof WizardComponent>;
+} as Meta<typeof WizardComponent>;
 
-const Template: ComponentStory<typeof WizardComponent> = (args) => (
+const Template: StoryFn<typeof WizardComponent> = (args) => (
   <WizardComponent {...args} />
 );
 

@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { AssistedConfigWizard } from ".";
 import {
   ResourceType1,
@@ -9,9 +9,9 @@ import { SourceTypesDocument } from "../../../../graphql/generated";
 export default {
   title: "Assisted Config Wizard",
   component: AssistedConfigWizard,
-} as ComponentMeta<typeof AssistedConfigWizard>;
+} as Meta<typeof AssistedConfigWizard>;
 
-const Template: ComponentStory<typeof AssistedConfigWizard> = (args) => (
+const Template: StoryFn<typeof AssistedConfigWizard> = (args) => (
   <AssistedConfigWizard {...args} />
 );
 

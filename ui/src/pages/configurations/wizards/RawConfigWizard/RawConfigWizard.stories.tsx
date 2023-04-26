@@ -1,12 +1,12 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { RawConfigWizard } from ".";
 
 export default {
   title: "Raw Config Wizard",
   component: RawConfigWizard,
-} as ComponentMeta<typeof RawConfigWizard>;
+} as Meta<typeof RawConfigWizard>;
 
-const Template: ComponentStory<typeof RawConfigWizard> = (args) => (
+const Template: StoryFn<typeof RawConfigWizard> = (args) => (
   <RawConfigWizard {...args} />
 );
 

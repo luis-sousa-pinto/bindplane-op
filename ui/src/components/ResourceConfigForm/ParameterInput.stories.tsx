@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { ParameterInput, StringParamInput } from "./ParameterInput";
 import {
   stringDef,
@@ -13,9 +13,9 @@ import {
 export default {
   title: "Parameter Input",
   component: ParameterInput,
-} as ComponentMeta<typeof StringParamInput>;
+} as Meta<typeof StringParamInput>;
 
-const Template: ComponentStory<typeof StringParamInput> = (args) => (
+const Template: StoryFn<typeof StringParamInput> = (args) => (
   <div style={{ width: 400 }}>
     <ParameterInput {...args} />
   </div>

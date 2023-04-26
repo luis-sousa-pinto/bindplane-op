@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { NewResourceDialog } from ".";
 import {
   Destination1,
@@ -13,9 +13,9 @@ import {
 export default {
   title: "Resource Dialog",
   component: NewResourceDialog,
-} as ComponentMeta<typeof NewResourceDialog>;
+} as Meta<typeof NewResourceDialog>;
 
-const Template: ComponentStory<typeof NewResourceDialog> = (args) => (
+const Template: StoryFn<typeof NewResourceDialog> = (args) => (
   <NewResourceDialog {...args} />
 );
 
