@@ -17,60 +17,75 @@ package exporterhelper
 import "fmt"
 
 // BPRenderOtelRetryOnFailureConfig renders the retry_on_failure config for the
-// given exporter.  It does not begin with a newline and the nindent parameter is
-// used to indent following lines by that number of tabs (2 spaces).
+// given exporter. This configuration is rendered inline.
 func BPRenderOtelRetryOnFailureConfig(
 	enabled bool,
 	// We type these as any because BindPlane validation passes in
 	// ints while use in the gotemplate passes in floats.
 	initialInterval,
 	maxInterval,
-	maxElapsedTime any,
-	nindent int) string {
-	indent := makeIndent(nindent)
-	otelConfig := "retry_on_failure:\n"
-
+	maxElapsedTime any) string {
 	if !enabled {
-		otelConfig += fmt.Sprintf("%senabled: false\n", indent)
-		return otelConfig
+		return "retry_on_failure: { enabled: false }"
 	}
 
-	otelConfig += fmt.Sprintf("%senabled: true\n", indent)
-	otelConfig += fmt.Sprintf("%sinitial_interval: %v\n", indent, initialInterval)
-	otelConfig += fmt.Sprintf("%smax_interval: %v\n", indent, maxInterval)
-	otelConfig += fmt.Sprintf("%smax_elapsed_time: %v\n", indent, maxElapsedTime)
-
-	return otelConfig
+	return fmt.Sprintf(
+		"retry_on_failure: { enabled: true, initial_interval: %ds, max_interval: %ds, max_elapsed_time: %ds }",
+		anyToInt64(initialInterval),
+		anyToInt64(maxInterval),
+		anyToInt64(maxElapsedTime),
+	)
 }
 
 // BPRenderOtelSendingQueueConfig renders the sending_queue config for the
-// given exporter.  It does not begin with a newline and the nindent parameter is
-// used to indent following lines by that number of tabs (2 spaces).
+// given exporter. This configuration is rendered inline.
 func BPRenderOtelSendingQueueConfig(
-	enabled bool,
+	enabled,
+	persistenceEnabled bool,
+	storageID string,
 	numConsumers,
-	queueSize any,
-	nindent int) string {
-
-	indent := makeIndent(nindent)
-	otelConfig := "sending_queue:\n"
-
+	queueSize any) string {
 	if !enabled {
-		otelConfig += fmt.Sprintf("%senabled: false\n", indent)
-		return otelConfig
+		// No sending queue
+		return "sending_queue: { enabled: false }"
 	}
 
-	otelConfig += fmt.Sprintf("%senabled: true\n", indent)
-	otelConfig += fmt.Sprintf("%snum_consumers: %v\n", indent, numConsumers)
-	otelConfig += fmt.Sprintf("%squeue_size: %v\n", indent, queueSize)
+	if !persistenceEnabled {
+		// In-memory buffer sending queue
+		return fmt.Sprintf(
+			"sending_queue: { enabled: true, num_consumers: %d, queue_size: %d }",
+			anyToInt64(numConsumers),
+			anyToInt64(queueSize),
+		)
+	}
 
-	return otelConfig
+	// Disk buffer sending queue
+	return fmt.Sprintf(
+		"sending_queue: { enabled: true, num_consumers: %d, queue_size: %d, storage: %q }",
+		anyToInt64(numConsumers),
+		anyToInt64(queueSize),
+		storageID,
+	)
 }
 
-func makeIndent(n int) string {
-	var indent string
-	for range make([]int, n) {
-		indent += "  "
+// anyToInt64 converts an int or float (typed as any) to int64
+func anyToInt64(floatOrInt any) int64 {
+	switch v := floatOrInt.(type) {
+	case int:
+		return int64(v)
+	case int8:
+		return int64(v)
+	case int16:
+		return int64(v)
+	case int32:
+		return int64(v)
+	case int64:
+		return v
+	case float32:
+		return int64(v)
+	case float64:
+		return int64(v)
 	}
-	return indent
+
+	return 0
 }

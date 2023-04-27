@@ -108,7 +108,136 @@ spec:
           operator: equals
           value: true
 
+    # Retry on failure
+    - name: retry_on_failure_enabled
+      label: Enable Retry on Failure
+      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      default: true
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: retry_on_failure_initial_interval
+      label: Initial interval
+      description: Time (in seconds) to wait after the first failure before retrying.
+      type: int
+      default: 5
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_interval
+      label: Max interval
+      description: The upper bound (in seconds) on backoff.
+      type: int
+      default: 30
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_elapsed_time
+      label: Max elapsed time
+      description: The maximum amount of time (in seconds) spent trying to send a batch, used to avoid a never-ending retry loop.
+      type: int
+      default: 300
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    # Sending Queue Options
+    - name: sending_queue_enabled
+      label: Enable Sending Queue
+      description: |
+        Buffer telemetry data temporarily before sending to help ensure
+        telemetry data is not lost in case of a temporary network outage.
+      type: bool
+      default: true
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: sending_queue_num_consumers
+      label: Number of consumers
+      description: Number of consumers that dequeue batches.
+      type: int
+      default: 10
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+    - name: sending_queue_queue_size
+      label: Queue size
+      description: Maximum number of batches kept in memory before dropping.
+      type: int
+      default: 5000
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+    - name: persistent_queue_enabled
+      label: Enable Persistent Queuing
+      description: |
+        Buffer telemetry data to disk before sending to help ensure
+        telemetry data is not lost in case of network outages or collector restarts.
+      type: bool
+      default: true
+      advancedConfig: true
+      documentation:
+      - text: Read More
+        url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      options:
+        sectionHeader: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+    
+    - name: persistent_queue_directory
+      label: Persistent Queue Directory
+      description: The directory used to temporarily store telemetry data.
+      type: string
+      default: $OIQ_OTEL_COLLECTOR_HOME/storage
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+        - name: persistent_queue_enabled
+          operator: equals
+          value: true
+
   logs+metrics+traces:
+    extensions: |
+      {{ if and .persistent_queue_enabled .sending_queue_enabled }}
+      - file_storage:
+          directory: {{ .persistent_queue_directory }}
+      {{ end }}
     exporters: |
       - coralogix:
           {{ $url_suffix := "coralogix.com:443" }}
@@ -166,3 +295,6 @@ spec:
           {{ end }}
 
           timeout: {{ .timeout }}s
+
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
