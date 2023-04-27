@@ -232,14 +232,17 @@ spec:
           operator: equals
           value: true
 
-  logs+metrics+traces:
+  logs:
     extensions: |
+      {{ if .enable_logs }}
       {{ if and .persistent_queue_enabled .sending_queue_enabled }}
       - file_storage:
           directory: {{ .persistent_queue_directory }}
       {{ end }}
+      {{ end }}
     exporters: |
-      - coralogix:
+      {{ if .enable_logs }}
+      - coralogix/logs:
           {{ $url_suffix := "coralogix.com:443" }}
 
           {{ if eq .region "USA1" }}
@@ -255,18 +258,8 @@ spec:
             {{ $url_suffix = "eu2.coralogix.com:443" }}
           {{ end }}
 
-          {{ if .enable_metrics }}
-          metrics:
-            endpoint: otel-metrics.{{ $url_suffix }}
-          {{ end }}
-          {{ if .enable_traces }}
-          traces:
-            endpoint: otel-traces.{{ $url_suffix }}
-          {{ end }}
-          {{ if .enable_logs }}
           logs:
             endpoint: otel-logs.{{ $url_suffix }}
-          {{ end }}
 
           private_key: {{ .private_key }}
 
@@ -298,3 +291,126 @@ spec:
 
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
+      {{ end }}
+
+  metrics:
+    extensions: |
+      {{ if .enable_metrics }}
+      {{ if and .persistent_queue_enabled .sending_queue_enabled }}
+      - file_storage:
+          directory: {{ .persistent_queue_directory }}
+      {{ end }}
+      {{ end }}
+    exporters: |
+      {{ if .enable_metrics }}
+      - coralogix/metrics:
+          {{ $url_suffix := "coralogix.com:443" }}
+
+          {{ if eq .region "USA1" }}
+            {{ $url_suffix = "coralogix.us:443" }}
+          {{ end }}
+          {{ if eq .region "APAC1" }}
+            {{ $url_suffix = "app.coralogix.in:443" }}
+          {{ end }}
+          {{ if eq .region "APAC2" }}
+            {{ $url_suffix = "coralogixsg.com:443" }}
+          {{ end }}
+          {{ if eq .region "EUROPE2" }}
+            {{ $url_suffix = "eu2.coralogix.com:443" }}
+          {{ end }}
+
+          metrics:
+            endpoint: otel-metrics.{{ $url_suffix }}
+
+          private_key: {{ .private_key }}
+
+          application_name: {{ .application_name }}
+
+          {{ if ne .subsystem_name "" }}
+          subsystem_name: {{ .subsystem_name }}
+          {{ end }}
+
+          {{ if .resource_attributes }}
+
+          {{ $length := len .application_name_attributes }} {{ if ne $length 0 }}
+          application_name_attributes:
+            {{ range $a := .application_name_attributes }}
+            - {{ $a }}
+            {{ end }}
+          {{ end }}
+
+          {{ $length := len .subsystem_name_attributes }} {{ if ne $length 0 }}
+          subsystem_name_attributes:
+            {{ range $a := .subsystem_name_attributes }}
+            - {{ $a }}
+            {{ end }}
+          {{ end }}
+
+          {{ end }}
+
+          timeout: {{ .timeout }}s
+
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
+      {{ end }}
+
+  traces:
+    extensions: |
+      {{ if .enable_traces }}
+      {{ if and .persistent_queue_enabled .sending_queue_enabled }}
+      - file_storage:
+          directory: {{ .persistent_queue_directory }}
+      {{ end }}
+      {{ end }}
+    exporters: |
+      {{ if .enable_traces }}
+      - coralogix/traces:
+          {{ $url_suffix := "coralogix.com:443" }}
+
+          {{ if eq .region "USA1" }}
+            {{ $url_suffix = "coralogix.us:443" }}
+          {{ end }}
+          {{ if eq .region "APAC1" }}
+            {{ $url_suffix = "app.coralogix.in:443" }}
+          {{ end }}
+          {{ if eq .region "APAC2" }}
+            {{ $url_suffix = "coralogixsg.com:443" }}
+          {{ end }}
+          {{ if eq .region "EUROPE2" }}
+            {{ $url_suffix = "eu2.coralogix.com:443" }}
+          {{ end }}
+
+          traces:
+            endpoint: otel-traces.{{ $url_suffix }}
+
+          private_key: {{ .private_key }}
+
+          application_name: {{ .application_name }}
+
+          {{ if ne .subsystem_name "" }}
+          subsystem_name: {{ .subsystem_name }}
+          {{ end }}
+
+          {{ if .resource_attributes }}
+
+          {{ $length := len .application_name_attributes }} {{ if ne $length 0 }}
+          application_name_attributes:
+            {{ range $a := .application_name_attributes }}
+            - {{ $a }}
+            {{ end }}
+          {{ end }}
+
+          {{ $length := len .subsystem_name_attributes }} {{ if ne $length 0 }}
+          subsystem_name_attributes:
+            {{ range $a := .subsystem_name_attributes }}
+            - {{ $a }}
+            {{ end }}
+          {{ end }}
+
+          {{ end }}
+
+          timeout: {{ .timeout }}s
+
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
+      {{ end }}
