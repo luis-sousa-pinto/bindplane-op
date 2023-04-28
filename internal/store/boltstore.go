@@ -1031,11 +1031,11 @@ func deleteResource[R model.Resource](ctx context.Context, s *boltstore, kind mo
 			return c.Delete()
 		}
 
-		return ErrResourceMissing
+		return errResourceMissing
 	})
 
 	switch {
-	case errors.Is(err, ErrResourceMissing):
+	case errors.Is(err, errResourceMissing):
 		return resource, exists, nil
 	case errors.Is(err, ErrResourceInUse):
 		return emptyResource, exists, newDependencyError(dependencies)

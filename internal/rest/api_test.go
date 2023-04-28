@@ -1132,7 +1132,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Source",
@@ -1172,12 +1172,12 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "DeleteSource",
 			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
-			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
+			mockReturn:   []interface{}{nil, nil},
 		},
 		{
 			method:       "DELETE",
@@ -1268,7 +1268,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Agent",
@@ -1282,7 +1282,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Agent",
@@ -1355,7 +1355,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Configuration",
@@ -1395,12 +1395,12 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "DeleteConfiguration",
 			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
-			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
+			mockReturn:   []interface{}{nil, nil},
 		},
 		{
 			method:       "DELETE",
@@ -1467,7 +1467,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Destination",
@@ -1507,12 +1507,12 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "DeleteDestination",
 			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
-			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
+			mockReturn:   []interface{}{nil, nil},
 		},
 		{
 			method:       "DELETE",
@@ -1577,7 +1577,7 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "Configuration",
@@ -1617,12 +1617,12 @@ func TestRESTMock(t *testing.T) {
 			resultPtr:    &ErrorResponse{},
 			expectStatus: 404,
 			expectResult: &ErrorResponse{
-				Errors: []string{store.ErrResourceMissing.Error()},
+				Errors: []string{ErrResourceNotFound.Error()},
 			},
 
 			mockFunction: "DeleteConfiguration",
 			mockArgs:     []interface{}{mock.Anything, "does-not-exist"},
-			mockReturn:   []interface{}{nil, store.ErrResourceMissing},
+			mockReturn:   []interface{}{nil, nil},
 		},
 		{
 			method:       "DELETE",

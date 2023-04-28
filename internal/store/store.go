@@ -124,9 +124,10 @@ type Store interface {
 // Store implementation.
 type AgentUpdater func(current *model.Agent)
 
-// ErrResourceMissing is used in delete functions to indicate the delete
-// could not be performed because no such resource exists
-var ErrResourceMissing = errors.New("resource not found")
+// errResourceMissing is used internally in store functions to indicate a delete
+// could not be performed because no such resource exists.  It
+// should not ever be returned by a store function as an error
+var errResourceMissing = errors.New("resource not found")
 
 // ErrResourceInUse is used in delete functions to indicate the delete
 // could not be performed because the Resource is a dependency of another.

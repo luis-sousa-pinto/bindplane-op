@@ -193,7 +193,7 @@ func getAgent(c *gin.Context, bindplane server.BindPlane) {
 	case err != nil:
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 	case agent == nil:
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 	default:
 		c.JSON(http.StatusOK, model.AgentResponse{
 			Agent: agent,
@@ -217,7 +217,7 @@ func getAgentLabels(c *gin.Context, bindplane server.BindPlane) {
 	case err != nil:
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 	case agent == nil:
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 	default:
 		c.JSON(http.StatusOK, model.AgentLabelsResponse{
 			Labels: &agent.Labels,
@@ -241,7 +241,7 @@ func getAgentConfiguration(c *gin.Context, bindplane server.BindPlane) {
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	case agent == nil:
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 		return
 	}
 
@@ -370,8 +370,8 @@ func patchAgentLabels(c *gin.Context, bindplane server.BindPlane) {
 		handleErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	case curAgent == nil:
-		span.SetStatus(codes.Error, store.ErrResourceMissing.Error())
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		span.SetStatus(codes.Error, ErrResourceNotFound.Error())
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 		return
 	case !overwrite && curAgent.Labels.Conflicts(newLabels):
 		err := fmt.Errorf("new labels conflict with existing labels, add ?overwrite=true to replace labels")
@@ -485,7 +485,7 @@ func upgradeAgent(c *gin.Context, bindplane server.BindPlane) {
 		return
 
 	case agent == nil:
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 		return
 
 	case !agent.SupportsUpgrade():
@@ -1197,8 +1197,6 @@ func okResponse(c *gin.Context, err error) bool {
 	switch {
 	case err == nil:
 		return true
-	case errors.Is(err, store.ErrResourceMissing):
-		handleErrorResponse(c, http.StatusNotFound, err)
 	case isDependencyError(err):
 		handleErrorResponse(c, http.StatusConflict, err)
 	default:
@@ -1214,7 +1212,7 @@ func okResource(c *gin.Context, resourceIsNil bool, err error) bool {
 		return false
 	}
 	if resourceIsNil {
-		handleErrorResponse(c, http.StatusNotFound, store.ErrResourceMissing)
+		handleErrorResponse(c, http.StatusNotFound, ErrResourceNotFound)
 		return false
 	}
 	return true
