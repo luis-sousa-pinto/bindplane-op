@@ -230,9 +230,9 @@ spec:
       description: |
         Buffer telemetry data to disk before sending to help ensure
         telemetry data is not lost in case of network outages or collector restarts.
-        This does not apply to metrics, instead enable WAL to buffer metrics to disk.
+        This does not apply to metrics, instead enable Write Ahead Log to buffer metrics to disk.
       type: bool
-      default: false
+      default: true
       advancedConfig: true
       documentation:
       - text: Read More
