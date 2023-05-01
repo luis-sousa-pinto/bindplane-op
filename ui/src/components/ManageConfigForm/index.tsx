@@ -3,7 +3,7 @@ import { Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { Link } from "react-router-dom";
 import { GetAgentAndConfigurationsQuery, useRemoveAgentConfigurationMutation } from "../../graphql/generated";
-import { platformIsKubernetes } from "../../pages/agents/install";
+import { platformIsContainer } from "../../pages/agents/install";
 import mixins from "../../styles/mixins.module.scss";
 import { patchConfigLabel } from "../../utils/patch-config-label";
 import { classes } from "../../utils/styles";
@@ -161,7 +161,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
                 </>
               )}
               {/* k8s agents cannot change their configuration */}
-              {(!platformIsKubernetes(agent.platform ?? "") && configurations.length > 0) && (
+              {(!platformIsContainer(agent.platform ?? "") && configurations.length > 0) && (
                 <Button
                   className={classes([mixins["ml-2"], styles["choose-button"]])}
                   variant="text"

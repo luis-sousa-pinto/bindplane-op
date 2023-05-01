@@ -15,7 +15,7 @@ import {
   useGetConfigurationQuery,
 } from "../../../graphql/generated";
 import { selectorString } from "../../../types/configuration";
-import { platformIsKubernetes } from "../../agents/install";
+import { platformIsContainer } from "../../agents/install";
 import { AddDestinationsSection } from "./AddDestinationsSection";
 import { AddSourcesSection } from "./AddSourcesSection";
 import { ApplyConfigDialog } from "./ApplyConfigDialog";
@@ -245,7 +245,7 @@ const ConfigPageContent: React.FC = () => {
         <CardContainer>
           <div className={styles["title-button-row"]}>
             <Typography variant="h5">Agents</Typography>
-            {!platformIsKubernetes(data.configuration?.metadata?.labels?.platform) && (
+            {!platformIsContainer(data.configuration?.metadata?.labels?.platform) && (
               <IconButton onClick={openApplyDialog} color="primary">
                 <PlusCircleIcon />
             </IconButton>

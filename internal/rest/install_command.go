@@ -42,6 +42,7 @@ const (
 	linuxArm                               = "linux-arm"
 	darwinArm64                            = "darwin-arm64"
 	darwinAmd64                            = "darwin-amd64"
+	openshiftDaemonset                     = "openshift-daemonset"
 	windowsAmd64                           = "windows-amd64"
 )
 
@@ -58,6 +59,7 @@ var platformAliases = map[string]supportedPlatform{
 	"macos-amd64":           darwinAmd64,
 	"kubernetes-daemonset":  kubernetesDaemonset,
 	"kubernetes-deployment": kubernetesDeployment,
+	"openshift-daemonset":   openshiftDaemonset,
 
 	// include supportedPlatform here for validation
 	"linux-arm64":   linuxArm64,
@@ -170,9 +172,11 @@ func (p *installCommandParameters) installCommand() (string, error) {
 			p.args(),
 		), nil
 	case kubernetesDaemonset:
-		return k8sInstallCommand(p, k8sDaemonsetChart)
+		return containerInstallCommand(p, k8sDaemonsetChart)
 	case kubernetesDeployment:
-		return k8sInstallCommand(p, k8sDeploymentChart)
+		return containerInstallCommand(p, k8sDeploymentChart)
+	case openshiftDaemonset:
+		return containerInstallCommand(p, openshiftDaemonsetChart)
 
 	default:
 		return fmt.Sprintf(`sudo sh -c "$(curl -fsSlL %s)" %s%s`,
@@ -183,7 +187,7 @@ func (p *installCommandParameters) installCommand() (string, error) {
 	}
 }
 
-func k8sInstallCommand(params *installCommandParameters, chart string) (string, error) {
+func containerInstallCommand(params *installCommandParameters, chart string) (string, error) {
 	t, err := template.New("deployment").Parse(chart)
 	if err != nil {
 		return "", err
