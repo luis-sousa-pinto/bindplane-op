@@ -7,6 +7,10 @@ metadata:
   icon: /icons/sources/custom.svg
 
 spec:
+  supportedPlatforms:
+    - linux
+    - windows
+    - macos
   version: 0.0.1
   parameters:
     - name: telemetry_types

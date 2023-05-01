@@ -376,7 +376,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -389,7 +389,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeInsert,
 					},
 				},
@@ -598,7 +598,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -611,7 +611,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"unrelated-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("unrelated-source-type", nil),
+						Item: model.NewSourceType("unrelated-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -698,7 +698,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -707,7 +707,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -724,7 +724,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -733,7 +733,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -744,7 +744,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -759,7 +759,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1001,7 +1001,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1012,7 +1012,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1029,7 +1029,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1040,7 +1040,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1051,7 +1051,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			updates: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1068,7 +1068,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1111,7 +1111,7 @@ func TestMergeUpdates(t *testing.T) {
 			from: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1121,7 +1121,7 @@ func TestMergeUpdates(t *testing.T) {
 				AgentVersions: Events[*model.AgentVersion]{},
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1139,7 +1139,7 @@ func TestMergeUpdates(t *testing.T) {
 			into: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
@@ -1147,7 +1147,7 @@ func TestMergeUpdates(t *testing.T) {
 			from: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeInsert,
 					},
 				},
@@ -1155,7 +1155,7 @@ func TestMergeUpdates(t *testing.T) {
 			expected: &Updates{
 				SourceTypes: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
-						Item: model.NewSourceType("test-source-type", nil),
+						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},

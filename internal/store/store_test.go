@@ -66,7 +66,8 @@ var (
 			Name: "s",
 			Type: "string",
 		},
-	})
+	}, []string{"macos"})
+
 	macosSource        = model.NewSource("macos-1", "macos", []model.Parameter{})
 	macosSourceChanged = model.NewSource("macos-1", "macos", []model.Parameter{
 		{
@@ -80,7 +81,7 @@ var (
 			Name: "s",
 			Type: "string",
 		},
-	})
+	}, []string{"macos", "linux", "windows"})
 	nginxSource        = model.NewSource("nginx", "nginx", []model.Parameter{})
 	nginxSourceChanged = model.NewSource("nginx", "nginx", []model.Parameter{
 		{

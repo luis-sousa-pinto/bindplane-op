@@ -127,7 +127,7 @@ func TestKeyFromResource(t *testing.T) {
 	}{
 		{
 			"source",
-			model.NewSourceType("test", []model.ParameterDefinition{}),
+			model.NewSourceType("test", []model.ParameterDefinition{}, []string{"macos", "linux", "windows"}),
 			"SourceType|test",
 		},
 		{

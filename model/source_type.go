@@ -20,9 +20,10 @@ type SourceType struct {
 }
 
 // NewSourceType creates a new source-type with the specified name,
-func NewSourceType(name string, parameters []ParameterDefinition) *SourceType {
+func NewSourceType(name string, parameters []ParameterDefinition, supportedPlatforms []string) *SourceType {
 	return NewSourceTypeWithSpec(name, ResourceTypeSpec{
-		Parameters: parameters,
+		Parameters:         parameters,
+		SupportedPlatforms: supportedPlatforms,
 	})
 }
 

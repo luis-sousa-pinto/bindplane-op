@@ -10,6 +10,8 @@ import { DialogResource, ResourceType } from ".";
 interface ResourceDialogProps extends DialogProps {
   kind: "destination" | "source";
 
+  platform: string;
+
   // Either SourceType[] or DestinationType[]
   resourceTypes: ResourceType[];
 
@@ -51,6 +53,7 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
   onSaveNew,
   onSaveExisting,
   onClose,
+  platform,
   ...dialogProps
 }) => {
   const [selected, setSelected] = useState<ResourceType | null>(null);
@@ -88,6 +91,7 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
       // Step one is to select a ResourceType
       return (
         <SelectView
+          platform={platform}
           resourceTypes={resourceTypes}
           resources={resources ?? []}
           setSelected={setSelected}
@@ -129,6 +133,7 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
     kind,
     onSaveExisting,
     onSaveNew,
+    platform,
     resourceTypes,
     resources,
     selected,

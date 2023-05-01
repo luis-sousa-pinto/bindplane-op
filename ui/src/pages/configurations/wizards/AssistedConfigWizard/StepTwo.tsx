@@ -273,6 +273,7 @@ export const StepTwo: React.FC = (props) => {
           </Button>
 
           <NewResourceDialog
+            platform={formValues.platform}
             title="Choose a Source"
             kind="source"
             open={open}

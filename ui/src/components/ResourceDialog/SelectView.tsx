@@ -15,9 +15,11 @@ interface SelectViewProps {
   setSelected: (t: ResourceType) => void;
   setCreateNew: (b: boolean) => void;
   kind: "source" | "destination";
+  platform: string;
 }
 
 export const SelectView: React.FC<SelectViewProps> = ({
+  platform,
   resourceTypes,
   resources,
   setSelected,
@@ -48,6 +50,7 @@ export const SelectView: React.FC<SelectViewProps> = ({
           onSearchChange={(v: string) => setResourceSearch(v)}
         >
           {sortedResourceTypes
+            .filter((rt) => filterByPlatform(platform, kind, rt))
             // Filter resource types by the resourceSearchValue
             .filter((rt) => metadataSatisfiesSubstring(rt, resourceSearchValue))
             // map the results to resource buttons
@@ -79,3 +82,19 @@ export const SelectView: React.FC<SelectViewProps> = ({
     </>
   );
 };
+
+function filterByPlatform(
+  platform: string,
+  kind: "source" | "destination",
+  resourceType: ResourceType
+) {
+  if (kind !== "source") {
+    return true;
+  }
+
+  if (platform === "unknown") {
+    return true;
+  }
+
+  return resourceType.spec.supportedPlatforms.some((p) => p === platform);
+}

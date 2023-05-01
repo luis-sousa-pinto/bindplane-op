@@ -55,13 +55,13 @@ func resetStore(t *testing.T, store store.Store) {
 			Type:        "enum",
 			ValidValues: []string{"end", "beginning"},
 		},
-	})
+	}, []string{"macos"})
 	nginx := model.NewSourceType("nginx", []model.ParameterDefinition{
 		{
 			Name: "log_format",
 			Type: "string",
 		},
-	})
+	}, []string{"macos", "linux", "windows"})
 	cabin := model.NewDestinationType("cabin", []model.ParameterDefinition{
 		{
 			Name: "endpoint",

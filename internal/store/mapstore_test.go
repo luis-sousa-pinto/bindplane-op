@@ -78,9 +78,9 @@ func TestMapstoreAgentSubscriptionsChannel(t *testing.T) {
 }
 
 func TestMapstoreResourcesEqual(t *testing.T) {
-	resource1 := model.NewSourceType("resource1", []model.ParameterDefinition{})
-	resource2 := model.NewSourceType("resource2", []model.ParameterDefinition{})
-	resource3 := model.NewSourceType("resource1", []model.ParameterDefinition{})
+	resource1 := model.NewSourceType("resource1", []model.ParameterDefinition{}, []string{"macos", "linux", "windows"})
+	resource2 := model.NewSourceType("resource2", []model.ParameterDefinition{}, []string{"macos", "linux", "windows"})
+	resource3 := model.NewSourceType("resource1", []model.ParameterDefinition{}, []string{"macos", "linux", "windows"})
 
 	resource1.SetID("1")
 	resource2.SetID("2")
