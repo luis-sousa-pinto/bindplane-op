@@ -45,6 +45,7 @@ export enum Platform {
   Linux = "linux",
   macOS = "macos",
   OpenShiftDaemonset = "openshift-daemonset",
+  OpenShiftDeployment = "openshift-deployment",
   Windows = "windows",
 }
 
@@ -158,7 +159,7 @@ interface configurationSelectProps {
 
 /**
  * Renders a select box for selecting a configuration depending on the platform
- * k8s requires a configuration, others do not
+ * k8s and openshift require a configuration, others do not
  *
  * @param configs - The list of configurations to display
  * @param platform - The platform to filter the configurations by
@@ -241,6 +242,8 @@ function filterConfigurationsByPlatform(
       return configs.filter((c) => c.metadata.labels?.platform === "macos");
     case Platform.OpenShiftDaemonset:
       return configs.filter((c) => c.metadata.labels?.platform === Platform.OpenShiftDaemonset);
+    case Platform.OpenShiftDeployment:
+      return configs.filter((c) => c.metadata.labels?.platform === Platform.OpenShiftDeployment);
     case Platform.Windows:
       return configs.filter((c) => c.metadata.labels?.platform === "windows");
     default:
@@ -261,7 +264,7 @@ export function platformIsKubernetes(platform: string): boolean {
  * @param platform Reported platform
  */
 export function platformIsOpenShift(platform: string): boolean {
-  return platform === Platform.OpenShiftDaemonset;
+  return platform === Platform.OpenShiftDaemonset || platform === Platform.OpenShiftDeployment;
 }
 
 /**

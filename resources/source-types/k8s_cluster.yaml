@@ -9,6 +9,7 @@ spec:
   version: 0.0.1
   supportedPlatforms:
     - kubernetes-deployment
+    - openshift-deployment
   parameters:
     - name: cluster_name
       label: Cluster Name

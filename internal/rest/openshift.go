@@ -262,3 +262,222 @@ spec:
           hostPath:
             path: /var/lib/observiq/otelcol/container
 `
+
+const openshiftDeploymentChart = `---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+    openshift.io/description: "BindPlane OP managed OpenTelemetry agents"
+    openshift.io/display-name: "bindplane-agent"
+    openshift.io/node-selector: ""
+  name: bindplane-agent
+---
+kind: SecurityContextConstraints
+apiVersion: security.openshift.io/v1
+metadata:
+  annotations:
+    kubernetes.io/description: restricted logreader
+  name: bindplane-agent
+  namespace: bindplane-agent
+readOnlyRootFilesystem: false
+requiredDropCapabilities: null
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  seLinuxOptions:
+    type: spc_t
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- "system:serviceaccount:bindplane-agent:bindplane-agent"
+volumes:
+- downwardAPI
+- emptyDir
+- hostPath
+- projected
+allowHostDirVolumePlugin: true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+  name: bindplane-agent
+  namespace: bindplane-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: bindplane-agent
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+  namespace: bindplane-agent
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  - namespaces/status
+  - nodes
+  - nodes/spec
+  - nodes/stats
+  - nodes/proxy
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+    - autoscaling
+  resources:
+    - horizontalpodautoscalers
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - quota.openshift.io
+  resources:
+    - clusterresourcequotas
+  verbs:
+    - get
+    - list
+    - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bindplane-agent
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: bindplane-agent
+subjects:
+- kind: ServiceAccount
+  name: bindplane-agent
+  namespace: bindplane-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bindplane-cluster-agent
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+  namespace: bindplane-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bindplane-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bindplane-agent
+    spec:
+      serviceAccount: bindplane-agent
+      initContainers:
+        - name: setup-volumes
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          securityContext:
+            # Required for changing permissions from
+            # root to otel user in emptyDir volume.
+            runAsUser: 0
+          command:
+            - "chown"
+            - "otel:"
+            - "/etc/otel/config"
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
+        - name: copy-configs
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'cp config.yaml config/ && cp logging.yaml config/ && chown -R otel:otel config/'
+          volumeMounts:
+            - mountPath: /etc/otel/config
+              name: config
+      containers:
+        - name: opentelemetry-container
+          image: ghcr.io/observiq/observiq-otel-collector:{{ .version }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+          env:
+            - name: OPAMP_ENDPOINT
+              value: {{ .remoteURL }}
+            - name: OPAMP_SECRET_KEY
+              value: {{ .secretKey }}
+            - name: OPAMP_AGENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPAMP_LABELS
+              value: configuration={{ .configuration }},container-platform=kubernetes-deployment
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # The collector process updates config.yaml
+            # and manager.yaml when receiving changes
+            # from the OpAMP server.
+            - name: CONFIG_YAML_PATH
+              value: /etc/otel/config/config.yaml
+            - name: MANAGER_YAML_PATH
+              value: /etc/otel/config/manager.yaml
+            - name: LOGGING_YAML_PATH
+              value: /etc/otel/config/logging.yaml
+          volumeMounts:
+          - mountPath: /etc/otel/config
+            name: config
+      volumes:
+        - name: config
+          emptyDir: {}
+`

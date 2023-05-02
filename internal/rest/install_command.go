@@ -43,6 +43,7 @@ const (
 	darwinArm64                            = "darwin-arm64"
 	darwinAmd64                            = "darwin-amd64"
 	openshiftDaemonset                     = "openshift-daemonset"
+	openshiftDeployment                    = "openshift-deployment"
 	windowsAmd64                           = "windows-amd64"
 )
 
@@ -60,6 +61,7 @@ var platformAliases = map[string]supportedPlatform{
 	"kubernetes-daemonset":  kubernetesDaemonset,
 	"kubernetes-deployment": kubernetesDeployment,
 	"openshift-daemonset":   openshiftDaemonset,
+	"openshift-deployment":  openshiftDeployment,
 
 	// include supportedPlatform here for validation
 	"linux-arm64":   linuxArm64,
@@ -177,6 +179,8 @@ func (p *installCommandParameters) installCommand() (string, error) {
 		return containerInstallCommand(p, k8sDeploymentChart)
 	case openshiftDaemonset:
 		return containerInstallCommand(p, openshiftDaemonsetChart)
+	case openshiftDeployment:
+		return containerInstallCommand(p, openshiftDeploymentChart)
 
 	default:
 		return fmt.Sprintf(`sudo sh -c "$(curl -fsSlL %s)" %s%s`,

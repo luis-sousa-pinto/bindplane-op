@@ -43,11 +43,11 @@ const PLATFORMS: Platform[] = [
     value: "openshift-daemonset",
     backgroundImage: "url('/icons/openshift-platform-icon.svg",
   },
-  // {
-  //   label: "OpenShift (Deployment)",
-  //   value: "openshift-deployment",
-  //   backgroundImage: "url('/icons/openshift-platform-icon.svg",
-  // },
+  {
+    label: "OpenShift (Deployment)",
+    value: "openshift-deployment",
+    backgroundImage: "url('/icons/openshift-platform-icon.svg",
+  },
   {
     label: "Windows",
     value: "windows",
