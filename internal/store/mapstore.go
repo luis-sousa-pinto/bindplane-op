@@ -608,7 +608,8 @@ func (mapstore *mapStore) CleanupDisconnectedAgents(ctx context.Context, since t
 	updates := NewUpdates()
 
 	for _, agent := range mapstore.agents {
-		if agent.DisconnectedSince(since) {
+		if agent.GetLabels().Has(model.LabelAgentContainerPlatform) &&
+			agent.DisconnectedSince(since) {
 			delete(mapstore.agents, agent.ID)
 			updates.IncludeAgent(agent, EventTypeRemove)
 		}

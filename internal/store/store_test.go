@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -1582,6 +1583,51 @@ func runTestMeasurements(t *testing.T, store Store) {
 		requireMetrics(t, []*record.Metric{
 			generateExpectMetric(stats.LogDataSizeMetricName, prev, epochStart, c1, a1, p1, 0.05),
 		}, metrics)
+	})
+}
+
+func runTestCleanupDisconnectedAgents(t *testing.T, store Store) {
+	t.Helper()
+
+	ctx := context.Background()
+	now := time.Now()
+	t.Run("empty store", func(t *testing.T) {
+		err := store.CleanupDisconnectedAgents(ctx, now)
+		require.NoError(t, err)
+	})
+
+	t.Run("only removes containerized agents", func(t *testing.T) {
+		disconnectedAt := now.Add(-1 * time.Hour)
+
+		agentID1 := ulid.Make()
+		agent1, err := store.UpsertAgent(ctx, agentID1.String(), func(current *model.Agent) {
+			current.ID = agentID1.String()
+			current.Labels = model.LabelsFromValidatedMap(map[string]string{
+				model.LabelBindPlaneAgentArch: "amd64",
+				model.LabelBindPlaneAgentName: "Agent " + agentID1.String(),
+			})
+			current.DisconnectedAt = &disconnectedAt
+		})
+		require.NoError(t, err)
+
+		agentID2 := ulid.Make()
+		_, err = store.UpsertAgent(ctx, agentID2.String(), func(current *model.Agent) {
+			current.ID = agentID2.String()
+			current.Labels = model.LabelsFromValidatedMap(map[string]string{
+				model.LabelBindPlaneAgentArch:     "amd64",
+				model.LabelBindPlaneAgentName:     "Agent " + agentID2.String(),
+				model.LabelAgentContainerPlatform: "kubernetes-daemonset",
+			})
+			current.DisconnectedAt = &disconnectedAt
+		})
+		require.NoError(t, err)
+		err = store.CleanupDisconnectedAgents(ctx, now)
+		require.NoError(t, err)
+
+		agents, err := store.Agents(ctx)
+		require.NoError(t, err)
+		require.Len(t, agents, 1)
+		require.Equal(t, agent1.ID, agents[0].ID)
 	})
 }
 

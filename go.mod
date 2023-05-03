@@ -42,6 +42,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/sessions v1.2.1
 	github.com/observiq/stanza v1.6.1
+	github.com/oklog/ulid/v2 v2.1.0
 	github.com/open-telemetry/opamp-go v0.2.0
 	github.com/testcontainers/testcontainers-go v0.19.0
 	go.opentelemetry.io/collector/pdata v0.66.0

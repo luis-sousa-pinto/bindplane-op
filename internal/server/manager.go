@@ -22,6 +22,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/common"
@@ -72,14 +73,14 @@ type Manager interface {
 // ----------------------------------------------------------------------
 
 type manager struct {
-	// agentCleanupTicker   *time.Ticker
 	// agentHeartbeatTicker *time.Ticker
-	config    *common.Server
-	store     store.Store
-	versions  agent.Versions
-	logger    *zap.Logger
-	protocols []protocol.Protocol
-	secretKey string
+	agentCleanupTicker *time.Ticker
+	config             *common.Server
+	store              store.Store
+	versions           agent.Versions
+	logger             *zap.Logger
+	protocols          []protocol.Protocol
+	secretKey          string
 }
 
 var _ Manager = (*manager)(nil)
@@ -87,14 +88,14 @@ var _ Manager = (*manager)(nil)
 // NewManager returns a new implementation of the Manager interface
 func NewManager(config *common.Server, store store.Store, versions agent.Versions, logger *zap.Logger) (Manager, error) {
 	return &manager{
-		// agentCleanupTicker:   time.NewTicker(AgentCleanupInterval),
 		// agentHeartbeatTicker: time.NewTicker(AgentHeartbeatInterval),
-		config:    config,
-		store:     store,
-		versions:  versions,
-		logger:    logger,
-		protocols: []protocol.Protocol{},
-		secretKey: config.SecretKey,
+		agentCleanupTicker: time.NewTicker(AgentCleanupInterval),
+		config:             config,
+		store:              store,
+		versions:           versions,
+		logger:             logger,
+		protocols:          []protocol.Protocol{},
+		secretKey:          config.SecretKey,
 	}, nil
 }
 
@@ -110,7 +111,7 @@ func (m *manager) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			// m.agentCleanupTicker.Stop()
+			m.agentCleanupTicker.Stop()
 			// m.agentHeartbeatTicker.Stop()
 			return
 
@@ -122,10 +123,10 @@ func (m *manager) Start(ctx context.Context) {
 			)
 			m.handleUpdates(ctx, updates)
 
-			// TODO: determine if these need to be replaced and if so, replace them
-			// case <-m.agentCleanupTicker.C:
-			// 	m.handleAgentCleanup()
+		case <-m.agentCleanupTicker.C:
+			m.handleAgentCleanup()
 
+			// TODO: determine if this needs to be replaced and if so, replace it
 			// case <-m.agentHeartbeatTicker.C:
 			// 	m.handleAgentHeartbeat()
 		}
@@ -357,19 +358,23 @@ func (m *manager) AgentVersion(ctx context.Context, version string) (*model.Agen
 
 // ----------------------------------------------------------------------
 
-// handleAgentCleanup removes disconnected agents from the store.
+// handleAgentCleanup removes disconnected container agents from the store.
 func (m *manager) handleAgentCleanup() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	_, span := tracer.Start(ctx, "manager/handleAgentCleanup")
+	ctx, span := tracer.Start(ctx, "manager/handleAgentCleanup")
 	defer span.End()
 
-	now := time.Now()
+	cutoff := time.Now().Add(-AgentCleanupTTL)
+	m.logger.Sugar().Infof("cleaning up container agents disconnected since %s", cutoff.Format(time.RFC3339))
+
 	// TODO: in a cluster, move this to a job
-	err := m.store.CleanupDisconnectedAgents(ctx, now.Add(-AgentCleanupTTL))
+	err := m.store.CleanupDisconnectedAgents(ctx, cutoff)
 	if err != nil {
 		m.logger.Error("error cleaning up disconnected agents", zap.Error(err))
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 	}
 }
 
