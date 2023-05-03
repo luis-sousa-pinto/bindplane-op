@@ -293,6 +293,9 @@ spec:
     extensions: |
       - file_storage:
           directory: {{ .offset_storage_dir }}
+          compaction:
+            on_rebound: true
+            directory: {{ .offset_storage_dir }}
 
     receivers: |
       - filelog:

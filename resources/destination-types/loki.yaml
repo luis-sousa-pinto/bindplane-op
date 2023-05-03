@@ -234,6 +234,9 @@ spec:
       {{ if and .persistent_queue_enabled .sending_queue_enabled }}
       - file_storage:
           directory: {{ .persistent_queue_directory }}
+          compaction:
+            on_rebound: true
+            directory: {{ .persistent_queue_directory }}
       {{ end }}
 
     exporters: |
