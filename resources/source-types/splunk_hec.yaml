@@ -1,0 +1,94 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: splunkhec
+  displayName: Splunk HTTP Event Collector (HEC)
+  icon: /icons/destinations/splunk.svg
+  description: Receive logs from a Splunk HTTP Event forwarder.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+    - name: listen_ip
+      label: Listening IP Address
+      description: The IP address to bind to and receive HTTP events.
+      type: string
+      required: true
+      default: "0.0.0.0"
+
+    - name: listen_port
+      label: Listening Port
+      description: The port to bind to and receive HTTP events. Collector must be running as root (Linux) or Administrator (windows) when binding to a port below 1024.
+      type: int
+      default: 8088
+      required: true
+
+    - name: access_token_passthrough
+      label: Access Token Passthrough
+      description: Whether to preserve incoming access token (Splunk header value) as "com.splunk.hec.access_token" metric resource label.
+      type: bool
+      default: false
+
+    - name: enable_tls
+      label: Enable TLS
+      description: Whether or not to use TLS.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+
+    - name: tls_certificate_path
+      label: TLS Certificate File
+      description: Path to the TLS cert to use for TLS required connections.
+      type: string
+      required: false
+      options:
+        gridColumns: 12
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: tls_private_key_path
+      label: TLS Private Key File
+      description: Path to the TLS key to use for TLS required connections.
+      type: string
+      required: false
+      options:
+        gridColumns: 12
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+  logs:
+    receivers: |
+      - splunk_hec:
+          endpoint: "{{ .listen_ip }}:{{ .listen_port }}"
+          access_token_passthrough: {{ .access_token_passthrough }}
+          raw_path: "/services/collector/raw"
+          health_path: "/services/collector/health"
+          hec_metadata_to_otel_attrs:
+            source: "com.splunk.source"
+            sourcetype: "com.splunk.sourcetype"
+            index: "com.splunk.index"
+            host: "host.name"
+          {{ if .enable_tls }}
+          tls:
+            cert_file: "{{ .tls_certificate_path }}"
+            key_file: "{{ .tls_private_key_path }}"
+          {{ end }}
+
+    processors: |
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]

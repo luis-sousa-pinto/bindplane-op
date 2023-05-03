@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { YamlEditor } from ".";
 
 export default {
@@ -9,9 +9,9 @@ export default {
       options: [true, false],
     },
   },
-} as ComponentMeta<typeof YamlEditor>;
+} as Meta<typeof YamlEditor>;
 
-const Template: ComponentStory<typeof YamlEditor> = (args) => (
+const Template: StoryFn<typeof YamlEditor> = (args) => (
   <div style={{ width: "100vw" }}>
     <YamlEditor {...args} />
   </div>

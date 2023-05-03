@@ -1,10 +1,13 @@
-
 apiVersion: bindplane.observiq.com/v1
 kind: SourceType
 metadata:
   name: Postgresql
   icon: /invalid/icon.svg
 spec:
+  supportedPlatforms:
+    - linux
+    - windows
+    - macos
   parameters:
     - name: start_at
       label: Start Reading At

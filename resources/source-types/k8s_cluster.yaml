@@ -1,0 +1,102 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: k8s_cluster
+  displayName: Kubernetes Cluster
+  icon: /icons/kubernetes-platform-icon.svg
+  description: Collect cluster-level metrics from the Kubernetes API server.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - kubernetes-deployment
+    - openshift-deployment
+  parameters:
+    - name: cluster_name
+      label: Cluster Name
+      description: The cluster name which will be added as the `k8s.cluster.name` resource attribute. 
+      type: string
+      required: true
+      documentation:
+        - text: Read more
+          url: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/k8s/
+
+    - name: node_conditions_to_report
+      label: Node Conditions
+      description: Node conditions to report.
+      type: enums
+      validValues:
+        - Ready
+        - DiskPressure
+        - MemoryPressure
+        - PIDPressure
+        - NetworkUnavailable
+      default:
+        - Ready
+        - DiskPressure
+        - MemoryPressure
+        - PIDPressure
+        - NetworkUnavailable
+      documentation:
+        # TODO(jsirianni): Is it okay to have two links? Why does `enums` not show links in the ui?
+        - text: Read more
+          url: https://kubernetes.io/docs/concepts/architecture/nodes/#condition
+        - text: Receiver Documentation
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver
+      advancedConfig: true
+
+    - name: allocatable_types_to_report
+      label: Allocatable Resources
+      description: Allocatable resource types to report.
+      type: enums
+      validValues:
+        - cpu
+        - memory
+        - ephemeral-storage
+        - storage
+      default:
+        - cpu
+        - memory
+        - ephemeral-storage
+        - storage
+      documentation:
+        - text: Receiver Documentation
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver
+      advancedConfig: true
+   
+    - name: collection_interval
+      label: Collection Interval
+      description: How often (seconds) to scrape for metrics.
+      type: int
+      default: 60
+      advancedConfig: true
+
+    - name: distribution
+      label: Distribution
+      description: The Kubernetes distribution being used by the cluster. Generally this should be `kubernetes`, however, additional metrics can be gathered when selecting a specific distribution.
+      type: enum
+      default: kubernetes
+      validValues:
+        - kubernetes
+        - openshift
+      advancedConfig: true
+
+  metrics:
+    receivers: |
+      - k8s_cluster:
+          auth_type: serviceAccount
+          collection_interval: {{ .collection_interval }}s
+          distribution: {{ .distribution }}
+          node_conditions_to_report:
+            {{ range $condition := .node_conditions_to_report }}
+            - {{ $condition }}
+            {{ end }}
+          allocatable_types_to_report:
+            {{ range $allocatable := .allocatable_types_to_report }}
+            - {{ $allocatable }}
+            {{ end }}
+    processors: |
+      - resource:
+          attributes:
+            - key: k8s.cluster.name
+              value: '{{ .cluster_name }}'
+              action: insert

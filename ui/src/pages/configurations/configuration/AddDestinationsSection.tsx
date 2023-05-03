@@ -23,13 +23,7 @@ const AddDestinationsComponent: React.FC<{
   refetch: () => {};
   setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   addDialogOpen: boolean;
-}> = ({
-  configuration,
-  refetch,
-  destinations,
-  setAddDialogOpen,
-  addDialogOpen,
-}) => {
+}> = ({ configuration, refetch, setAddDialogOpen, addDialogOpen }) => {
   const { data } = useDestinationsAndTypesQuery({
     fetchPolicy: "network-only",
   });
@@ -140,6 +134,7 @@ const AddDestinationsComponent: React.FC<{
 
   return (
     <NewResourceDialog
+      platform={configuration.metadata.labels?.platform ?? "unknown"}
       kind="destination"
       resources={data?.destinations ?? []}
       resourceTypes={data?.destinationTypes ?? []}

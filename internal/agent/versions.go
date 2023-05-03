@@ -96,7 +96,7 @@ func NewVersions(ctx context.Context, client VersionClient, store store.Store, s
 
 func (v *versions) LatestVersionString(ctx context.Context) string {
 	version, err := v.LatestVersion(ctx)
-	if err != nil {
+	if err != nil || version == nil {
 		return ""
 	}
 	return version.Version()

@@ -180,6 +180,56 @@ spec:
           operator: equals
           value: true
 
+    # Retry on failure
+    - name: retry_on_failure_enabled
+      label: Enable Retry on Failure
+      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      default: true
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: retry_on_failure_initial_interval
+      label: Initial interval
+      description: Time (in seconds) to wait after the first failure before retrying.
+      type: int
+      default: 5
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_interval
+      label: Max interval
+      description: The upper bound (in seconds) on backoff.
+      type: int
+      default: 30
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_elapsed_time
+      label: Max elapsed time
+      description: The maximum amount of time (in seconds) spent trying to send a batch, used to avoid a never-ending retry loop.
+      type: int
+      default: 300
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
   metrics:
     exporters: |
       - prometheusremotewrite:
@@ -211,7 +261,7 @@ spec:
           wal:
             directory: $OIQ_OTEL_COLLECTOR_HOME/storage/{{ .wal_storage_path }}
             buffer_size: {{ .wal_buffer_size }}
-            truncate_frequency: {{ .wal_truncate_frequency}}
+            truncate_frequency: {{ .wal_truncate_frequency}}s
           {{ end }}
 
           resource_to_telemetry_conversion:
@@ -231,3 +281,4 @@ spec:
             key_file: "{{ .key_file }}"
             {{ end }}
           {{ end }}
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 

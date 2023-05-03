@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 export default {
   title: "Button",
@@ -14,9 +14,9 @@ export default {
       control: { type: "radio" },
     },
   },
-} as ComponentMeta<typeof Button>;
+} as Meta<typeof Button>;
 
-const Template: ComponentStory<typeof Button> = (args) => (
+const Template: StoryFn<typeof Button> = (args) => (
   <Button {...args}>Button</Button>
 );
 

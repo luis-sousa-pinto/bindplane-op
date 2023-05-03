@@ -17,7 +17,7 @@ metadata:
   description: Receive metrics from OTLP exporters via GRPC.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - linux
   parameters:
   metrics:
@@ -54,7 +54,7 @@ metadata:
   description: Receive metrics from OTLP exporters via GRPC.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - linux
   parameters:
     - name: listen_address

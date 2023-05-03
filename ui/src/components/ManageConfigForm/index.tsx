@@ -1,14 +1,14 @@
 import { gql } from "@apollo/client";
 import { Button, Typography } from "@mui/material";
-import { GetAgentAndConfigurationsQuery, useRemoveAgentConfigurationMutation } from "../../graphql/generated";
-import { classes } from "../../utils/styles";
-import { patchConfigLabel } from "../../utils/patch-config-label";
-import { Link } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { Config } from "./types";
-
+import { Link } from "react-router-dom";
+import { GetAgentAndConfigurationsQuery, useRemoveAgentConfigurationMutation } from "../../graphql/generated";
+import { platformIsContainer } from "../../pages/agents/install";
 import mixins from "../../styles/mixins.module.scss";
+import { patchConfigLabel } from "../../utils/patch-config-label";
+import { classes } from "../../utils/styles";
 import styles from "./apply-config-form.module.scss";
+import { Config } from "./types";
 
 gql`
   mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
@@ -160,7 +160,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
                   </Button>
                 </>
               )}
-              {configurations.length > 0 && (
+              {/* k8s agents cannot change their configuration */}
+              {(!platformIsContainer(agent.platform ?? "") && configurations.length > 0) && (
                 <Button
                   className={classes([mixins["ml-2"], styles["choose-button"]])}
                   variant="text"

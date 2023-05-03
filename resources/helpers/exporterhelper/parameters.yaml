@@ -91,3 +91,37 @@
     - name: sending_queue_enabled
       operator: equals
       value: true
+
+- name: persistent_queue_enabled
+  label: Enable Persistent Queuing
+  description: |
+    Buffer telemetry data to disk before sending to help ensure
+    telemetry data is not lost in case of network outages or collector restarts.
+  type: bool
+  default: false
+  advancedConfig: true
+  documentation:
+  - text: Read More
+    url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+  options:
+    sectionHeader: true
+  required: false
+  relevantIf:
+    - name: sending_queue_enabled
+      operator: equals
+      value: true
+
+- name: persistent_queue_directory
+  label: Persistent Queue Directory
+  description: The directory used to temporarily store telemetry data.
+  type: string
+  default: $OIQ_OTEL_COLLECTOR_HOME/storage
+  advancedConfig: true
+  required: false
+  relevantIf:
+    - name: sending_queue_enabled
+      operator: equals
+      value: true
+    - name: persistent_queue_enabled
+      operator: equals
+      value: true

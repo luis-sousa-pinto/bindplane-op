@@ -4,12 +4,15 @@ import {
   Destination1,
   ResourceType1,
   ResourceType2,
+  WindowsOnlyResourceType,
 } from "../ResourceConfigForm/__test__/dummyResources";
+import { SelectView } from "./SelectView";
 
 describe("ResourceDialog", () => {
   it("renders without error", () => {
     render(
       <NewResourceDialog
+        platform="linux"
         onClose={() => {}}
         resourceTypes={[ResourceType1, ResourceType2]}
         title={""}
@@ -22,6 +25,7 @@ describe("ResourceDialog", () => {
   it("renders ResourceTypes", () => {
     render(
       <NewResourceDialog
+        platform="linux"
         onClose={() => {}}
         resourceTypes={[ResourceType1, ResourceType2]}
         title={""}
@@ -37,6 +41,7 @@ describe("ResourceDialog", () => {
   it("displays ResourceType form when clicking next", () => {
     render(
       <NewResourceDialog
+        platform="linux"
         onClose={() => {}}
         resourceTypes={[ResourceType1, ResourceType2]}
         title={""}
@@ -52,6 +57,7 @@ describe("ResourceDialog", () => {
   it("will offer to use an existing destination", () => {
     render(
       <NewResourceDialog
+        platform="linux"
         onClose={() => {}}
         resourceTypes={[ResourceType1, ResourceType2]}
         resources={[Destination1]}
@@ -64,5 +70,43 @@ describe("ResourceDialog", () => {
     screen.getByText(ResourceType1.metadata.displayName!).click();
     screen.getByText(Destination1.metadata.name);
     screen.getByText("Create New");
+  });
+});
+
+describe("SelectView", () => {
+  it("shows all resource types for supported platform", () => {
+    render(
+      <SelectView
+        resourceTypes={[ResourceType1, ResourceType2, WindowsOnlyResourceType]}
+        resources={[]}
+        setSelected={() => {}}
+        setCreateNew={() => {}}
+        kind={"source"}
+        platform={"windows"}
+      />
+    );
+
+    screen.getByText(WindowsOnlyResourceType.metadata.displayName!);
+    screen.getByText(ResourceType1.metadata.displayName!);
+    screen.getByText(ResourceType2.metadata.displayName!);
+  });
+
+  it("filters out resource types based on platform", () => {
+    render(
+      <SelectView
+        resourceTypes={[ResourceType1, ResourceType2, WindowsOnlyResourceType]}
+        resources={[]}
+        setSelected={() => {}}
+        setCreateNew={() => {}}
+        kind={"source"}
+        platform={"linux"}
+      />
+    );
+
+    expect(
+      screen.queryByText(WindowsOnlyResourceType.metadata.displayName!)
+    ).not.toBeInTheDocument();
+    screen.getByText(ResourceType1.metadata.displayName!);
+    screen.getByText(ResourceType2.metadata.displayName!);
   });
 });

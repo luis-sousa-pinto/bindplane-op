@@ -25,7 +25,7 @@ Documented in this section are several usage examples. Use the `help` command or
 Generate an agent installation command using the `install agent` command.
 
 ```bash
-bindplane install agent --platform linux
+bindplanectl install agent --platform linux
 ```
 ```bash
 sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/releases/latest/download/install_unix.sh)" install_unix.sh -e wss://bindplane.mydomain.net:3001/v1/opamp -s 000000-0000-0000-0000-000000

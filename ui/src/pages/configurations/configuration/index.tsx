@@ -1,27 +1,27 @@
 import { gql } from "@apollo/client";
 import { IconButton, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CardContainer } from "../../../components/CardContainer";
+import { PlusCircleIcon } from "../../../components/Icons";
+import { withNavBar } from "../../../components/NavBar";
+import { PipelineGraph } from "../../../components/PipelineGraph/PipelineGraph";
+import { AgentsTable } from "../../../components/Tables/AgentsTable";
+import { AgentsTableField } from "../../../components/Tables/AgentsTable/AgentsDataGrid";
+import { withRequireLogin } from "../../../contexts/RequireLogin";
 import {
   GetConfigurationQuery,
   useGetConfigurationQuery,
 } from "../../../graphql/generated";
-import { AgentsTable } from "../../../components/Tables/AgentsTable";
-import { AgentsTableField } from "../../../components/Tables/AgentsTable/AgentsDataGrid";
-import { PlusCircleIcon } from "../../../components/Icons";
 import { selectorString } from "../../../types/configuration";
-import { ApplyConfigDialog } from "./ApplyConfigDialog";
-import { DetailsSection } from "./DetailsSection";
-import { ConfigurationSection } from "./ConfigurationSection";
-import { AddSourcesSection } from "./AddSourcesSection";
+import { platformIsContainer } from "../../agents/install";
 import { AddDestinationsSection } from "./AddDestinationsSection";
-import { useSnackbar } from "notistack";
-import { withRequireLogin } from "../../../contexts/RequireLogin";
-import { withNavBar } from "../../../components/NavBar";
-import { PipelineGraph } from "../../../components/PipelineGraph/PipelineGraph";
+import { AddSourcesSection } from "./AddSourcesSection";
+import { ApplyConfigDialog } from "./ApplyConfigDialog";
 import { ConfigurationPageContextProvider } from "./ConfigurationPageContext";
-
+import { ConfigurationSection } from "./ConfigurationSection";
+import { DetailsSection } from "./DetailsSection";
 import styles from "./configuration-page.module.scss";
 
 gql`
@@ -245,9 +245,11 @@ const ConfigPageContent: React.FC = () => {
         <CardContainer>
           <div className={styles["title-button-row"]}>
             <Typography variant="h5">Agents</Typography>
-            <IconButton onClick={openApplyDialog} color="primary">
-              <PlusCircleIcon />
+            {!platformIsContainer(data.configuration?.metadata?.labels?.platform) && (
+              <IconButton onClick={openApplyDialog} color="primary">
+                <PlusCircleIcon />
             </IconButton>
+            )}
           </div>
 
           <AgentsTable

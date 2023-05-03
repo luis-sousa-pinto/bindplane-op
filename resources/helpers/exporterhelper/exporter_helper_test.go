@@ -22,43 +22,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_makeIndent(t *testing.T) {
-	type args struct {
-		n int
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			"0",
-			args{0},
-			"",
-		},
-		{
-			"4",
-			args{4},
-			// 8 spaces
-			"        ",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := makeIndent(tt.args.n); got != tt.want {
-				t.Errorf("makeIndent() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestBPRenderOtelRetryOnFailureConfig(t *testing.T) {
 	type args struct {
 		enabled         bool
 		initialInterval int
 		maxInterval     int
 		queueSize       int
-		nindent         int
 	}
 	tests := []struct {
 		name string
@@ -72,11 +41,8 @@ func TestBPRenderOtelRetryOnFailureConfig(t *testing.T) {
 				0,
 				0,
 				0,
-				7,
 			},
-			`retry_on_failure:
-              enabled: false
-`,
+			`retry_on_failure: { enabled: false }`,
 		},
 		{
 			"enabled",
@@ -85,19 +51,13 @@ func TestBPRenderOtelRetryOnFailureConfig(t *testing.T) {
 				1,
 				2,
 				3,
-				7,
 			},
-			`retry_on_failure:
-              enabled: true
-              initial_interval: 1
-              max_interval: 2
-              max_elapsed_time: 3
-`,
+			`retry_on_failure: { enabled: true, initial_interval: 1s, max_interval: 2s, max_elapsed_time: 3s }`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BPRenderOtelRetryOnFailureConfig(tt.args.enabled, tt.args.initialInterval, tt.args.maxInterval, tt.args.queueSize, tt.args.nindent)
+			got := BPRenderOtelRetryOnFailureConfig(tt.args.enabled, tt.args.initialInterval, tt.args.maxInterval, tt.args.queueSize)
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -105,10 +65,11 @@ func TestBPRenderOtelRetryOnFailureConfig(t *testing.T) {
 
 func TestBPRenderOtelSendingQueueConfig(t *testing.T) {
 	type args struct {
-		enabled      bool
-		numConsumers int
-		queueSize    int
-		nindent      int
+		enabled            bool
+		persistenceEnabled bool
+		storageID          string
+		numConsumers       int
+		queueSize          int
 	}
 	tests := []struct {
 		name string
@@ -116,36 +77,54 @@ func TestBPRenderOtelSendingQueueConfig(t *testing.T) {
 		want string
 	}{
 		{
-			"not enabled",
-			args{
-				false,
-				0,
-				0,
-				7,
+			name: "sending queue disabled",
+			args: args{
+				enabled:            false,
+				persistenceEnabled: false,
+				storageID:          "file_storage/something",
+				numConsumers:       0,
+				queueSize:          0,
 			},
-			`sending_queue:
-              enabled: false
-`,
+			want: `sending_queue: { enabled: false }`,
 		},
 		{
-			"enabled",
-			args{
-				true,
-				1,
-				2,
-				7,
+			name: "sending queue disabled, persistence enabled",
+			args: args{
+				enabled:            false,
+				persistenceEnabled: false,
+				storageID:          "file_storage/something",
+				numConsumers:       0,
+				queueSize:          0,
 			},
-			`sending_queue:
-              enabled: true
-              num_consumers: 1
-              queue_size: 2
-`,
+			want: `sending_queue: { enabled: false }`,
+		},
+		{
+			name: "in-memory sending queue",
+			args: args{
+				enabled:            true,
+				persistenceEnabled: false,
+				storageID:          "file_storage/something",
+				numConsumers:       1,
+				queueSize:          2,
+			},
+			want: `sending_queue: { enabled: true, num_consumers: 1, queue_size: 2 }`,
+		},
+		{
+			name: "in-memory sending queue",
+			args: args{
+				enabled:            true,
+				persistenceEnabled: true,
+				storageID:          "file_storage/something",
+				numConsumers:       1,
+				queueSize:          2,
+			},
+			want: `sending_queue: { enabled: true, num_consumers: 1, queue_size: 2, storage: "file_storage/something" }`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BPRenderOtelSendingQueueConfig(tt.args.enabled, tt.args.numConsumers, tt.args.queueSize, tt.args.nindent)
+			got := BPRenderOtelSendingQueueConfig(tt.args.enabled, tt.args.persistenceEnabled, tt.args.storageID, tt.args.numConsumers, tt.args.queueSize)
 			require.Equal(t, tt.want, got)
 		})
 	}

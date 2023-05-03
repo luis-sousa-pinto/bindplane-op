@@ -22,10 +22,6 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
     definition.options.password === true
   );
 
-  if (definition.name === "password") {
-    console.log({ definition });
-  }
-
   function handleValueChange(e: ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
     isFunction(onValueChange) && onValueChange(e.target.value);

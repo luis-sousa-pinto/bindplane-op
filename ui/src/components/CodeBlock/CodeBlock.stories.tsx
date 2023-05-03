@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { InputType } from "zlib";
 import { CodeBlock } from ".";
 
@@ -8,9 +8,9 @@ export default {
   argTypes: {
     value: "something" as InputType,
   },
-} as ComponentMeta<typeof CodeBlock>;
+} as Meta<typeof CodeBlock>;
 
-const Template: ComponentStory<typeof CodeBlock> = (args) => (
+const Template: StoryFn<typeof CodeBlock> = (args) => (
   <CodeBlock {...args} />
 );
 

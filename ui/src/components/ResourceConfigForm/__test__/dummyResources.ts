@@ -225,6 +225,25 @@ export const ResourceType2: SourceType = {
   },
 };
 
+export const WindowsOnlyResourceType: SourceType = {
+  apiVersion: APIVersion.V1,
+  kind: "ResourceType",
+  metadata: {
+    id: "windows-only-resource-type",
+    name: "windows-only-resource-type",
+    displayName: "Windows Only",
+    description: "A description for resource one.",
+    icon: "/icons/destinations/otlp.svg",
+  },
+  spec: {
+    version: "0.0.0",
+    parameters: [boolDefaultFalseDef, relevantIfDef],
+
+    supportedPlatforms: ["windows"],
+    telemetryTypes: [],
+  },
+};
+
 export const ResourceType3: SourceType = {
   apiVersion: APIVersion.V1,
   kind: "ResourceType",

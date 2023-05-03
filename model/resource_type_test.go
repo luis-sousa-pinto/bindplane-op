@@ -464,3 +464,74 @@ func TestResourceType_templateFuncDefaultDisabledCategoryMetrics(t *testing.T) {
 		})
 	}
 }
+
+func TestResourceTypeSpec_validateSupportedPlatforms(t *testing.T) {
+	type fields struct {
+		SupportedPlatforms []string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		kind   Kind
+		expect error
+	}{
+		{
+			"does not run for KindDesintationType",
+			fields{
+				SupportedPlatforms: nil,
+			},
+			KindDestinationType,
+			nil,
+		},
+		{
+			"nil, expect error",
+			fields{
+				SupportedPlatforms: nil,
+			},
+			KindSourceType,
+			ErrMissingSupportedPlatforms,
+		},
+		{
+			"empty, expect error",
+			fields{
+				SupportedPlatforms: []string{},
+			},
+			KindSourceType,
+			ErrMissingSupportedPlatforms,
+		},
+		{
+			"valid, expect no error",
+			fields{
+				SupportedPlatforms: []string{"linux"},
+			},
+			KindSourceType,
+			nil,
+		},
+		{
+			"some invalid name, expect error",
+			fields{
+				SupportedPlatforms: []string{"linux", "not a real platform"},
+			},
+			KindSourceType,
+			ErrInvalidPlatform,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &ResourceTypeSpec{
+				SupportedPlatforms: tt.fields.SupportedPlatforms,
+			}
+
+			errs := validation.NewErrors()
+			s.validateSupportedPlatforms(tt.kind, errs)
+
+			if tt.expect != nil {
+				require.ErrorContains(t, errs.Result(), tt.expect.Error())
+			} else {
+				require.NoError(t, errs.Result())
+			}
+		})
+	}
+}

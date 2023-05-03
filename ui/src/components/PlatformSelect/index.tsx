@@ -24,11 +24,30 @@ const PLATFORMS: Platform[] = [
     backgroundImage: "url('/icons/linux-platform-icon.svg",
   },
   {
+    label: "Kubernetes (DaemonSet)",
+    value: "kubernetes-daemonset",
+    backgroundImage: "url('/icons/kubernetes-platform-icon.svg",
+  },
+  {
+    label: "Kubernetes (Deployment)",
+    value: "kubernetes-deployment",
+    backgroundImage: "url('/icons/kubernetes-platform-icon.svg",
+  },
+  {
     label: "macOS",
     value: "macos",
     backgroundImage: "url('/icons/macos-platform-icon.svg",
   },
-
+  {
+    label: "OpenShift (DaemonSet)",
+    value: "openshift-daemonset",
+    backgroundImage: "url('/icons/openshift-platform-icon.svg",
+  },
+  {
+    label: "OpenShift (Deployment)",
+    value: "openshift-deployment",
+    backgroundImage: "url('/icons/openshift-platform-icon.svg",
+  },
   {
     label: "Windows",
     value: "windows",

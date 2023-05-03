@@ -7,7 +7,7 @@ metadata:
   description: Collect metrics and logs from Oracle Database.
 spec:
   version: 0.1.0
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows

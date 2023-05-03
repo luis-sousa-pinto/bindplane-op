@@ -15,8 +15,13 @@
 package rest
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 )
+
+// ErrResourceNotFound is returned along with 404 responses.
+var ErrResourceNotFound = errors.New("resource not found")
 
 // ErrorResponse TODO(doc)
 type ErrorResponse struct {

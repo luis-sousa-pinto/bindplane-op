@@ -1,0 +1,45 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: k8s_events
+  displayName: Kubernetes Events
+  icon: /icons/kubernetes-platform-icon.svg
+  description: Collect events from the Kubernetes API server.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - kubernetes-deployment
+    - openshift-deployment
+  parameters:
+    - name: cluster_name
+      label: Cluster Name
+      description: The cluster name which will be added as the `k8s.cluster.name` resource attribute. 
+      type: string
+      required: true
+      documentation:
+        - text: Read more
+          url: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/k8s/
+
+    - name: namespaces
+      label: Namespaces
+      description: Optional namespaces to collect events from. Defaults to all namespaces.
+      type: strings
+      required: false
+      default: []
+
+  logs:
+    receivers: |
+      - k8s_events:
+          auth_type: serviceAccount
+          {{ if gt (len .namespaces) 0 }}
+          namespaces:
+          {{ range $n := .namespaces}}
+            - {{ $n }}
+          {{ end }}
+          {{ end }}
+    processors: |
+      - resource:
+          attributes:
+            - key: k8s.cluster.name
+              value: '{{ .cluster_name }}'
+              action: insert

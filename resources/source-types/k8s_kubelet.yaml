@@ -1,0 +1,68 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: k8s_kubelet
+  displayName: Kubernetes Kubelet
+  icon: /icons/kubernetes-platform-icon.svg
+  description: Collect node, pod, and container metrics from the Kubernetes Kubelet API.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - kubernetes-daemonset
+    - openshift-daemonset
+  parameters:
+    - name: cluster_name
+      label: Cluster Name
+      description: The cluster name which will be added as the `k8s.cluster.name` resource attribute. 
+      type: string
+      required: true
+      documentation:
+        - text: Read more
+          url: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/k8s/
+
+    - name: metric_groups
+      label: Metric Groups
+      required: true
+      type: enums
+      validValues:
+        - node
+        - pod
+        - container
+        - volume
+      default:
+        - node
+        - pod
+        - container
+        - volume
+      documentation:
+        - text: Read more
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver#metric-groups
+
+    - name: collection_interval
+      label: Collection Interval
+      description: How often (seconds) to scrape for metrics.
+      type: int
+      default: 60
+      advancedConfig: true
+
+  metrics:
+    receivers: |
+      - kubeletstats:
+          endpoint: '${KUBE_NODE_NAME}:10250'
+          auth_type: serviceAccount
+          collection_interval: {{ .collection_interval }}s
+          insecure_skip_verify: true
+          metric_groups:
+          {{ range $m := .metric_groups}}
+            - {{ $m }}
+          {{ end }}
+
+    processors: |
+      - resource:
+          attributes:
+            - key: k8s.cluster.name
+              value: '{{ .cluster_name }}'
+              action: insert
+            - key: k8s.node.name
+              value: '${KUBE_NODE_NAME}'
+              action: insert

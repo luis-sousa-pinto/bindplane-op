@@ -15,6 +15,8 @@
 // Package version provides information about the current version of BindPlane
 package version
 
+import "fmt"
+
 // set at compile time
 var (
 	gitCommit string
@@ -38,6 +40,15 @@ func (v Version) String() string {
 	}
 
 	return "unknown"
+}
+
+// FullString is like String, but it returns both the commit and tag, if they both exist
+func (v Version) FullString() string {
+	if v.Tag != "" && v.Commit != "" {
+		return fmt.Sprintf("%s (%s)", v.Tag, v.Commit)
+	}
+
+	return v.String()
 }
 
 // NewVersion returns a populated version

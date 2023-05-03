@@ -17,6 +17,7 @@ package model
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -334,6 +335,7 @@ func (rt *ResourceType) ValidateWithStore(_ context.Context, _ ResourceStore) (w
 }
 
 func (s *ResourceTypeSpec) validate(kind Kind, errs validation.Errors) {
+	s.validateSupportedPlatforms(kind, errs)
 	s.validateParameterDefinitions(kind, errs)
 
 	// assemble default parameter values for validation
@@ -367,6 +369,67 @@ func (s *ResourceTypeSpec) validate(kind Kind, errs validation.Errors) {
 	s.Logs.validateTemplates(errs, "logs", params)
 	s.Metrics.validateTemplates(errs, "metrics", params)
 	s.Traces.validateTemplates(errs, "traces", params)
+}
+
+const (
+	platformWindows             = "windows"
+	platformLinux               = "linux"
+	platformMacOS               = "macos"
+	platformK8sDaemonset        = "kubernetes-daemonset"
+	platformK8sDeployment       = "kubernetes-deployment"
+	platformOpenshiftDaemonset  = "openshift-daemonset"
+	platformOpenshiftDeployment = "openshift-deployment"
+)
+
+type supportedPlatforms struct {
+	platforms []string
+}
+
+// SupportedPlatforms contains the list of supported platforms
+// in the ResourceType Spec
+var SupportedPlatforms = &supportedPlatforms{
+	platforms: []string{
+		platformWindows,
+		platformLinux,
+		platformMacOS,
+		platformK8sDaemonset,
+		platformK8sDeployment,
+		platformOpenshiftDaemonset,
+		platformOpenshiftDeployment,
+	},
+}
+
+func (s *supportedPlatforms) contains(platform string) bool {
+	for _, p := range s.platforms {
+		if p == platform {
+			return true
+		}
+	}
+	return false
+}
+
+// ErrMissingSupportedPlatforms is returned when the supportedPlatforms field is missing
+// or empty
+var ErrMissingSupportedPlatforms = errors.New("supportedPlatforms must be specified")
+
+// ErrInvalidPlatform is returned when a platform name is not valid
+var ErrInvalidPlatform = errors.New("invalid platform name")
+
+func (s *ResourceTypeSpec) validateSupportedPlatforms(kind Kind, errs validation.Errors) {
+	// Only run for SourceTypes
+	if kind != KindSourceType {
+		return
+	}
+
+	if s.SupportedPlatforms == nil || len(s.SupportedPlatforms) == 0 {
+		errs.Add(ErrMissingSupportedPlatforms)
+	}
+
+	for _, platform := range s.SupportedPlatforms {
+		if !SupportedPlatforms.contains(platform) {
+			errs.Add(ErrInvalidPlatform)
+		}
+	}
 }
 
 func (s *ResourceTypeSpec) validateParameterDefinitions(kind Kind, errs validation.Errors) {

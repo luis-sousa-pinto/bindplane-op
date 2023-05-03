@@ -8,7 +8,7 @@ metadata:
   description: Collect logs from SAP HANA.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows

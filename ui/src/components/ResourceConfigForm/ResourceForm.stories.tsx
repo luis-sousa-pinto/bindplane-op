@@ -1,13 +1,13 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { ResourceConfigForm } from ".";
-import { ResourceType2, ResourceType1 } from "./__test__/dummyResources";
+import { ResourceType1, ResourceType2 } from "./__test__/dummyResources";
 
 export default {
   title: "Resource Form",
   component: ResourceConfigForm,
-} as ComponentMeta<typeof ResourceConfigForm>;
+} as Meta<typeof ResourceConfigForm>;
 
-const Template: ComponentStory<typeof ResourceConfigForm> = (args) => (
+const Template: StoryFn<typeof ResourceConfigForm> = (args) => (
   <div style={{ width: 400 }}>
     <ResourceConfigForm {...args} />
   </div>
@@ -19,10 +19,12 @@ export const RelevantIf = Template.bind({});
 Default.args = {
   displayName: ResourceType1.metadata.displayName!,
   description: ResourceType1.metadata.description!,
+  kind: "source",
   parameterDefinitions: ResourceType1.spec.parameters,
 };
 RelevantIf.args = {
   displayName: ResourceType2.metadata.displayName!,
   description: ResourceType2.metadata.description!,
+  kind: "source",
   parameterDefinitions: ResourceType2.spec.parameters,
 };

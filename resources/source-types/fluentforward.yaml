@@ -7,7 +7,7 @@ metadata:
   description: Receive logs from fluentd, fluentbit, and other systems which support emitting logs using the Forward Protocol.
 spec:
   version: 0.0.1
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows

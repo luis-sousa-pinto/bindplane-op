@@ -442,6 +442,7 @@ export const StepThree: React.FC = () => {
       </ConfirmDeleteResourceDialog>
 
       <NewResourceDialog
+        platform={formValues.platform}
         title="Choose a Destination"
         kind="destination"
         open={addDestinationOpen}

@@ -247,6 +247,90 @@ spec:
       default: 0
       advancedConfig: true
 
+    # Sending Queue Options (Elasticsearch exporter does not support retry on failure settings)
+    - name: sending_queue_enabled
+      label: Enable Sending Queue
+      description: |
+        Buffer telemetry data temporarily before sending to help ensure
+        telemetry data is not lost in case of a temporary network outage.
+      type: bool
+      default: true
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: sending_queue_num_consumers
+      label: Number of consumers
+      description: Number of consumers that dequeue batches.
+      type: int
+      default: 10
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+    - name: sending_queue_queue_size
+      label: Queue size
+      description: Maximum number of batches kept in memory before dropping.
+      type: int
+      default: 5000
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+
+    - name: persistent_queue_enabled
+      label: Enable Persistent Queuing
+      description: |
+        Buffer telemetry data to disk before sending to help ensure
+        telemetry data is not lost in case of network outages or collector restarts.
+      type: bool
+      default: true
+      advancedConfig: true
+      documentation:
+      - text: Read More
+        url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      options:
+        sectionHeader: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+    
+    - name: persistent_queue_directory
+      label: Persistent Queue Directory
+      description: The directory used to temporarily store telemetry data.
+      type: string
+      default: $OIQ_OTEL_COLLECTOR_HOME/storage
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: sending_queue_enabled
+          operator: equals
+          value: true
+        - name: persistent_queue_enabled
+          operator: equals
+          value: true
+
+  logs+traces:
+    extensions: |
+      {{ if and .persistent_queue_enabled .sending_queue_enabled }}
+      - file_storage:
+          directory: {{ .persistent_queue_directory }}
+          compaction:
+            on_rebound: true
+            directory: {{ .persistent_queue_directory }}
+      {{ end }}
+
   logs:
     exporters: |
       {{ if .enable_logs }}
@@ -286,6 +370,8 @@ spec:
             enabled: {{ .retry_on_failure_enabled }}
 
           num_workers: {{ .num_workers }}
+          
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
 
   traces:
@@ -327,4 +413,6 @@ spec:
             enabled: {{ .retry_on_failure_enabled }}
 
           num_workers: {{ .num_workers }}
+          
+          {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}

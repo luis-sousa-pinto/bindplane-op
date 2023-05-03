@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { AgentsTable } from ".";
 import {
   AgentChangesDocument,
@@ -28,9 +28,9 @@ export default {
       control: "multi-select",
     },
   },
-} as ComponentMeta<typeof AgentTable>;
+} as Meta<typeof AgentTable>;
 
-const Template: ComponentStory<typeof AgentsTable> = (args) => (
+const Template: StoryFn<typeof AgentsTable> = (args) => (
   <div style={{ width: "80vw", height: "500px" }}>
     <AgentsTable {...args} />
   </div>

@@ -7,7 +7,7 @@ metadata:
   description: Receive syslog from network devices.
 spec:
   version: 0.1.0
-  supported_platforms:
+  supportedPlatforms:
     - macos
     - linux
     - windows

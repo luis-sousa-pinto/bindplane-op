@@ -741,12 +741,15 @@ func (s *boltstore) DeleteDestinationType(ctx context.Context, name string) (*mo
 	return item, err
 }
 
-// CleanupDisconnectedAgents removes agents that have disconnected before the specified time
+// CleanupDisconnectedAgents removes all containerized agents that have been disconnected since the given time
 func (s *boltstore) CleanupDisconnectedAgents(ctx context.Context, since time.Time) error {
-	agents, err := s.Agents(ctx)
+	// get all agents with the container-platform label
+	agents, err := s.Agents(ctx, WithQuery(search.ParseQuery(fmt.Sprintf("%s:", model.LabelAgentContainerPlatform))))
 	if err != nil {
 		return err
 	}
+
+	var errs error
 	changes := NewUpdates()
 
 	for _, agent := range agents {
@@ -755,7 +758,8 @@ func (s *boltstore) CleanupDisconnectedAgents(ctx context.Context, since time.Ti
 				return agentBucket(tx).Delete(agentKey(agent.ID))
 			})
 			if err != nil {
-				return err
+				errs = errors.Join(errs, err)
+				continue
 			}
 			changes.IncludeAgent(agent, EventTypeRemove)
 
@@ -767,7 +771,7 @@ func (s *boltstore) CleanupDisconnectedAgents(ctx context.Context, since time.Ti
 	}
 
 	s.notify(ctx, changes)
-	return nil
+	return errs
 }
 
 // Index provides access to the search Index implementation managed by the Store
@@ -1031,11 +1035,11 @@ func deleteResource[R model.Resource](ctx context.Context, s *boltstore, kind mo
 			return c.Delete()
 		}
 
-		return ErrResourceMissing
+		return errResourceMissing
 	})
 
 	switch {
-	case errors.Is(err, ErrResourceMissing):
+	case errors.Is(err, errResourceMissing):
 		return resource, exists, nil
 	case errors.Is(err, ErrResourceInUse):
 		return emptyResource, exists, newDependencyError(dependencies)

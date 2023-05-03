@@ -53,6 +53,7 @@ const AddSourcesComponent: React.FC<{
 
   return (
     <NewResourceDialog
+      platform={configuration.metadata.labels.platform ?? "unknown"}
       kind="source"
       resourceTypes={data?.sourceTypes ?? []}
       open={addDialogOpen}

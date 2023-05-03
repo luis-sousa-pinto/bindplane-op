@@ -1,12 +1,12 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { PlatformSelect } from ".";
 
 export default {
   title: "Platform Select",
   component: PlatformSelect,
-} as ComponentMeta<typeof PlatformSelect>;
+} as Meta<typeof PlatformSelect>;
 
-const Template: ComponentStory<typeof PlatformSelect> = (args) => (
+const Template: StoryFn<typeof PlatformSelect> = (args) => (
   <PlatformSelect {...args} />
 );
 

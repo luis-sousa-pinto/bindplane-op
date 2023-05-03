@@ -127,7 +127,7 @@ func TestKeyFromResource(t *testing.T) {
 	}{
 		{
 			"source",
-			model.NewSourceType("test", []model.ParameterDefinition{}),
+			model.NewSourceType("test", []model.ParameterDefinition{}, []string{"macos", "linux", "windows"}),
 			"SourceType|test",
 		},
 		{
@@ -502,9 +502,21 @@ func TestBoltstoreMeasurements(t *testing.T) {
 	runTestMeasurements(t, store)
 }
 
+func TestCleanupDisconnectedAgents(t *testing.T) {
+	db, err := initTestDB(t)
+	require.NoError(t, err)
+	defer cleanupTestDB(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	runTestCleanupDisconnectedAgents(t, store)
+}
+
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 
 func initTestDB(t *testing.T) (*bbolt.DB, error) {
+	t.Helper()
 	db, err := bbolt.Open(testStorageFile(t), 0666, nil)
 	require.NoError(t, err, "error while opening test database", err)
 
@@ -522,11 +534,13 @@ func initTestDB(t *testing.T) (*bbolt.DB, error) {
 }
 
 func cleanupTestDB(t *testing.T) {
+	t.Helper()
 	err := os.Remove(testStorageFile(t))
 	require.NoError(t, err, "error while cleaning up test database, %w", err)
 }
 
 func testStorageFile(t *testing.T) string {
+	t.Helper()
 	exPath, err := os.Getwd()
 	require.NoError(t, err, "error while finding the current directory for the test storage")
 
@@ -535,6 +549,7 @@ func testStorageFile(t *testing.T) string {
 }
 
 func storedAgentIDs(t *testing.T, store Store) []string {
+	t.Helper()
 	result := []string{}
 
 	agents, err := store.Agents(context.TODO())
