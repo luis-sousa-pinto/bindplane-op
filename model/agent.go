@@ -212,7 +212,7 @@ func (a *Agent) MatchesSelector(selector Selector) bool {
 
 // DisconnectedSince returns true if the agent has been disconnected since a given time.
 func (a *Agent) DisconnectedSince(since time.Time) bool {
-	return a.DisconnectedAt != nil || a.DisconnectedAt.Before(since)
+	return a.DisconnectedAt != nil && a.DisconnectedAt.Before(since)
 }
 
 // Connect updates the ConnectedAt and DisconnectedAt fields of the agent and should be called when the
