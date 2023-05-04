@@ -396,7 +396,11 @@ spec:
           volumeMounts:
           - mountPath: /etc/otel/config
             name: config
+          - mountPath: /etc/otel/storage
+            name: storage
       volumes:
         - name: config
+          emptyDir: {}
+        - name: storage
           emptyDir: {}
 `
