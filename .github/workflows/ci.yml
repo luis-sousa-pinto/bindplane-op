@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - release/*
 
 permissions:
   # Make sure package write permission is always enabled, even
