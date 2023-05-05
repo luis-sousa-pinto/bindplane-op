@@ -283,8 +283,10 @@ jobs:
         with:
           version: v1.16.1
           args: release --skip-publish --clean --snapshot
+          distribution: goreleaser-pro
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 
       # Push container images to dockerhub for use in other steps.
       # It is safe to push development images with the github sha tag.

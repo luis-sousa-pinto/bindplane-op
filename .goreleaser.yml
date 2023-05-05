@@ -361,10 +361,3 @@ changelog:
       order: 30
     - title: Other
       order: 999
-
-announce:
-  slack:
-    enabled: true
-    message_template: 'BindPlane OP {{.Tag}} has been released: https://github.com/observIQ/bindplane-op/releases.'
-    channel: '#iris'
-    username: 'Goreleaser'
