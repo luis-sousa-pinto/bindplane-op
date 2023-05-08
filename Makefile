@@ -61,13 +61,23 @@ ui/node_modules: ui/package.json ui/package-lock.json
 dev: ui/node_modules prep
 	./ui/node_modules/.bin/concurrently -c blue,magenta,cyan -n sv,ui,gq "go run ./cmd/bindplane/main.go serve --force-console-color --env development" "cd ui && npm start" "cd ui && npm run generate:watch"
 
-.PHONY: test # runs go test for server tests
+.PHONY: test
 test: prep
-	go test ./... -race -cover -timeout 60s
+	go test ./... -race -timeout 60s
 
+# Only runs integration tests and requires `make release-test`
+# for container image output.
+# This target runs in CI after the build stage due to the dependence
+# on the container image. Regular tests run separately, and do not
+# need to run as part of this target.
+.PHONY: test-integration
+test-integration:
+	BINDPLANE_TEST_IMAGE="ghcr.io/observiq/bindplane-amd64:$(GIT_SHA)" go test ./client -tags integration
+
+# Same as `test` but with codecov. Does not run integration tests.
 .PHONY: test-with-cover
 test-with-cover: prep
-	BINDPLANE_TEST_IMAGE="observiq/bindplane-amd64:$(GIT_SHA)" go-acc --tags=integration --output=coverage.out --ignore=generated --ignore=mocks ./...
+	go-acc --output=coverage.out --ignore=generated --ignore=mocks ./...
 
 show-coverage: test-with-cover
 	# Show coverage as HTML in the default browser.
@@ -164,13 +174,15 @@ docker-http:
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
 		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
-		"observiq/bindplane-$(GOARCH):${GIT_SHA}" \
+		"ghcr.io/observiq/bindplane-$(GOARCH):${GIT_SHA}" \
 		--host 0.0.0.0 \
 		--port "3001" \
 		--server-url http://localhost:3010 \
 		--remote-url ws://localhost:3010
 	docker logs "bindplane-server-${GIT_SHA}-http"
 
+.PHONY: docker-http-profile
+docker-http-profile:
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
 		--server-url http://localhost:3010 --remote-url ws://localhost:3010
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-http
@@ -182,13 +194,15 @@ docker-ubi8-http:
 		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
 		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
-		"observiq/bindplane-$(GOARCH):${GIT_SHA}-ubi8" \
+		"ghcr.io/observiq/bindplane-$(GOARCH):${GIT_SHA}-ubi8" \
 		--host 0.0.0.0 \
 		--port "3001" \
 		--server-url http://localhost:3010 \
 		--remote-url ws://localhost:3010
 	docker logs "bindplane-server-${GIT_SHA}-http"
 
+.PHONY: docker-ubi8-http-profile
+docker-ubi8-http-profile:
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
 		--server-url http://localhost:3010 --remote-url ws://localhost:3010
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-http
@@ -202,7 +216,7 @@ docker-https: tls
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
 		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
-		"observiq/bindplane-$(GOARCH):latest" \
+		"ghcr.io/observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key \
 			--host 0.0.0.0 \
 			--port "3001" \
@@ -210,6 +224,8 @@ docker-https: tls
 			--remote-url wss://localhost:3011
 	docker logs "bindplane-server-${GIT_SHA}-https"
 
+.PHONY: docker-https-profile
+docker-https-profile: tls
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https \
 		--server-url https://localhost:3011 --remote-url wss://localhost:3011 \
 		--tls-ca tls/bindplane-ca.crt
@@ -224,7 +240,7 @@ docker-https-mtls: tls
 		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
 		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
 		-v "${PWD}/tls:/tls" \
-		"observiq/bindplane-$(GOARCH):latest" \
+		"ghcr.io/observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key --tls-ca /tls/bindplane-ca.crt --tls-ca /tls/test-ca.crt \
 			--host 0.0.0.0 \
 			--port "3001" \
@@ -232,6 +248,8 @@ docker-https-mtls: tls
 			--remote-url wss://localhost:3012
 	docker logs  "bindplane-server-${GIT_SHA}-https-mtls"
 
+.PHONY: docker-https-mtls-profile
+docker-https-mtls-profile: tls
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https-mtls \
 		--server-url https://localhost:3012 --remote-url wss://localhost:3012 \
 		--tls-cert tls/bindplane-client.crt --tls-key ./tls/bindplane-client.key --tls-ca tls/bindplane-ca.crt
@@ -293,10 +311,10 @@ clean:
 .PHONY: release-test
 release-test:
 	goreleaser release --clean --skip-publish --skip-validate --snapshot
-	@docker tag observiq/bindplane-arm64:latest observiq/bindplane-arm64:${GIT_SHA}
-	@docker tag observiq/bindplane-amd64:latest observiq/bindplane-amd64:${GIT_SHA}
-	@docker tag observiq/bindplane-arm64:latest-ubi8 observiq/bindplane-arm64:${GIT_SHA}-ubi8
-	@docker tag observiq/bindplane-amd64:latest-ubi8 observiq/bindplane-amd64:${GIT_SHA}-ubi8
+	@docker tag ghcr.io/observiq/bindplane-arm64:latest ghcr.io/observiq/bindplane-arm64:${GIT_SHA}
+	@docker tag ghcr.io/observiq/bindplane-amd64:latest ghcr.io/observiq/bindplane-amd64:${GIT_SHA}
+	@docker tag ghcr.io/observiq/bindplane-arm64:latest-ubi8 ghcr.io/observiq/bindplane-arm64:${GIT_SHA}-ubi8
+	@docker tag ghcr.io/observiq/bindplane-amd64:latest-ubi8 ghcr.io/observiq/bindplane-amd64:${GIT_SHA}-ubi8
 
 # Kitchen prep will build a release and ensure the required
 # gems are installed for using Kitchen with GCE
