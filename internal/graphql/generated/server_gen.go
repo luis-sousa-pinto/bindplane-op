@@ -195,7 +195,10 @@ type ComplexityRoot struct {
 	}
 
 	GraphMetrics struct {
-		Metrics func(childComplexity int) int
+		MaxLogValue    func(childComplexity int) int
+		MaxMetricValue func(childComplexity int) int
+		MaxTraceValue  func(childComplexity int) int
+		Metrics        func(childComplexity int) int
 	}
 
 	Log struct {
@@ -1043,6 +1046,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GraphMetric.Value(childComplexity), true
+
+	case "GraphMetrics.maxLogValue":
+		if e.complexity.GraphMetrics.MaxLogValue == nil {
+			break
+		}
+
+		return e.complexity.GraphMetrics.MaxLogValue(childComplexity), true
+
+	case "GraphMetrics.maxMetricValue":
+		if e.complexity.GraphMetrics.MaxMetricValue == nil {
+			break
+		}
+
+		return e.complexity.GraphMetrics.MaxMetricValue(childComplexity), true
+
+	case "GraphMetrics.maxTraceValue":
+		if e.complexity.GraphMetrics.MaxTraceValue == nil {
+			break
+		}
+
+		return e.complexity.GraphMetrics.MaxTraceValue(childComplexity), true
 
 	case "GraphMetrics.metrics":
 		if e.complexity.GraphMetrics.Metrics == nil {
@@ -2553,6 +2577,9 @@ type GraphMetric {
 
 type GraphMetrics {
   metrics: [GraphMetric!]!
+  maxMetricValue: Float!
+  maxLogValue: Float!
+  maxTraceValue: Float!
 }
 
 # ----------------------------------------------------------------------
@@ -6921,6 +6948,138 @@ func (ec *executionContext) fieldContext_GraphMetrics_metrics(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _GraphMetrics_maxMetricValue(ctx context.Context, field graphql.CollectedField, obj *model.GraphMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MaxMetricValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GraphMetrics_maxMetricValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GraphMetrics",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GraphMetrics_maxLogValue(ctx context.Context, field graphql.CollectedField, obj *model.GraphMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MaxLogValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GraphMetrics_maxLogValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GraphMetrics",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GraphMetrics_maxTraceValue(ctx context.Context, field graphql.CollectedField, obj *model.GraphMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MaxTraceValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GraphMetrics_maxTraceValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GraphMetrics",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Log_timestamp(ctx context.Context, field graphql.CollectedField, obj *record.Log) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Log_timestamp(ctx, field)
 	if err != nil {
@@ -11185,6 +11344,12 @@ func (ec *executionContext) fieldContext_Query_agentMetrics(ctx context.Context,
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -11244,6 +11409,12 @@ func (ec *executionContext) fieldContext_Query_configurationMetrics(ctx context.
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -11303,6 +11474,12 @@ func (ec *executionContext) fieldContext_Query_overviewMetrics(ctx context.Conte
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -12791,6 +12968,12 @@ func (ec *executionContext) fieldContext_Subscription_agentMetrics(ctx context.C
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -12864,6 +13047,12 @@ func (ec *executionContext) fieldContext_Subscription_configurationMetrics(ctx c
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -12937,6 +13126,12 @@ func (ec *executionContext) fieldContext_Subscription_overviewMetrics(ctx contex
 			switch field.Name {
 			case "metrics":
 				return ec.fieldContext_GraphMetrics_metrics(ctx, field)
+			case "maxMetricValue":
+				return ec.fieldContext_GraphMetrics_maxMetricValue(ctx, field)
+			case "maxLogValue":
+				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
+			case "maxTraceValue":
+				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -16328,6 +16523,27 @@ func (ec *executionContext) _GraphMetrics(ctx context.Context, sel ast.Selection
 		case "metrics":
 
 			out.Values[i] = ec._GraphMetrics_metrics(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "maxMetricValue":
+
+			out.Values[i] = ec._GraphMetrics_maxMetricValue(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "maxLogValue":
+
+			out.Values[i] = ec._GraphMetrics_maxLogValue(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "maxTraceValue":
+
+			out.Values[i] = ec._GraphMetrics_maxTraceValue(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

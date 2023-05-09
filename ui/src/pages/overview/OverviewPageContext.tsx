@@ -7,8 +7,8 @@ import {
   TELEMETRY_TYPE_PARAM_NAME,
   useQueryParamWrapper,
 } from "../../utils/state";
-
 import { useQueryParam, StringParam } from "use-query-params";
+import { MaxValueMap } from "../../components/GraphComponents";
 
 export interface OverviewPageContextValue {
   hoveredSet: string[];
@@ -25,6 +25,8 @@ export interface OverviewPageContextValue {
   setEditingDestination: (dest: string | null) => void;
   loadTop: boolean;
   setLoadTop: (loadTop: boolean) => void;
+  maxValues: MaxValueMap;
+  setMaxValues: (maxValues: MaxValueMap) => void;
 }
 
 const defaultContext: OverviewPageContextValue = {
@@ -42,6 +44,12 @@ const defaultContext: OverviewPageContextValue = {
   setEditingDestination: () => {},
   loadTop: true,
   setLoadTop: () => {},
+  maxValues: {
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
+  },
+  setMaxValues: () => {},
 };
 
 const OverviewPageContext = createContext(defaultContext);
@@ -51,6 +59,11 @@ export const OverviewPageProvider: React.FC = ({ children }) => {
     PERIOD_PARAM_NAME,
     StringParam
   );
+  const [maxValues, setMaxValues] = useState<MaxValueMap>({
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
+  });
 
   const setPeriod = (p: string) => {
     setPeriodURL(p, "replaceIn");
@@ -73,8 +86,9 @@ export const OverviewPageProvider: React.FC = ({ children }) => {
     useQueryParamWrapper<GridRowSelectionModel>(DESTINATIONS_PARAM_NAME, []);
   const [loadTop, setLoadTop] = useQueryParamWrapper<boolean>("loadTop", true);
 
-  const [editingDestination, setEditingDestination] =
-    useState<string | null>(null);
+  const [editingDestination, setEditingDestination] = useState<string | null>(
+    null
+  );
   return (
     <OverviewPageContext.Provider
       value={{
@@ -92,6 +106,8 @@ export const OverviewPageProvider: React.FC = ({ children }) => {
         setEditingDestination,
         loadTop,
         setLoadTop,
+        maxValues,
+        setMaxValues,
       }}
     >
       {children}

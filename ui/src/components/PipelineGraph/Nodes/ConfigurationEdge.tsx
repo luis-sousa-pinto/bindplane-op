@@ -1,16 +1,20 @@
-import { memo } from 'react';
+import { memo } from "react";
 import { EdgeProps } from "react-flow-renderer";
-import { usePipelineGraph } from '../PipelineGraphContext';
-import CustomEdge, { CustomEdgeData } from './CustomEdge';
+import { usePipelineGraph } from "../PipelineGraphContext";
+
+import { CustomEdge, CustomEdgeData } from "../../GraphComponents";
 
 const ConfigurationEdge: React.FC<EdgeProps<CustomEdgeData>> = (props) => {
-  const { selectedTelemetryType, hoveredSet } = usePipelineGraph()
+  const { selectedTelemetryType, hoveredSet, maxValues } = usePipelineGraph();
 
-  return CustomEdge({
-    ...props,
-    hoveredSet: hoveredSet,
-    telemetry: selectedTelemetryType,
-  });
+  return (
+    <CustomEdge
+      {...props}
+      hoveredSet={hoveredSet}
+      telemetryType={selectedTelemetryType}
+      maxValues={maxValues}
+    />
+  );
 };
 
 export default memo(ConfigurationEdge);

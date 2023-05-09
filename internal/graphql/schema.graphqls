@@ -401,6 +401,9 @@ type GraphMetric {
 
 type GraphMetrics {
   metrics: [GraphMetric!]!
+  maxMetricValue: Float!
+  maxLogValue: Float!
+  maxTraceValue: Float!
 }
 
 # ----------------------------------------------------------------------

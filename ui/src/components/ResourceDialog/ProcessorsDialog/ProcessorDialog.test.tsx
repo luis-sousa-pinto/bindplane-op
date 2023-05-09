@@ -14,7 +14,10 @@ import {
   ProcessorDialogSourceTypeDocument,
   UpdateProcessorsDocument,
 } from "../../../graphql/generated";
-import { PipelineContext } from "../../PipelineGraph/PipelineGraphContext";
+import {
+  PipelineContext,
+  PipelineGraphContextValue,
+} from "../../PipelineGraph/PipelineGraphContext";
 import { ProcessorDialogComponent } from "./ProcessorDialog";
 
 const DEFAULT_PARAMETER_OPTIONS = {
@@ -307,24 +310,30 @@ const GET_PROCESSOR_TYPE_MOCK: MockedResponse = {
   },
 };
 
+const DEFAULT_PROVIDER_VALUES: PipelineGraphContextValue = {
+  selectedTelemetryType: "logs",
+  hoveredSet: [],
+  setHoveredNodeAndEdgeSet: () => {},
+  refetchConfiguration: () => {},
+  configuration: CONFIG_NO_PROCESSORS,
+  editProcessors: () => {},
+  closeProcessorDialog: () => {},
+  editProcessorsInfo: { resourceType: "source", index: 0 },
+  editProcessorsOpen: true,
+  maxValues: {
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
+  },
+  setMaxValues: () => {},
+};
+
 describe("ProcessorDialogComponent", () => {
   it("renders", async () => {
     render(
       <MockedProvider mocks={[SOURCE_TYPE_MOCK]}>
         <SnackbarProvider>
-          <PipelineContext.Provider
-            value={{
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
-              editProcessorsInfo: { resourceType: "source", index: 0 },
-              editProcessorsOpen: true,
-            }}
-          >
+          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -344,19 +353,7 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider
-            value={{
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
-              editProcessorsInfo: { resourceType: "source", index: 0 },
-              editProcessorsOpen: true,
-            }}
-          >
+          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -378,15 +375,8 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
+              ...DEFAULT_PROVIDER_VALUES,
               editProcessorsInfo: { resourceType: "destination", index: 0 },
-              editProcessorsOpen: true,
             }}
           >
             <ProcessorDialogComponent open={true} processors={[]} />
@@ -444,19 +434,7 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider
-            value={{
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
-              editProcessorsInfo: { resourceType: "source", index: 0 },
-              editProcessorsOpen: true,
-            }}
-          >
+          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -519,19 +497,7 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider
-            value={{
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
-              editProcessorsInfo: { resourceType: "source", index: 0 },
-              editProcessorsOpen: true,
-            }}
-          >
+          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -608,15 +574,8 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
-              refetchConfiguration: () => {},
-              configuration: CONFIG_NO_PROCESSORS,
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
+              ...DEFAULT_PROVIDER_VALUES,
               editProcessorsInfo: { resourceType: "destination", index: 0 },
-              editProcessorsOpen: true,
             }}
           >
             <ProcessorDialogComponent open={true} processors={[]} />
@@ -679,15 +638,8 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              refetchConfiguration: () => {},
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
+              ...DEFAULT_PROVIDER_VALUES,
               configuration: CONFIG_WITH_PROCESSORS,
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
-              editProcessorsInfo: { resourceType: "source", index: 0 },
-              editProcessorsOpen: true,
             }}
           >
             <ProcessorDialogComponent
@@ -752,15 +704,9 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              refetchConfiguration: () => {},
-              selectedTelemetryType: "logs",
-              hoveredSet: [],
-              setHoveredNodeAndEdgeSet: () => {},
+              ...DEFAULT_PROVIDER_VALUES,
               configuration: CONFIG_WITH_PROCESSORS,
-              editProcessors: () => {},
-              closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "destination", index: 0 },
-              editProcessorsOpen: true,
             }}
           >
             <ProcessorDialogComponent

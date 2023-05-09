@@ -181,6 +181,9 @@ export type GraphMetric = {
 
 export type GraphMetrics = {
   __typename?: 'GraphMetrics';
+  maxLogValue: Scalars['Float'];
+  maxMetricValue: Scalars['Float'];
+  maxTraceValue: Scalars['Float'];
   metrics: Array<GraphMetric>;
 };
 
@@ -634,7 +637,7 @@ export type ConfigurationMetricsSubscriptionVariables = Exact<{
 }>;
 
 
-export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', configurationMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
+export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', configurationMetrics: { __typename?: 'GraphMetrics', maxMetricValue: number, maxLogValue: number, maxTraceValue: number, metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
 
 export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -802,7 +805,7 @@ export type OverviewMetricsSubscriptionVariables = Exact<{
 }>;
 
 
-export type OverviewMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
+export type OverviewMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', maxMetricValue: number, maxLogValue: number, maxTraceValue: number, metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
 
 export type DestinationsInConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1115,6 +1118,9 @@ export const ConfigurationMetricsDocument = gql`
       value
       unit
     }
+    maxMetricValue
+    maxLogValue
+    maxTraceValue
   }
 }
     `;
@@ -2454,6 +2460,9 @@ export const OverviewMetricsDocument = gql`
       value
       unit
     }
+    maxMetricValue
+    maxLogValue
+    maxTraceValue
   }
 }
     `;
