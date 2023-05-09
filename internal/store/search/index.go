@@ -191,6 +191,9 @@ func (i *index) Suggestions(query *Query) ([]*Suggestion, error) {
 
 // Select returns the matching ids
 func (i *index) Select(selector map[string]string) []string {
+	i.mtx.RLock()
+	defer i.mtx.RUnlock()
+
 	results := []string{}
 	for _, doc := range i.documents {
 		if i.selectorMatchesDocument(selector, doc) {
@@ -222,6 +225,10 @@ func (i *index) tokenMatches(token *QueryToken, ids []string) []string {
 	if len(ids) == 0 {
 		return ids
 	}
+
+	i.mtx.RLock()
+	defer i.mtx.RUnlock()
+
 	results := []string{}
 	for _, id := range ids {
 		doc, ok := i.documents[id]
@@ -234,6 +241,9 @@ func (i *index) tokenMatches(token *QueryToken, ids []string) []string {
 
 // tokenMatches returns the ids matching the specified token
 func (i *index) tokenMatchesAny(token *QueryToken) []string {
+	i.mtx.RLock()
+	defer i.mtx.RUnlock()
+
 	results := []string{}
 	for _, doc := range i.documents {
 		if tokenMatchesDocument(token, doc) {
