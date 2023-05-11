@@ -88,13 +88,22 @@ func NewContextWithMetadata(metadata Metadata, spec ContextSpec) *Context {
 	}
 }
 
-func parseProfile(r *AnyResource) (*Profile, error) {
+func parseProfile(r *AnyResource, errorUnused bool) (*Profile, error) {
 	if r.Kind != KindProfile {
 		return nil, fmt.Errorf("invalid resource kind: %s", r.Kind)
 	}
 
 	var spec ProfileSpec
-	err := mapstructure.Decode(r.Spec, &spec)
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		ErrorUnused: errorUnused,
+		Result:      &spec,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create decoder: %w", err)
+	}
+
+	err = decoder.Decode(r.Spec)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode profile: %w", err)
 	}
@@ -104,13 +113,21 @@ func parseProfile(r *AnyResource) (*Profile, error) {
 	}, nil
 }
 
-func parseContext(r *AnyResource) (*Context, error) {
+func parseContext(r *AnyResource, errorUnused bool) (*Context, error) {
 	if r.Kind != KindContext {
 		return nil, fmt.Errorf("invalid resource kind: %s", r.Kind)
 	}
 
 	var spec ContextSpec
-	err := mapstructure.Decode(r.Spec, &spec)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		ErrorUnused: errorUnused,
+		Result:      &spec,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create decoder: %w", err)
+	}
+
+	err = decoder.Decode(r.Spec)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode context: %w", err)
 	}

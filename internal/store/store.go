@@ -234,7 +234,8 @@ func seedDir(ctx context.Context, dir string, store Store, logger *zap.Logger) e
 			return nil
 		}
 
-		parsed, err := model.ParseResources(r)
+		// Use strict here to log any errors in built-in resources on startup.
+		parsed, err := model.ParseResourcesStrict(r)
 		if err != nil {
 			logger.Error("error parsing resources", zap.Error(err))
 			return nil

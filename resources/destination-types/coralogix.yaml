@@ -30,7 +30,7 @@ spec:
           url: https://coralogix.com/docs/application-and-subsystem-names/
 
     - name: region
-      lable: Region
+      label: Region
       description: Region of your account. Determines where to send telemetry data.
       required: true
       type: enum

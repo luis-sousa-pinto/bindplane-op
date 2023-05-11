@@ -1001,7 +1001,7 @@ func applyResources(c *gin.Context, bindplane server.BindPlane) {
 	// parse the resources
 	resources := []model.Resource{}
 	for _, res := range p.Resources {
-		parsed, err := model.ParseResource(res)
+		parsed, err := model.ParseResourceStrict(res)
 		// TODO (dsvanlani): Go through all resources and gather errors.
 		if err != nil {
 			handleErrorResponse(c, http.StatusBadRequest, err)
@@ -1044,6 +1044,8 @@ func deleteResources(c *gin.Context, bindplane server.BindPlane) {
 	// parse the resources
 	resources := []model.Resource{}
 	for _, res := range p.Resources {
+		// Non-strict parse; We only care about the ID here, so we'll allow resources with extra keys.
+		// This is similar to how k8s handles deletion of resources with extra keys.
 		parsed, err := model.ParseResource(res)
 		if err != nil {
 			handleErrorResponse(c, http.StatusBadRequest, err)

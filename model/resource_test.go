@@ -244,3 +244,11 @@ func TestParseSourceType(t *testing.T) {
 	}
 	require.Equal(t, expect, sourceType)
 }
+
+func TestParseSourceTypeStrict_ExtraKeys(t *testing.T) {
+	resources, err := ResourcesFromFile(filepath.Join("testfiles", "sourcetype-macos-extra-spec.yaml"))
+	assert.NoError(t, err)
+
+	_, err = ParseResourcesStrict(resources)
+	require.ErrorContains(t, err, "failed to decode definition:")
+}

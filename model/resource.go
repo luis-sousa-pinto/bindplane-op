@@ -283,39 +283,66 @@ func ParseKind(kind string) Kind {
 }
 
 // ParseResource maps the Spec of the provided resource to a specific type of Resource
+// It will drop any unused keys
 func ParseResource(r *AnyResource) (Resource, error) {
+	return parseResource(r, false)
+}
+
+// ParseResourceStrict maps the Spec of the provided resource to a specific type of Resource
+// It will error if there are any unused keys
+func ParseResourceStrict(r *AnyResource) (Resource, error) {
+	return parseResource(r, true)
+}
+
+func parseResource(r *AnyResource, strict bool) (Resource, error) {
 	switch r.Kind {
 	case KindProfile:
-		return parseProfile(r)
+		return parseProfile(r, strict)
 	case KindContext:
-		return parseContext(r)
+		return parseContext(r, strict)
 	case KindConfiguration:
-		return parseResource(r, &Configuration{})
+		return unmarshalResource(r, &Configuration{}, strict)
 	case KindSource:
-		return parseResource(r, &Source{})
+		return unmarshalResource(r, &Source{}, strict)
 	case KindSourceType:
-		return parseResource(r, &SourceType{})
+		return unmarshalResource(r, &SourceType{}, strict)
 	case KindProcessor:
-		return parseResource(r, &Processor{})
+		return unmarshalResource(r, &Processor{}, strict)
 	case KindProcessorType:
-		return parseResource(r, &ProcessorType{})
+		return unmarshalResource(r, &ProcessorType{}, strict)
 	case KindDestination:
-		return parseResource(r, &Destination{})
+		return unmarshalResource(r, &Destination{}, strict)
 	case KindDestinationType:
-		return parseResource(r, &DestinationType{})
+		return unmarshalResource(r, &DestinationType{}, strict)
 	case KindAgentVersion:
-		return parseResource(r, &AgentVersion{})
+		return unmarshalResource(r, &AgentVersion{}, strict)
 	}
 
 	return nil, fmt.Errorf("unknown resource kind: %s", r.Kind)
 }
 
-// ParseResources TODO(doc)
+// ParseResources parses all the generic AnyResources into their concrete resource structs.
 func ParseResources(resources []*AnyResource) ([]Resource, error) {
 	result := []Resource{}
 
 	for _, resource := range resources {
 		parsed, err := ParseResource(resource)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, parsed)
+	}
+
+	return result, nil
+}
+
+// ParseResourcesStrict parses all the generic AnyResources into their concrete resource structs.
+// Any extra fields on any of the resources will cause an error.
+func ParseResourcesStrict(resources []*AnyResource) ([]Resource, error) {
+	result := []Resource{}
+
+	for _, resource := range resources {
+		parsed, err := ParseResourceStrict(resource)
 		if err != nil {
 			return result, err
 		}
@@ -360,11 +387,22 @@ func ResourcesFromReader(reader io.Reader) ([]*AnyResource, error) {
 	return resources, nil
 }
 
-func parseResource[T Resource](r *AnyResource, instance T) (T, error) {
+// unmarshalResource unmarshals the *AnyResource into the provided instance.
+// If errorUnused is true, the unmarshal will fail if any keys are not mapped to a field on the instance.
+func unmarshalResource[T Resource](r *AnyResource, instance T, errorUnused bool) (T, error) {
 	if r.Kind != instance.GetKind() {
 		return instance, fmt.Errorf("invalid resource kind: %s", r.Kind)
 	}
-	err := mapstructure.Decode(r, instance)
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		ErrorUnused: errorUnused,
+		Result:      instance,
+	})
+	if err != nil {
+		return instance, fmt.Errorf("failed to create decoder: %w", err)
+	}
+
+	err = decoder.Decode(r)
 	if err != nil {
 		return instance, fmt.Errorf("failed to decode definition: %w", err)
 	}

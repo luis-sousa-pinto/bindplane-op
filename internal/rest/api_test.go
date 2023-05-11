@@ -489,7 +489,7 @@ func TestREST(t *testing.T) {
 		configuredDestination := &model.AnyResource{}
 		*configuredDestination = *destinationAsAny
 		configuredSpec := make(map[string]interface{})
-		configuredSpec["foo"] = "bar"
+		configuredSpec["disabled"] = false
 		configuredSpec["type"] = "cabin"
 		configuredDestination.Spec = configuredSpec
 
