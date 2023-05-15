@@ -394,6 +394,14 @@ func unmarshalResource[T Resource](r *AnyResource, instance T, errorUnused bool)
 		return instance, fmt.Errorf("invalid resource kind: %s", r.Kind)
 	}
 
+	if errorUnused {
+		// If we are doing a "strict" unmarshal, we need to remove the "__typename" fields.
+		// These fields are populated on the frontend from GraphQL, and is a pain to strip from the payload there,
+		// so instead we accept those "__typename" fields and just ignore them, even in the case where
+		// we are strict unmarshalling.
+		stripTypenameStringMap(r.Spec)
+	}
+
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		ErrorUnused: errorUnused,
 		Result:      instance,
@@ -407,6 +415,43 @@ func unmarshalResource[T Resource](r *AnyResource, instance T, errorUnused bool)
 		return instance, fmt.Errorf("failed to decode definition: %w", err)
 	}
 	return instance, nil
+}
+
+const typenameField = "__typename"
+
+// stripTypenameAny strips the "__typename" field out of the provided value.
+func stripTypenameAny(v any) {
+	switch typedV := v.(type) {
+	case map[string]any:
+		stripTypenameStringMap(typedV)
+	case map[any]any:
+		stripTypenameAnyMap(typedV)
+	case []any:
+		stripTypenameArray(typedV)
+	}
+}
+
+// stripTypenameStringMap strips the "__typename" field out of the map (recursively).
+func stripTypenameStringMap(m map[string]any) {
+	delete(m, typenameField)
+	for _, v := range m {
+		stripTypenameAny(v)
+	}
+}
+
+// stripTypenameStringMap strips the "__typename" field out of the map (recursively).
+func stripTypenameAnyMap(m map[any]any) {
+	delete(m, typenameField)
+	for _, v := range m {
+		stripTypenameAny(v)
+	}
+}
+
+// stripTypenameArray strips the "__typename" field out of submaps of the array (recursively).
+func stripTypenameArray(s []any) {
+	for _, v := range s {
+		stripTypenameAny(v)
+	}
 }
 
 // ----------------------------------------------------------------------

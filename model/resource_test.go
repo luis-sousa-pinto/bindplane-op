@@ -252,3 +252,121 @@ func TestParseSourceTypeStrict_ExtraKeys(t *testing.T) {
 	_, err = ParseResourcesStrict(resources)
 	require.ErrorContains(t, err, "failed to decode definition:")
 }
+
+func TestParseSourceTypeStrict_TypenameKey(t *testing.T) {
+	resources, err := ResourcesFromFile(filepath.Join("testfiles", "sourcetype-macos-typename-key.yaml"))
+	assert.NoError(t, err)
+
+	parsed, err := ParseResourcesStrict(resources)
+	require.NoError(t, err)
+
+	sourceType, ok := parsed[0].(*SourceType)
+	require.True(t, ok)
+
+	expect := &SourceType{
+		ResourceType: ResourceType{
+			ResourceMeta: ResourceMeta{
+				APIVersion: "bindplane.observiq.com/v1",
+				Kind:       "SourceType",
+				Metadata: Metadata{
+					Name:        "MacOS",
+					DisplayName: "Mac OS",
+					Description: "Log parser for MacOS",
+					Icon:        "/public/bindplane-logo.png",
+				},
+			},
+			Spec: ResourceTypeSpec{
+				Version:            "0.0.2",
+				SupportedPlatforms: []string{"macos"},
+				Parameters: []ParameterDefinition{
+					{
+						Name:        "enable_system_log",
+						Label:       "System Logs",
+						Description: "Enable to collect MacOS system logs",
+						Type:        "bool",
+						Default:     true,
+					},
+					{
+						Name:        "system_log_path",
+						Label:       "System Log Path",
+						Description: "The absolute path to the System log",
+						Type:        "string",
+						Default:     "/var/log/system.log",
+						RelevantIf: []RelevantIfCondition{
+							{
+								Name:     "enable_system_log",
+								Operator: "equals",
+								Value:    true,
+							},
+						},
+					},
+					{
+						Name:        "enable_install_log",
+						Label:       "Install Logs",
+						Description: "Enable to collect MacOS install logs",
+						Type:        "bool",
+						Default:     true,
+					},
+					{
+						Name:        "install_log_path",
+						Label:       "Install Log Path",
+						Description: "The absolute path to the Install log",
+						Type:        "string",
+						Default:     "/var/log/install.log",
+						RelevantIf: []RelevantIfCondition{
+							{
+								Name:     "enable_install_log",
+								Operator: "equals",
+								Value:    true,
+							},
+						},
+					},
+					{
+						Name:    "collection_interval_seconds",
+						Label:   "Collection Interval",
+						Type:    "int",
+						Default: "30",
+					},
+					{
+						Name:        "start_at",
+						Label:       "Start At",
+						Description: "Start reading file from 'beginning' or 'end'",
+						Type:        "enum",
+						ValidValues: []string{"beginning", "end"},
+						Default:     "end",
+					},
+				},
+				Logs: ResourceTypeOutput{
+					Receivers: ResourceTypeTemplate(strings.TrimLeft(`
+- plugin/macos:
+    plugin:
+      name: macos
+    parameters:
+    - name: enable_system_log
+      value: {{ .enable_system_log }}
+    - name: system_log_path
+      value: {{ .system_log_path }}
+    - name: enable_install_log
+      value: {{ .enable_install_log }}
+    - name: install_log_path
+      value: {{ .install_log_path }}
+    - name: start_at
+      value: {{ .start_at }}
+- plugin/journald:
+    plugin:
+      name: journald
+`, "\n")),
+				},
+				Metrics: ResourceTypeOutput{
+					Receivers: ResourceTypeTemplate(strings.TrimLeft(`
+- hostmetrics:
+    collection_interval: 1m
+    scrapers:
+      load:
+`, "\n")),
+				},
+			},
+		},
+	}
+	require.Equal(t, expect, sourceType)
+}
