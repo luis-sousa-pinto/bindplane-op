@@ -226,9 +226,6 @@ func (i *index) tokenMatches(token *QueryToken, ids []string) []string {
 		return ids
 	}
 
-	i.mtx.RLock()
-	defer i.mtx.RUnlock()
-
 	results := []string{}
 	for _, id := range ids {
 		doc, ok := i.documents[id]
