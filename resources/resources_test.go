@@ -30,7 +30,7 @@ func fileResource[T model.Resource](t *testing.T, path string) T {
 	resources, err := model.ResourcesFromFile(path)
 	require.NoError(t, err)
 
-	parsed, err := model.ParseResources(resources)
+	parsed, err := model.ParseResourcesStrict(resources)
 	require.NoError(t, err)
 	require.Len(t, parsed, 1)
 

@@ -24,7 +24,7 @@ func TestParseDestinationType(t *testing.T) {
 	resources, err := ResourcesFromFile("testfiles/destinationtype-cabin.yaml")
 	require.NoError(t, err)
 
-	parsed, err := ParseResources(resources)
+	parsed, err := ParseResourcesStrict(resources)
 	require.NoError(t, err)
 	require.Len(t, parsed, 1)
 

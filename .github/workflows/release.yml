@@ -75,7 +75,8 @@ jobs:
         with:
           version: v1.16.1
           args: release --clean --parallelism 1
+          distribution: goreleaser-pro
         env:
           # github token requires permission to observiq/bindplane-op and observiq/homebrew-bindplane-op
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}

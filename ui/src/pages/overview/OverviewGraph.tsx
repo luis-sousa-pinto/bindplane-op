@@ -26,6 +26,7 @@ import {
 import { OverviewDestinationNode, ConfigurationNode } from "./nodes";
 import OverviewEdge from "./OverviewEdge";
 import { useOverviewPage } from "./OverviewPageContext";
+import { GraphGradient } from "../../components/GraphComponents";
 
 import global from "../../styles/global.module.scss";
 
@@ -91,6 +92,9 @@ gql`
         value
         unit
       }
+      maxMetricValue
+      maxLogValue
+      maxTraceValue
     }
   }
 `;
@@ -111,7 +115,9 @@ export const OverviewGraph: React.FC = () => {
     selectedPeriod,
     selectedConfigs,
     selectedDestinations,
+    setMaxValues,
   } = useOverviewPage();
+
   const { enqueueSnackbar } = useSnackbar();
   const reactFlowInstance = useReactFlow();
   const navigate = useNavigate();
@@ -140,6 +146,15 @@ export const OverviewGraph: React.FC = () => {
       period: selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
       configIDs: configIDs,
       destinationIDs: destinationIDs,
+    },
+    onData({ data: subscriptionData }) {
+      if (subscriptionData.data?.overviewMetrics) {
+        setMaxValues({
+          maxMetricValue: subscriptionData.data.overviewMetrics.maxMetricValue,
+          maxLogValue: subscriptionData.data.overviewMetrics.maxLogValue,
+          maxTraceValue: subscriptionData.data.overviewMetrics.maxTraceValue,
+        });
+      }
     },
   });
 
@@ -237,6 +252,7 @@ export const OverviewGraph: React.FC = () => {
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>
+      <GraphGradient />
     </div>
   ) : (
     <NoDeployedConfigurationsMessage navigate={navigate} />

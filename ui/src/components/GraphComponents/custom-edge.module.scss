@@ -1,0 +1,53 @@
+@use "../../styles/colors";
+
+.metric {
+  font-size: 10px;
+}
+
+.overview-metric {
+  font-size: 12px;
+}
+
+.highlight {
+  filter: drop-shadow(2px 2px 2px colors.$active-blue);
+}
+
+.inactive {
+  stroke-width: 1px;
+}
+
+.edge {
+  stroke: #b1b1b7;
+
+  fill: none;
+}
+
+.gradient {
+  stroke: url(#pattern);
+
+  stroke-dasharray: 10 3;
+}
+
+.w1 {
+  stroke-width: 2px;
+}
+
+.w2 {
+  stroke-width: 5px;
+}
+
+.w3 {
+  stroke-width: 8px;
+}
+
+.w4 {
+  stroke-width: 11px;
+}
+
+.w5 {
+  stroke-width: 14px;
+}
+
+.dimmed {
+  opacity: 0.3;
+}

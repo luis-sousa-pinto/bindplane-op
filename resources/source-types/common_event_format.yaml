@@ -28,7 +28,6 @@ spec:
       options:
         gridColumns: 12
       default: []
-      advanced_config: true
 
     - name: log_type
       label: Type

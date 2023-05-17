@@ -11,15 +11,14 @@ import { PipelineGraphProvider } from "./PipelineGraphContext";
 import { firstActiveTelemetry } from "./Nodes/nodeUtils";
 import { YamlEditor } from "../YamlEditor";
 import { ProcessorDialog } from "../ResourceDialog/ProcessorsDialog";
-
 import { useQueryParam, StringParam } from "use-query-params";
-
-import styles from "./pipeline-graph.module.scss";
 import {
   PERIOD_PARAM_NAME,
   TELEMETRY_TYPE_PARAM_NAME,
 } from "../../utils/state";
 import { useEffect } from "react";
+
+import styles from "./pipeline-graph.module.scss";
 
 export type MinimumRequiredConfig = Partial<ShowPageConfig>;
 interface PipelineGraphProps {

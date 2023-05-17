@@ -22,6 +22,8 @@ import ConfigurationEdge from "./Nodes/ConfigurationEdge";
 import { MinimumRequiredConfig } from "./PipelineGraph";
 import { useConfigurationPage } from "../../pages/configurations/configuration/ConfigurationPageContext";
 import { DummyProcessorNode } from "./Nodes/DummyProcessorNode";
+import { usePipelineGraph } from "./PipelineGraphContext";
+import { GraphGradient } from "../GraphComponents";
 
 import globals from "../../styles/global.module.scss";
 
@@ -39,6 +41,9 @@ gql`
         value
         unit
       }
+      maxMetricValue
+      maxLogValue
+      maxTraceValue
     }
   }
 `;
@@ -74,6 +79,7 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
   agent,
 }) => {
   const reactFlowInstance = useReactFlow();
+  const { setMaxValues } = usePipelineGraph();
 
   const { setAddSourceDialogOpen, setAddDestDialogOpen } =
     useConfigurationPage();
@@ -94,6 +100,15 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
       period,
       name: configuration?.metadata?.name || "",
       agent: agent,
+    },
+    onData({ data }) {
+      if (data.data?.configurationMetrics) {
+        setMaxValues({
+          maxMetricValue: data.data.configurationMetrics.maxMetricValue,
+          maxLogValue: data.data.configurationMetrics.maxLogValue,
+          maxTraceValue: data.data.configurationMetrics.maxTraceValue,
+        });
+      }
     },
   });
 
@@ -153,6 +168,8 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>
+
+      <GraphGradient />
     </div>
   );
 };

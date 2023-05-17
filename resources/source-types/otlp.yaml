@@ -92,6 +92,63 @@ spec:
           value: true
       advancedConfig: true
 
+    # See https://github.com/grpc/grpc-go/blob/v1.54.0/keepalive/keepalive.go#L50 for
+    # underlying timeout struct.
+    - name: enable_grpc_timeout
+      label: Enable GRPC Timeout
+      description: Enable to configure advanced GRPC timeout behavior.
+      type: bool
+      default: true
+      relevantIf:
+        - name: grpc_port
+          operator: notEquals
+          value: 0
+      advancedConfig: true
+      options:
+        sectionHeader: true
+
+    - name: grpc_max_connection_idle
+      label: Max Idle Time
+      description: Maximum amount of time (seconds) after which an idle connection would be closed by sending a GoAway.
+      type: int
+      default: 60
+      relevantIf:
+        - name: grpc_port
+          operator: notEquals
+          value: 0
+        - name: enable_grpc_timeout
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: grpc_max_connection_age
+      label: Max Connection Age
+      description: Maximum amount of time (seconds) a connection may exist before it will be closed by sending a GoAway.
+      type: int
+      default: 60
+      relevantIf:
+        - name: grpc_port
+          operator: notEquals
+          value: 0
+        - name: enable_grpc_timeout
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: grpc_max_connection_age_grace
+      label: Max Connection Age Grace
+      description: Additive period after Max Connection Age after which the connection will be forcibly closed.
+      type: int
+      default: 300
+      relevantIf:
+        - name: grpc_port
+          operator: notEquals
+          value: 0
+        - name: enable_grpc_timeout
+          operator: equals
+          value: true
+      advancedConfig: true
+
   logs+metrics+traces:
     receivers: |
       - otlp:
@@ -99,6 +156,15 @@ spec:
             {{ if .grpc_port }}
             grpc:
               endpoint: {{ .listen_address }}:{{ .grpc_port }}
+              {{ if .enable_grpc_timeout }}
+              keepalive:
+                server_parameters:
+                  max_connection_idle: {{ .grpc_max_connection_idle }}s
+                  max_connection_age: {{ .grpc_max_connection_age }}s
+                  max_connection_age_grace: {{ .grpc_max_connection_age_grace }}s
+                  time: 2h
+                  timeout: 20s
+              {{ end }}
               {{ if .enable_tls }}
               tls:
                 cert_file: "{{ .cert_file }}"

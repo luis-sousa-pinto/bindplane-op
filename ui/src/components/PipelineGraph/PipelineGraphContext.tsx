@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { DEFAULT_TELEMETRY_TYPE } from "../MeasurementControlBar/MeasurementControlBar";
 import { MinimumRequiredConfig } from "./PipelineGraph";
+import { MaxValueMap } from "../GraphComponents";
 
 export interface PipelineGraphContextValue {
   configuration: MinimumRequiredConfig;
@@ -18,6 +19,8 @@ export interface PipelineGraphContextValue {
   ) => void;
   closeProcessorDialog(): void;
   editProcessorsOpen: boolean;
+  setMaxValues: (v: MaxValueMap) => void;
+  maxValues: MaxValueMap;
 }
 export interface PipelineGraphProviderProps {
   configuration: MinimumRequiredConfig;
@@ -57,6 +60,12 @@ const defaultValue: PipelineGraphContextValue = {
   closeProcessorDialog: () => {},
   editProcessorsInfo: null,
   editProcessorsOpen: false,
+  setMaxValues: () => {},
+  maxValues: {
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
+  },
 };
 
 export const PipelineContext = createContext(defaultValue);
@@ -68,11 +77,15 @@ export const PipelineGraphProvider: React.FC<PipelineGraphProviderProps> = ({
   refetchConfiguration,
 }) => {
   const [hoveredSet, setHoveredNodeAndEdgeSet] = useState<string[]>([]);
-  const [editProcessorsInfo, setEditingProcessors] =
-    useState<{
-      resourceType: "source" | "destination";
-      index: number;
-    } | null>(null);
+  const [maxValues, setMaxValues] = useState<MaxValueMap>({
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
+  });
+  const [editProcessorsInfo, setEditingProcessors] = useState<{
+    resourceType: "source" | "destination";
+    index: number;
+  } | null>(null);
 
   const [editProcessorsOpen, setEditProcessorsOpen] = useState(false);
 
@@ -102,6 +115,8 @@ export const PipelineGraphProvider: React.FC<PipelineGraphProviderProps> = ({
         closeProcessorDialog,
         editProcessorsInfo,
         editProcessorsOpen,
+        setMaxValues,
+        maxValues,
       }}
     >
       {children}

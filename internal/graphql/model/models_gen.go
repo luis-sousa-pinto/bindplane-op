@@ -61,7 +61,10 @@ type GraphMetric struct {
 }
 
 type GraphMetrics struct {
-	Metrics []*GraphMetric `json:"metrics"`
+	Metrics        []*GraphMetric `json:"metrics"`
+	MaxMetricValue float64        `json:"maxMetricValue"`
+	MaxLogValue    float64        `json:"maxLogValue"`
+	MaxTraceValue  float64        `json:"maxTraceValue"`
 }
 
 type OverviewPage struct {

@@ -542,6 +542,7 @@ export function updateMetricData(
       var startOffset = "50%";
       var textAnchor = "middle";
       var edge: Edge<any> | undefined;
+      var candidateEdges: Edge<any>[] = [];
 
       // put this metric on the associated edge:
       //
@@ -559,11 +560,13 @@ export function updateMetricData(
         case MetricPosition.SourceBeforeProcessors:
           // A
           edge = edges.find((e) => e.source === node.id);
+          candidateEdges = edges.filter((e) => e.source === node.id);
           break;
 
         case MetricPosition.SourceAfterProcessors:
           // B
           edge = edges.find((e) => e.source === node.id);
+          candidateEdges = edges.filter((e) => e.source === node.id);
           textAnchor = "start";
           startOffset = "4%";
           break;
@@ -571,13 +574,14 @@ export function updateMetricData(
         case MetricPosition.DestinationBeforeProcessors:
           // C
           edge = edges.find((e) => e.target === node.id);
+          candidateEdges = edges.filter((e) => e.target === node.id);
           textAnchor = "end";
           startOffset = "97%";
           break;
 
         case MetricPosition.DestinationAfterProcessors:
           // D
-          var candidateEdges = edges.filter((e) => e.target === node.id);
+          candidateEdges = edges.filter((e) => e.target === node.id);
           // if there are multiple edges, we want to put the metric on the
           // edge that has the source with the lowest y value
           edge = candidateEdges.reduce((prev, curr) => {
@@ -614,6 +618,7 @@ export function updateMetricData(
 
           textAnchor = "start";
           startOffset = "4%";
+
           break;
       }
 
@@ -623,7 +628,21 @@ export function updateMetricData(
           startOffset,
           textAnchor,
           value: formattedMetric,
+          rawValue: metric.value,
         });
+      }
+
+      // Assign each edge a metric value to determine edge width
+      for (var i = 0; i < edges.length; i++) {
+        if (candidateEdges.includes(edges[i])) {
+          edges[i].data.metrics ||= [];
+          edges[i].data.metrics.push({
+            startOffset,
+            textAnchor,
+            value: "",
+            rawValue: metric.value,
+          });
+        }
       }
     } else {
       node.data.metric = "";
@@ -658,7 +677,7 @@ export function getMetricForNode(
   return {
     agentID: metric?.agentID ?? routeMetric?.agentID,
     name: TELEMETRY_SIZE_METRICS[telemetryType],
-    nodeID: (metric?.nodeID ?? routeMetric?.nodeID) ?? nodeID,
+    nodeID: metric?.nodeID ?? routeMetric?.nodeID ?? nodeID,
     pipelineType: (metric?.pipelineType ?? routeMetric?.pipelineType)!,
     unit: (metric?.unit ?? routeMetric?.unit)!,
     value: (metric?.value ?? 0) + (routeMetric?.value ?? 0),
@@ -670,16 +689,17 @@ export function getMetricForNode(
 export function findRouteReceiverMetric(
   nodeID: string,
   metrics: GraphMetric[],
-  telemetryType: string,
+  telemetryType: string
 ): GraphMetric | undefined {
   const processorID = /^source\/source(?<sourceNum>[0-9]+)\/processors$/;
   const match = nodeID.match(processorID);
 
   if (match?.groups != null) {
     const expected = `source/source${match.groups.sourceNum}__processor`;
-    return metrics.find((m) =>
-      m.nodeID.startsWith(expected) &&
-      m.name === TELEMETRY_SIZE_METRICS[telemetryType]
+    return metrics.find(
+      (m) =>
+        m.nodeID.startsWith(expected) &&
+        m.name === TELEMETRY_SIZE_METRICS[telemetryType]
     );
   }
 

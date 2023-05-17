@@ -211,6 +211,10 @@ func overviewMetrics(ctx context.Context, bindplane server.BindPlane, period str
 		return nil, err
 	}
 
+	var maxMetricValue float64
+	var maxLogValue float64
+	var maxTraceValue float64
+
 	everythingOrSelected := func(resourceKey, resourceType string) string {
 		resourcesSelected := []string{}
 		switch resourceType {
@@ -283,6 +287,7 @@ func overviewMetrics(ctx context.Context, bindplane server.BindPlane, period str
 		}
 		includeDestination(metric, pipelineType, resourceName)
 		includeConfiguration(metric, pipelineType)
+
 	}
 
 	var graphMetrics []*model1.GraphMetric
@@ -291,8 +296,29 @@ func overviewMetrics(ctx context.Context, bindplane server.BindPlane, period str
 	graphMetrics = append(graphMetrics, maps.Values(destinationMetrics)...)
 	graphMetrics = append(graphMetrics, maps.Values(configurationMetrics)...)
 
+	// Go through the metrics and find the highest value for each telemetry type
+	for _, metric := range graphMetrics {
+		switch metric.Name {
+		case "metric_data_size":
+			if metric.Value > maxMetricValue {
+				maxMetricValue = metric.Value
+			}
+		case "log_data_size":
+			if metric.Value > maxLogValue {
+				maxLogValue = metric.Value
+			}
+		case "trace_data_size":
+			if metric.Value > maxTraceValue {
+				maxTraceValue = metric.Value
+			}
+		}
+	}
+
 	return &model1.GraphMetrics{
-		Metrics: graphMetrics,
+		Metrics:        graphMetrics,
+		MaxLogValue:    maxLogValue,
+		MaxMetricValue: maxMetricValue,
+		MaxTraceValue:  maxTraceValue,
 	}, nil
 }
 
@@ -364,6 +390,9 @@ type NodeIDResolver func(metric *record.Metric, position model.MeasurementPositi
 
 func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bindplane server.BindPlane) *model1.GraphMetrics {
 	var graphMetrics []*model1.GraphMetric
+	var maxMetricValue float64
+	var maxLogValue float64
+	var maxTraceValue float64
 
 	for _, m := range metrics {
 		graphMetric, err := model1.ToGraphMetric(m)
@@ -378,10 +407,30 @@ func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bin
 
 		graphMetric.PipelineType = pipelineType
 		graphMetrics = append(graphMetrics, graphMetric)
+
+		// keep track of running max value
+		switch pipelineType {
+		case "metrics":
+			if graphMetric.Value > maxMetricValue {
+				maxMetricValue = graphMetric.Value
+			}
+		case "logs":
+			if graphMetric.Value > maxLogValue {
+				maxLogValue = graphMetric.Value
+			}
+		case "traces":
+			if graphMetric.Value > maxTraceValue {
+				maxTraceValue = graphMetric.Value
+			}
+		}
+
 	}
 
 	return &model1.GraphMetrics{
-		Metrics: graphMetrics,
+		Metrics:        graphMetrics,
+		MaxMetricValue: maxMetricValue,
+		MaxLogValue:    maxLogValue,
+		MaxTraceValue:  maxTraceValue,
 	}
 }
 
