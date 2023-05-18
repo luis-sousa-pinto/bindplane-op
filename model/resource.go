@@ -141,7 +141,7 @@ type ResourceMeta struct {
 	Metadata   Metadata `yaml:"metadata,omitempty" json:"metadata"`
 }
 
-// Metadata TODO(doc)
+// Metadata is the metadata about a resource
 type Metadata struct {
 	ID          string `yaml:"id,omitempty" json:"id" mapstructure:"id"`
 	Name        string `yaml:"name,omitempty" json:"name" mapstructure:"name"`

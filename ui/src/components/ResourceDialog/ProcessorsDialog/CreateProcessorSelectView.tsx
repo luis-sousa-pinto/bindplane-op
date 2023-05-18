@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useEffect, useMemo, useState } from "react";
 import { ProcessorType } from "../../ResourceConfigForm";
@@ -13,6 +13,8 @@ import {
   ResourceTypeButtonContainer,
 } from "../../ResourceTypeButton";
 
+import styles from "./create-processor-select-view.module.scss"
+
 gql`
   query getProcessorTypes {
     processorTypes {
@@ -21,6 +23,7 @@ gql`
         displayName
         description
         name
+        labels
       }
       spec {
         parameters {
@@ -112,8 +115,8 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
       () =>
         telemetryTypes
           ? data?.processorTypes.filter((pt) =>
-              pt.spec.telemetryTypes.some((t) => telemetryTypes.includes(t))
-            ) ?? []
+            pt.spec.telemetryTypes.some((t) => telemetryTypes.includes(t))
+          ) ?? []
           : data?.processorTypes ?? [],
       [data?.processorTypes, telemetryTypes]
     );
@@ -131,6 +134,7 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
           ),
       [supportedProcessorTypes, search]
     );
+    const categorizedProcessorTypes = processorTypesByCategory(matchingProcessorTypes);
 
     return (
       <>
@@ -150,15 +154,12 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
                 <CircularProgress />
               </Box>
             )}
-            {matchingProcessorTypes.map((p) => (
-              <ResourceTypeButton
-                hideIcon
-                key={`${p.metadata.name}`}
-                displayName={p.metadata.displayName!}
-                onSelect={() => {
-                  onSelect(p);
-                }}
-                telemetryTypes={p.spec.telemetryTypes}
+            {Object.keys(categorizedProcessorTypes).map((k) => (
+              <ProcessorCategory
+                key={k}
+                title={k}
+                processors={categorizedProcessorTypes[k]}
+                onSelect={onSelect}
               />
             ))}
           </ResourceTypeButtonContainer>
@@ -167,3 +168,47 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
       </>
     );
   };
+
+function processorTypesByCategory(processorTypes: ProcessorType[]): { [category: string]: ProcessorType[] } {
+  return processorTypes.reduce((acc: { [key: string]: ProcessorType[] }, p: ProcessorType) => {
+    const category: string = p.metadata.labels?.category?.replaceAll("-", " ") ?? "Other";
+    if (!acc[category]) {
+      acc[category] = [p];
+    } else {
+      acc[category] = [...acc[category]!, p];
+    }
+
+    return acc;
+  }, {});
+}
+
+
+interface ProcessorCategoryProps {
+  title: string;
+  processors: ProcessorType[];
+  onSelect: (pt: ProcessorType) => void;
+}
+
+function ProcessorCategory({
+  onSelect,
+  processors,
+  title,
+}: ProcessorCategoryProps) {
+  return (
+    <>
+      <Box className={styles.category}>
+        <Typography fontSize={18} fontWeight={600}>
+          {title}
+        </Typography>
+      </Box>      {processors.map((p) => (
+        <ResourceTypeButton
+          hideIcon
+          key={p.metadata.name}
+          displayName={p.metadata.displayName!}
+          onSelect={() => onSelect(p)}
+          telemetryTypes={p.spec.telemetryTypes}
+        />
+      ))}
+    </>
+  );
+}

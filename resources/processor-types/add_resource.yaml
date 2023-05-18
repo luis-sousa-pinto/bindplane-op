@@ -4,6 +4,8 @@ metadata:
   name: add_resource
   displayName: Add Resource Attribute
   description: Insert, update, or upsert resource attributes to metrics, traces, and logs.
+  labels:
+    category: Transform
 spec:
   version: 0.0.1
   parameters:

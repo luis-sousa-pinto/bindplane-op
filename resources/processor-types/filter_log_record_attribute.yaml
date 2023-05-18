@@ -4,6 +4,8 @@ metadata:
   name: filter_log_record_attribute
   displayName: Log Record Attribute Filter
   description: Include or exclude logs based on log record attribute matching.
+  labels:
+    category: Filter-And-Reduce
 spec:
   version: 0.0.1
   parameters:

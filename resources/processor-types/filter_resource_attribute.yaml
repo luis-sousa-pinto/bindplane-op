@@ -4,6 +4,8 @@ metadata:
   name: filter_resource_record_attribute
   displayName: Resource Attribute Filter
   description: Include or exclude metrics and logs based on resource attribute matching.
+  labels:
+    category: Filter-And-Reduce
 spec:
   version: 0.0.1
   parameters:

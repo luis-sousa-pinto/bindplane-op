@@ -4,6 +4,8 @@ metadata:
   name: add_attribute
   displayName: Add Attribute
   description: Insert, update, or upsert telemetry attributes.
+  labels:
+    category: Transform
 spec:
   version: 0.0.2
   parameters:
