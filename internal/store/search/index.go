@@ -238,9 +238,6 @@ func (i *index) tokenMatches(token *QueryToken, ids []string) []string {
 
 // tokenMatches returns the ids matching the specified token
 func (i *index) tokenMatchesAny(token *QueryToken) []string {
-	i.mtx.RLock()
-	defer i.mtx.RUnlock()
-
 	results := []string{}
 	for _, doc := range i.documents {
 		if tokenMatchesDocument(token, doc) {
