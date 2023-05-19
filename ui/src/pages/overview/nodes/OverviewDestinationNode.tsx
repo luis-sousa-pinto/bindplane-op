@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "react-flow-renderer";
 import { CardMeasurementContent } from "../../../components/CardMeasurementContent/CardMeasurementContent";
-import { InlineDestinationCard } from "../../../components/Cards/InlineDestinationCard";
 import { OverviewDestinationCard } from "../../../components/Cards/OverviewDestinationCard";
 import { DEFAULT_TELEMETRY_TYPE } from "../../../components/MeasurementControlBar/MeasurementControlBar";
 import { isNodeDisabled } from "../../../components/PipelineGraph/Nodes/nodeUtils";
@@ -32,16 +31,12 @@ export function OverviewDestinationNode(params: {
     <div
       onMouseEnter={() => setHoveredNodeAndEdgeSet(connectedNodesAndEdges)}
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
-    >
-      {attributes.isInline ? (
-        <InlineDestinationCard id={id.replace("destination/", "")} key={id} />
-      ) : (
-        <OverviewDestinationCard
+    >      
+      <OverviewDestinationCard
           name={attributes.resourceId}
           disabled={isDisabled || isNotInHoverSet}
           key={id}
         />
-      )}
       <CardMeasurementContent>{metric}</CardMeasurementContent>
       <Handle type="target" position={Position.Left} />
     </div>

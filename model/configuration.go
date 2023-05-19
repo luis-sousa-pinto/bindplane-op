@@ -707,16 +707,20 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 	}
 
 	for i, destination := range c.Spec.Destinations {
+		// We don't use the name, because the same destination may be used multiple times.
+		// Using the index guarantees uniqueness.
+		destinationSlug := fmt.Sprintf("destination-%d", i)
 		destinationName := destination.localName(KindDestination, i)
 		usage := pipelineUsage.destinations.usage(destinationName)
 
 		// For now only add one intermediate node for each
 		// destination which represents all the processors on the destination.
 		p := &graph.Node{
-			ID:    fmt.Sprintf("destination/%s/processors", destinationName),
+			ID:    fmt.Sprintf("destination/%s/processors", destinationSlug),
 			Type:  "processorNode",
 			Label: "Processors",
 			Attributes: map[string]any{
+				"destinationIndex":   i,
 				"activeTypeFlags":    usage.active,
 				"supportedTypeFlags": usage.supported,
 			},
@@ -731,8 +735,10 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		attributes["isInline"] = destination.Name == ""
 		attributes["activeTypeFlags"] = usage.active
 		attributes["supportedTypeFlags"] = usage.supported
+		attributes["destinationIndex"] = i
+
 		d := &graph.Node{
-			ID:         fmt.Sprintf("destination/%s", destinationName),
+			ID:         fmt.Sprintf("destination/%s", destinationSlug),
 			Type:       "destinationNode",
 			Label:      destination.Name,
 			Attributes: attributes,

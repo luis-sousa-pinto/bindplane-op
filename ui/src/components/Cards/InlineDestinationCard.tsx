@@ -74,10 +74,9 @@ gql`
 `;
 
 export const InlineDestinationCard: React.FC<{
-  id: string;
-}> = ({ id }) => {
+  destinationIndex: number;
+}> = ({ destinationIndex }) => {
   const { configuration, refetchConfiguration } = useConfigurationPage();
-  const destinationIndex = getDestinatonIndex(id);
   const destination = configuration?.spec?.destinations![destinationIndex];
 
   // We can count on the type existing for an inline Resource
@@ -252,8 +251,3 @@ export const InlineDestinationCard: React.FC<{
     </>
   );
 };
-
-function getDestinatonIndex(id: string): number {
-  const numberStr = id.split("destination")[1];
-  return Number(numberStr);
-}

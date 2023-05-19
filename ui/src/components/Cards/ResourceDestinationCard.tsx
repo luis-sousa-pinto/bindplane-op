@@ -94,13 +94,14 @@ gql`
 
 interface ResourceDestinationCardProps {
   name: string;
+  destinationIndex: number;
   // disabled indicates that the card is not active and should be greyed out
   disabled?: boolean;
   enableProcessors?: boolean;
 }
 
 const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
-  ({ name, disabled, enableProcessors = false }) => {
+  ({ name, destinationIndex, disabled, enableProcessors = false }) => {
     const { configuration, refetchConfiguration } = useConfigurationPage();
     const { enqueueSnackbar } = useSnackbar();
     const [editing, setEditing] = useState(false);
@@ -111,10 +112,6 @@ const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
         variables: { name },
         fetchPolicy: "cache-and-network",
       });
-
-    const destinationIndex = configuration?.spec?.destinations?.findIndex(
-      (d) => d.name === name
-    );
 
     function closeEditDialog() {
       setEditing(false);
