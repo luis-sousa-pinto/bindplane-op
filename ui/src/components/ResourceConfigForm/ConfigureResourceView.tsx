@@ -5,8 +5,7 @@ import { ResourceNameInput, useValidationContext, isValid } from ".";
 import { useResourceFormValues } from "./ResourceFormContext";
 import { useResourceDialog } from "../ResourceDialog/ResourceDialogContext";
 import { memo, useMemo } from "react";
-import { TitleSection } from "../ResourceDialog/TitleSection";
-import { ContentSection } from "../ResourceDialog/ContentSection";
+import { TitleSection, ContentSection } from "../DialogComponents";
 import { initFormErrors } from "./init-form-values";
 import { ParameterSection } from "./ParameterSection";
 import { PauseIcon, PlayIcon } from "../Icons";
@@ -53,6 +52,7 @@ interface ConfigureResourceViewProps {
   onTogglePause?: () => void;
   disableSave?: boolean;
   paused?: boolean;
+  readOnly?: boolean;
 }
 
 export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
@@ -70,6 +70,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   disableSave,
   onTogglePause,
   paused,
+  readOnly,
 }) => {
   const { touchAll, setErrors } = useValidationContext();
   const { setFormValues } = useResourceFormValues();
@@ -148,6 +149,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
             {includeNameField && (
               <Grid item xs={6}>
                 <ResourceNameInput
+                  readOnly={readOnly}
                   kind={kind}
                   value={formValues.name}
                   onValueChange={(v: string) =>
@@ -171,7 +173,11 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
             ) : (
               <>
                 {groups.map((g, ix) => (
-                  <ParameterSection key={`param-group-${ix}`} group={g} />
+                  <ParameterSection
+                    key={`param-group-${ix}`}
+                    group={g}
+                    readOnly={readOnly}
+                  />
                 ))}
               </>
             )}
@@ -191,7 +197,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
                 Running
               </Button>
             ))}
-          {togglePauseButton}
+          {!readOnly && togglePauseButton}
         </DialogActions>
 
         <DialogActions
@@ -199,9 +205,9 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
             marginLeft: "auto",
           }}
         >
-          {deleteButton}
+          {!readOnly && deleteButton}
           {backButton}
-          {primaryButton}
+          {!readOnly && primaryButton}
         </DialogActions>
       </Stack>
     </>

@@ -16,6 +16,8 @@ GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 ifeq ($(GOARCH), amd64)
 GOARCH_FULL=amd64_v1
+else
+GOARCH_FULL=$(GOARCH)
 endif
 
 .PHONY: help
@@ -93,7 +95,7 @@ tidy:
 
 .PHONY: lint # runs revive linter and npm run lint
 lint:
-	revive -config revive/config.toml -formatter=stylish -exclude "internal/graphql/schema.resolvers.go"  -set_exit_status ./...
+	revive -config revive/config.toml -formatter=stylish -exclude "graphql/schema.resolvers.go"  -set_exit_status ./...
 	cd ui && npm run lint && cd ..
 
 .PHONY: vet # runs go vet
@@ -177,14 +179,16 @@ docker-http:
 		"ghcr.io/observiq/bindplane-$(GOARCH):${GIT_SHA}" \
 		--host 0.0.0.0 \
 		--port "3001" \
-		--server-url http://localhost:3010 \
-		--remote-url ws://localhost:3010
+		--remote-url http://localhost:3010 \
+		--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		--store-type bbolt \
+		--store-bbolt-path /data/storage
 	docker logs "bindplane-server-${GIT_SHA}-http"
 
 .PHONY: docker-http-profile
 docker-http-profile:
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-http \
-		--server-url http://localhost:3010 --remote-url ws://localhost:3010
+		--remote-url http://localhost:3010
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-http
 
 .PHONY: docker-ubi8-http
@@ -197,9 +201,11 @@ docker-ubi8-http:
 		"ghcr.io/observiq/bindplane-$(GOARCH):${GIT_SHA}-ubi8" \
 		--host 0.0.0.0 \
 		--port "3001" \
-		--server-url http://localhost:3010 \
-		--remote-url ws://localhost:3010
-	docker logs "bindplane-server-${GIT_SHA}-http"
+		--remote-url http://localhost:3011 \
+		--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		--store-type bbolt \
+		--store-bbolt-path /data/storage
+	docker logs "bindplane-server-${GIT_SHA}-ubi8-http"
 
 .PHONY: docker-ubi8-http-profile
 docker-ubi8-http-profile:
@@ -210,24 +216,25 @@ docker-ubi8-http-profile:
 .PHONY: docker-https
 docker-https: tls
 	docker run -d \
-		-p 3011:3001 \
+		-p 3013:3001 \
 		--name "bindplane-server-${GIT_SHA}-https" \
-		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
-		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
-		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		-e BINDPLANE_SESSION_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		-e BINDPLANE_LOGGING_OUTPUT=stdout \
 		-v "${PWD}/tls:/tls" \
 		"ghcr.io/observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key \
 			--host 0.0.0.0 \
 			--port "3001" \
-			--server-url https://localhost:3011 \
-			--remote-url wss://localhost:3011
+			--remote-url https://localhost:3013 \
+			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+			--store-type bbolt \
+			--store-bbolt-path /data/storage
 	docker logs "bindplane-server-${GIT_SHA}-https"
 
 .PHONY: docker-https-profile
 docker-https-profile: tls
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https \
-		--server-url https://localhost:3011 --remote-url wss://localhost:3011 \
+		--remote-url https://localhost:3013 \
 		--tls-ca tls/bindplane-ca.crt
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-https
 
@@ -236,22 +243,23 @@ docker-https-mtls: tls
 	docker run -d \
 		-p 3012:3001 \
 		--name "bindplane-server-${GIT_SHA}-https-mtls" \
-		-e BINDPLANE_CONFIG_SESSIONS_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
-		-e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
-		-e BINDPLANE_CONFIG_SECRET_KEY=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		-e BINDPLANE_SESSION_SECRET=403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+		-e BINDPLANE_LOGGING_OUTPUT=stdout \
 		-v "${PWD}/tls:/tls" \
 		"ghcr.io/observiq/bindplane-$(GOARCH):latest" \
 			--tls-cert /tls/bindplane.crt --tls-key /tls/bindplane.key --tls-ca /tls/bindplane-ca.crt --tls-ca /tls/test-ca.crt \
 			--host 0.0.0.0 \
 			--port "3001" \
-			--server-url https://localhost:3012 \
-			--remote-url wss://localhost:3012
+			--remote-url https://localhost:3012 \
+			--secret-key 403dd8ff-72a9-4401-9a66-e54b37d6e0ce \
+			--store-type bbolt \
+			--store-bbolt-path /data/storage
 	docker logs  "bindplane-server-${GIT_SHA}-https-mtls"
 
 .PHONY: docker-https-mtls-profile
 docker-https-mtls-profile: tls
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile set docker-https-mtls \
-		--server-url https://localhost:3012 --remote-url wss://localhost:3012 \
+		--remote-url https://localhost:3012 \
 		--tls-cert tls/bindplane-client.crt --tls-key ./tls/bindplane-client.key --tls-ca tls/bindplane-ca.crt
 	dist/bindplane_$(GOOS)_$(GOARCH_FULL)/bindplane profile use docker-https-mtls
 

@@ -729,6 +729,7 @@ definitions:
     - invalid
     - error
     - in-use
+    - forbidden
     type: string
     x-enum-varnames:
     - StatusUnchanged
@@ -738,6 +739,7 @@ definitions:
     - StatusInvalid
     - StatusError
     - StatusInUse
+    - StatusForbidden
   rest.ErrorResponse:
     properties:
       errors:
@@ -748,6 +750,76 @@ definitions:
 info:
   contact: {}
 paths:
+  /Agents:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AgentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Agents
+  /Configurations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ConfigurationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Configurations
+  /Destinations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DestinationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Destinations
+  /Processors:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ProcessorsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Processors
+  /Sources:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SourcesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Sources
   /agent-versions:
     get:
       produces:
@@ -892,19 +964,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: delete agents by ids
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.AgentsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List agents
   /agents/{id}:
     get:
       parameters:
@@ -1127,20 +1186,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Create, edit, and configure multiple resources.
-  /configurations:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.ConfigurationsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Configurations
   /configurations/{name}:
     delete:
       parameters:
@@ -1165,7 +1210,7 @@ paths:
       summary: Delete configuration by name
     get:
       parameters:
-      - description: the name of the configuration
+      - description: the name of the Configuration
         in: path
         name: name
         required: true
@@ -1181,7 +1226,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
-      summary: Get configuration by name
+      summary: Get Configuration by name
   /configurations/{name}/copy:
     post:
       parameters:
@@ -1304,20 +1349,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get destination type by name
-  /destinations:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.DestinationsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List destinations
   /destinations/{name}:
     delete:
       parameters:
@@ -1342,7 +1373,7 @@ paths:
       summary: Delete destination by name
     get:
       parameters:
-      - description: the name of the destination
+      - description: the name of the Destination
         in: path
         name: name
         required: true
@@ -1362,7 +1393,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
-      summary: Get destination by name
+      summary: Get Destination by name
   /processor-types:
     get:
       produces:
@@ -1422,20 +1453,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get processor type by name
-  /processors:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.ProcessorsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List processors
   /processors/{name}:
     delete:
       parameters:
@@ -1460,7 +1477,7 @@ paths:
       summary: Delete processor by name
     get:
       parameters:
-      - description: the name of the processor
+      - description: the name of the Processor
         in: path
         name: name
         required: true
@@ -1480,7 +1497,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
-      summary: Get processor by name
+      summary: Get Processor by name
   /source-types:
     get:
       produces:
@@ -1540,20 +1557,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get source type by name
-  /sources:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.SourcesResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List sources
   /sources/{name}:
     delete:
       parameters:
@@ -1578,7 +1581,7 @@ paths:
       summary: Delete source by name
     get:
       parameters:
-      - description: the name of the source
+      - description: the name of the Source
         in: path
         name: name
         required: true
@@ -1598,7 +1601,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
-      summary: Get source by name
+      summary: Get Source by name
   /version:
     get:
       description: Returns the current bindplane version of the server.

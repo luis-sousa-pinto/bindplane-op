@@ -29,10 +29,10 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/rest"
-	"github.com/observiq/bindplane-op/internal/version"
+	"github.com/observiq/bindplane-op/config"
 	"github.com/observiq/bindplane-op/model"
+	"github.com/observiq/bindplane-op/rest"
+	"github.com/observiq/bindplane-op/version"
 )
 
 // AgentInstallOptions contains configuration options used for installing an agent.
@@ -58,63 +58,13 @@ type AgentInstallOptions struct {
 
 // ----------------------------------------------------------------------
 
-// queryOptions represents the set of options available for a store query
-type queryOptions struct {
-	selector string
-	query    string
-	offset   int
-	limit    int
-	sort     string
-}
-
-func makeQueryOptions(options []QueryOption) queryOptions {
-	opts := queryOptions{}
-	for _, opt := range options {
-		opt(&opts)
-	}
-	return opts
-}
-
-// QueryOption is an option used in many Store queries
-type QueryOption func(*queryOptions)
-
-// WithSelector adds a selector to the query options
-func WithSelector(selector string) QueryOption {
-	return func(opts *queryOptions) {
-		opts.selector = selector
-	}
-}
-
-// WithQuery adds a search query string to the query options
-func WithQuery(query string) QueryOption {
-	return func(opts *queryOptions) {
-		opts.query = query
-	}
-}
-
-// WithOffset sets the offset for the results to return. For paging, if the pages have 10 items per page and this is the
-// 3rd page, set the offset to 20.
-func WithOffset(offset int) QueryOption {
-	return func(opts *queryOptions) {
-		opts.offset = offset
-	}
-}
-
-// WithLimit sets the maximum number of results to return. For paging, if the pages have 10 items per page, set the
-// limit to 10.
-func WithLimit(limit int) QueryOption {
-	return func(opts *queryOptions) {
-		opts.limit = limit
-	}
-}
-
-// WithSort sets the sort order for the request. The sort value is the name of the field, sorted ascending. To sort
-// descending, prefix the field with a minus sign (-). Some Stores only allow sorting by certain fields. Sort values not
-// supported will be ignored.
-func WithSort(field string) QueryOption {
-	return func(opts *queryOptions) {
-		opts.sort = field
-	}
+// QueryOptions represents the set of options available for a store query
+type QueryOptions struct {
+	Selector string
+	Query    string
+	Offset   int
+	Limit    int
+	Sort     string
 }
 
 // BindPlane is a REST client for BindPlane OP.
@@ -122,7 +72,7 @@ func WithSort(field string) QueryOption {
 //go:generate mockery --name=BindPlane --filename=mock_bindplane.go --structname=MockBindPlane
 type BindPlane interface {
 	// Agents returns a list of Agents.
-	Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error)
+	Agents(ctx context.Context, options QueryOptions) ([]*model.Agent, error)
 	// Agent returns a single Agent.
 	Agent(ctx context.Context, id string) (*model.Agent, error)
 	// DeleteAgents deletes multiple agents by ID.
@@ -212,252 +162,283 @@ type BindPlane interface {
 	// ApplyAgentLabels applies the specified labels to an agent, merging the specified labels with the existing labels
 	// and returning the labels of the agent
 	ApplyAgentLabels(ctx context.Context, id string, labels *model.Labels, override bool) (*model.Labels, error)
+
+	// Rollouts
+
+	// RolloutStatus returns the status of a rollout
+	RolloutStatus(ctx context.Context, name string) (*model.Configuration, error)
+
+	// StartRollout starts a rollout that is pending
+	StartRollout(ctx context.Context, name string, options *model.RolloutOptions) (*model.Configuration, error)
+
+	// PauseRollout pauses a rollout that is started
+	PauseRollout(ctx context.Context, name string) (*model.Configuration, error)
+
+	// ResumeRollout resumes a rollout that is paused
+	ResumeRollout(ctx context.Context, name string) (*model.Configuration, error)
+
+	// UpdateRollout updates a rollout
+	UpdateRollout(ctx context.Context, name string) (*model.Configuration, error)
+
+	// UpdateRollouts updates all active rollouts
+	UpdateRollouts(ctx context.Context) ([]*model.Configuration, error)
+
+	// ResourceHistory retrieves the history of the rollout
+	ResourceHistory(ctx context.Context, kind model.Kind, name string) ([]*model.AnyResource, error)
 }
 
-type bindplaneClient struct {
-	client *resty.Client
-	config *common.Client
+// BindplaneClient is the implementation of the Bindplane interface
+type BindplaneClient struct {
+	Client *resty.Client
 	*zap.Logger
 }
 
-var _ BindPlane = (*bindplaneClient)(nil)
-
 // NewBindPlane takes a client configuration, logger and returns a new BindPlane.
-func NewBindPlane(config *common.Client, logger *zap.Logger) (BindPlane, error) {
+func NewBindPlane(config *config.Config, logger *zap.Logger) (BindPlane, error) {
 	client := resty.New()
 	// Don't log warning if using HTTP
 	client.SetDisableWarn(true)
 	client.SetTimeout(time.Second * 20)
-	client.SetBasicAuth(config.Username, config.Password)
-	client.SetBaseURL(fmt.Sprintf("%s/v1", config.BindPlaneURL()))
+	client.SetBasicAuth(config.Auth.Username, config.Auth.Password)
+	client.SetBaseURL(fmt.Sprintf("%s/v1", config.Network.ServerURL()))
 
-	tlsConfig, err := tlsClient(config.Certificate, config.PrivateKey, config.CertificateAuthority, config.InsecureSkipVerify)
+	tlsConfig, err := config.Network.Convert()
 	if err != nil {
 		return nil, fmt.Errorf("failed to configure TLS client: %w", err)
 	}
 	client.SetTLSClientConfig(tlsConfig)
 
-	return &bindplaneClient{
-		client: client,
-		config: config,
+	return &BindplaneClient{
+		Client: client,
 		Logger: logger.Named("bindplane-client"),
 	}, nil
 }
 
-func (c *bindplaneClient) Agents(_ context.Context, options ...QueryOption) ([]*model.Agent, error) {
+// Agents retries agents based on the query
+func (c *BindplaneClient) Agents(_ context.Context, options QueryOptions) ([]*model.Agent, error) {
 	c.Debug("Agents called")
 
-	opts := makeQueryOptions(options)
 	ar := &model.AgentsResponse{}
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetResult(ar).
-		SetQueryParam("selector", opts.selector).
-		SetQueryParam("query", opts.query).
-		SetQueryParam("offset", fmt.Sprintf("%d", opts.offset)).
-		SetQueryParam("limit", fmt.Sprintf("%d", opts.limit)).
-		SetQueryParam("sort", opts.sort).
+		SetQueryParam("selector", options.Selector).
+		SetQueryParam("query", options.Query).
+		SetQueryParam("offset", fmt.Sprintf("%d", options.Offset)).
+		SetQueryParam("limit", fmt.Sprintf("%d", options.Limit)).
+		SetQueryParam("sort", options.Sort).
 		Get("/agents")
 	if err != nil {
-		logRequestError(c.Logger, err, "/agents")
+		LogRequestError(c.Logger, err, "/agents")
 		return nil, err
 	}
 
-	return ar.Agents, c.statusError(resp, err, "unable to get agents")
+	return ar.Agents, c.StatusError(resp, err, "unable to get agents")
 }
 
-func (c *bindplaneClient) Agent(_ context.Context, id string) (*model.Agent, error) {
+// Agent returns the agent with the id
+func (c *BindplaneClient) Agent(_ context.Context, id string) (*model.Agent, error) {
 	c.Debug("Agent called")
 
 	ar := &model.AgentResponse{}
 	agentsEndpoint := fmt.Sprintf("/agents/%s", id)
-	resp, err := c.client.R().SetResult(ar).Get(agentsEndpoint)
+	resp, err := c.Client.R().SetResult(ar).Get(agentsEndpoint)
 	if err != nil {
-		logRequestError(c.Logger, err, agentsEndpoint)
+		LogRequestError(c.Logger, err, agentsEndpoint)
 		return nil, err
 	}
 
-	return ar.Agent, c.statusError(resp, err, "unable to get agents")
+	return ar.Agent, c.StatusError(resp, err, "unable to get agents")
 }
 
-func (c *bindplaneClient) DeleteAgents(_ context.Context, ids []string) ([]*model.Agent, error) {
+// DeleteAgents deletes agents with the ids
+func (c *BindplaneClient) DeleteAgents(_ context.Context, ids []string) ([]*model.Agent, error) {
 	c.Debug("DeleteAgents called")
 
 	body := &model.DeleteAgentsPayload{
 		IDs: ids,
 	}
 	result := &model.DeleteAgentsResponse{}
-	resp, err := c.client.R().SetBody(body).SetResult(result).Delete("/agents")
-	return result.Agents, c.statusError(resp, err, "unable to delete agents")
+	resp, err := c.Client.R().SetBody(body).SetResult(result).Delete("/agents")
+	return result.Agents, c.StatusError(resp, err, "unable to delete agents")
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) AgentVersions(ctx context.Context) ([]*model.AgentVersion, error) {
+// AgentVersions retries all gent versions
+func (c *BindplaneClient) AgentVersions(ctx context.Context) ([]*model.AgentVersion, error) {
 	result := model.AgentVersionsResponse{}
-	err := c.resources(ctx, "/agent-versions", &result)
+	err := c.Resources(ctx, "/agent-versions", &result)
 	return result.AgentVersions, err
 }
 
-func (c *bindplaneClient) AgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
+// AgentVersion retrieves the agent version with name
+func (c *BindplaneClient) AgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
 	result := model.AgentVersionResponse{}
-	err := c.resource(ctx, "/agent-versions", name, &result)
+	err := c.Resource(ctx, "/agent-versions", name, &result)
 	return result.AgentVersion, err
 }
 
-func (c *bindplaneClient) DeleteAgentVersion(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/agent-versions", name)
+// DeleteAgentVersion deletes the agent version with name
+func (c *BindplaneClient) DeleteAgentVersion(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/agent-versions", name)
 }
 
-func (c *bindplaneClient) SyncAgentVersions(_ context.Context, version string) ([]*model.AnyResourceStatus, error) {
+// SyncAgentVersions syncs the specific agent version
+func (c *BindplaneClient) SyncAgentVersions(_ context.Context, version string) ([]*model.AnyResourceStatus, error) {
 	ar := &model.ApplyResponseClientSide{}
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetResult(ar).
 		Post(fmt.Sprintf("/agent-versions/%s/sync", version))
 	if err != nil {
-		logRequestError(c.Logger, err, "/agent-versions/:name/sync")
+		LogRequestError(c.Logger, err, "/agent-versions/:name/sync")
 		return nil, err
 	}
-	return ar.Updates, c.statusError(resp, err, "unable to sync agent-versions")
+	return ar.Updates, c.StatusError(resp, err, "unable to sync agent-versions")
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) Configurations(_ context.Context) ([]*model.Configuration, error) {
+// Configurations retrieves all configurations
+func (c *BindplaneClient) Configurations(_ context.Context) ([]*model.Configuration, error) {
 	c.Debug("Configurations called")
 
 	pr := &model.ConfigurationsResponse{}
-	resp, err := c.client.R().SetResult(pr).Get("/configurations")
-	return pr.Configurations, c.statusError(resp, err, "unable to get configurations")
+	resp, err := c.Client.R().SetResult(pr).Get("/configurations")
+	return pr.Configurations, c.StatusError(resp, err, "unable to get configurations")
 }
 
-func (c *bindplaneClient) Configuration(ctx context.Context, name string) (*model.Configuration, error) {
+// Configuration retrieves configuration with name
+func (c *BindplaneClient) Configuration(ctx context.Context, name string) (*model.Configuration, error) {
 	result := model.ConfigurationResponse{}
-	err := c.resource(ctx, "/configurations", name, &result)
+	err := c.Resource(ctx, "/configurations", name, &result)
 	return result.Configuration, err
 }
 
-func (c *bindplaneClient) DeleteConfiguration(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/configurations", name)
+// DeleteConfiguration deletes the configuration with name
+func (c *BindplaneClient) DeleteConfiguration(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/configurations", name)
 }
 
-func (c *bindplaneClient) RawConfiguration(ctx context.Context, name string) (string, error) {
+// RawConfiguration retrieves the raw config with name
+func (c *BindplaneClient) RawConfiguration(ctx context.Context, name string) (string, error) {
 	result := model.ConfigurationResponse{}
-	err := c.resource(ctx, "/configurations", name, &result)
+	err := c.Resource(ctx, "/configurations", name, &result)
 	return result.Raw, err
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) Sources(ctx context.Context) ([]*model.Source, error) {
+// Sources retrieves all sources
+func (c *BindplaneClient) Sources(ctx context.Context) ([]*model.Source, error) {
 	result := model.SourcesResponse{}
-	err := c.resources(ctx, "/sources", &result)
+	err := c.Resources(ctx, "/sources", &result)
 	return result.Sources, err
 }
 
-func (c *bindplaneClient) Source(ctx context.Context, name string) (*model.Source, error) {
+// Source retrieves the source with the given name
+func (c *BindplaneClient) Source(ctx context.Context, name string) (*model.Source, error) {
 	result := model.SourceResponse{}
-	err := c.resource(ctx, "/sources", name, &result)
+	err := c.Resource(ctx, "/sources", name, &result)
 	return result.Source, err
 }
 
-func (c *bindplaneClient) DeleteSource(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/sources", name)
+// DeleteSource deletes the source with the given name
+func (c *BindplaneClient) DeleteSource(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/sources", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) SourceTypes(ctx context.Context) ([]*model.SourceType, error) {
+// SourceTypes retrieves all source types
+func (c *BindplaneClient) SourceTypes(ctx context.Context) ([]*model.SourceType, error) {
 	result := model.SourceTypesResponse{}
-	err := c.resources(ctx, "/source-types", &result)
+	err := c.Resources(ctx, "/source-types", &result)
 	return result.SourceTypes, err
 }
 
-func (c *bindplaneClient) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
+// SourceType retrieves source type with given name
+func (c *BindplaneClient) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
 	result := model.SourceTypeResponse{}
-	err := c.resource(ctx, "/source-types", name, &result)
+	err := c.Resource(ctx, "/source-types", name, &result)
 	return result.SourceType, err
 }
 
-func (c *bindplaneClient) DeleteSourceType(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/source-types", name)
+// DeleteSourceType deletes source type with given name
+func (c *BindplaneClient) DeleteSourceType(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/source-types", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) Processors(ctx context.Context) ([]*model.Processor, error) {
+// Processors retrieves all processors
+func (c *BindplaneClient) Processors(ctx context.Context) ([]*model.Processor, error) {
 	result := model.ProcessorsResponse{}
-	err := c.resources(ctx, "/processors", &result)
+	err := c.Resources(ctx, "/processors", &result)
 	return result.Processors, err
 }
 
-func (c *bindplaneClient) Processor(ctx context.Context, name string) (*model.Processor, error) {
+// Processor retrieves processor with given name
+func (c *BindplaneClient) Processor(ctx context.Context, name string) (*model.Processor, error) {
 	result := model.ProcessorResponse{}
-	err := c.resource(ctx, "/processors", name, &result)
+	err := c.Resource(ctx, "/processors", name, &result)
 	return result.Processor, err
 }
 
-func (c *bindplaneClient) DeleteProcessor(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/processors", name)
+// DeleteProcessor deletes the processor with the given name
+func (c *BindplaneClient) DeleteProcessor(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/processors", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType, error) {
+// ProcessorTypes retrieves all processor types
+func (c *BindplaneClient) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType, error) {
 	result := model.ProcessorTypesResponse{}
-	err := c.resources(ctx, "/processor-types", &result)
+	err := c.Resources(ctx, "/processor-types", &result)
 	return result.ProcessorTypes, err
 }
 
-func (c *bindplaneClient) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
+// ProcessorType retrieves processor type with given name
+func (c *BindplaneClient) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
 	result := model.ProcessorTypeResponse{}
-	err := c.resource(ctx, "/processor-types", name, &result)
+	err := c.Resource(ctx, "/processor-types", name, &result)
 	return result.ProcessorType, err
 }
 
-func (c *bindplaneClient) DeleteProcessorType(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/processor-types", name)
+// DeleteProcessorType deletes processor type with given name
+func (c *BindplaneClient) DeleteProcessorType(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/processor-types", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) Destinations(ctx context.Context) ([]*model.Destination, error) {
+// Destinations retrieves all destinations
+func (c *BindplaneClient) Destinations(ctx context.Context) ([]*model.Destination, error) {
 	result := model.DestinationsResponse{}
-	err := c.resources(ctx, "/destinations", &result)
+	err := c.Resources(ctx, "/destinations", &result)
 	return result.Destinations, err
 }
 
-func (c *bindplaneClient) Destination(ctx context.Context, name string) (*model.Destination, error) {
+// Destination retrieves destination with given name
+func (c *BindplaneClient) Destination(ctx context.Context, name string) (*model.Destination, error) {
 	result := model.DestinationResponse{}
-	err := c.resource(ctx, "/destinations", name, &result)
+	err := c.Resource(ctx, "/destinations", name, &result)
 	return result.Destination, err
 }
 
-func (c *bindplaneClient) DeleteDestination(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/destinations", name)
+// DeleteDestination deletes destination with given name
+func (c *BindplaneClient) DeleteDestination(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/destinations", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) DestinationTypes(ctx context.Context) ([]*model.DestinationType, error) {
+// DestinationTypes retrieves all destination types
+func (c *BindplaneClient) DestinationTypes(ctx context.Context) ([]*model.DestinationType, error) {
 	result := model.DestinationTypesResponse{}
-	err := c.resources(ctx, "/destination-types", &result)
+	err := c.Resources(ctx, "/destination-types", &result)
 	return result.DestinationTypes, err
 }
 
-func (c *bindplaneClient) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
+// DestinationType retrieves destination type with given name
+func (c *BindplaneClient) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
 	result := model.DestinationTypeResponse{}
-	err := c.resource(ctx, "/destination-types", name, &result)
+	err := c.Resource(ctx, "/destination-types", name, &result)
 	return result.DestinationType, err
 }
 
-func (c *bindplaneClient) DeleteDestinationType(ctx context.Context, name string) error {
-	return c.deleteResource(ctx, "/destination-types", name)
+// DeleteDestinationType deletes destination type with given name
+func (c *BindplaneClient) DeleteDestinationType(ctx context.Context, name string) error {
+	return c.DeleteResource(ctx, "/destination-types", name)
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) Apply(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
+// Apply apply resources
+func (c *BindplaneClient) Apply(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
 	c.Debug("Apply called")
 
 	payload := model.ApplyPayload{
@@ -470,12 +451,13 @@ func (c *bindplaneClient) Apply(_ context.Context, resources []*model.AnyResourc
 	}
 
 	ar := &model.ApplyResponseClientSide{}
-	resp, err := c.client.R().SetHeader("Content-Type", "application/json").
+	resp, err := c.Client.R().SetHeader("Content-Type", "application/json").
 		SetBody(data).SetResult(ar).Post("/apply")
-	return ar.Updates, c.statusError(resp, err, "unable to apply resources")
+	return ar.Updates, c.StatusError(resp, err, "unable to apply resources")
 }
 
-func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
+// Delete deletes passed in resources
+func (c *BindplaneClient) Delete(_ context.Context, resources []*model.AnyResource) ([]*model.AnyResourceStatus, error) {
 	c.Debug("Batch Delete called")
 
 	payload := model.DeletePayload{
@@ -487,10 +469,10 @@ func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 		return nil, fmt.Errorf("error marshaling data to json: %w", err)
 	}
 
-	resp, err := c.client.R().SetHeader("Content-Type", "application/json").
+	resp, err := c.Client.R().SetHeader("Content-Type", "application/json").
 		SetBody(data).Post("/delete")
 	if err != nil {
-		logRequestError(c.Logger, err, "/delete")
+		LogRequestError(c.Logger, err, "/delete")
 		return nil, err
 	}
 
@@ -500,7 +482,7 @@ func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 	case http.StatusAccepted:
 		return dr.Updates, nil
 	case http.StatusUnauthorized:
-		return nil, c.unauthorizedError(resp)
+		return nil, c.UnauthorizedError(resp)
 	case http.StatusBadRequest:
 		if dr.Errors != nil {
 			return nil, errors.New(dr.Errors[0])
@@ -518,21 +500,23 @@ func (c *bindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 	return nil, fmt.Errorf("unknown response from bindplane server")
 }
 
-func (c *bindplaneClient) Version(_ context.Context) (version.Version, error) {
+// Version retrieves bindplane server version
+func (c *BindplaneClient) Version(_ context.Context) (version.Version, error) {
 	c.Debug("Version called")
 
 	v := version.Version{}
-	resp, err := c.client.R().SetResult(&v).Get("/version")
-	return v, c.statusError(resp, err, "unable to get version")
+	resp, err := c.Client.R().SetResult(&v).Get("/version")
+	return v, c.StatusError(resp, err, "unable to get version")
 }
 
-func (c *bindplaneClient) AgentInstallCommand(_ context.Context, options AgentInstallOptions) (string, error) {
+// AgentInstallCommand returns the agent install command based on the install options
+func (c *BindplaneClient) AgentInstallCommand(_ context.Context, options AgentInstallOptions) (string, error) {
 	c.Debug("AgentInstallCommand called")
 
 	var command model.InstallCommandResponse
 	endpoint := fmt.Sprintf("/agent-versions/%s/install-command", options.Version)
 
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetQueryParam("platform", options.Platform).
 		SetQueryParam("version", options.Version).
 		SetQueryParam("labels", options.Labels).
@@ -541,12 +525,13 @@ func (c *bindplaneClient) AgentInstallCommand(_ context.Context, options AgentIn
 		SetResult(&command).
 		Get(endpoint)
 
-	return command.Command, c.statusError(resp, err, "unable to get install command")
+	return command.Command, c.StatusError(resp, err, "unable to get install command")
 }
 
-func (c *bindplaneClient) AgentUpgrade(_ context.Context, id string, version string) error {
+// AgentUpgrade sends a request to upgrade agent with id to version
+func (c *BindplaneClient) AgentUpgrade(_ context.Context, id string, version string) error {
 	endpoint := fmt.Sprintf("/agents/%s/version", id)
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetBody(model.PostAgentVersionRequest{
 			Version: version,
 		}).
@@ -576,22 +561,20 @@ func (c *bindplaneClient) AgentUpgrade(_ context.Context, id string, version str
 	return nil
 }
 
-func logRequestError(logger *zap.Logger, err error, endpoint string) {
-	logger.Error("Error making request", zap.Error(err), zap.String("endpoint", endpoint))
-}
-
-func (c *bindplaneClient) AgentLabels(_ context.Context, id string) (*model.Labels, error) {
+// AgentLabels retrieves labels for agent with id
+func (c *BindplaneClient) AgentLabels(_ context.Context, id string) (*model.Labels, error) {
 	var response model.AgentLabelsResponse
 	endpoint := fmt.Sprintf("/agents/%s/labels", id)
 
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetResult(&response).
 		Get(endpoint)
 
-	return response.Labels, c.statusError(resp, err, "unable to get agent labels")
+	return response.Labels, c.StatusError(resp, err, "unable to get agent labels")
 }
 
-func (c *bindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels *model.Labels, overwrite bool) (*model.Labels, error) {
+// ApplyAgentLabels apply labels to agent with id
+func (c *BindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels *model.Labels, overwrite bool) (*model.Labels, error) {
 	payload := model.AgentLabelsPayload{
 		Labels: labels.AsMap(),
 	}
@@ -602,14 +585,14 @@ func (c *bindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels 
 	}
 
 	endpoint := fmt.Sprintf("/agents/%s/labels", id)
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetQueryParam("overwrite", strconv.FormatBool(overwrite)).
 		SetBody(data).
 		Patch(endpoint)
 
 	if resp.StatusCode() != http.StatusConflict {
-		err = c.statusError(resp, err, "unable to apply labels")
+		err = c.StatusError(resp, err, "unable to apply labels")
 		if err != nil {
 			return nil, err
 		}
@@ -628,16 +611,15 @@ func (c *bindplaneClient) ApplyAgentLabels(_ context.Context, id string, labels 
 	return response.Labels, err
 }
 
-// ----------------------------------------------------------------------
-
-func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) error {
+// CopyConfig copies config with name and gives the new config copyName
+func (c *BindplaneClient) CopyConfig(_ context.Context, name, copyName string) error {
 	payload := model.PostCopyConfigRequest{
 		Name: copyName,
 	}
 
 	endpoint := fmt.Sprintf("/configurations/%s/copy", name)
 
-	resp, err := c.client.R().
+	resp, err := c.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(payload).
 		Post(endpoint)
@@ -670,38 +652,136 @@ func (c *bindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 	}
 }
 
+// StartRollout starts a rollout that is pending
+func (c *BindplaneClient) StartRollout(ctx context.Context, name string, options *model.RolloutOptions) (*model.Configuration, error) {
+	var response model.ConfigurationResponse
+	endpoint := fmt.Sprintf("/rollouts/%s/start", name)
+
+	body := model.StartRolloutPayload{}
+	if options != nil {
+		body.Options = options
+	}
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		SetBody(body).
+		Post(endpoint)
+
+	return response.Configuration, c.StatusError(resp, err, "unable to start")
+}
+
+// RolloutStatus returns the status of a rollout
+func (c *BindplaneClient) RolloutStatus(ctx context.Context, name string) (*model.Configuration, error) {
+	var response model.ConfigurationResponse
+	endpoint := fmt.Sprintf("/rollouts/%s/status", name)
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Get(endpoint)
+
+	return response.Configuration, c.StatusError(resp, err, "unable to get rollout status")
+}
+
+// PauseRollout pauses a rollout that is started
+func (c *BindplaneClient) PauseRollout(ctx context.Context, name string) (*model.Configuration, error) {
+	var response model.ConfigurationResponse
+	endpoint := fmt.Sprintf("/rollouts/%s/pause", name)
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Put(endpoint)
+
+	return response.Configuration, c.StatusError(resp, err, "unable to pause")
+}
+
+// ResumeRollout resumes a rollout that is paused
+func (c *BindplaneClient) ResumeRollout(ctx context.Context, name string) (*model.Configuration, error) {
+	var response model.ConfigurationResponse
+	endpoint := fmt.Sprintf("/rollouts/%s/resume", name)
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Put(endpoint)
+
+	return response.Configuration, c.StatusError(resp, err, "unable to resume")
+}
+
+// UpdateRollout updates a rollout
+func (c *BindplaneClient) UpdateRollout(ctx context.Context, name string) (*model.Configuration, error) {
+	var response model.ConfigurationResponse
+	endpoint := fmt.Sprintf("/rollouts/%s/update", name)
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Post(endpoint)
+
+	return response.Configuration, c.StatusError(resp, err, "unable to update")
+}
+
+// UpdateRollouts updates all active rollouts
+func (c *BindplaneClient) UpdateRollouts(ctx context.Context) ([]*model.Configuration, error) {
+	var response model.ConfigurationsResponse
+	endpoint := fmt.Sprintf("/rollouts")
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Post(endpoint)
+
+	return response.Configurations, c.StatusError(resp, err, "unable to update")
+}
+
+// ResourceHistory retrieves the history of the rollout
+func (c *BindplaneClient) ResourceHistory(ctx context.Context, kind model.Kind, name string) ([]*model.AnyResource, error) {
+	var response model.HistoryResponse
+	endpoint := fmt.Sprintf("/%s/%s/history", kind, name)
+
+	resp, err := c.Client.R().
+		SetContext(ctx).
+		SetResult(&response).
+		Get(endpoint)
+
+	return response.Versions, c.StatusError(resp, err, "unable to get resource history")
+}
+
 // ----------------------------------------------------------------------
 
-// resources gets the resources from the REST server and stores them in the provided result.
-func (c *bindplaneClient) resources(ctx context.Context, resourcesURL string, result any) error {
+// Resources gets the Resources from the REST server and stores them in the provided result.
+func (c *BindplaneClient) Resources(ctx context.Context, resourcesURL string, result any) error {
 	return c.get(ctx, resourcesURL, result)
 }
 
-// resource gets the resource with the specified name from the REST server and stores it in the provided result.
-func (c *bindplaneClient) resource(ctx context.Context, resourcesURL string, name string, result any) error {
+// Resource gets the Resource with the specified name from the REST server and stores it in the provided result.
+func (c *BindplaneClient) Resource(ctx context.Context, resourcesURL string, name string, result any) error {
 	resourceURL := fmt.Sprintf("%s/%s", resourcesURL, name)
 	return c.get(ctx, resourceURL, result)
 }
 
-func (c *bindplaneClient) get(ctx context.Context, url string, result any) error {
-	resp, err := c.client.R().
+func (c *BindplaneClient) get(ctx context.Context, url string, result any) error {
+	resp, err := c.Client.R().
 		SetContext(ctx).
 		SetResult(result).
 		Get(url)
 
 	if err != nil {
-		logRequestError(c.Logger, err, url)
+		LogRequestError(c.Logger, err, url)
 		return err
 	}
 
-	return c.statusError(resp, err, fmt.Sprintf("unable to get %s", url))
+	return c.StatusError(resp, err, fmt.Sprintf("unable to get %s", url))
 }
 
-func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string, name string) error {
+// DeleteResource deletes the resource at the URL of name
+func (c *BindplaneClient) DeleteResource(_ context.Context, resourcesURL string, name string) error {
 	deleteEndpoint := fmt.Sprintf("%s/%s", resourcesURL, name)
-	resp, err := c.client.R().Delete(deleteEndpoint)
+	resp, err := c.Client.R().Delete(deleteEndpoint)
 	if err != nil {
-		logRequestError(c.Logger, err, deleteEndpoint)
+		LogRequestError(c.Logger, err, deleteEndpoint)
 		return fmt.Errorf("error making request to remote bindplane server, %w", err)
 	}
 
@@ -709,7 +789,7 @@ func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string,
 	case http.StatusNoContent:
 		return nil
 	case http.StatusUnauthorized:
-		return c.unauthorizedError(resp)
+		return c.UnauthorizedError(resp)
 	case http.StatusNotFound:
 		return fmt.Errorf("%s not found", deleteEndpoint)
 	case http.StatusBadRequest:
@@ -743,18 +823,20 @@ func (c *bindplaneClient) deleteResource(_ context.Context, resourcesURL string,
 
 }
 
-func (c *bindplaneClient) unauthorizedError(resp *resty.Response) error {
+// UnauthorizedError checks if response is Unauthorized error and returns error if it is
+func (c *BindplaneClient) UnauthorizedError(resp *resty.Response) error {
 	if resp.StatusCode() == http.StatusUnauthorized {
 		err := fmt.Errorf(resp.Status())
-		logRequestError(c.Logger, err, resp.Request.URL)
+		LogRequestError(c.Logger, err, resp.Request.URL)
 		return err
 	}
 	return nil
 }
 
-func (c *bindplaneClient) statusError(resp *resty.Response, err error, message string) error {
+// StatusError returns and error if resp is not 2XX or err is not nil
+func (c *BindplaneClient) StatusError(resp *resty.Response, err error, message string) error {
 	if err != nil {
-		logRequestError(c.Logger, err, resp.Request.URL)
+		LogRequestError(c.Logger, err, resp.Request.URL)
 		return err
 	}
 	switch resp.StatusCode() {
@@ -769,7 +851,12 @@ func (c *bindplaneClient) statusError(resp *resty.Response, err error, message s
 
 	default:
 		err := fmt.Errorf("%s, got %s", message, resp.Status())
-		logRequestError(c.Logger, err, resp.Request.URL)
+		LogRequestError(c.Logger, err, resp.Request.URL)
 		return err
 	}
+}
+
+// LogRequestError logs the error for a request against the endpoint
+func LogRequestError(logger *zap.Logger, err error, endpoint string) {
+	logger.Error("Error making request", zap.Error(err), zap.String("endpoint", endpoint))
 }

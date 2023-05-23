@@ -14,11 +14,19 @@ import {
 } from "./ParameterInput";
 import { satisfiesRelevantIf } from "./satisfiesRelevantIf";
 import {
+  boolDef,
+  enumDef,
+  enumsDef,
+  intDef,
   ResourceType1,
   ResourceType2,
   ResourceType3,
+  stringDef,
+  stringsDef,
+  telemetrySectionBoolDef,
 } from "./__test__/dummyResources";
 import renderer from "react-test-renderer";
+import { ConfigureResourceContent } from "./ConfigureResourceView";
 
 describe("satisfiesRelevantIf", () => {
   const formValues: { [key: string]: any } = {
@@ -90,11 +98,7 @@ describe("satisfiesRelevantIf", () => {
     options: {},
 
     type: ParameterType.Enums,
-    validValues: [
-      "first option",
-      "second option",
-      "last option",
-    ],
+    validValues: ["first option", "second option", "last option"],
   };
 
   it("param1 matches", () => {
@@ -113,25 +117,47 @@ describe("satisfiesRelevantIf", () => {
   it("matches lists", () => {
     const param: ParameterDefinition = {
       description: "description",
-      relevantIf: [{
-        name: enumsParam.name,
-        operator: RelevantIfOperatorType.ContainsAny,
-        value: ["last option"],
-      }],
+      relevantIf: [
+        {
+          name: enumsParam.name,
+          operator: RelevantIfOperatorType.ContainsAny,
+          value: ["last option"],
+        },
+      ],
     } as ParameterDefinition;
 
-    expect(satisfiesRelevantIf({
-      [enumsParam.name]: ["first option", "second option"],
-    }, param)).toEqual(false);
-    expect(satisfiesRelevantIf({
-      [enumsParam.name]: ["last option", "second option"],
-    }, param)).toEqual(true);
-    expect(satisfiesRelevantIf({
-      [enumsParam.name]: ["Last option", "second option"],
-    }, param)).toEqual(false);
-    expect(satisfiesRelevantIf({
-      [enumsParam.name]: ["first option", "second option", "last option"],
-    }, param)).toEqual(true);
+    expect(
+      satisfiesRelevantIf(
+        {
+          [enumsParam.name]: ["first option", "second option"],
+        },
+        param
+      )
+    ).toEqual(false);
+    expect(
+      satisfiesRelevantIf(
+        {
+          [enumsParam.name]: ["last option", "second option"],
+        },
+        param
+      )
+    ).toEqual(true);
+    expect(
+      satisfiesRelevantIf(
+        {
+          [enumsParam.name]: ["Last option", "second option"],
+        },
+        param
+      )
+    ).toEqual(false);
+    expect(
+      satisfiesRelevantIf(
+        {
+          [enumsParam.name]: ["first option", "second option", "last option"],
+        },
+        param
+      )
+    ).toEqual(true);
     expect(satisfiesRelevantIf({}, param)).toEqual(true);
   });
 });
@@ -376,6 +402,39 @@ describe("ResourceForm component", () => {
       await waitFor(() => expect(saveCalled).toBeTruthy());
     });
   });
+
+  describe("readOnly prop", () => {
+    it("disables all form inputs", () => {
+      render(
+        <ResourceConfigForm
+          onSave={() => {}}
+          kind="source"
+          displayName={"Title"}
+          description={""}
+          parameterDefinitions={[
+            stringDef,
+            stringsDef,
+            enumDef,
+            enumsDef,
+            intDef,
+            boolDef,
+            telemetrySectionBoolDef,
+          ]}
+          readOnly
+        />
+      );
+
+      expect(screen.getByLabelText(stringDef.label!)).toBeDisabled();
+      expect(screen.getByLabelText(stringsDef.label!)).toBeDisabled();
+      expect(screen.getByLabelText(enumDef.label!)).toBeDisabled();
+      expect(screen.getByLabelText(intDef.label!)).toBeDisabled();
+
+      const checkBoxes = screen.getAllByRole("checkbox");
+      for (const checkBox of checkBoxes) {
+        expect(checkBox).toBeDisabled();
+      }
+    });
+  });
 });
 
 describe("MapParamInput", () => {
@@ -454,7 +513,9 @@ describe("MapParamInput", () => {
   });
 
   it("renders correctly", () => {
-    const tree = renderer.create(<ParameterInput definition={mapParameter} />);
+    const tree = renderer.create(
+      <ParameterInput definition={mapParameter} readOnly={false} />
+    );
     expect(tree).toMatchSnapshot();
   });
 
@@ -464,7 +525,9 @@ describe("MapParamInput", () => {
       three: "four",
       five: "six",
     };
-    render(<MapParamInput definition={mapParameter} value={value} />);
+    render(
+      <MapParamInput definition={mapParameter} value={value} readOnly={false} />
+    );
     screen.getByDisplayValue("one");
     screen.getByDisplayValue("two");
     screen.getByDisplayValue("three");
@@ -474,7 +537,7 @@ describe("MapParamInput", () => {
   });
 
   it("can add key value pairs", () => {
-    render(<ParameterInput definition={mapParameter} />);
+    render(<ParameterInput definition={mapParameter} readOnly={false} />);
 
     screen.getByText("New Row").click();
     screen.getByText("New Row").click();
@@ -486,7 +549,7 @@ describe("MapParamInput", () => {
   });
 
   it("can delete key value pairs", () => {
-    render(<ParameterInput definition={mapParameter} />);
+    render(<ParameterInput definition={mapParameter} readOnly={false} />);
 
     screen.getByText("New Row").click();
     screen.getByText("New Row").click();
@@ -519,7 +582,7 @@ describe("EnumsParameter", () => {
     };
 
     const tree = renderer.create(
-      <ParameterInput definition={enumsParameter} />
+      <ParameterInput definition={enumsParameter} readOnly={false} />
     );
     expect(tree).toMatchSnapshot();
   });
@@ -537,7 +600,9 @@ describe("YamlParameter", () => {
       options: {},
     };
 
-    const tree = renderer.create(<ParameterInput definition={yamlParameter} />);
+    const tree = renderer.create(
+      <ParameterInput definition={yamlParameter} readOnly={false} />
+    );
     expect(tree).toMatchSnapshot();
   });
 });
@@ -555,7 +620,9 @@ describe("EnumParameter", () => {
       options: {},
     };
 
-    const tree = renderer.create(<ParameterInput definition={enumParam} />);
+    const tree = renderer.create(
+      <ParameterInput definition={enumParam} readOnly={false} />
+    );
     expect(tree).toMatchSnapshot();
   });
 
@@ -570,7 +637,54 @@ describe("EnumParameter", () => {
       options: {},
     };
 
-    const tree = renderer.create(<ParameterInput definition={creatableEnum} />);
+    const tree = renderer.create(
+      <ParameterInput definition={creatableEnum} readOnly={false} />
+    );
     expect(tree).toMatchSnapshot();
+  });
+});
+
+describe("ConfigureResourceContent readOnly", () => {
+  it("displays pause, delete, and primary buttons", () => {
+    render(
+      <ConfigureResourceContent
+        kind={"source"}
+        displayName={""}
+        description={""}
+        formValues={{}}
+        parameterDefinitions={[]}
+        saveButtonLabel={"Save"}
+        onSave={() => {}}
+        onDelete={() => {}}
+        paused={false}
+        onTogglePause={() => {}}
+      />
+    );
+    screen.getByTestId("resource-form-toggle-pause");
+    screen.getByText("Save");
+    screen.getByText("Delete");
+  });
+
+  it("hides pause, delete, primary buttons when readOnly prop is passed", () => {
+    render(
+      <ConfigureResourceContent
+        kind={"source"}
+        displayName={""}
+        description={""}
+        formValues={{}}
+        parameterDefinitions={[]}
+        saveButtonLabel={"Save"}
+        onSave={() => {}}
+        onDelete={() => {}}
+        paused={false}
+        onTogglePause={() => {}}
+        readOnly
+      />
+    );
+    expect(
+      screen.queryByTestId("resource-form-toggle-pause")
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Save")).not.toBeInTheDocument();
+    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
   });
 });

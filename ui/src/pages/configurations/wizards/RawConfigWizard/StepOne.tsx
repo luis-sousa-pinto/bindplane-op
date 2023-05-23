@@ -21,6 +21,7 @@ gql`
         metadata {
           id
           name
+          version
         }
       }
     }
@@ -58,7 +59,10 @@ export const StepOne: React.FC<StepOneProps> = ({ fromImport }) => {
   }
 
   function handleNextClick() {
-    const errors = validateFields(formValues, data?.configurations.configurations);
+    const errors = validateFields(
+      formValues,
+      data?.configurations.configurations
+    );
     if (formInvalid(errors)) {
       setTouched({ name: true, platform: true });
       setErrors({ ...errors });
@@ -73,7 +77,10 @@ export const StepOne: React.FC<StepOneProps> = ({ fromImport }) => {
     setValues(newValues);
     setTouched({ platform: true });
 
-    const errors = validateFields(newValues, data?.configurations.configurations);
+    const errors = validateFields(
+      newValues,
+      data?.configurations.configurations
+    );
     setErrors(errors);
   }
 

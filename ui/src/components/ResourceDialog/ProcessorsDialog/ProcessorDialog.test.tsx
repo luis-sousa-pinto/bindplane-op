@@ -14,10 +14,7 @@ import {
   ProcessorDialogSourceTypeDocument,
   UpdateProcessorsDocument,
 } from "../../../graphql/generated";
-import {
-  PipelineContext,
-  PipelineGraphContextValue,
-} from "../../PipelineGraph/PipelineGraphContext";
+import { PipelineContext } from "../../PipelineGraph/PipelineGraphContext";
 import { ProcessorDialogComponent } from "./ProcessorDialog";
 
 const DEFAULT_PARAMETER_OPTIONS = {
@@ -38,6 +35,7 @@ const CONFIG_NO_PROCESSORS = {
     labels: {
       platform: "macos",
     },
+    version: 0,
   },
   spec: {
     contentType: "",
@@ -104,6 +102,7 @@ const CONFIG_WITH_PROCESSORS = {
     labels: {
       platform: "macos",
     },
+    version: 0,
   },
   spec: {
     contentType: "",
@@ -185,10 +184,11 @@ const CONFIG_WITH_PROCESSORS = {
 
 const CUSTOM_PROCESSOR = {
   metadata: {
-    id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc7",
     name: "custom",
+    id: "custom-id",
     displayName: "Custom",
     description: "Insert a custom OpenTelemetry processor configuration.",
+    version: 0,
   },
   spec: {
     telemetryTypes: ["metrics", "logs", "traces"],
@@ -242,10 +242,11 @@ const SOURCE_TYPE_MOCK: MockedResponse = {
       sourceType: {
         __typename: "SourceType",
         metadata: {
-          id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc4",
+          id: "source-type-id",
           name: "file",
           displayName: "File",
           description: "Reads logs from a file",
+          version: 0,
         },
         spec: {
           telemetryTypes: ["logs"],
@@ -267,10 +268,11 @@ const DESTINATION_TYPE_MOCK: MockedResponse = {
       destinationWithType: {
         destinationType: {
           metadata: {
-            id: "7f98849b-e71b-45c6-8cde-31bdfe2b2fc8",
+            id: "destination-type-id",
             name: "google",
             displayName: "Google Cloud",
             description: "Google cloud destination",
+            version: 0,
           },
           spec: {
             telemetryTypes: ["logs", "metrics", "traces"],
@@ -310,30 +312,33 @@ const GET_PROCESSOR_TYPE_MOCK: MockedResponse = {
   },
 };
 
-const DEFAULT_PROVIDER_VALUES: PipelineGraphContextValue = {
-  selectedTelemetryType: "logs",
-  hoveredSet: [],
-  setHoveredNodeAndEdgeSet: () => {},
-  refetchConfiguration: () => {},
-  configuration: CONFIG_NO_PROCESSORS,
-  editProcessors: () => {},
-  closeProcessorDialog: () => {},
-  editProcessorsInfo: { resourceType: "source", index: 0 },
-  editProcessorsOpen: true,
-  maxValues: {
-    maxMetricValue: 0,
-    maxLogValue: 0,
-    maxTraceValue: 0,
-  },
-  setMaxValues: () => {},
-};
-
 describe("ProcessorDialogComponent", () => {
   it("renders", async () => {
     render(
       <MockedProvider mocks={[SOURCE_TYPE_MOCK]}>
         <SnackbarProvider>
-          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
+          <PipelineContext.Provider
+            value={{
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -353,7 +358,28 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
+          <PipelineContext.Provider
+            value={{
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -375,8 +401,24 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              ...DEFAULT_PROVIDER_VALUES,
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "destination", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
             }}
           >
             <ProcessorDialogComponent open={true} processors={[]} />
@@ -434,7 +476,28 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
+          <PipelineContext.Provider
+            value={{
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -497,7 +560,28 @@ describe("ProcessorDialogComponent", () => {
         ]}
       >
         <SnackbarProvider>
-          <PipelineContext.Provider value={DEFAULT_PROVIDER_VALUES}>
+          <PipelineContext.Provider
+            value={{
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
             <ProcessorDialogComponent open={true} processors={[]} />
           </PipelineContext.Provider>
         </SnackbarProvider>
@@ -569,13 +653,34 @@ describe("ProcessorDialogComponent", () => {
     };
     render(
       <MockedProvider
-        mocks={[PROCESSOR_TYPES_MOCK, GET_PROCESSOR_TYPE_MOCK, mutationMock]}
+        mocks={[
+          PROCESSOR_TYPES_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
+          DESTINATION_TYPE_MOCK,
+          mutationMock,
+        ]}
       >
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              ...DEFAULT_PROVIDER_VALUES,
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              refetchConfiguration: () => {},
+              configuration: CONFIG_NO_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "destination", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
             }}
           >
             <ProcessorDialogComponent open={true} processors={[]} />
@@ -638,8 +743,24 @@ describe("ProcessorDialogComponent", () => {
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              ...DEFAULT_PROVIDER_VALUES,
+              refetchConfiguration: () => {},
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
               configuration: CONFIG_WITH_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
             }}
           >
             <ProcessorDialogComponent
@@ -699,14 +820,34 @@ describe("ProcessorDialogComponent", () => {
     };
     render(
       <MockedProvider
-        mocks={[PROCESSOR_TYPES_MOCK, GET_PROCESSOR_TYPE_MOCK, mutationMock]}
+        mocks={[
+          PROCESSOR_TYPES_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
+          DESTINATION_TYPE_MOCK,
+          mutationMock,
+        ]}
       >
         <SnackbarProvider>
           <PipelineContext.Provider
             value={{
-              ...DEFAULT_PROVIDER_VALUES,
+              refetchConfiguration: () => {},
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
               configuration: CONFIG_WITH_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "destination", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
             }}
           >
             <ProcessorDialogComponent

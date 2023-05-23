@@ -71,6 +71,9 @@ interface ResourceConfigurationViewProps {
 
   // Callback for when the Pause/Resume button is clicked
   onTogglePause?: () => void;
+
+  // readOnly will display the form as disabled inputs.
+  readOnly?: boolean;
 }
 
 interface ComponentProps extends ResourceConfigurationViewProps {
@@ -92,6 +95,7 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   onTogglePause,
   onBack,
   initValues,
+  readOnly,
 }) => {
   const { formValues } = useResourceFormValues();
 
@@ -115,39 +119,41 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
       disableSave={!isDirty}
       paused={paused}
       onTogglePause={onTogglePause}
+      readOnly={readOnly}
     />
   );
 };
 
 const MemoizedComponent = memo(ResourceConfigurationViewComponent);
 
-export const ResourceConfigurationView: React.FC<ResourceConfigurationViewProps> =
-  (props) => {
-    const { parameterDefinitions, parameters, includeNameField } = props;
+export const ResourceConfigurationView: React.FC<
+  ResourceConfigurationViewProps
+> = (props) => {
+  const { parameterDefinitions, parameters, includeNameField } = props;
 
-    const initValues = initFormValues(
-      parameterDefinitions,
-      parameters,
-      includeNameField
-    );
+  const initValues = initFormValues(
+    parameterDefinitions,
+    parameters,
+    includeNameField
+  );
 
-    const initErrors = initFormErrors(
-      parameterDefinitions,
-      initValues,
-      props.kind,
-      props.includeNameField,
-      props.existingResourceNames
-    );
+  const initErrors = initFormErrors(
+    parameterDefinitions,
+    initValues,
+    props.kind,
+    props.includeNameField,
+    props.existingResourceNames
+  );
 
-    return (
-      <FormValueContextProvider initValues={initValues}>
-        <ValidationContextProvider
-          initErrors={initErrors}
-          definitions={props.parameterDefinitions}
-          includeNameField={includeNameField}
-        >
-          <MemoizedComponent initValues={initValues} {...props} />
-        </ValidationContextProvider>
-      </FormValueContextProvider>
-    );
-  };
+  return (
+    <FormValueContextProvider initValues={initValues}>
+      <ValidationContextProvider
+        initErrors={initErrors}
+        definitions={props.parameterDefinitions}
+        includeNameField={includeNameField}
+      >
+        <MemoizedComponent initValues={initValues} {...props} />
+      </ValidationContextProvider>
+    </FormValueContextProvider>
+  );
+};

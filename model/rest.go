@@ -201,3 +201,15 @@ type PostCopyConfigResponse = PostCopyConfigRequest
 type ErrorResponse struct {
 	Errors []string `json:"errors"`
 }
+
+// Rollouts
+
+// StartRolloutPayload is the REST API body to POST /v1/rollouts/:name/start
+type StartRolloutPayload struct {
+	Options *RolloutOptions `json:"options"`
+}
+
+// HistoryResponse is the REST API response to GET /v1/:kind/:name/history
+type HistoryResponse struct {
+	Versions []*AnyResource `json:"versions"`
+}

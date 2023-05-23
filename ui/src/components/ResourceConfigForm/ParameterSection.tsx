@@ -13,17 +13,21 @@ import { satisfiesRelevantIf } from "./satisfiesRelevantIf";
 
 interface ParameterSectionProps {
   group: ParameterGroup;
+  readOnly?: boolean;
 }
 
 export const ParameterSection: React.FC<ParameterSectionProps> = ({
   group,
+  readOnly,
 }) => {
   const { formValues } = useResourceFormValues();
 
   const inputs: JSX.Element[] = [];
   for (const p of group.parameters) {
     if (satisfiesRelevantIf(formValues, p)) {
-      inputs.push(<ParameterInput key={p.name} definition={p} />);
+      inputs.push(
+        <ParameterInput key={p.name} definition={p} readOnly={readOnly} />
+      );
     }
   }
 

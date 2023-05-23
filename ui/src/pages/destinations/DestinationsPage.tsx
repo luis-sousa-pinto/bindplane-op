@@ -36,6 +36,7 @@ gql`
       metadata {
         id
         name
+        version
       }
       spec {
         type
@@ -78,138 +79,139 @@ export interface DestinationsPageContentProps {
         Exact<{ [key: string]: never }>
       >);
 }
-export const DestinationsPageContent: React.FC<DestinationsPageContentProps> =
-  ({
-    destinationsPage,
-    selected,
-    setSelected,
-    columnFields,
-    destinationsQuery,
-    minHeight,
-    editingDestination,
-    setEditingDestination,
-  }) => {
-    // Used to control the delete confirmation modal.
-    const [open, setOpen] = useState<boolean>(false);
+export const DestinationsPageContent: React.FC<
+  DestinationsPageContentProps
+> = ({
+  destinationsPage,
+  selected,
+  setSelected,
+  columnFields,
+  destinationsQuery,
+  minHeight,
+  editingDestination,
+  setEditingDestination,
+}) => {
+  // Used to control the delete confirmation modal.
+  const [open, setOpen] = useState<boolean>(false);
 
-    const [failedDeletes, setFailedDeletes] = useState<ResourceStatus[]>([]);
-    const [failedDeletesOpen, setFailedDeletesOpen] = useState(false);
+  const [failedDeletes, setFailedDeletes] = useState<ResourceStatus[]>([]);
+  const [failedDeletesOpen, setFailedDeletesOpen] = useState(false);
 
-    const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
 
-    const { data, loading, refetch, error } = destinationsQuery({
-      fetchPolicy: "cache-and-network",
-    });
+  const { data, loading, refetch, error } = destinationsQuery({
+    fetchPolicy: "cache-and-network",
+  });
 
-    useEffect(() => {
-      if (error != null) {
-        enqueueSnackbar("There was an error retrieving data.", {
-          variant: "error",
-        });
-      }
-    }, [enqueueSnackbar, error]);
-
-    useEffect(() => {
-      if (failedDeletes.length > 0) {
-        setFailedDeletesOpen(true);
-      }
-    }, [failedDeletes, setFailedDeletesOpen]);
-
-    function onAcknowledge() {
-      setFailedDeletesOpen(false);
+  useEffect(() => {
+    if (error != null) {
+      enqueueSnackbar("There was an error retrieving data.", {
+        variant: "error",
+      });
     }
+  }, [enqueueSnackbar, error]);
 
-    function handleEditSaveSuccess() {
+  useEffect(() => {
+    if (failedDeletes.length > 0) {
+      setFailedDeletesOpen(true);
+    }
+  }, [failedDeletes, setFailedDeletesOpen]);
+
+  function onAcknowledge() {
+    setFailedDeletesOpen(false);
+  }
+
+  function handleEditSaveSuccess() {
+    refetch();
+    setEditingDestination(null);
+  }
+
+  async function deleteDestinations() {
+    try {
+      const items = resourcesFromSelected(selected);
+      const { updates } = await deleteResources(items);
+      setOpen(false);
+
+      const failures = updates.filter((u) => u.status !== "deleted");
+      setFailedDeletes(failures);
+
       refetch();
-      setEditingDestination(null);
+    } catch (err) {
+      console.error(err);
+      enqueueSnackbar("Failed to delete components.", { variant: "error" });
     }
+  }
+  const queryData = data ?? { destinations: [] };
+  const rows =
+    "destinations" in queryData
+      ? [...queryData.destinations]
+      : [...queryData.destinationsInConfigs];
 
-    async function deleteDestinations() {
-      try {
-        const items = resourcesFromSelected(selected);
-        const { updates } = await deleteResources(items);
-        setOpen(false);
-
-        const failures = updates.filter((u) => u.status !== "deleted");
-        setFailedDeletes(failures);
-
-        refetch();
-      } catch (err) {
-        console.error(err);
-        enqueueSnackbar("Failed to delete components.", { variant: "error" });
-      }
-    }
-    const queryData = data ?? { destinations: [] };
-    const rows =
-      "destinations" in queryData
-        ? [...queryData.destinations]
-        : [...queryData.destinationsInConfigs];
-
-    return (
-      <>
-        <div className={mixins.flex}>
-          <Typography variant="h5" className={mixins["mb-5"]}>
-            Destinations
-          </Typography>
-          {destinationsPage && selected.length > 0 && (
-            <FormControl classes={{ root: mixins["ml-5"] }}>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => setOpen(true)}
-              >
-                Delete {selected.length} Component
-                {selected.length > 1 && "s"}
-              </Button>
-            </FormControl>
-          )}
-        </div>
-        <DestinationsDataGrid
-          loading={loading}
-          setSelectionModel={setSelected}
-          selectionModel={selected}
-          disableRowSelectionOnClick
-          checkboxSelection
-          onEditDestination={(name: string) => setEditingDestination(name)}
-          columnFields={columnFields}
-          minHeight={minHeight}
-          rows={rows}
-          classes={
-            !destinationsPage && rows.length < 100
-              ? { footerContainer: mixins["hidden"] }
-              : {}
-          }
-        />
-        <ConfirmDeleteResourceDialog
-          open={open}
-          onClose={() => setOpen(false)}
-          onDelete={deleteDestinations}
-          onCancel={() => setOpen(false)}
-          action={"delete"}
-        >
-          <Typography>
-            Are you sure you want to delete {selected.length} component
-            {selected.length > 1 && "s"}?
-          </Typography>
-        </ConfirmDeleteResourceDialog>
-
-        <FailedDeleteDialog
-          open={failedDeletesOpen}
-          failures={failedDeletes}
-          onAcknowledge={onAcknowledge}
-          onClose={() => setFailedDeletesOpen(false)}
-        />
-
-        {editingDestination && (
-          <EditDestinationDialog
-            name={editingDestination}
-            onCancel={() => setEditingDestination(null)}
-            onSaveSuccess={handleEditSaveSuccess}
-          />
+  return (
+    <>
+      <div className={mixins.flex}>
+        <Typography variant="h5" className={mixins["mb-5"]}>
+          Destinations
+        </Typography>
+        {destinationsPage && selected.length > 0 && (
+          <FormControl classes={{ root: mixins["ml-5"] }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setOpen(true)}
+            >
+              Delete {selected.length} Component
+              {selected.length > 1 && "s"}
+            </Button>
+          </FormControl>
         )}
-      </>
-    );
-  };
+      </div>
+      <DestinationsDataGrid
+        loading={loading}
+        setSelectionModel={setSelected}
+        selectionModel={selected}
+        disableRowSelectionOnClick
+        checkboxSelection
+        onEditDestination={(name: string) => setEditingDestination(name)}
+        columnFields={columnFields}
+        minHeight={minHeight}
+        rows={rows}
+        classes={
+          !destinationsPage && rows.length < 100
+            ? { footerContainer: mixins["hidden"] }
+            : {}
+        }
+      />
+      <ConfirmDeleteResourceDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onDelete={deleteDestinations}
+        onCancel={() => setOpen(false)}
+        action={"delete"}
+      >
+        <Typography>
+          Are you sure you want to delete {selected.length} component
+          {selected.length > 1 && "s"}?
+        </Typography>
+      </ConfirmDeleteResourceDialog>
+
+      <FailedDeleteDialog
+        open={failedDeletesOpen}
+        failures={failedDeletes}
+        onAcknowledge={onAcknowledge}
+        onClose={() => setFailedDeletesOpen(false)}
+      />
+
+      {editingDestination && (
+        <EditDestinationDialog
+          name={editingDestination}
+          onCancel={() => setEditingDestination(null)}
+          onSaveSuccess={handleEditSaveSuccess}
+        />
+      )}
+    </>
+  );
+};
 
 export function resourcesFromSelected(
   selected: GridRowSelectionModel
@@ -236,8 +238,9 @@ export const DestinationsPage = withRequireLogin(
     // Selected is an array of names of destinations in the form
     // <Kind>|<Name>
     const [selected, setSelected] = useState<GridRowSelectionModel>([]);
-    const [editingDestination, setEditingDestination] =
-      useState<string | null>(null);
+    const [editingDestination, setEditingDestination] = useState<string | null>(
+      null
+    );
 
     return (
       <CardContainer>

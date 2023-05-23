@@ -20,14 +20,20 @@ import (
 
 	"github.com/observiq/bindplane-op/model/otel"
 	"github.com/observiq/bindplane-op/model/validation"
+	"github.com/observiq/bindplane-op/model/version"
 )
+
+type destinationKind struct{}
+
+func (k *destinationKind) NewEmptyResource() *Destination { return &Destination{} }
 
 // Destination will generate an exporter and be at the end of a pipeline
 type Destination struct {
 	// ResourceMeta TODO(doc)
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
 	// Spec TODO(doc)
-	Spec ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Destination)(nil)
@@ -43,8 +49,18 @@ func (d *Destination) ValidateWithStore(ctx context.Context, store ResourceStore
 	return errs.Warnings(), errs.Result()
 }
 
+// UpdateDependencies updates the dependencies for this resource to use the latest version.
+func (d *Destination) UpdateDependencies(ctx context.Context, store ResourceStore) error {
+	return d.Spec.updateDependencies(ctx, KindDestination, store)
+}
+
 // GetKind returns "Destination"
 func (d *Destination) GetKind() Kind { return KindDestination }
+
+// GetSpec returns the spec for this resource.
+func (d *Destination) GetSpec() any {
+	return d.Spec
+}
 
 // ResourceTypeName is the name of the ResourceType that renders this resource type
 func (d *Destination) ResourceTypeName() string {
@@ -71,9 +87,9 @@ func NewDestination(name string, typeValue string, parameters []Parameter) *Dest
 
 // NewDestinationWithSpec creates a new Destination with the specified spec
 func NewDestinationWithSpec(name string, spec ParameterizedSpec) *Destination {
-	return &Destination{
+	d := &Destination{
 		ResourceMeta: ResourceMeta{
-			APIVersion: "bindplane.observiq.com/v1",
+			APIVersion: version.V1,
 			Kind:       KindDestination,
 			Metadata: Metadata{
 				Name:   name,
@@ -81,7 +97,12 @@ func NewDestinationWithSpec(name string, spec ParameterizedSpec) *Destination {
 			},
 		},
 		Spec: spec,
+		StatusType: StatusType[VersionStatus]{
+			Status: VersionStatus{Latest: true},
+		},
 	}
+	d.EnsureMetadata(spec)
+	return d
 }
 
 // FindDestination returns a Destination from the store if it exists. If it doesn't exist, it creates a new Destination with the
@@ -91,7 +112,7 @@ func FindDestination(ctx context.Context, destination *ResourceConfiguration, de
 		// inline destination
 		return NewDestinationWithSpec(defaultName, destination.ParameterizedSpec), nil
 	}
-	// find the destination and override parameters
+	// named destination
 	dest, err := store.Destination(ctx, destination.Name)
 	if err != nil {
 		return nil, err
@@ -99,8 +120,7 @@ func FindDestination(ctx context.Context, destination *ResourceConfiguration, de
 	if dest == nil {
 		return nil, fmt.Errorf("unknown %s: %s", KindDestination, destination.Name)
 	}
-	spec := dest.Spec.overrideParameters(destination.Parameters)
-	return NewDestinationWithSpec(dest.Name(), spec), nil
+	return dest, nil
 }
 
 // ----------------------------------------------------------------------
@@ -113,15 +133,9 @@ func (d *Destination) PrintableFieldTitles() []string {
 // PrintableFieldValue returns the field value for a title, used for printing a table of resources
 func (d *Destination) PrintableFieldValue(title string) string {
 	switch title {
-	case "ID":
-		return d.ID()
-	case "Name":
-		return d.Name()
 	case "Type":
 		return d.ResourceTypeName()
-	case "Description":
-		return d.Metadata.Description
 	default:
-		return "-"
+		return d.ResourceMeta.PrintableFieldValue(title)
 	}
 }

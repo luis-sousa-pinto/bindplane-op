@@ -16,6 +16,116 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/Agents": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Agents",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AgentsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Configurations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Configurations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Destinations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Destinations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DestinationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Processors": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Processors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ProcessorsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Sources": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Sources",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SourcesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/agent-versions": {
             "get": {
                 "produces": [
@@ -196,26 +306,6 @@ const docTemplate = `{
             }
         },
         "/agents": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List agents",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.AgentsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "produces": [
                     "application/json"
@@ -592,38 +682,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/configurations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Configurations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ConfigurationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/configurations/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get configuration by name",
+                "summary": "Get Configuration by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the configuration",
+                        "description": "the name of the Configuration",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -860,38 +928,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/destinations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List destinations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.DestinationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/destinations/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get destination by name",
+                "summary": "Get Destination by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the destination",
+                        "description": "the name of the Destination",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -1042,38 +1088,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/processors": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List processors",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ProcessorsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/processors/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get processor by name",
+                "summary": "Get Processor by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the processor",
+                        "description": "the name of the Processor",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -1224,38 +1248,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/sources": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List sources",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.SourcesResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/sources/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get source by name",
+                "summary": "Get Source by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the source",
+                        "description": "the name of the Source",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -2420,7 +2422,8 @@ const docTemplate = `{
                 "deleted",
                 "invalid",
                 "error",
-                "in-use"
+                "in-use",
+                "forbidden"
             ],
             "x-enum-varnames": [
                 "StatusUnchanged",
@@ -2429,7 +2432,8 @@ const docTemplate = `{
                 "StatusDeleted",
                 "StatusInvalid",
                 "StatusError",
-                "StatusInUse"
+                "StatusInUse",
+                "StatusForbidden"
             ]
         },
         "rest.ErrorResponse": {

@@ -28,6 +28,7 @@ export enum AgentsTableField {
   STATUS = "status",
   VERSION = "version",
   CONFIGURATION = "configuration",
+  CONFIGURATION_VERSION = "configurationVersion",
   OPERATING_SYSTEM = "operatingSystem",
   LABELS = "labels",
   LOGS = "logs",
@@ -58,7 +59,9 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
   columnFields,
   density,
 }) => {
-  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(
+    []
+  );
 
   useEffect(() => {
     if (clearSelectionModelFnRef == null) {
@@ -118,6 +121,25 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
         return createMetricRateColumn(field, "metrics", 100, agentMetrics);
       case AgentsTableField.TRACES:
         return createMetricRateColumn(field, "traces", 100, agentMetrics);
+      case AgentsTableField.CONFIGURATION_VERSION:
+        return {
+          sortable: true,
+          field: AgentsTableField.CONFIGURATION_VERSION,
+          headerName: "Configuration Version",
+          width: 200,
+          valueGetter: (params: GridValueGetterParams<AgentsTableAgent>) => {
+            if (!params.row.configurationResource) {
+              return "-";
+            }
+
+            const configuration = params.row.configurationResource;
+            const configurationLabel = params.row.labels?.configuration;
+
+            const matches = configuration.metadata.name === configurationLabel;
+
+            return matches ? configuration.metadata.version : "-";
+          },
+        };
       default:
         return {
           field: AgentsTableField.NAME,

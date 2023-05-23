@@ -436,6 +436,7 @@ const TIMEZONE_OPTIONS = [
 const TimezoneParamInputComponent: React.FC<ParamInputProps<string>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   return (
@@ -444,6 +445,7 @@ const TimezoneParamInputComponent: React.FC<ParamInputProps<string>> = ({
       onChange={(e, newValue) => onValueChange && onValueChange(newValue)}
       disablePortal
       disableClearable
+      disabled={readOnly}
       options={TIMEZONE_OPTIONS}
       ListboxProps={{
         className: styles.listbox,
@@ -453,6 +455,7 @@ const TimezoneParamInputComponent: React.FC<ParamInputProps<string>> = ({
           {...params}
           fullWidth
           size="small"
+          disabled={readOnly}
           label={definition.label}
           required={definition.required}
           helperText={definition.description}

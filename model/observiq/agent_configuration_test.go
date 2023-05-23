@@ -522,7 +522,3 @@ func TestDecodeAgentConfiguration(t *testing.T) {
 func strp(s string) *string {
 	return &s
 }
-
-func boolp(b bool) *bool {
-	return &b
-}

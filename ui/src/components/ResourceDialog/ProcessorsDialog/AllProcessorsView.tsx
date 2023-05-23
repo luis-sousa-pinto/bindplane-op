@@ -2,9 +2,8 @@ import { DialogActions, Button } from "@mui/material";
 import { useMemo } from "react";
 import { ResourceConfiguration } from "../../../graphql/generated";
 import { InlineProcessorContainer } from "./InlineProcessorContainer";
-import { ContentSection } from "../ContentSection";
-import { TitleSection } from "../TitleSection";
 import { usePipelineGraph } from "../../PipelineGraph/PipelineGraphContext";
+import { TitleSection, ContentSection } from "../../DialogComponents";
 
 interface AllProcessorsProps {
   // parentDisplayName is the name of the source or destination
@@ -12,6 +11,7 @@ interface AllProcessorsProps {
   parentDisplayName: string;
 
   processors: ResourceConfiguration[];
+  readOnly: boolean;
   onAddProcessor: () => void;
   onEditProcessor: (index: number) => void;
   onClose: () => void;
@@ -26,6 +26,7 @@ interface AllProcessorsProps {
 export const AllProcessorsView: React.FC<AllProcessorsProps> = ({
   parentDisplayName,
   processors,
+  readOnly,
   onAddProcessor,
   onEditProcessor,
   onClose,
@@ -52,14 +53,17 @@ export const AllProcessorsView: React.FC<AllProcessorsProps> = ({
           onAddProcessor={onAddProcessor}
           onEditProcessor={onEditProcessor}
           onProcessorsChange={onProcessorsChange}
+          disableEdit={readOnly}
         />
       </ContentSection>
 
-      <DialogActions>
-        <Button variant="contained" onClick={onSave}>
-          Save
-        </Button>
-      </DialogActions>
+      {!readOnly && (
+        <DialogActions>
+          <Button variant="contained" onClick={onSave}>
+            Save
+          </Button>
+        </DialogActions>
+      )}
     </>
   );
 };

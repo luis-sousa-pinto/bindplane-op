@@ -29,6 +29,14 @@ type Printable interface {
 	PrintableFieldValue(title string) string
 }
 
+// PrintableVersion can be implemented for resources that have custom fields to display with individual versions
+type PrintableVersion interface {
+	// PrintableVersionFieldTitles returns the list of field titles to print for version history of a resource
+	PrintableVersionFieldTitles() []string
+
+	Printable
+}
+
 // PrintableFieldValues uses PrintableFieldTitles and PrintableFieldValue of the specified Printable to assemble the list
 // of values to print
 func PrintableFieldValues(p Printable) []string {

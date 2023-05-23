@@ -27,6 +27,7 @@ gql`
           metadata {
             id
             name
+            version
           }
         }
       }

@@ -2,9 +2,9 @@ import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 import { cleanup, render, screen } from "@testing-library/react";
 import { SnackbarProvider } from "notistack";
 import { SourceTypeDocument } from "../../graphql/generated";
-import { ConfigurationPageContextProvider } from "../../pages/configurations/configuration/ConfigurationPageContext";
 import { MinimumRequiredConfig } from "../PipelineGraph/PipelineGraph";
 import { InlineSourceCard } from "./InlineSourceCard";
+import { PipelineGraphProvider } from "../PipelineGraph/PipelineGraphContext";
 
 const DEFAULT_PARAMETER_OPTIONS = {
   creatable: false,
@@ -40,6 +40,7 @@ describe("InlineSourceCard", () => {
                 metadata: {
                   id: "252423b1-e3de-4e35-b6b6-f1ecffa66106",
                   name: "redis",
+                  version: 0,
                   displayName: "Redis",
                   description: "Collect metrics and logs from Redis.",
                   icon: "/icons/sources/redis.svg",
@@ -338,6 +339,7 @@ describe("InlineSourceCard", () => {
         id: "test",
         name: "test",
         description: "",
+        version: 1,
         labels: {
           platform: "macos",
         },
@@ -646,11 +648,19 @@ describe("InlineSourceCard", () => {
     };
 
     render(
-      <ConfigurationPageContextProvider
+      <PipelineGraphProvider
         configuration={config}
         refetchConfiguration={jest.fn()}
-        setAddDestDialogOpen={jest.fn()}
-        setAddSourceDialogOpen={jest.fn()}
+        selectedTelemetryType={""}
+        addSourceOpen={false}
+        setAddSourceOpen={jest.fn()}
+        addDestinationOpen={false}
+        setAddDestinationOpen={jest.fn()}
+        maxValues={{
+          maxLogValue: 100,
+          maxMetricValue: 100,
+          maxTraceValue: 100,
+        }}
       >
         <SnackbarProvider>
           <MockedProvider mocks={configMock} addTypename={false}>
@@ -661,7 +671,7 @@ describe("InlineSourceCard", () => {
             />
           </MockedProvider>
         </SnackbarProvider>
-      </ConfigurationPageContextProvider>
+      </PipelineGraphProvider>
     );
 
     const sourceBtn = await screen.findByTestId("source-card-source1");

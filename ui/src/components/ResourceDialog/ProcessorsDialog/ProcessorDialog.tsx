@@ -21,17 +21,20 @@ import {
 } from "../../ResourceConfigForm";
 import { ResourceDialogContextProvider } from "../ResourceDialogContext";
 import { AllProcessorsView } from "./AllProcessorsView";
+import { trimVersion } from "../../../utils/version-helpers";
 
 interface ProcessorDialogProps extends DialogProps {
   processors: ResourceConfiguration[];
+  readOnly?: boolean;
 }
 
 gql`
   query processorDialogSourceType($name: String!) {
     sourceType(name: $name) {
       metadata {
-        id
         name
+        id
+        version
         displayName
         description
       }
@@ -47,6 +50,7 @@ gql`
         metadata {
           id
           name
+          version
           displayName
           description
         }
@@ -71,12 +75,13 @@ enum Page {
 
 export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 
-export const ProcessorDialog: React.FC = (props) => {
+export const ProcessorDialog: React.FC = () => {
   const {
     editProcessorsInfo,
     configuration,
     editProcessorsOpen,
     closeProcessorDialog,
+    readOnlyGraph,
   } = usePipelineGraph();
 
   if (editProcessorsInfo === null) {
@@ -104,12 +109,14 @@ export const ProcessorDialog: React.FC = (props) => {
       open={editProcessorsOpen}
       onClose={closeProcessorDialog}
       processors={processors}
+      readOnly={readOnlyGraph}
     />
   );
 };
 
 export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   processors: processorsProp,
+  readOnly,
   ...dialogProps
 }) => {
   const {
@@ -317,7 +324,11 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
     if (editProcessorsInfo.resourceType === "source") {
       return sourceTypeData?.sourceType?.metadata.displayName;
     } else {
-      return configuration?.spec?.destinations?.[editProcessorsInfo.index].name;
+      const name =
+        configuration?.spec?.destinations?.[editProcessorsInfo.index].name;
+      if (name) {
+        return trimVersion(name);
+      }
     }
   }, [
     configuration?.spec?.destinations,
@@ -337,6 +348,7 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
           onEditProcessor={handleEditProcessorClick}
           onSave={handleSave}
           onProcessorsChange={setProcessors}
+          readOnly={Boolean(readOnly)}
         />
       );
       break;
@@ -374,6 +386,7 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
           onEditProcessorSave={handleSaveExisting}
           onBack={handleReturnToAll}
           onRemove={handleRemoveProcessor}
+          readOnly={readOnly}
         />
       );
   }

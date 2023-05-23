@@ -36,8 +36,14 @@ import (
 //
 // There will be separate ResourceTypes for each type of resource, e.g. SourceType for Source resources.
 type ResourceType struct {
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
-	Spec         ResourceTypeSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	ResourceMeta              `yaml:",inline" json:",inline" mapstructure:",squash"`
+	Spec                      ResourceTypeSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+}
+
+// GetSpec returns the spec for this resource.
+func (rt *ResourceType) GetSpec() any {
+	return rt.Spec
 }
 
 // ResourceTypeSpec is the spec for a resourceType to
@@ -313,7 +319,7 @@ func (rt *ResourceType) evalTemplate(r ResourceTypeTemplate, nameProvider otel.C
 
 // PrintableFieldTitles returns the list of field titles, used for printing a table of resources
 func (rt *ResourceType) PrintableFieldTitles() []string {
-	return []string{"Name", "Display"}
+	return []string{"Name", "Display", "Version"}
 }
 
 // ----------------------------------------------------------------------

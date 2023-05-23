@@ -11,11 +11,11 @@ export function newConfiguration({
   description: string;
   spec: ConfigurationSpec;
   labels?: { [key: string]: string };
-}): Configuration {
+}): Pick<Configuration, "apiVersion" | "kind" | "metadata" | "spec"> {
   return {
     apiVersion: APIVersion.V1,
     kind: ResourceKind.CONFIGURATION,
-    metadata: { name, description, labels, id: "" },
+    metadata: { name, description, labels, id: "", version: 1 },
     spec,
   };
 }

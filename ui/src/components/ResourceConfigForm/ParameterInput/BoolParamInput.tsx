@@ -14,14 +14,17 @@ import { ParameterDefinition } from "../../../graphql/generated";
 import { HelpCircleIcon } from "../../Icons";
 
 import styles from "./parameter-input.module.scss";
+import colors from "../../../styles/colors";
 
 const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   return isTelemetryHeader(definition) ? (
     <TelemetrySectionHeader
+      readOnly={readOnly}
       definition={definition}
       value={value}
       onValueChange={onValueChange}
@@ -33,6 +36,7 @@ const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
           onChange={(e) => {
             isFunction(onValueChange) && onValueChange(e.target.checked);
           }}
+          disabled={readOnly}
           name={definition.name}
           checked={value}
         />
@@ -40,7 +44,11 @@ const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
       label={
         definition.options.sectionHeader ? (
           <Stack direction={"row"} alignItems={"center"}>
-            <Typography fontSize={18} fontWeight={600}>
+            <Typography
+              fontSize={18}
+              fontWeight={600}
+              color={readOnly ? colors.disabled : undefined}
+            >
               {definition.label}
             </Typography>
             {!isEmpty(definition.description) && (
@@ -76,6 +84,7 @@ const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
 const TelemetrySectionHeader: React.FC<ParamInputProps<boolean>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   return (
@@ -90,6 +99,7 @@ const TelemetrySectionHeader: React.FC<ParamInputProps<boolean>> = ({
           classes={{
             root: styles["telemetry-header-switch"],
           }}
+          disabled={readOnly}
         />
       }
       label={

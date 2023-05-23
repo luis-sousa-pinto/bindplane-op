@@ -20,7 +20,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/observiq/bindplane-op/internal/otlp/record"
+	"github.com/observiq/bindplane-op/otlp/record"
+	"github.com/observiq/bindplane-op/server"
 )
 
 // HeaderSessionID is the name of the HTTP header where a BindPlane Session ID can be found. This will be used by
@@ -29,18 +30,33 @@ const HeaderSessionID = "X-BindPlane-Session-ID"
 
 // Relayers is a wrapper around multiple Relayer instances used for different types of results
 type Relayers struct {
-	Logs    *Relayer[[]*record.Log]
-	Metrics *Relayer[[]*record.Metric]
-	Traces  *Relayer[[]*record.Trace]
+	logs    *Relayer[[]*record.Log]
+	metrics *Relayer[[]*record.Metric]
+	traces  *Relayer[[]*record.Trace]
 }
 
 // NewRelayers returns a new set of Relayers
 func NewRelayers(logger *zap.Logger) *Relayers {
 	return &Relayers{
-		Logs:    newRelayer[[]*record.Log](logger),
-		Metrics: newRelayer[[]*record.Metric](logger),
-		Traces:  newRelayer[[]*record.Trace](logger),
+		logs:    newRelayer[[]*record.Log](logger),
+		metrics: newRelayer[[]*record.Metric](logger),
+		traces:  newRelayer[[]*record.Trace](logger),
 	}
+}
+
+// Metrics returns the Relayer for metrics
+func (r *Relayers) Metrics() server.Relayer[[]*record.Metric] {
+	return r.metrics
+}
+
+// Logs returns the Relayer for logs
+func (r *Relayers) Logs() server.Relayer[[]*record.Log] {
+	return r.logs
+}
+
+// Traces returns the Relayer for traces
+func (r *Relayers) Traces() server.Relayer[[]*record.Trace] {
+	return r.traces
 }
 
 // Relayer forwards results to consumers awaiting the results. It is intentionally generic and is used to support cases

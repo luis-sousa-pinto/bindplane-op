@@ -1,0 +1,38 @@
+kind: AgentVersion
+metadata:
+  name: observiq-otel-collector-v1.5.0
+spec:
+  type: observiq-otel-collector
+  version: v1.5.0
+  draft: false
+  prerelease: false
+  releaseNotesURL: https://github.com/observIQ/observiq-otel-collector/releases/tag/v1.5.0
+  installer:
+    linux:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/install_unix.sh
+    darwin:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/install_macos.sh
+    windows:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector.msi
+  download:
+    linux:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-amd64.tar.gz
+      hash: f298212e08bfc54ca7dc02339a259375cf07149e186acc2f5803c0255c2391ab
+    linux/amd64:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-amd64.tar.gz
+      hash: f298212e08bfc54ca7dc02339a259375cf07149e186acc2f5803c0255c2391ab
+    linux/arm:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-arm.tar.gz
+      hash: dc43026eb6081303102ddfc3825b4ebaaeff59501b1effbbdb1c66d572e91a07
+    linux/arm64:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-arm64.tar.gz
+      hash: 453d07a61418915f4d9c78d8cd6929c5414c71c76eac78529b1c4a964a3d3f79
+    darwin/arm64:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-darwin-arm64.tar.gz
+      hash: 576fe6d165e7e2a7c293aaceb67d952e5534c3e195927a59b27a08a948b375e5
+    darwin/amd64:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-darwin-amd64.tar.gz
+      hash: ad84f308b456fb0e47ebdc7dcc1e768c8f27593059f845bd35754d913e1cc6c2
+    windows/amd64:
+      url: https://github.com/observIQ/observiq-otel-collector/releases/download/v1.5.0/observiq-otel-collector-v1.5.0-windows-amd64.zip
+      hash: e03ecd1d8a71ffe60f26395c7aed6c923e604cd572ec96800f513e9b4ffad226

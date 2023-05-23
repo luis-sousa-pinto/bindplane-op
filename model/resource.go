@@ -16,20 +16,56 @@ package model
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql/driver"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/google/uuid"
-	"github.com/mitchellh/mapstructure"
-	"github.com/observiq/bindplane-op/internal/store/search"
+	jsoniter "github.com/json-iterator/go"
+	modelSearch "github.com/observiq/bindplane-op/model/search"
 	"github.com/observiq/bindplane-op/model/validation"
-	"gopkg.in/yaml.v2"
+)
+
+// Version indicates the version of a resource. It is generally incremented for each update to a resource, but
+// configurations are only incremented when a rollout is started.
+type Version int
+
+// UnmarshalGQL implements the graphql.Unmarshaler interface.
+func (v *Version) UnmarshalGQL(i interface{}) error {
+	if value, ok := i.(int); ok {
+		*v = Version(value)
+		return nil
+	}
+
+	return errors.New("invalid version, must be int")
+}
+
+// MarshalGQL implements the graphql.Marshaler interface.
+func (v Version) MarshalGQL(w io.Writer) {
+	bytes := []byte(strconv.Itoa(int(v)))
+	_, _ = w.Write(bytes)
+}
+
+const (
+	// VersionPending refers to the pending Version of a resource, which is the version that is currently being rolled
+	// out. This is currently only used for Configurations.
+	VersionPending Version = -2
+
+	// VersionCurrent refers to the current Version of a resource, which is the last version to be successfully rolled
+	// out. This is currently only used for Configurations.
+	VersionCurrent Version = -1
+
+	// VersionLatest refers to the latest Version of a resource which is the latest version that has been created.
+	VersionLatest Version = 0
 )
 
 const (
@@ -37,11 +73,6 @@ const (
 	MetadataName = "name"
 	// MetadataID TODO(doc)
 	MetadataID = "id"
-)
-
-const (
-	// V1 is the version for the initial resources defined for BindPlane
-	V1 = "bindplane.observiq.com/v1"
 )
 
 // Kind indicates the kind of resource, e.g. Configuration
@@ -61,34 +92,8 @@ const (
 	KindProcessorType   Kind = "ProcessorType"
 	KindDestinationType Kind = "DestinationType"
 	KindUnknown         Kind = "Unknown"
+	KindRollout         Kind = "Rollout"
 )
-
-// createKindLookup creates a map from lowercase name => Kind, including the plural form by adding an "s" to the end of
-// the name. This is used by ParseKind.
-func createKindLookup() map[string]Kind {
-	result := map[string]Kind{}
-	for _, kind := range []Kind{
-		KindProfile,
-		KindContext,
-		KindConfiguration,
-		KindAgent,
-		KindAgentVersion,
-		KindSource,
-		KindProcessor,
-		KindDestination,
-		KindSourceType,
-		KindProcessorType,
-		KindDestinationType,
-	} {
-		key := strings.ToLower(string(kind))
-		plural := fmt.Sprintf("%ss", key)
-		result[key] = kind
-		result[plural] = kind
-	}
-	return result
-}
-
-var kindLookup = createKindLookup()
 
 // Resource is implemented by all resources, e.g. SourceType, DestinationType, Configuration, etc.
 type Resource interface {
@@ -96,10 +101,16 @@ type Resource interface {
 	Labeled
 
 	// all resources can be indexed
-	search.Indexed
+	modelSearch.Indexed
 
 	// all resources have a unique key
 	HasUniqueKey
+
+	// all resources can be printed
+	Printable
+
+	// Name returns the name for this resource
+	Name() string
 
 	// ID returns the uuid for this resource
 	ID() string
@@ -110,8 +121,27 @@ type Resource interface {
 	// EnsureID generates a new uuid for a resource if none exists
 	EnsureID()
 
-	// Name returns the name for this resource
-	Name() string
+	// Version returns the version for this resource
+	Version() Version
+
+	// SetVersion replaces the version for this resource
+	SetVersion(version Version)
+
+	// Hash returns the hash of the resource spec
+	Hash() string
+
+	// EnsureHash generates a new hash for a resource if none exists. Hash is a hex formatted sha256 hash of the
+	// json-encoded spec that is used to determine if the spec has changed.
+	EnsureHash(spec any)
+
+	// DateModified returns the date the resource was last modified
+	DateModified() *time.Time
+
+	// SetDateModified replaces the date the resource was last modified
+	SetDateModified(date *time.Time)
+
+	// EnsureMetadata ensures that the ID, Version, and Hash fields are set.
+	EnsureMetadata(spec any)
 
 	// GetKind returns the Kind of this resource
 	GetKind() Kind
@@ -122,16 +152,84 @@ type Resource interface {
 	// Validate ensures that the resource is valid
 	Validate() (warnings string, errors error)
 
-	// ValidateWithStore ensures that the resource is valid and allows for extra validation given a store
+	// ValidateWithStore ensures that the resource is valid and allows for extra validation given a store. It may also
+	// make minor changes to the Resource, like ensuring references specify a specific version.
 	ValidateWithStore(ctx context.Context, store ResourceStore) (warnings string, errors error)
+
+	// UpdateDependencies updates the dependencies for this resource to use the latest version.
+	UpdateDependencies(ctx context.Context, store ResourceStore) error
+
+	// GetSpec returns the spec for this resource. All resources have a spec, but the format and contents of the spec will
+	// be different for different resource types.
+	GetSpec() any
+
+	// GetStatus returns the status for this resource. All resources have a status, but the format and contents of the
+	// status will be different for different resource types.
+	// Initially, used for rollout status of a configuration.
+	GetStatus() any
+
+	// SetStatus replaces the status for this resource.
+	SetStatus(status any) error
+
+	// IsLatest returns true if the latest field on the status for this resource is true. Currently this is only used for
+	// Configurations, Sources, Processors, Destinations, SourceTypes, ProcessorTypes, and DestinationTypes. For other
+	// resources this always returns true.
+	IsLatest() bool
+
+	// SetLatest sets the value of the latest field on the status for this resource. Currently this is only used for
+	// Configurations, Sources, Processors, Destinations, SourceTypes, ProcessorTypes, and DestinationTypes. For other
+	// resources this does nothing.
+	SetLatest(latest bool)
+
+	// IsPending returns true if the pending field on the status for this resource is true. Currently this is only used
+	// for Configurations. For other resources this always returns false.
+	IsPending() bool
+
+	// SetPending sets the value of the pending field on the status for this resource. Currently this is only used for
+	// Configurations. For other resources this does nothing.
+	SetPending(pending bool)
+
+	// IsCurrent returns true if the current field on the status for this resource is true. Currently this is only used
+	// for Configurations. For other resources this always returns false.
+	IsCurrent() bool
+
+	// SetCurrent sets the value of the current field on the status for this resource. Currently this is only used for
+	// Configurations. For other resources this does nothing.
+	SetCurrent(current bool)
 }
 
 // AnyResource is a resource not yet fully parsed and is the common structure of all Resources. The Spec, which is
 // different for each kind of resource, is represented as a map[string]interface{} and can be further parsed using
 // mapstructure. Use ParseResource or ParseResources to obtain a fully parsed Resource.
 type AnyResource struct {
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
-	Spec         map[string]interface{} `yaml:"spec" json:"spec" mapstructure:"spec"`
+	ResourceMeta               `yaml:",inline" mapstructure:",squash"`
+	Spec                       map[string]any `yaml:"spec" json:"spec" mapstructure:"spec"`
+	StatusType[map[string]any] `yaml:",inline" json:",inline" mapstructure:",squash"`
+}
+
+// GetResourceMeta returns the ResourceMeta for this resource.
+func (r *AnyResource) GetResourceMeta() ResourceMeta {
+	return r.ResourceMeta
+}
+
+// GetSpec returns the spec for this resource.
+func (r *AnyResource) GetSpec() any {
+	return r.Spec
+}
+
+// Value is used to translate to a JSONB field for postgres storage
+func (r AnyResource) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+// Scan is used to translate from a JSONB field in postgres to AnyResource
+func (r *AnyResource) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return json.Unmarshal(b, &r)
 }
 
 // ResourceMeta TODO(doc)
@@ -149,6 +247,22 @@ type Metadata struct {
 	Description string `yaml:"description,omitempty" json:"description,omitempty" mapstructure:"description"`
 	Icon        string `yaml:"icon,omitempty" json:"icon,omitempty" mapstructure:"icon"`
 	Labels      Labels `yaml:"labels,omitempty" json:"labels" mapstructure:"labels"`
+
+	// Hash is a hex formatted sha256 Hash of the json-encoded spec that is used to determine if the spec has changed.
+	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" mapstructure:"hash"`
+
+	// Version is a 1-based integer that is incremented each time the spec is changed.
+	Version      Version    `yaml:"version,omitempty" json:"version,omitempty" mapstructure:"version"`
+	DateModified *time.Time `yaml:"dateModified,omitempty" json:"dateModified,omitempty" mapstructure:"dateModified"`
+}
+
+// VersionStatus indicates if the resource is the latest version
+type VersionStatus struct {
+	Latest bool `json:"latest" yaml:"latest" mapstructure:"latest"`
+}
+
+// NoStatus is a placeholder for resources that do not have a status
+type NoStatus struct {
 }
 
 // Parameter TODO(doc)
@@ -158,12 +272,39 @@ type Parameter struct {
 	Value interface{} `json:"value" yaml:"value" mapstructure:"value"`
 }
 
-var _ Resource = (*ResourceMeta)(nil)
 var _ Printable = (*ResourceMeta)(nil)
 
-// UniqueKey returns the resource Name to uniquely identify a resource
+// GetResourceMeta returns the ResourceMeta for this resource.
+func (r *ResourceMeta) GetResourceMeta() ResourceMeta {
+	return *r
+}
+
+// UniqueKey returns the resource Name to uniquely identify a resource. Some Resource implementations use the ID instead.
 func (r *ResourceMeta) UniqueKey() string {
 	return r.Metadata.Name
+}
+
+// Version returns the version
+func (r *ResourceMeta) Version() Version {
+	if r == nil {
+		return VersionLatest
+	}
+	return r.Metadata.Version
+}
+
+// SetVersion replaces the version for this resource
+func (r *ResourceMeta) SetVersion(version Version) {
+	r.Metadata.Version = version
+}
+
+// NameAndVersion returns the Resource name:version for this Resource
+func (r *ResourceMeta) NameAndVersion() string {
+	return NameAndVersion(r.Name(), r.Version())
+}
+
+// NameAndVersion returns a Resource name:version for the specified name and version
+func NameAndVersion(name string, version Version) string {
+	return fmt.Sprintf("%s:%d", name, version)
 }
 
 // ID returns the ID
@@ -194,13 +335,65 @@ func (r *ResourceMeta) Description() string {
 // EnsureID sets the ID to a random uuid if not already set.
 func (r *ResourceMeta) EnsureID() {
 	if r.Metadata.ID == "" {
-		r.Metadata.ID = uuid.NewString()
+		r.Metadata.ID = NewResourceID()
 	}
 }
 
-// GetLabels implements the Labeled interface for Agents
+// Hash returns the hash of the resource spec
+func (r *ResourceMeta) Hash() string {
+	return r.Metadata.Hash
+}
+
+// EnsureHash computes the hash of the resource spec and sets it on the resource
+func (r *ResourceMeta) EnsureHash(spec any) {
+	r.Metadata.Hash = computeHash(spec)
+}
+
+// ComputeHash computes the hash of the resource spec
+func computeHash(spec any) string {
+	bytes, err := jsoniter.Marshal(spec)
+	if err != nil {
+		return ""
+	}
+	sha := sha256.Sum256(bytes)
+	return hex.EncodeToString(sha[:])
+}
+
+// DateModified returns the date the resource was last modified
+func (r *ResourceMeta) DateModified() *time.Time {
+	return r.Metadata.DateModified
+}
+
+// SetDateModified replaces the date the resource was last modified
+func (r *ResourceMeta) SetDateModified(date *time.Time) {
+	r.Metadata.DateModified = date
+}
+
+// EnsureMetadata ensures that the metadata is set to reasonable defaults
+func (r *ResourceMeta) EnsureMetadata(spec any) {
+	r.EnsureID()
+	r.EnsureHash(spec)
+	if HasVersionKind(r.Kind) {
+		if r.Metadata.Version == 0 {
+			r.Metadata.Version = 1
+		}
+	}
+}
+
+// GetLabels implements the Labeled interface for Resources
 func (r *ResourceMeta) GetLabels() Labels {
 	return r.Metadata.Labels
+}
+
+// UpdateDependencies updates the dependencies for this resource to use the latest version.
+func (r *ResourceMeta) UpdateDependencies(_ context.Context, _ ResourceStore) error {
+	// Generic resources don't have dependencies.
+	return nil
+}
+
+// SetLabels implements the Labeled interface for Resources
+func (r *ResourceMeta) SetLabels(l Labels) {
+	r.Metadata.Labels.Set = l.Set
 }
 
 // Validate checks that the resource is valid, returning an error if it is not. This provides generic validation for all
@@ -246,7 +439,7 @@ func (r *ResourceMeta) validateIcon(kind Kind, errs validation.Errors) {
 	// relative folder inside this path
 	iconParts := []string{repoFolder, "ui", "public"}
 	iconParts = append(iconParts, strings.Split(r.Metadata.Icon, "/")...)
-	iconPath := path.Join(iconParts...)
+	iconPath := filepath.Join(iconParts...)
 
 	// attempt to read the file to verify that it exists
 	info, err := os.Stat(iconPath)
@@ -271,189 +464,6 @@ func validateKind(errors validation.Errors, kind string) {
 	}
 }
 
-// ParseKind parses a kind from a specified string parameter, validating that it matches an existing kind. It ignores
-// the case of the string parameter and also allows plurals, e.g. configurations => KindConfiguration. KindUnknown is
-// returned if that specified kind does not match any known Kinds.
-func ParseKind(kind string) Kind {
-	lower := strings.ToLower(kind)
-	if kind, ok := kindLookup[lower]; ok {
-		return kind
-	}
-	return KindUnknown
-}
-
-// ParseResource maps the Spec of the provided resource to a specific type of Resource
-// It will drop any unused keys
-func ParseResource(r *AnyResource) (Resource, error) {
-	return parseResource(r, false)
-}
-
-// ParseResourceStrict maps the Spec of the provided resource to a specific type of Resource
-// It will error if there are any unused keys
-func ParseResourceStrict(r *AnyResource) (Resource, error) {
-	return parseResource(r, true)
-}
-
-func parseResource(r *AnyResource, strict bool) (Resource, error) {
-	switch r.Kind {
-	case KindProfile:
-		return parseProfile(r, strict)
-	case KindContext:
-		return parseContext(r, strict)
-	case KindConfiguration:
-		return unmarshalResource(r, &Configuration{}, strict)
-	case KindSource:
-		return unmarshalResource(r, &Source{}, strict)
-	case KindSourceType:
-		return unmarshalResource(r, &SourceType{}, strict)
-	case KindProcessor:
-		return unmarshalResource(r, &Processor{}, strict)
-	case KindProcessorType:
-		return unmarshalResource(r, &ProcessorType{}, strict)
-	case KindDestination:
-		return unmarshalResource(r, &Destination{}, strict)
-	case KindDestinationType:
-		return unmarshalResource(r, &DestinationType{}, strict)
-	case KindAgentVersion:
-		return unmarshalResource(r, &AgentVersion{}, strict)
-	}
-
-	return nil, fmt.Errorf("unknown resource kind: %s", r.Kind)
-}
-
-// ParseResources parses all the generic AnyResources into their concrete resource structs.
-func ParseResources(resources []*AnyResource) ([]Resource, error) {
-	result := []Resource{}
-
-	for _, resource := range resources {
-		parsed, err := ParseResource(resource)
-		if err != nil {
-			return result, err
-		}
-		result = append(result, parsed)
-	}
-
-	return result, nil
-}
-
-// ParseResourcesStrict parses all the generic AnyResources into their concrete resource structs.
-// Any extra fields on any of the resources will cause an error.
-func ParseResourcesStrict(resources []*AnyResource) ([]Resource, error) {
-	result := []Resource{}
-
-	for _, resource := range resources {
-		parsed, err := ParseResourceStrict(resource)
-		if err != nil {
-			return result, err
-		}
-		result = append(result, parsed)
-	}
-
-	return result, nil
-}
-
-// ResourcesFromFile creates an io.Reader from reading the given file and uses unmarshalResources
-// to return a slice of *AnyResource read from the file.
-func ResourcesFromFile(filename string) ([]*AnyResource, error) {
-	file, err := os.Open(filepath.Clean(filename))
-	if err != nil {
-		return nil, err
-	}
-
-	resources, err := ResourcesFromReader(file)
-	if err != nil {
-		return nil, err
-	}
-	return resources, file.Close()
-}
-
-// ResourcesFromReader creates a yaml decoder from an io.Reader and returns a slice of *AnyResource and an error.
-// If the decoder is able to reach the end of the reader with no error, err will be nil.
-func ResourcesFromReader(reader io.Reader) ([]*AnyResource, error) {
-	resources := []*AnyResource{}
-	dec := yaml.NewDecoder(reader)
-
-	for {
-		resource := &AnyResource{}
-		if err := dec.Decode(resource); err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			return nil, err
-		}
-		resources = append(resources, resource)
-	}
-
-	return resources, nil
-}
-
-// unmarshalResource unmarshals the *AnyResource into the provided instance.
-// If errorUnused is true, the unmarshal will fail if any keys are not mapped to a field on the instance.
-func unmarshalResource[T Resource](r *AnyResource, instance T, errorUnused bool) (T, error) {
-	if r.Kind != instance.GetKind() {
-		return instance, fmt.Errorf("invalid resource kind: %s", r.Kind)
-	}
-
-	if errorUnused {
-		// If we are doing a "strict" unmarshal, we need to remove the "__typename" fields.
-		// These fields are populated on the frontend from GraphQL, and is a pain to strip from the payload there,
-		// so instead we accept those "__typename" fields and just ignore them, even in the case where
-		// we are strict unmarshalling.
-		stripTypenameStringMap(r.Spec)
-	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		ErrorUnused: errorUnused,
-		Result:      instance,
-	})
-	if err != nil {
-		return instance, fmt.Errorf("failed to create decoder: %w", err)
-	}
-
-	err = decoder.Decode(r)
-	if err != nil {
-		return instance, fmt.Errorf("failed to decode definition: %w", err)
-	}
-	return instance, nil
-}
-
-const typenameField = "__typename"
-
-// stripTypenameAny strips the "__typename" field out of the provided value.
-func stripTypenameAny(v any) {
-	switch typedV := v.(type) {
-	case map[string]any:
-		stripTypenameStringMap(typedV)
-	case map[any]any:
-		stripTypenameAnyMap(typedV)
-	case []any:
-		stripTypenameArray(typedV)
-	}
-}
-
-// stripTypenameStringMap strips the "__typename" field out of the map (recursively).
-func stripTypenameStringMap(m map[string]any) {
-	delete(m, typenameField)
-	for _, v := range m {
-		stripTypenameAny(v)
-	}
-}
-
-// stripTypenameStringMap strips the "__typename" field out of the map (recursively).
-func stripTypenameAnyMap(m map[any]any) {
-	delete(m, typenameField)
-	for _, v := range m {
-		stripTypenameAny(v)
-	}
-}
-
-// stripTypenameArray strips the "__typename" field out of submaps of the array (recursively).
-func stripTypenameArray(s []any) {
-	for _, v := range s {
-		stripTypenameAny(v)
-	}
-}
-
 // ----------------------------------------------------------------------
 // Printable
 
@@ -473,15 +483,31 @@ func (r *ResourceMeta) PrintableFieldTitles() []string {
 	return []string{"Name"}
 }
 
-// PrintableFieldValue returns the field value for a title, used for printing a table of resources
+// ResourceDateFormat is used when formatting dates for Resources.
+const ResourceDateFormat = "2006-01-02 15:04:05"
+
+// PrintableFieldValue returns the field value for a title, used for printing a table of resources. The implementation
+// for ResourceMeta contains fields common to all resources. Resources for defer to this implementation for anything not
+// specific to or overridden by that resource kind.
 func (r *ResourceMeta) PrintableFieldValue(title string) string {
 	switch title {
 	case "ID":
 		return r.ID()
 	case "Name":
 		return r.Name()
+	case "Hash":
+		return r.Hash()
 	case "Display":
 		return r.Metadata.DisplayName
+	case "Description":
+		return r.Metadata.Description
+	case "Version":
+		return strconv.Itoa(int(r.Metadata.Version))
+	case "Date":
+		if r.DateModified() == nil {
+			return "-"
+		}
+		return r.DateModified().Format(ResourceDateFormat)
 	default:
 		return "-"
 	}
@@ -496,18 +522,83 @@ func (r *ResourceMeta) IndexID() string {
 }
 
 // IndexFields returns a map of field name to field value to be stored in the index
-func (r *ResourceMeta) IndexFields(index search.Indexer) {
+func (r *ResourceMeta) IndexFields(index modelSearch.Indexer) {
 	index("kind", string(r.Kind))
 	r.Metadata.indexFields(index)
 }
 
 // IndexLabels returns a map of label name to label value to be stored in the index
-func (r *ResourceMeta) IndexLabels(index search.Indexer) {
+func (r *ResourceMeta) IndexLabels(index modelSearch.Indexer) {
 	r.Metadata.indexLabels(index)
 }
 
+// ----------------------------------------------------------------------
+// convenience
+
+// SetVersion sets the Version on the Resource and returns it. It does not return a modified copy. It modifies the
+// existing resource and returns it as a convenience.
+func SetVersion[R Resource](resource R, Version Version) R {
+	resource.SetVersion(Version)
+	return resource
+}
+
+// SplitVersionDefault splits a resource key into the resource key and version and allows a default version to be
+// specified if none is specified or the specified version cannot be parsed.
+func SplitVersionDefault(resourceKey string, defaultVersion Version) (string, Version) {
+	parts := strings.SplitN(resourceKey, ":", 2)
+	name := parts[0]
+	if len(parts) == 1 {
+		return name, defaultVersion
+	}
+	switch parts[1] {
+	case "":
+		return name, defaultVersion
+	case "latest":
+		return name, VersionLatest
+	case "stable", "current":
+		return name, VersionCurrent
+	case "pending":
+		return name, VersionPending
+	}
+	version, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return name, defaultVersion
+	}
+	return name, Version(version)
+}
+
+// TrimVersion removes a version from a resource key. It does nothing if there is no version.
+func TrimVersion(resourceKey string) string {
+	key, _ := SplitVersion(resourceKey)
+	return key
+}
+
+// SplitVersion splits a resource key into the resource key and version.
+func SplitVersion(resourceKey string) (string, Version) {
+	return SplitVersionDefault(resourceKey, VersionLatest)
+}
+
+// JoinVersion joins a resource key and version into a resource key for the specified version.
+func JoinVersion(resourceKey string, version Version) string {
+	// make sure there isn't already a version
+	resourceKey, _ = SplitVersion(resourceKey)
+	switch version {
+	case VersionLatest:
+		return resourceKey
+
+	case VersionCurrent:
+		return fmt.Sprintf("%s:current", resourceKey)
+
+	case VersionPending:
+		return fmt.Sprintf("%s:pending", resourceKey)
+
+	default:
+		return fmt.Sprintf("%s:%d", resourceKey, version)
+	}
+}
+
 // indexFields returns a map of field name to field value to be stored in the index
-func (m *Metadata) indexFields(index search.Indexer) {
+func (m *Metadata) indexFields(index modelSearch.Indexer) {
 	index("id", m.ID)
 	index("name", m.Name)
 	index("displayName", m.DisplayName)
@@ -515,32 +606,8 @@ func (m *Metadata) indexFields(index search.Indexer) {
 }
 
 // indexLabels returns a map of label name to label value to be stored in the index
-func (m *Metadata) indexLabels(index search.Indexer) {
+func (m *Metadata) indexLabels(index modelSearch.Indexer) {
 	for n, v := range m.Labels.Set {
 		index(n, v)
-	}
-}
-
-// NewEmptyResource will return a zero value struct for the given resource kind.
-func NewEmptyResource(kind Kind) (Resource, error) {
-	switch kind {
-	case KindAgentVersion:
-		return &AgentVersion{}, nil
-	case KindConfiguration:
-		return &Configuration{}, nil
-	case KindSource:
-		return &Source{}, nil
-	case KindProcessor:
-		return &Processor{}, nil
-	case KindDestination:
-		return &Destination{}, nil
-	case KindSourceType:
-		return &SourceType{}, nil
-	case KindProcessorType:
-		return &ProcessorType{}, nil
-	case KindDestinationType:
-		return &DestinationType{}, nil
-	default:
-		return nil, fmt.Errorf("cannot make empty resource for unexpected kind: %s", kind)
 	}
 }

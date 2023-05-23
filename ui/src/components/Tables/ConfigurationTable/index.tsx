@@ -1,3 +1,4 @@
+import mixins from "../../../styles/mixins.module.scss";
 import { gql } from "@apollo/client";
 import { Button, FormControl, Stack, Typography } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
@@ -18,8 +19,6 @@ import {
 } from "./ConfigurationsDataGrid";
 import { DeleteDialog } from "./DeleteDialog";
 
-import mixins from "../../../styles/mixins.module.scss";
-
 gql`
   query GetConfigurationTable(
     $selector: String
@@ -34,6 +33,7 @@ gql`
       configurations {
         metadata {
           id
+          version
           name
           labels
           description
@@ -53,6 +53,7 @@ gql`
       configuration {
         metadata {
           id
+          version
           name
           description
           labels
@@ -113,6 +114,7 @@ interface ConfigurationTableProps {
   setSelected: (selected: GridRowSelectionModel) => void;
   selected: GridRowSelectionModel;
   enableDelete?: boolean;
+  allowSelection: boolean;
   minHeight?: string;
   overviewPage?: boolean;
 }
@@ -124,6 +126,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
   selected,
   columns,
   enableDelete = true,
+  allowSelection,
   minHeight,
   overviewPage = false,
   ...dataGridProps

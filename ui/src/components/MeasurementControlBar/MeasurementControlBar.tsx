@@ -1,5 +1,4 @@
-import { AppBar, Toolbar, Button, Typography, Box, Stack } from "@mui/material";
-import { classes } from "../../utils/styles";
+import { Box, Stack, Tabs, Tab } from "@mui/material";
 
 import styles from "./measurement-control-bar.module.scss";
 
@@ -34,79 +33,65 @@ interface MeasurementControlBarProps {
   onPeriodChange: (period: string) => void;
 }
 
+/**
+ * MeasurementControlBar is a component that allows the user to change the telemetry type and period
+ * for the topology graph.
+ *
+ * @param onTelemetryTypeChange called when the user changes the telemetry type
+ * @param onPeriodChange called when the user changes the period
+ * @param telemetry the current stateful telemetry type
+ * @param period the current stateful period
+ * @returns
+ */
 export const MeasurementControlBar: React.FC<MeasurementControlBarProps> = ({
   onTelemetryTypeChange,
   onPeriodChange,
   telemetry,
   period,
 }) => {
+  function handleTelemetryChange(
+    _event: React.SyntheticEvent<Element, Event>,
+    value: any
+  ) {
+    onTelemetryTypeChange(value);
+  }
+
+  function handlePeriodChange(
+    _event: React.SyntheticEvent<Element, Event>,
+    value: any
+  ) {
+    onPeriodChange(value);
+  }
+
   return (
-    <AppBar classes={{ root: styles.appbar }} color="primary" position="static">
-      <Toolbar classes={{ root: styles.toolbar }}>
-        {Object.entries(TELEMETRY_TYPES).map(([t, label]) => (
-          <Stack key={t}>
-            <Button
-              variant="outlined"
-              className={classes([
-                styles["menu-button"],
-                telemetry === t ? styles["menu-button-selected"] : undefined,
-              ])}
-              key={t}
-              color="inherit"
-              onClick={() => onTelemetryTypeChange(t)}
-            >
-              <Typography
-                className={
-                  telemetry === t
-                    ? styles["selected-text"]
-                    : styles["regular-text"]
-                }
-              >
-                {label}
-              </Typography>
-            </Button>
-
-            <Box
-              className={classes([
-                styles["regular-box"],
-                telemetry === t ? styles["selected-box"] : undefined,
-              ])}
+    <Box className={styles.box}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        className={styles.stack}
+      >
+        <Tabs value={telemetry} onChange={handleTelemetryChange}>
+          {Object.entries(TELEMETRY_TYPES).map(([t, label]) => (
+            <Tab
+              key={`telemetry-tab-${t}`}
+              value={t}
+              label={label}
+              classes={{ root: styles.tab }}
             />
-          </Stack>
-        ))}
-        <Box className={styles["flex-box"]} />
+          ))}
+        </Tabs>
 
-        {Object.entries(PERIODS).map(([p, label]) => (
-          <Stack key={p}>
-            <Button
-              variant="outlined"
-              className={classes([
-                styles["menu-button"],
-                period === p ? styles["menu-button-selected"] : undefined,
-              ])}
-              key={p}
-              color="inherit"
-              onClick={() => onPeriodChange(p)}
-            >
-              <Typography
-                className={
-                  period === p
-                    ? styles["selected-text"]
-                    : styles["regular-text"]
-                }
-              >
-                {label}
-              </Typography>
-            </Button>
-            <Box
-              className={classes([
-                styles["regular-box"],
-                period === p ? styles["selected-box"] : undefined,
-              ])}
+        <Tabs value={period} onChange={handlePeriodChange}>
+          {Object.entries(PERIODS).map(([p, label]) => (
+            <Tab
+              key={`period-tab-${p}`}
+              value={p}
+              label={label}
+              classes={{ root: styles.tab }}
             />
-          </Stack>
-        ))}
-      </Toolbar>
-    </AppBar>
+          ))}
+        </Tabs>
+      </Stack>
+    </Box>
   );
 };

@@ -6,8 +6,10 @@ function createAgent(): AgentsTableAgent {
   const id = makeId();
   const configurationResource: AgentsTableConfiguration = {
     metadata: {
-      id: "configuration-id",
+      id: "",
       name: "configuration-name",
+      // make version a random int between 0 and 10
+      version: Math.floor(Math.random() * 10),
     },
   };
   return {

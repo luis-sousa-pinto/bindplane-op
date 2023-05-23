@@ -1,7 +1,9 @@
 import { Configuration, Destination, Source } from "../graphql/generated";
 
-// TODO (dsvanlani) this should include all resource types
-export type Resource = Configuration | Source | Destination;
+export type Resource =
+  | Pick<Configuration, "metadata" | "kind" | "spec" | "apiVersion">
+  | Pick<Source, "metadata" | "kind" | "spec" | "apiVersion">
+  | Pick<Destination, "metadata" | "kind" | "spec" | "apiVersion">;
 
 /** ResourceStatus contains a resource and its UpdateStatus after a change */
 export interface ResourceStatus {

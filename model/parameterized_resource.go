@@ -23,10 +23,11 @@ import (
 
 // ParameterizedSpec is the spec for a ParameterizedResource
 type ParameterizedSpec struct {
-	Type       string                  `yaml:"type" json:"type" mapstructure:"type"`
-	Parameters []Parameter             `yaml:"parameters" json:"parameters" mapstructure:"parameters"`
+	Type       string      `yaml:"type,omitempty" json:"type,omitempty" mapstructure:"type"`
+	Parameters []Parameter `yaml:"parameters,omitempty" json:"parameters,omitempty" mapstructure:"parameters"`
+
 	Processors []ResourceConfiguration `yaml:"processors,omitempty" json:"processors,omitempty" mapstructure:"processors"`
-	Disabled   bool                    `yaml:"disabled" json:"disabled" mapstructure:"disabled"`
+	Disabled   bool                    `yaml:"disabled,omitempty" json:"disabled,omitempty" mapstructure:"disabled"`
 }
 
 // parameterizedResource is a resource based on a resource type which provides a specific resource value via templated
@@ -43,27 +44,6 @@ type parameterizedResource interface {
 	ResourceParameters() []Parameter
 }
 
-// overrideParameters overrides the parameters in the spec and returns a new spec with the overrides applied
-func (s ParameterizedSpec) overrideParameters(parameters []Parameter) ParameterizedSpec {
-	result := make([]Parameter, len(s.Parameters))
-	nameIndex := map[string]int{}
-	for i, p := range s.Parameters {
-		result[i] = p
-		nameIndex[p.Name] = i
-	}
-	for _, p := range parameters {
-		index, ok := nameIndex[p.Name]
-		if ok {
-			// override
-			s.Parameters[index] = p
-		} else {
-			// append
-			s.Parameters = append(s.Parameters, p)
-		}
-	}
-	return ParameterizedSpec{Type: s.Type, Parameters: result, Processors: s.Processors}
-}
-
 // validateTypeAndParameters is used by Source and Destination validation and uses methods created for Configuration
 // validation.
 func (s *ParameterizedSpec) validateTypeAndParameters(ctx context.Context, kind Kind, errors validation.Errors, store ResourceStore) {
@@ -78,4 +58,26 @@ func (s *ParameterizedSpec) validateTypeAndParameters(ctx context.Context, kind 
 	}
 	rc.validateParameters(ctx, kind, errors, store)
 	rc.validateProcessors(ctx, kind, errors, store)
+
+	// the type may have been modified, so copy it back
+	s.Type = rc.ParameterizedSpec.Type
+}
+
+func (s *ParameterizedSpec) trimVersions() {
+	// first remove the dependency versions
+	s.Type = TrimVersion(s.Type)
+
+	for i, p := range s.Processors {
+		p.trimVersions()
+		s.Processors[i] = p
+	}
+}
+
+func (s *ParameterizedSpec) updateDependencies(ctx context.Context, kind Kind, store ResourceStore) error {
+	s.trimVersions()
+
+	// validate to set the latest version
+	errs := validation.NewErrors()
+	s.validateTypeAndParameters(ctx, kind, errs, store)
+	return errs.Result()
 }

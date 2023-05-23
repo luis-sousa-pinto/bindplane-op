@@ -5,13 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import { ProcessorType } from "../../ResourceConfigForm";
 import { useGetProcessorTypesQuery } from "../../../graphql/generated";
 import { metadataSatisfiesSubstring } from "../../../utils/metadata-satisfies-substring";
-import { ActionsSection } from "../ActionSection";
-import { ContentSection } from "../ContentSection";
-import { TitleSection } from "../TitleSection";
 import {
   ResourceTypeButton,
   ResourceTypeButtonContainer,
 } from "../../ResourceTypeButton";
+import {
+  TitleSection,
+  ContentSection,
+  ActionsSection,
+} from "../../DialogComponents";
 
 import styles from "./create-processor-select-view.module.scss"
 
@@ -19,11 +21,12 @@ gql`
   query getProcessorTypes {
     processorTypes {
       metadata {
-        id
         displayName
         description
         name
         labels
+        version
+        id
       }
       spec {
         parameters {
@@ -84,29 +87,30 @@ interface CreateProcessorSelectViewProps {
   onClose: () => void;
 }
 
-export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps> =
-  ({ displayName, onBack, onSelect, telemetryTypes, onClose }) => {
-    const { data, loading, error } = useGetProcessorTypesQuery();
-    const [search, setSearch] = useState("");
-    const { enqueueSnackbar } = useSnackbar();
+export const CreateProcessorSelectView: React.FC<
+  CreateProcessorSelectViewProps
+> = ({ displayName, onBack, onSelect, telemetryTypes, onClose }) => {
+  const { data, loading, error } = useGetProcessorTypesQuery();
+  const [search, setSearch] = useState("");
+  const { enqueueSnackbar } = useSnackbar();
 
-    useEffect(() => {
-      if (error != null) {
-        enqueueSnackbar("Error retrieving data for Processor Type.", {
-          variant: "error",
-          key: "Error retrieving data for Processor Type.",
-        });
-      }
-    }, [enqueueSnackbar, error]);
+  useEffect(() => {
+    if (error != null) {
+      enqueueSnackbar("Error retrieving data for Processor Type.", {
+        variant: "error",
+        key: "Error retrieving data for Processor Type.",
+      });
+    }
+  }, [enqueueSnackbar, error]);
 
-    const backButton: JSX.Element = (
-      <Button variant="contained" color="secondary" onClick={onBack}>
-        Back
-      </Button>
-    );
+  const backButton: JSX.Element = (
+    <Button variant="contained" color="secondary" onClick={onBack}>
+      Back
+    </Button>
+  );
 
-    const title = `${displayName}: Add a processor`;
-    const description = `Choose a processor you'd like to configure for this source.`;
+  const title = `${displayName}: Add a processor`;
+  const description = `Choose a processor you'd like to configure for this source.`;
 
     // Filter the list of supported processor types down
     // to those whose telemetry matches the telemetry of the
@@ -136,13 +140,9 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
     );
     const categorizedProcessorTypes = processorTypesByCategory(matchingProcessorTypes);
 
-    return (
-      <>
-        <TitleSection
-          title={title}
-          description={description}
-          onClose={onClose}
-        />
+  return (
+    <>
+      <TitleSection title={title} description={description} onClose={onClose} />
 
         <ContentSection>
           <ResourceTypeButtonContainer

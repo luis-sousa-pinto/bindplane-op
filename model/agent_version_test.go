@@ -64,3 +64,13 @@ func TestAgentVersionDownload(t *testing.T) {
 		})
 	}
 }
+
+func TestAgentVersionBeta(t *testing.T) {
+	version := testResource[*AgentVersion](t, "agentversion-observiq-otel-collector-v1.5.0-beta.yaml")
+	require.Equal(t, true, version.Public())
+}
+
+func TestAgentVersionNoApiVersion(t *testing.T) {
+	version := testResource[*AgentVersion](t, "agentversion-observiq-otel-collector-v1.5.0-no-api-version.yaml")
+	require.Equal(t, true, version.Public())
+}

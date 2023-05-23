@@ -1,7 +1,6 @@
 import { memo } from "react";
 import {
   DestinationType,
-  ResourceConfiguration,
   SourceType,
   useDestinationsAndTypesQuery,
 } from "../../../graphql/generated";
@@ -19,7 +18,6 @@ type ResourceType = SourceType | DestinationType;
 
 const AddDestinationsComponent: React.FC<{
   configuration: NonNullable<ShowPageConfig>;
-  destinations: ResourceConfiguration[];
   refetch: () => {};
   setAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   addDialogOpen: boolean;
@@ -44,6 +42,7 @@ const AddDestinationsComponent: React.FC<{
       metadata: {
         name: values.name,
         id: values.name,
+        version: 0,
       },
       spec: {
         parameters: [],

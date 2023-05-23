@@ -22,12 +22,17 @@ import (
 	"github.com/observiq/bindplane-op/model/validation"
 )
 
+type sourceKind struct{}
+
+func (k *sourceKind) NewEmptyResource() *Source { return &Source{} }
+
 // Source will generate an exporter and be at the end of a pipeline
 type Source struct {
 	// ResourceMeta TODO(doc)
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
 	// Spec TODO(doc)
-	Spec ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Source)(nil)
@@ -43,8 +48,18 @@ func (s *Source) ValidateWithStore(ctx context.Context, store ResourceStore) (wa
 	return errs.Warnings(), errs.Result()
 }
 
+// UpdateDependencies updates the dependencies for this resource to use the latest version.
+func (s *Source) UpdateDependencies(ctx context.Context, store ResourceStore) error {
+	return s.Spec.updateDependencies(ctx, KindSource, store)
+}
+
 // GetKind returns "Source"
 func (s *Source) GetKind() Kind { return KindSource }
+
+// GetSpec returns the spec for this resource.
+func (s *Source) GetSpec() any {
+	return s.Spec
+}
 
 // ResourceTypeName is the name of the ResourceType that renders this resource type
 func (s *Source) ResourceTypeName() string {
@@ -71,7 +86,7 @@ func NewSource(name string, sourceTypeName string, parameters []Parameter) *Sour
 
 // NewSourceWithSpec creates a new Source with the specified spec
 func NewSourceWithSpec(name string, spec ParameterizedSpec) *Source {
-	return &Source{
+	s := &Source{
 		ResourceMeta: ResourceMeta{
 			APIVersion: "bindplane.observiq.com/v1",
 			Kind:       KindSource,
@@ -82,6 +97,8 @@ func NewSourceWithSpec(name string, spec ParameterizedSpec) *Source {
 		},
 		Spec: spec,
 	}
+	s.EnsureMetadata(spec)
+	return s
 }
 
 // FindSource returns a Source from the store if it exists. If it doesn't exist, it creates a new Source with the
@@ -92,7 +109,7 @@ func FindSource(ctx context.Context, source *ResourceConfiguration, defaultName 
 		src := NewSourceWithSpec(defaultName, source.ParameterizedSpec)
 		return src, nil
 	}
-	// find the source and override parameters
+	// named source
 	src, err := store.Source(ctx, source.Name)
 	if err != nil {
 		return nil, err
@@ -100,8 +117,7 @@ func FindSource(ctx context.Context, source *ResourceConfiguration, defaultName 
 	if src == nil {
 		return nil, fmt.Errorf("unknown %s: %s", KindSource, source.Name)
 	}
-	spec := src.Spec.overrideParameters(source.Parameters)
-	return NewSourceWithSpec(src.Name(), spec), nil
+	return src, nil
 }
 
 // ----------------------------------------------------------------------
@@ -114,15 +130,9 @@ func (s *Source) PrintableFieldTitles() []string {
 // PrintableFieldValue returns the field value for a title, used for printing a table of resources
 func (s *Source) PrintableFieldValue(title string) string {
 	switch title {
-	case "ID":
-		return s.ID()
-	case "Name":
-		return s.Name()
 	case "Type":
 		return s.ResourceTypeName()
-	case "Description":
-		return s.Metadata.Description
 	default:
-		return "-"
+		return s.ResourceMeta.PrintableFieldValue(title)
 	}
 }

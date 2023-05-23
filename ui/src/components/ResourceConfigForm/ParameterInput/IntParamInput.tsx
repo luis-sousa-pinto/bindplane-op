@@ -8,6 +8,7 @@ import { validateIntField } from "../validation-functions";
 const IntParamInputComponent: React.FC<ParamInputProps<number>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   const { errors, setError, touch, touched } = useValidationContext();
@@ -30,6 +31,7 @@ const IntParamInputComponent: React.FC<ParamInputProps<number>> = ({
       onChange={handleValueChange}
       name={definition.name}
       fullWidth
+      disabled={readOnly}
       size="small"
       label={definition.label}
       onBlur={() => touch(definition.name)}

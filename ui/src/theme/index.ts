@@ -25,6 +25,10 @@ const themeOptions: ThemeOptions = {
       main: "#82392b",
       contrastText: "#fff",
     },
+    "action-blue": {
+      main: "#4184E3",
+      contrastText: "#fff",
+    },
   },
   typography: {
     allVariants: {
@@ -63,6 +67,27 @@ const themeOptions: ThemeOptions = {
         },
       },
     },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+        },
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: "#CDCED1",
+          color: "#4184E3",
+          height: 8,
+          borderRadius: 4,
+        },
+        barColorPrimary: {
+          backgroundColor: "#4184E3",
+          borderRadius: 4,
+        },
+      },
+    },
   },
 };
 
@@ -74,6 +99,7 @@ declare module "@mui/material/styles" {
     debug: Palette["primary"];
     trace: Palette["primary"];
     fatal: Palette["primary"];
+    "action-blue": Palette["primary"];
   }
 
   // allow configuration using `createTheme`
@@ -81,6 +107,7 @@ declare module "@mui/material/styles" {
     debug?: PaletteOptions["primary"];
     trace: PaletteOptions["primary"];
     fatal: PaletteOptions["primary"];
+    "action-blue": PaletteOptions["primary"];
   }
 }
 
@@ -90,5 +117,12 @@ declare module "@mui/material/Chip" {
     fatal: true;
     debug: true;
     trace: true;
+  }
+}
+
+// Update the Button's color prop options
+declare module "@mui/material/Button" {
+  interface ButtonPropsColorOverrides {
+    "action-blue": true;
   }
 }

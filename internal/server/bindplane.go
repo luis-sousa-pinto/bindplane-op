@@ -18,63 +18,44 @@ package server
 import (
 	"go.uber.org/zap"
 
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/agent"
-	"github.com/observiq/bindplane-op/internal/store"
+	"github.com/observiq/bindplane-op/agent"
+	"github.com/observiq/bindplane-op/authenticator"
+	"github.com/observiq/bindplane-op/config"
+	bpserver "github.com/observiq/bindplane-op/server"
+	"github.com/observiq/bindplane-op/store"
 )
 
-// BindPlane is the interface for the BindPlane Server
-//
-//go:generate mockery --name BindPlane --filename mock_bindplane.go --structname MockBindPlane
-type BindPlane interface {
-	// Store TODO(doc)
-	Store() store.Store
-	// Manager TODO(doc)
-	Manager() Manager
-	// Relayer enables Live messages to flow from Agents to GraphQL subscriptions
-	Relayers() *Relayers
-	// Versions TODO(doc)
-	Versions() agent.Versions
-	// Config TODO(doc)
-	Config() *common.Server
-	// Logger TODO(doc)
-	Logger() *zap.Logger
-}
-
 // NewBindPlane creates a new BindPlane Server using the given store and agent versions
-func NewBindPlane(config *common.Server, logger *zap.Logger, s store.Store, versions agent.Versions) (BindPlane, error) {
-	manager, err := NewManager(config, s, versions, logger)
-	if err != nil {
-		return nil, err
-	}
-
+func NewBindPlane(cfg *config.Config, logger *zap.Logger, s store.Store, versions agent.Versions) bpserver.BindPlane {
 	return &storeBindPlane{
 		store: s,
 		bindplane: bindplane{
-			logger:   logger,
-			config:   config,
-			manager:  manager,
-			relayers: NewRelayers(logger),
-			versions: versions,
+			logger:        logger,
+			config:        cfg,
+			manager:       bpserver.NewManager(cfg, s, versions, logger),
+			relayers:      NewRelayers(logger),
+			versions:      versions,
+			authenticator: authenticator.NewBasicAuthenticator(cfg.Auth.Username, cfg.Auth.Password),
 		},
-	}, nil
+	}
 }
 
 // ----------------------------------------------------------------------
 type bindplane struct {
-	config   *common.Server
-	manager  Manager
-	logger   *zap.Logger
-	versions agent.Versions
-	relayers *Relayers
+	config        *config.Config
+	manager       bpserver.Manager
+	logger        *zap.Logger
+	versions      agent.Versions
+	relayers      *Relayers
+	authenticator authenticator.Authenticator
 }
 
 // Manager TODO(doc)
-func (s *bindplane) Manager() Manager {
+func (s *bindplane) Manager() bpserver.Manager {
 	return s.manager
 }
 
-func (s *bindplane) Relayers() *Relayers {
+func (s *bindplane) Relayers() bpserver.Relayers {
 	return s.relayers
 }
 
@@ -84,8 +65,12 @@ func (s *bindplane) Logger() *zap.Logger {
 }
 
 // Config TODO(doc)
-func (s *bindplane) Config() *common.Server {
+func (s *bindplane) Config() *config.Config {
 	return s.config
+}
+
+func (s *storeBindPlane) Authenticator() authenticator.Authenticator {
+	return s.authenticator
 }
 
 // ----------------------------------------------------------------------
@@ -95,7 +80,7 @@ type storeBindPlane struct {
 	bindplane
 }
 
-var _ BindPlane = (*storeBindPlane)(nil)
+var _ bpserver.BindPlane = (*storeBindPlane)(nil)
 
 // Store TODO(doc)
 func (s *storeBindPlane) Store() store.Store {
@@ -107,4 +92,18 @@ func (s *storeBindPlane) Versions() agent.Versions {
 	return s.versions
 }
 
-// ----------------------------------------------------------------------
+func (s *storeBindPlane) BindPlaneURL() string {
+	return s.config.BindPlaneURL()
+}
+
+func (s *storeBindPlane) WebsocketURL() string {
+	return s.config.Network.WebsocketURL()
+}
+
+func (s *storeBindPlane) SecretKey() string {
+	return s.config.Auth.SecretKey
+}
+
+func (s *storeBindPlane) BindPlaneInsecureSkipVerify() bool {
+	return s.config.BindPlaneInsecureSkipVerify()
+}

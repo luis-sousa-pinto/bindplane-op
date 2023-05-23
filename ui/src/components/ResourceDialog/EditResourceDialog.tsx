@@ -19,6 +19,7 @@ interface EditResourceDialogProps extends DialogProps {
   telemetryTypes?: string[];
   paused?: boolean;
   onTogglePause?: () => void;
+  readOnly?: boolean;
 }
 
 const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
@@ -34,6 +35,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
   telemetryTypes,
   includeNameField = false,
   paused = false,
+  readOnly,
   ...dialogProps
 }) => {
   return (
@@ -50,6 +52,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
         telemetryTypes={telemetryTypes}
         paused={paused}
         onTogglePause={onTogglePause}
+        readOnly={readOnly}
       />
     </Dialog>
   );

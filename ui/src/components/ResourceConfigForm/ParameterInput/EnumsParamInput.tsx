@@ -4,17 +4,20 @@ import {
   Stack,
   FormControlLabel,
   Switch,
+  Typography,
 } from "@mui/material";
 import { ParamInputProps } from "./ParameterInput";
 import { classes } from "../../../utils/styles";
 import { isEmpty } from "lodash";
 import { memo } from "react";
+import colors from "../../../styles/colors";
 
 import mixins from "../../../styles/mixins.module.scss";
 
 const EnumsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   function handleToggleValue(toggleValue: string) {
@@ -43,12 +46,20 @@ const EnumsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
           isEmpty(definition.description) ? undefined : mixins["mb-1"],
         ])}
       >
-        {definition.description}
+        <Typography
+          color={readOnly ? colors.disabled : undefined}
+          component={"span"}
+          whiteSpace={"pre-wrap"}
+          fontSize="0.75rem"
+        >
+          {definition.description}
+        </Typography>
       </FormHelperText>
       <Stack marginLeft={2}>
         {definition.validValues!.map((vv) => (
           <FormControlLabel
             key={`${definition.name}-label-${vv}`}
+            disabled={readOnly}
             control={
               <Switch
                 key={`${definition.name}-switch-${vv}`}

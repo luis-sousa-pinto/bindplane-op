@@ -1,0 +1,23 @@
+apiVersion: bindplane.observiq.com/v1
+kind: Configuration
+metadata:
+  name: macos
+  labels:
+    platform: macos
+    app: cabin
+spec:
+  contentType: text/yaml
+  sources:
+    # no version => MacOS:3
+    - type: MacOS
+    - type: MacOS:1
+    - type: MacOS:2
+    - type: MacOS:3
+    - type: MacOS:latest
+  destinations:
+    - name: cabin-production-logs
+    - name: cabin-production-logs:1
+    - name: cabin-production-logs:latest
+  selector:
+    matchLabels:
+      "configuration": macos

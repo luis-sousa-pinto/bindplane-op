@@ -16,6 +16,7 @@ import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPResourceConfiguration } from "../../utils/classes";
 import { classes } from "../../utils/styles";
 import { MinimumRequiredConfig } from "../PipelineGraph/PipelineGraph";
+import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
 
 import styles from "./cards.module.scss";
 
@@ -25,6 +26,7 @@ gql`
       metadata {
         id
         name
+        version
         displayName
         icon
         displayName
@@ -80,6 +82,7 @@ export const InlineSourceCard: React.FC<{
   refetchConfiguration: () => void;
 }> = ({ id, disabled, configuration, refetchConfiguration }) => {
   const sourceIndex = getSourceIndex(id);
+  const { readOnlyGraph } = usePipelineGraph();
 
   const source = configuration?.spec?.sources![sourceIndex];
   const name = source?.type || "";
@@ -245,6 +248,7 @@ export const InlineSourceCard: React.FC<{
         onSave={onSave}
         paused={source?.disabled}
         onTogglePause={onTogglePause}
+        readOnly={readOnlyGraph}
       />
 
       <ConfirmDeleteResourceDialog

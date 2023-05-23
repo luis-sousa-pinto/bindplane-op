@@ -41,6 +41,7 @@ gql`
       metadata {
         id
         name
+        version
         displayName
         description
         icon

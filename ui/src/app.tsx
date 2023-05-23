@@ -13,7 +13,7 @@ import {
 } from "./pages";
 import { theme } from "./theme";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material";
-import { ViewConfiguration } from "./pages/configurations/configuration";
+import { ConfigurationPage } from "./pages/configurations/configuration";
 import { NewRawConfigurationPage } from "./pages/configurations/new-raw";
 import { SnackbarProvider } from "notistack";
 import { BindplaneVersion } from "./components/BindplaneVersion";
@@ -50,7 +50,7 @@ export const App: React.FC = () => {
                       element={<NewRawConfigurationPage />}
                     />
                     <Route path="new" element={<NewConfigurationPage />} />
-                    <Route path=":name" element={<ViewConfiguration />} />
+                    <Route path=":name" element={<ConfigurationPage />} />
                   </Route>
                   <Route path="destinations">
                     <Route index element={<DestinationsPage />} />

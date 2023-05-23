@@ -1,8 +1,12 @@
-schema: ../internal/graphql/schema.graphqls
+schema: ../graphql/schema.graphqls
 documents: ./src/**/*.tsx
+config:
+  scalars:
+    Version: number
+    RolloutStatus: number
 generates:
   ./src/graphql/generated.ts:
-   plugins:
-    - typescript
-    - typescript-operations
-    - typescript-react-apollo
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo

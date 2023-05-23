@@ -1,0 +1,11 @@
+@use "../../styles/colors";
+
+.box {
+  overflow: auto;
+  max-height: 600px;
+  flex-grow: 1;
+
+  a {
+    color: #2f2f31;
+  }
+}

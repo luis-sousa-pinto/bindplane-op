@@ -10,7 +10,7 @@ function UIControlNode({
   data,
 }: {
   data: {
-    onClick: React.Dispatch<React.SetStateAction<boolean>>;
+    onClick: () => void;
     buttonText: string;
     handlePosition: Position;
     handleType: "source" | "target";
@@ -21,7 +21,7 @@ function UIControlNode({
     <>
       {data.isButton ? (
         <Button
-          onClick={() => data.onClick(true)}
+          onClick={data.onClick}
           variant="contained"
           startIcon={<PlusCircleIcon />}
           classes={{ root: mixins["float-right"] }}

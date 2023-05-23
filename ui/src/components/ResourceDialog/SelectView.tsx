@@ -5,9 +5,9 @@ import {
   ResourceTypeButton,
   ResourceTypeButtonContainer,
 } from "../ResourceTypeButton";
-import { ContentSection } from "./ContentSection";
 import { useResourceDialog } from "./ResourceDialogContext";
-import { TitleSection } from "./TitleSection";
+import { TitleSection, ContentSection } from "../DialogComponents";
+import { someResourceOfType } from "./utils";
 
 interface SelectViewProps {
   resourceTypes: ResourceType[];
@@ -55,8 +55,9 @@ export const SelectView: React.FC<SelectViewProps> = ({
             .filter((rt) => metadataSatisfiesSubstring(rt, resourceSearchValue))
             // map the results to resource buttons
             .map((resourceType) => {
-              const matchingResourcesExist = resources?.some(
-                (resource) => resource.spec.type === resourceType.metadata.name
+              const matchingResourcesExist = someResourceOfType(
+                resources,
+                resourceType
               );
 
               // Either we send the directly to the form if there are no existing resources

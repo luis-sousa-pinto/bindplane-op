@@ -17,10 +17,11 @@ package model
 
 import (
 	"sort"
+	"strings"
 	"time"
 
-	"github.com/observiq/bindplane-op/internal/store/search"
-	"github.com/observiq/bindplane-op/internal/util/semver"
+	modelSearch "github.com/observiq/bindplane-op/model/search"
+	"github.com/observiq/bindplane-op/util/semver"
 )
 
 // AgentTypeName is the name of a type of agent
@@ -112,18 +113,18 @@ const AgentFeaturesDefault = AgentSupportsUpgrade
 
 // Agent is a single observIQ OTel Collector instance
 type Agent struct {
-	ID              string `json:"id" yaml:"id"`
-	Name            string `json:"name" yaml:"name"`
-	Type            string `json:"type" yaml:"type"`
-	Architecture    string `json:"arch" yaml:"arch"`
-	HostName        string `json:"hostname" yaml:"hostname"`
-	Labels          Labels `json:"labels,omitempty" yaml:"labels"`
-	Version         string `json:"version" yaml:"version"`
-	Home            string `json:"home" yaml:"home"`
-	Platform        string `json:"platform" yaml:"platform"`
-	OperatingSystem string `json:"operatingSystem" yaml:"operatingSystem"`
-	MacAddress      string `json:"macAddress" yaml:"macAddress"`
-	RemoteAddress   string `json:"remoteAddress,omitempty" yaml:"remoteAddress,omitempty"`
+	ID              string `json:"id" yaml:"id" db:"id"`
+	Name            string `json:"name" yaml:"name" db:"name"`
+	Type            string `json:"type" yaml:"type" db:"type"`
+	Architecture    string `json:"arch" yaml:"arch" db:"architecture"`
+	HostName        string `json:"hostname" yaml:"hostname" db:"host_name"`
+	Labels          Labels `json:"labels,omitempty" yaml:"labels" db:"labels"`
+	Version         string `json:"version" yaml:"version" db:"version"`
+	Home            string `json:"home" yaml:"home" db:"home_directory"`
+	Platform        string `json:"platform" yaml:"platform" db:"platform"`
+	OperatingSystem string `json:"operatingSystem" yaml:"operatingSystem" db:"operating_system"`
+	MacAddress      string `json:"macAddress" yaml:"macAddress" db:"mac_address"`
+	RemoteAddress   string `json:"remoteAddress,omitempty" yaml:"remoteAddress,omitempty" db:"remote_address"`
 
 	// SecretKey is provided by the agent to authenticate
 	SecretKey string `json:"-" yaml:"-"`
@@ -132,20 +133,58 @@ type Agent struct {
 	TLS *ManagerTLS `json:"tls,omitempty" yaml:"tls,omitempty"`
 
 	// Upgrade stores information about an agent upgrade
-	Upgrade *AgentUpgrade `json:"upgrade,omitempty" yaml:"upgrade,omitempty"`
+	Upgrade *AgentUpgrade `json:"upgrade,omitempty" yaml:"upgrade,omitempty" db:"upgrade,omitempty"`
 
 	// reported by Status messages
-	Status       AgentStatus `json:"status"`
-	ErrorMessage string      `json:"errorMessage,omitempty" yaml:"errorMessage,omitempty"`
+	Status       AgentStatus `json:"status" db:"status"`
+	ErrorMessage string      `json:"errorMessage,omitempty" yaml:"errorMessage,omitempty" db:"error_message"`
 
 	// tracked by BindPlane
-	Configuration  interface{} `json:"configuration,omitempty" yaml:"configuration,omitempty"`
-	ConnectedAt    *time.Time  `json:"connectedAt,omitempty" yaml:"connectedAt,omitempty"`
-	DisconnectedAt *time.Time  `json:"disconnectedAt,omitempty" yaml:"disconnectedAt,omitempty"`
+	Configuration  any        `json:"configuration,omitempty" yaml:"configuration,omitempty" db:"configuration"`
+	ConnectedAt    *time.Time `json:"connectedAt,omitempty" yaml:"connectedAt,omitempty" db:"connected_at"`
+	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty" yaml:"disconnectedAt,omitempty" db:"disconnected_at"`
 
-	// used by the agent management protocol
-	Protocol string      `json:"protocol,omitempty" yaml:"protocol,omitempty"`
-	State    interface{} `json:"state,omitempty" yaml:"state,omitempty"`
+	Protocol            string                `json:"protocol,omitempty" yaml:"protocol,omitempty" db:"management_protocol"`
+	State               any                   `json:"state,omitempty" yaml:"state,omitempty" db:"management_state"`
+	ConfigurationStatus ConfigurationVersions `json:"configurationStatus,omitempty" yaml:"configurationStatus,omitempty" db:",inline"`
+}
+
+// ConfigurationVersions tracks the current, pending, and future configurations for this agent.
+// format: <configuration name>:<version>
+type ConfigurationVersions struct {
+	// Current is the configuration currently applied to the agent.
+	Current string `json:"current,omitempty" yaml:"current,omitempty" db:"current_configuration"`
+
+	// Pending is the configuration that is assigned to the agent but may not be applied. Once this configuration is
+	// confirmed, Current will be set to this value and this will be cleared.
+	Pending string `json:"pending,omitempty" yaml:"pending,omitempty" db:"pending_configuration"`
+
+	// Future is the configuration that will be assigned to this agent when the rollout assigns the new configuration to
+	// the agent. Once the rollout assigns the configuration, Pending will be set to this value and this will be cleared.
+	Future string `json:"future,omitempty" yaml:"future,omitempty" db:"future_configuration"`
+}
+
+// UniqueKey returns the agent ID to uniquely identify an Agent
+func (cv *ConfigurationVersions) UniqueKey() string {
+	keyBuilder := &strings.Builder{}
+	keyBuilder.WriteString(TrimVersion(cv.Current))
+	keyBuilder.WriteString("|")
+	keyBuilder.WriteString(TrimVersion(cv.Pending))
+	keyBuilder.WriteString("|")
+	keyBuilder.WriteString(TrimVersion(cv.Future))
+	return keyBuilder.String()
+}
+
+// Clear clears the configuration versions, setting them all to ""
+func (cv *ConfigurationVersions) Clear() {
+	cv.clear()
+}
+
+// Set is a convenience method to set current, pending, and future configuration versions
+func (cv *ConfigurationVersions) Set(current, pending, future string) {
+	cv.Current = current
+	cv.Pending = pending
+	cv.Future = future
 }
 
 // ManagerTLS are the TLS settings for the agent when connecting to BPOP
@@ -156,7 +195,7 @@ type ManagerTLS struct {
 	KeyFile            *string `json:"key_file,omitempty" yaml:"key_file,omitempty"`
 }
 
-var _ search.Indexed = (*Agent)(nil)
+var _ modelSearch.Indexed = (*Agent)(nil)
 var _ HasUniqueKey = (*Agent)(nil)
 var _ Labeled = (*Agent)(nil)
 
@@ -190,6 +229,11 @@ func (a *Agent) StatusDisplayText() string {
 // GetLabels implements the Labeled interface for Agents
 func (a *Agent) GetLabels() Labels {
 	return a.Labels
+}
+
+// SetLabels implements the Labeled interface for Agents
+func (a *Agent) SetLabels(l Labels) {
+	a.Labels.Set = l.Set
 }
 
 // ConnectedDurationDisplayText TODO(doc)
@@ -238,6 +282,97 @@ func durationDisplay(t *time.Time) string {
 		return "-"
 	}
 	return time.Since(*t).Round(time.Second).String()
+}
+
+// ----------------------------------------------------------------------
+// configure
+
+// SetCurrentConfiguration sets the Current configuration in the ConfigurationStatus on the agent based on the specified
+// configuration. If Pending or Future are set to this value, they will be cleared.
+//
+// SetCurrentConfiguration will be called when the configuration is confirmed to be currently running on the Agent.
+func (a *Agent) SetCurrentConfiguration(configuration *Configuration) {
+	if configuration == nil {
+		a.ConfigurationStatus.clear()
+		return
+	}
+	nameAndVersion := configuration.NameAndVersion()
+	a.ConfigurationStatus.Current = nameAndVersion
+
+	if a.ConfigurationStatus.Pending == nameAndVersion {
+		// configuration name and version not pending, now current
+		a.ConfigurationStatus.Pending = ""
+	}
+	if a.ConfigurationStatus.Future == nameAndVersion {
+		// configuration name and version not future, now current
+		a.ConfigurationStatus.Future = ""
+	}
+}
+
+// SetPendingConfiguration sets the Pending configuration in the ConfigurationStatus on the agent based on the specified
+// configuration. If Future is already set to this value, it will be cleared. If Current is already set to this value,
+// Pending will also be cleared. If configuration is nil, Current, Pending and Future will all be cleared.
+//
+// SetPendingConfiguration will be called by the rollout manager when the Agent should receive a new configuration.
+func (a *Agent) SetPendingConfiguration(configuration *Configuration) {
+	if configuration == nil {
+		a.ConfigurationStatus.clear()
+		return
+	}
+	nameAndVersion := configuration.NameAndVersion()
+	if a.ConfigurationStatus.Current == nameAndVersion {
+		// configuration name and version already current
+		a.ConfigurationStatus.Pending = ""
+		a.ConfigurationStatus.Future = ""
+		return
+	}
+	if a.ConfigurationStatus.Future == nameAndVersion {
+		// configuration name and version not future, now pending
+		a.ConfigurationStatus.Future = ""
+	}
+	a.ConfigurationStatus.Pending = nameAndVersion
+}
+
+// SetFutureConfiguration sets the Future configuration in the ConfigurationStatus on the agent based on the specified
+// configuration. Typically this will set the Future configuration and clear Pending, but if Pending is already set to
+// this Configuration, Future will be cleared. If Current is already set to this Configuration, Pending and Future will
+// both be cleared. If configuration is nil, Current, Pending and Future will all be cleared.
+//
+// SetFutureConfiguration will be called when the configuration of an Agent should change. The rollout manager will
+// handle scheduling updates and move it to Pending.
+func (a *Agent) SetFutureConfiguration(configuration *Configuration) {
+	if configuration == nil {
+		a.ConfigurationStatus.clear()
+		return
+	}
+	nameAndVersion := configuration.NameAndVersion()
+	if a.ConfigurationStatus.Current == nameAndVersion {
+		// configuration name and version already current
+		a.ConfigurationStatus.Pending = ""
+		a.ConfigurationStatus.Future = ""
+		return
+	}
+	if a.ConfigurationStatus.Pending == nameAndVersion {
+		// configuration name and version already pending
+		a.ConfigurationStatus.Future = ""
+		return
+	}
+	// clear pending to avoid unnecessary configuration churn
+	a.ConfigurationStatus.Pending = ""
+	a.ConfigurationStatus.Future = nameAndVersion
+}
+
+// clear sets all of the configuration versions to empty strings.
+func (cv *ConfigurationVersions) clear() {
+	cv.Current = ""
+	cv.Pending = ""
+	cv.Future = ""
+}
+
+// ClearRollout clears the Pending and Future configuration versions.
+func (cv *ConfigurationVersions) ClearRollout() {
+	cv.Pending = ""
+	cv.Future = ""
 }
 
 // ----------------------------------------------------------------------
@@ -368,13 +503,40 @@ func SortAgentsByName(agents []*Agent) {
 // ----------------------------------------------------------------------
 // indexing
 
+const (
+	// FieldConfigurationCurrent is the name of the index field used to store the current configuration name:version
+	FieldConfigurationCurrent = "configuration-current"
+
+	// FieldConfigurationPending is the name of the index field used to store the pending configuration name:version
+	FieldConfigurationPending = "configuration-pending"
+
+	// FieldConfigurationFuture is the name of the index field used to store the future configuration name:version
+	FieldConfigurationFuture = "configuration-future"
+
+	// Rollout fields are used for tracking rollout progress for an Agent for a given configuration. For a given Agent,
+	// there could be multiple rollout states associated with it. It could have completed version 1, have an error rolling
+	// out version 2, and be waiting for version 3.
+
+	// FieldRolloutComplete is the name of the index field used to store the complete rollout configuration name:version
+	FieldRolloutComplete = "rollout-complete"
+
+	// FieldRolloutError is the name of the index field used to store the error rollout configuration name:version
+	FieldRolloutError = "rollout-error"
+
+	// FieldRolloutPending is the name of the index field used to store the pending rollout configuration name:version
+	FieldRolloutPending = "rollout-pending"
+
+	// FieldRolloutWaiting is the name of the index field used to store the waiting rollout configuration name:version
+	FieldRolloutWaiting = "rollout-waiting"
+)
+
 // IndexID returns an ID used to identify the resource that is indexed
 func (a *Agent) IndexID() string {
 	return a.ID
 }
 
 // IndexFields returns a map of field name to field value to be stored in the index
-func (a *Agent) IndexFields(index search.Indexer) {
+func (a *Agent) IndexFields(index modelSearch.Indexer) {
 	index("id", a.ID)
 	index("arch", a.Architecture)
 	index("hostname", a.HostName)
@@ -386,10 +548,32 @@ func (a *Agent) IndexFields(index search.Indexer) {
 	index("macAddress", a.MacAddress)
 	index("type", a.Type)
 	index("status", a.StatusDisplayText())
+
+	// index the configuration name and current, pending, and future versions
+	configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
+	index("configuration", configuration)
+	index(FieldConfigurationCurrent, a.ConfigurationStatus.Current)
+	index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
+	index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
+
+	switch a.Status {
+	case Deleted, Disconnected:
+		// do nothing
+	case Error:
+		index(FieldRolloutError, a.ConfigurationStatus.Pending)
+	default:
+		// removing this from the index in the case of an error allows the
+		// user to find the agents when moving them back to their original config
+		configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
+		index("configuration", configuration)
+		index(FieldRolloutPending, a.ConfigurationStatus.Pending)
+	}
+	index(FieldRolloutComplete, a.ConfigurationStatus.Current)
+	index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 }
 
 // IndexLabels returns a map of label name to label value to be stored in the index
-func (a *Agent) IndexLabels(index search.Indexer) {
+func (a *Agent) IndexLabels(index modelSearch.Indexer) {
 	for n, v := range a.Labels.Set {
 		index(n, v)
 	}
@@ -410,7 +594,7 @@ func (a *Agent) PrintableKindPlural() string {
 
 // PrintableFieldTitles returns the list of field titles, used for printing a table of resources
 func (a *Agent) PrintableFieldTitles() []string {
-	return []string{"ID", "Name", "Version", "Status", "Connected", "Disconnected", "Labels"}
+	return []string{"ID", "Name", "Version", "Status", "Configuration", "Connected", "Disconnected", "Labels"}
 }
 
 // PrintableFieldValue returns the field value for a title, used for printing a table of resources
@@ -430,6 +614,17 @@ func (a *Agent) PrintableFieldValue(title string) string {
 		return a.DisconnectedDurationDisplayText()
 	case "Labels":
 		return a.Labels.Custom().String()
+	case "Configuration":
+		if a.ConfigurationStatus.Current != "" {
+			return a.ConfigurationStatus.Current
+		}
+		return "-"
+	case "Current":
+		return a.ConfigurationStatus.Current
+	case "Pending":
+		return a.ConfigurationStatus.Pending
+	case "Future":
+		return a.ConfigurationStatus.Future
 	}
 	return ""
 }

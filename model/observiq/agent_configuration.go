@@ -17,6 +17,9 @@ package observiq
 
 import (
 	"crypto/sha256"
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/mitchellh/mapstructure"
@@ -42,11 +45,41 @@ type AgentConfiguration struct {
 	Manager *ManagerConfig `mapstructure:"manager"`
 }
 
+// Value is used to translate to a JSONB field for postgres storage
+func (c AgentConfiguration) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+// Scan is used to translate from a JSONB field in postgres to AgentConfiguration
+func (c *AgentConfiguration) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return json.Unmarshal(b, &c)
+}
+
 // RawAgentConfiguration represents the raw configuration from the agent
 type RawAgentConfiguration struct {
 	Collector []byte
 	Logging   []byte
 	Manager   []byte
+}
+
+// Value is used to translate to a JSONB field for postgres storage
+func (raw RawAgentConfiguration) Value() (driver.Value, error) {
+	return json.Marshal(raw)
+}
+
+// Scan is used to translate from a JSONB field in postgres to AgentConfiguration
+func (raw *RawAgentConfiguration) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return json.Unmarshal(b, &raw)
 }
 
 // ManagerConfig is the unmarshaled contents of manager.yaml
@@ -82,6 +115,7 @@ func parseManagerConfig(bytes []byte) (*ManagerConfig, error) {
 // DecodeAgentConfiguration will map a generic interface{} to an AgentConfiguration
 func DecodeAgentConfiguration(configuration interface{}) (*AgentConfiguration, error) {
 	result := &AgentConfiguration{}
+
 	if err := mapstructure.Decode(configuration, result); err != nil {
 		return nil, err
 	}

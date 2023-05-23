@@ -1,4 +1,4 @@
-// Copyright  observIQ, Inc.
+// Copyright observIQ, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,161 +18,57 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
 	"strconv"
-
-	"github.com/google/uuid"
 )
 
-// Validate checks the runtime configuration for issues and returns all
-// errors, if any.
-func (c *Config) Validate() (errGroup error) {
-	// Validate server config
-	if err := c.Server.validate(); err != nil {
-		errGroup = errors.Join(errGroup, err)
-	}
+/** This file contains validation logic that is shared across various config types**/
 
-	// Validate client config
-	if err := c.Client.validate(); err != nil {
-		errGroup = errors.Join(errGroup, err)
-	}
+const (
+	minPort = 1
+	maxPort = 65535
+)
 
-	return errGroup
-}
+// list of valid schemes for different protocols
+var (
+	// ValidHTTPSchemes are the valid http schemes to be used with ValidateURL function
+	ValidHTTPSchemes = []string{"http", "https"}
 
-func (s *Server) validate() (errGroup error) {
-	if err := validateUUID(s.SecretKey); err != nil {
-		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate secret key: %w", err))
-	}
+	// ValidWSSchemes are the valid websocket schemes to be used with ValidateURL function
+	ValidWSSchemes = []string{"ws", "wss"}
+)
 
-	if err := validateURL(s.RemoteURL, []string{"ws", "wss"}); err != nil {
-		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate remote address %s: %w", s.RemoteURL, err))
-	}
-
-	if err := s.Common.validate(); err != nil {
-		errGroup = errors.Join(errGroup, err)
-	}
-
-	return errGroup
-}
-
-func (c *Client) validate() (errGroup error) {
-	return c.Common.validate()
-}
-
-func (c *Common) validate() (errGroup error) {
-	if c.BindPlaneHomePath() != "" {
-		if _, err := os.Stat(c.BindPlaneHomePath()); err != nil {
-			errGroup = errors.Join(errGroup, fmt.Errorf("failed to lookup directory %s: %w", c.BindPlaneHomePath(), err))
-		}
-	}
-
-	if err := validPort(c.Port); err != nil {
-		errGroup = errors.Join(errGroup, err)
-	}
-
-	if err := validateURL(c.ServerURL, []string{"http", "https"}); err != nil {
-		errGroup = errors.Join(errGroup, fmt.Errorf("failed to validate server address %s: %w", c.ServerURL, err))
-	}
-
-	if err := c.validateTLSConfig(); err != nil {
-		errGroup = errors.Join(errGroup, err)
-	}
-
-	return errGroup
-}
-
-func (c *Common) validateTLSConfig() error {
-	if c.Certificate != "" && c.PrivateKey == "" {
-		return errors.New("tls private key must be set when tls certificate is set")
-	}
-
-	if c.Certificate == "" && c.PrivateKey != "" {
-		return errors.New("tls certificate must be set when tls private key is set")
-	}
-
-	caCerts := len(c.CertificateAuthority)
-	if caCerts > 0 && c.Certificate == "" || caCerts > 0 && c.PrivateKey == "" {
-		return errors.New("tls certificate and private key must be set when tls certificate authority is set")
-	}
-
-	if c.Certificate != "" {
-		if _, err := os.Stat(c.Certificate); err != nil {
-			return fmt.Errorf("failed to lookup tls certificate file %s: %w", c.Certificate, err)
-		}
-	}
-
-	if c.PrivateKey != "" {
-		if _, err := os.Stat(c.PrivateKey); err != nil {
-			return fmt.Errorf("failed to lookup tls private key file %s: %w", c.PrivateKey, err)
-		}
-	}
-
-	if len(c.CertificateAuthority) > 0 {
-		for _, ca := range c.CertificateAuthority {
-			if _, err := os.Stat(ca); err != nil {
-				return fmt.Errorf("failed to lookup tls certificate authority file %s: %w", ca, err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func validPort(port string) error {
-	if port == "" {
-		return nil
-	}
-
+// ValidatePort validates the port
+func ValidatePort(port string) error {
 	p, err := strconv.Atoi(port)
 	if err != nil {
-		return fmt.Errorf("failed to convert port %s to an int", port)
+		return errors.New("port must be an integer")
 	}
 
-	const min int = 1
-	const max int = 65535
-	if p < min || p > max {
-		return fmt.Errorf("port must be between %d and %d", min, max)
+	if p < minPort || p > maxPort {
+		return fmt.Errorf("port must be between %d and %d", minPort, maxPort)
 	}
 
 	return nil
 }
 
-// validateURL returns an error if the given url fails to parse or
-// if the given url's scheme is not found in the given schemes slice.
-func validateURL(urlString string, schemes []string) error {
-	if urlString == "" {
-		return nil
-	}
-
+// ValidateURL validates the URL and ensures the scheme matches one of the valid schemes in the list
+func ValidateURL(urlString string, validSchemes []string) error {
 	u, err := url.Parse(urlString)
 	if err != nil {
 		return fmt.Errorf("failed to parse url %s: %w", urlString, err)
 	}
 
-	if u.Scheme == "" {
-		return fmt.Errorf("scheme is not set: valid schemes are %v", schemes)
-	}
-
-	valid := false
-	for _, scheme := range schemes {
-		if u.Scheme == scheme {
-			valid = true
-			break
-		}
-	}
-	if !valid {
-		return fmt.Errorf("scheme %s is invalid: valid schemes are %v", u.Scheme, schemes)
-	}
-
-	return nil
-}
-
-func validateUUID(uuidString string) error {
-	if uuidString == "" {
+	// If no schemes specified then return early
+	if len(validSchemes) == 0 {
 		return nil
 	}
 
-	_, err := uuid.Parse(uuidString)
-	return err
+	for _, scheme := range validSchemes {
+		// Return early if we found the scheme
+		if u.Scheme == scheme {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("scheme '%s' is invalid: valid schemes are %v", u.Scheme, validSchemes)
 }

@@ -1,8 +1,8 @@
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import ReactFlow, {
   Controls,
   useReactFlow,
-  useStore,
+  useStoreApi,
 } from "react-flow-renderer";
 import SourceNode from "./Nodes/SourceNode";
 import DestinationNode from "./Nodes/DestinationNode";
@@ -15,38 +15,15 @@ import {
   updateMetricData,
 } from "../../utils/graph/utils";
 import { ProcessorNode } from "./Nodes/ProcessorNode";
-import { gql } from "@apollo/client";
-import { useConfigurationMetricsSubscription } from "../../graphql/generated";
+import { ConfigurationMetricsSubscription } from "../../graphql/generated";
 import OverviewEdge from "../../pages/overview/OverviewEdge";
 import ConfigurationEdge from "./Nodes/ConfigurationEdge";
-import { MinimumRequiredConfig } from "./PipelineGraph";
-import { useConfigurationPage } from "../../pages/configurations/configuration/ConfigurationPageContext";
 import { DummyProcessorNode } from "./Nodes/DummyProcessorNode";
+import { CircularProgress, Stack } from "@mui/material";
 import { usePipelineGraph } from "./PipelineGraphContext";
-import { GraphGradient } from "../GraphComponents";
+import { MinimumRequiredConfig } from "./PipelineGraph";
 
-import globals from "../../styles/global.module.scss";
-
-gql`
-  subscription ConfigurationMetrics(
-    $period: String!
-    $name: String!
-    $agent: String
-  ) {
-    configurationMetrics(period: $period, name: $name, agent: $agent) {
-      metrics {
-        name
-        nodeID
-        pipelineType
-        value
-        unit
-      }
-      maxMetricValue
-      maxLogValue
-      maxTraceValue
-    }
-  }
-`;
+import styles from "./pipeline-graph.module.scss";
 
 const nodeTypes = {
   sourceNode: SourceNode,
@@ -66,83 +43,125 @@ export const TARGET_OFFSET_MULTIPLIER = 250;
 interface ConfigurationFlowProps {
   period: string;
   selectedTelemetry: string;
-  configuration: MinimumRequiredConfig;
-  refetchConfiguration: () => void;
-  agent: string;
+  page: Page.Agent | Page.Configuration;
+  loading?: boolean;
+  measurementData?: ConfigurationMetricsSubscription;
 }
 
+/**
+ * ConfigurationFlow renders the PipelineGraph for a configuration
+ * @param period the period on which to query for metrics
+ * @param selectedTelemetry the telemetry type on which to query for metrics
+ * @param page either the agent page or configuration page, used to determine edit buttons
+ * @param loading whether the graph is loading, will show a loading spinner if true
+ * @param measurementData optional data from the ConfigurationMetrics subscription
+ * @returns
+ */
 export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
   period,
   selectedTelemetry,
-  configuration,
-  refetchConfiguration,
-  agent,
+  page,
+  loading,
+  measurementData,
 }) => {
   const reactFlowInstance = useReactFlow();
-  const { setMaxValues } = usePipelineGraph();
-
-  const { setAddSourceDialogOpen, setAddDestDialogOpen } =
-    useConfigurationPage();
-
-  const { nodes, edges } = getNodesAndEdges(
-    Page.Configuration,
-    configuration?.graph!,
-    TARGET_OFFSET_MULTIPLIER,
+  const {
+    readOnlyGraph,
     configuration,
     refetchConfiguration,
-    setAddSourceDialogOpen,
-    setAddDestDialogOpen,
-    agent === "" ? true : false
-  );
+    setAddDestinationOpen,
+    setAddSourceOpen,
+  } = usePipelineGraph();
 
-  const { data } = useConfigurationMetricsSubscription({
-    variables: {
-      period,
-      name: configuration?.metadata?.name || "",
-      agent: agent,
-    },
-    onData({ data }) {
-      if (data.data?.configurationMetrics) {
-        setMaxValues({
-          maxMetricValue: data.data.configurationMetrics.maxMetricValue,
-          maxLogValue: data.data.configurationMetrics.maxLogValue,
-          maxTraceValue: data.data.configurationMetrics.maxTraceValue,
-        });
-      }
-    },
-  });
+  const { getState } = useStoreApi();
+  const { width, height } = getState();
 
-  updateMetricData(
-    Page.Configuration,
-    nodes,
-    edges,
-    data?.configurationMetrics.metrics ?? [],
+  const viewPortHeight = getViewPortHeight(configuration);
+
+  const { nodes, edges } = useMemo(() => {
+    if (configuration?.graph == null) {
+      return {
+        nodes: [],
+        edges: [],
+      };
+    }
+
+    const { nodes, edges } = getNodesAndEdges(
+      page,
+      configuration.graph,
+      TARGET_OFFSET_MULTIPLIER,
+      configuration,
+      refetchConfiguration,
+      setAddSourceOpen,
+      setAddDestinationOpen,
+      Boolean(readOnlyGraph)
+    );
+
+    if (measurementData) {
+      updateMetricData(
+        Page.Configuration,
+        nodes,
+        edges,
+        measurementData.configurationMetrics.metrics,
+        period,
+        selectedTelemetry
+      );
+    }
+
+    return {
+      nodes: nodes,
+      edges: edges,
+    };
+  }, [
+    page,
+    configuration,
+    measurementData,
     period,
-    selectedTelemetry
-  );
+    readOnlyGraph,
+    refetchConfiguration,
+    selectedTelemetry,
+    setAddDestinationOpen,
+    setAddSourceOpen,
+  ]);
 
-  const viewPortHeight =
-    GRAPH_PADDING +
-    Math.max(
-      configuration?.graph?.sources?.length || 0,
-      configuration?.graph?.targets?.length || 0
-    ) *
-      GRAPH_NODE_OFFSET;
-  const onNodesChange = useCallback(() => {
-    reactFlowInstance.fitView();
+  useEffect(() => {
+    // Fit the view to the graph when the window is resized
+    const fitView = function () {
+      reactFlowInstance.fitView();
+    };
+
+    window.addEventListener("resize", fitView);
+
+    return () => window.removeEventListener("resize", fitView);
   }, [reactFlowInstance]);
 
-  const reactFlowWidth = useStore((state: { width: any }) => state.width);
-  const reactFlowHeight = useStore((state: { height: any }) => state.height);
-  const reactFlowNodeCount = useStore(
-    (state: { nodeInternals: any }) =>
-      Array.from(state.nodeInternals.values()).length || 0
-  );
   useEffect(() => {
-    setTimeout(() => {
-      reactFlowInstance.fitView();
-    }, 0);
-  }, [reactFlowWidth, reactFlowHeight, reactFlowNodeCount, reactFlowInstance]);
+    // Refit the view when our nodes have changed, i.e. one is deleted.
+    // By placing this in a setTimeout with delay 0 we
+    // ensure this is called on the next event cycle, not right away.
+    setTimeout(() => reactFlowInstance.fitView(), 0);
+  }, [nodes, reactFlowInstance]);
+
+  useEffect(() => {
+    // Refit the view window when the bounds of the react flow have changed.
+    setTimeout(() => reactFlowInstance.fitView(), 0);
+  }, [height, width, reactFlowInstance]);
+
+  if (loading) {
+    return (
+      <div style={{ height: viewPortHeight, width: "100%" }}>
+        <Stack
+          className={styles.grey}
+          width="100%"
+          height="100%"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <CircularProgress />
+        </Stack>
+      </div>
+    );
+  }
 
   return (
     <div style={{ height: viewPortHeight, width: "100%" }}>
@@ -151,6 +170,9 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
         defaultEdges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        // Called by a react flow node when entering the viewport,
+        // use to refit when we add a destination or source.
+        onNodesChange={() => reactFlowInstance.fitView()}
         proOptions={{ account: "paid-pro", hideAttribution: true }}
         nodesConnectable={false}
         nodesDraggable={false}
@@ -160,16 +182,21 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
         panOnDrag={true}
         minZoom={0.1}
         preventScrolling={false}
-        // This callback only fires when a node is deleted in the graph (ie select node and press the delete button)
-        // Need to figure out how to update after node is deleted from the App
-        // This callback *does* fire when a Node is added in the App (?)
-        onNodesChange={onNodesChange}
-        className={globals["graph"]}
+        className={styles.grey}
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>
-
-      <GraphGradient />
     </div>
   );
 };
+
+function getViewPortHeight(configuration: MinimumRequiredConfig) {
+  return (
+    GRAPH_PADDING +
+    Math.max(
+      configuration?.graph?.sources?.length || 0,
+      configuration?.graph?.targets?.length || 0
+    ) *
+      GRAPH_NODE_OFFSET
+  );
+}

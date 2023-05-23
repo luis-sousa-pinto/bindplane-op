@@ -33,9 +33,10 @@ gql`
     destinationType(name: $name) {
       metadata {
         id
+        name
+        version
         displayName
         icon
-        name
       }
     }
   }
@@ -46,9 +47,10 @@ gql`
     sourceType(name: $name) {
       metadata {
         id
+        name
+        version
         displayName
         icon
-        name
       }
     }
   }

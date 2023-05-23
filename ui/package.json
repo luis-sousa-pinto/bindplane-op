@@ -109,6 +109,7 @@
     "nock": "^13.3.0",
     "react": "^17.0.2",
     "react-scripts": "^5.0.1",
+    "react-diff-viewer-continued": "^3.2.5",
     "sass": "^1.58.3",
     "source-map-explorer": "^2.5.2",
     "storybook": "^7.0.2",

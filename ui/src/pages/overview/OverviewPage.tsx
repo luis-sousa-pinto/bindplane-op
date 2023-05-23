@@ -1,7 +1,6 @@
 import { Box, Button, Card, Grid, Tooltip } from "@mui/material";
 import { ReactFlowProvider } from "react-flow-renderer";
 import { withNavBar } from "../../components/NavBar";
-
 import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable";
 import { withRequireLogin } from "../../contexts/RequireLogin";
 import {
@@ -21,8 +20,8 @@ import { DestinationsTableField } from "../../components/Tables/DestinationsTabl
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageContent } from "../destinations/DestinationsPage";
 import { useCallback, useEffect } from "react";
+import colors from "../../styles/colors";
 
-import global from "../../styles/global.module.scss";
 import mixins from "../../styles/mixins.module.scss";
 
 gql`
@@ -31,6 +30,7 @@ gql`
       kind
       metadata {
         id
+        version
         name
       }
       spec {
@@ -146,6 +146,7 @@ const OverviewPageContent: React.FC = () => {
           </Tooltip>
 
           <ConfigurationsTable
+            allowSelection
             selected={selectedConfigs}
             setSelected={setSelectedConfigs}
             enableDelete={false}
@@ -157,10 +158,10 @@ const OverviewPageContent: React.FC = () => {
       </Grid>
       <Grid item md={true} lg={true}>
         <Card
-          className={global["graph"]}
           style={{
             height: "calc(100vh - 120px)",
             width: "100%",
+            backgroundColor: colors.backgroundGrey,
           }}
         >
           <MeasurementControlBar
@@ -211,7 +212,7 @@ const OverviewPageContent: React.FC = () => {
 };
 
 export const OverviewPage: React.FC = withRequireLogin(
-  withNavBar((props) => {
+  withNavBar(() => {
     return (
       <OverviewPageProvider>
         <OverviewPageContent />

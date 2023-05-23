@@ -16,6 +16,7 @@ const MetricsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
   value,
   onValueChange,
   definition,
+  readOnly,
 }) => {
   // Get the columns
   const column1 = useMemo(() => {
@@ -70,6 +71,7 @@ const MetricsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
       <Grid container spacing={10}>
         {[column1, column2].map((c, ix) => (
           <CategoryStack
+            readOnly={readOnly}
             key={`${definition.name}-column-${ix}`}
             handleToggle={handleToggleValue}
             metricCategories={c}
@@ -86,6 +88,7 @@ const MetricsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
 const CategoryStack: React.FC<{
   metricCategories: MetricCategory[];
   value: string[];
+  readOnly?: boolean;
   handleToggle: (toggleValue: string) => void;
   handleDeselectAll: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -98,6 +101,7 @@ const CategoryStack: React.FC<{
 }> = ({
   metricCategories,
   value,
+  readOnly,
   handleToggle,
   handleSelectAll,
   handleDeselectAll,
@@ -118,21 +122,23 @@ const CategoryStack: React.FC<{
                   {category.label}
                 </Typography>
 
-                <div>
-                  <button
-                    className={styles["metric-category-button"]}
-                    onClick={(e) => handleDeselectAll(e, allValues)}
-                  >
-                    Disable All
-                  </button>
-                  |
-                  <button
-                    className={styles["metric-category-button"]}
-                    onClick={(e) => handleSelectAll(e, allValues)}
-                  >
-                    Enable All
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div>
+                    <button
+                      className={styles["metric-category-button"]}
+                      onClick={(e) => handleDeselectAll(e, allValues)}
+                    >
+                      Disable All
+                    </button>
+                    |
+                    <button
+                      className={styles["metric-category-button"]}
+                      onClick={(e) => handleSelectAll(e, allValues)}
+                    >
+                      Enable All
+                    </button>
+                  </div>
+                )}
               </Stack>
             </div>
             <Stack marginBottom={2}>
@@ -147,6 +153,7 @@ const CategoryStack: React.FC<{
                         }}
                         name={m.name}
                         checked={!value.includes(m.name)}
+                        disabled={readOnly}
                       />
                     }
                     classes={{ root: styles["metric-label"] }}

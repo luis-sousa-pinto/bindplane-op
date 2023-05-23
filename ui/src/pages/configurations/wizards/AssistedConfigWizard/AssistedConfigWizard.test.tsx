@@ -1,21 +1,22 @@
+import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import nock from "nock";
 import { SnackbarProvider } from "notistack";
 import { MemoryRouter } from "react-router-dom";
 import { AssistedConfigWizard } from ".";
 import {
-  SourceTypesQuery,
-  ParameterType,
-  DestinationsAndTypesQuery,
-  SourceTypesDocument,
   DestinationsAndTypesDocument,
+  DestinationsAndTypesQuery,
+  GetConfigNamesDocument,
+  ParameterType,
+  SourceTypesDocument,
+  SourceTypesQuery,
 } from "../../../../graphql/generated";
 import {
   APIVersion,
   Resource,
   UpdateStatus,
 } from "../../../../types/resources";
-import { MockedProvider, MockedResponse } from "@apollo/client/testing";
 
 const DEFAULT_PARAMETER_OPTIONS = {
   creatable: false,
@@ -39,6 +40,7 @@ const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {
     displayName: "Test Source",
     icon: "/path/to/icon",
     description: "",
+    version: 0,
   },
   spec: {
     __typename: "ResourceTypeSpec",
@@ -89,6 +91,7 @@ const dummyDestinationType: DestinationsAndTypesQuery["destinationTypes"][0] = {
     displayName: "Test Destination",
     icon: "/path/to/icon",
     description: "",
+    version: 0,
   },
   spec: {
     __typename: "ResourceTypeSpec",
@@ -152,6 +155,15 @@ const mocks: MockedResponse<Record<string, any>>[] = [
     },
     result: () => {
       return { data: destinationTypesQuery };
+    },
+  },
+  {
+    request: {
+      query: GetConfigNamesDocument,
+      variables: {},
+    },
+    result: () => {
+      return { data: { configurations: { configurations: [] } } };
     },
   },
 ];
@@ -442,6 +454,7 @@ describe("AssistedConfigWizard", () => {
       kind: "Destination",
       metadata: {
         id: "dest-name",
+        version: 0,
         name: "dest-name",
       },
       spec: {

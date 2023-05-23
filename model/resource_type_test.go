@@ -162,10 +162,7 @@ func TestTelemetryTypes(t *testing.T) {
 }
 
 func TestResourceType_templateFuncHasMetricsEnabled(t *testing.T) {
-	type fields struct {
-		ResourceMeta ResourceMeta
-		Spec         ResourceTypeSpec
-	}
+
 	type args struct {
 		parameterValue []any
 		parameterName  string

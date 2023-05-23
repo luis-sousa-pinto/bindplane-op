@@ -16,17 +16,20 @@
 set -e
 
 cat <<EOF | sudo tee /etc/bindplane/config.yaml
-host: 127.0.0.1
-port: "3001"
-serverURL: http://127.0.0.1:3001
-username: admin
-password: admin
-logFilePath: /var/log/bindplane/bindplane.log
-server:
-    storageFilePath: /var/lib/bindplane/storage/bindplane.db
+apiVersion: bindplane.observiq.com/v1
+network:
+    host: 127.0.0.1
+    port: "3001"
+auth:
+    username: admin
+    password: admin
     secretKey: $(uuidgen)
-    remoteURL: ws://127.0.0.1:3001
-    downloadsFolderPath: /var/lib/bindplane/downloads
-    sessionsSecret: $(uuidgen)
-    serverURL: http://127.0.0.1:3001
+    sessionSecret: $(uuidgen)
+store:
+    type: bbolt
+    bbolt:
+        path: /var/lib/bindplane/storage/bindplane.db
+logging:
+    output: file
+    filePath: /var/log/bindplane/bindplane.log
 EOF

@@ -29,6 +29,7 @@ gql`
         metadata {
           id
           name
+          version
           labels
         }
       }
@@ -57,7 +58,8 @@ export const InstallPageContent: React.FC = () => {
   const { data } = useGetConfigurationNamesQuery();
 
   // Don't show the command if the platform is k8s and no config is selected
-  const shouldShowCommand = !platformIsContainer(platform) || selectedConfig !== "";
+  const shouldShowCommand =
+    !platformIsContainer(platform) || selectedConfig !== "";
 
   useEffect(() => {
     if (data) {
@@ -78,7 +80,7 @@ export const InstallPageContent: React.FC = () => {
       // If the platform is k8s, don't show the command until a config is selected
       if (platformIsContainer(platform) && selectedConfig === "") {
         setCommand("");
-        return
+        return;
       }
 
       const url = installCommandUrl({
@@ -121,34 +123,32 @@ export const InstallPageContent: React.FC = () => {
         />
       </Box>
 
-      {(platformIsKubernetes(platform) && shouldShowCommand) && (
+      {platformIsKubernetes(platform) && shouldShowCommand && (
         <Typography fontSize="18px" fontWeight="bold">
           To deploy the agent to Kubernetes:<br></br>
           <Typography fontSize="16px">
-          1. Copy the YAML below to a file<br></br>
-          2. Apply with kubectl: <code>kubectl apply -f &lt;filename&gt;</code>
+            1. Copy the YAML below to a file<br></br>
+            2. Apply with kubectl:{" "}
+            <code>kubectl apply -f &lt;filename&gt;</code>
           </Typography>
           <br></br>
         </Typography>
       )}
 
-      {(platformIsOpenShift(platform) && shouldShowCommand) && (
+      {platformIsOpenShift(platform) && shouldShowCommand && (
         <Typography fontSize="18px" fontWeight="bold">
           To deploy the agent to OpenShift:<br></br>
           <Typography fontSize="16px">
-          1. Copy the YAML below to a file<br></br>
-          2. Apply with oc: <code>oc apply -f &lt;filename&gt;</code>
+            1. Copy the YAML below to a file<br></br>
+            2. Apply with oc: <code>oc apply -f &lt;filename&gt;</code>
           </Typography>
           <br></br>
         </Typography>
       )}
-      {shouldShowCommand && (
-        <CodeBlock value={installCommand} />
-      )}
+      {shouldShowCommand && <CodeBlock value={installCommand} />}
     </CardContainer>
   );
 };
-
 
 interface configurationSelectProps {
   platform: string;
@@ -173,19 +173,19 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
   setSelectedConfig,
 }: configurationSelectProps) => {
   const configRequired = platformIsContainer(platform);
-  const label = configRequired ? "Select Configuration" : "Select Configuration (optional)";
+  const label = configRequired
+    ? "Select Configuration"
+    : "Select Configuration (optional)";
 
   return (
     <>
       {(configs.length > 0 || configRequired) && (
         <>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="config-label">
-              {label}
-            </InputLabel>
+            <InputLabel id="config-label">{label}</InputLabel>
 
             <Select
-              inputProps={{"data-testid": "config-select"}}
+              inputProps={{ "data-testid": "config-select" }}
               labelId="config-label"
               id="configuration"
               label={label}
@@ -194,7 +194,11 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
               }}
               value={selectedConfig}
             >
-              {!configRequired && <MenuItem value=""><em>None</em></MenuItem>}
+              {!configRequired && (
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+              )}
               {configs.map((c) => (
                 <MenuItem key={c} value={c} data-testid={`config-${c}`}>
                   {c}
@@ -206,7 +210,7 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
       )}
     </>
   );
-}
+};
 
 function installCommandUrl(params: {
   platform: string;
@@ -233,17 +237,25 @@ function filterConfigurationsByPlatform(
 ): GetConfigurationNamesQuery["configurations"]["configurations"] {
   switch (platform) {
     case Platform.KubernetesDaemonset:
-      return configs.filter((c) => c.metadata.labels?.platform === Platform.KubernetesDaemonset);
+      return configs.filter(
+        (c) => c.metadata.labels?.platform === Platform.KubernetesDaemonset
+      );
     case Platform.KubernetesDeployment:
-      return configs.filter((c) => c.metadata.labels?.platform === Platform.KubernetesDeployment);
+      return configs.filter(
+        (c) => c.metadata.labels?.platform === Platform.KubernetesDeployment
+      );
     case Platform.Linux:
       return configs.filter((c) => c.metadata.labels?.platform === "linux");
     case Platform.macOS:
       return configs.filter((c) => c.metadata.labels?.platform === "macos");
     case Platform.OpenShiftDaemonset:
-      return configs.filter((c) => c.metadata.labels?.platform === Platform.OpenShiftDaemonset);
+      return configs.filter(
+        (c) => c.metadata.labels?.platform === Platform.OpenShiftDaemonset
+      );
     case Platform.OpenShiftDeployment:
-      return configs.filter((c) => c.metadata.labels?.platform === Platform.OpenShiftDeployment);
+      return configs.filter(
+        (c) => c.metadata.labels?.platform === Platform.OpenShiftDeployment
+      );
     case Platform.Windows:
       return configs.filter((c) => c.metadata.labels?.platform === "windows");
     default:
@@ -256,7 +268,10 @@ function filterConfigurationsByPlatform(
  * @param platform Reported platform
  */
 export function platformIsKubernetes(platform: string): boolean {
-  return platform === Platform.KubernetesDaemonset || platform === Platform.KubernetesDeployment;
+  return (
+    platform === Platform.KubernetesDaemonset ||
+    platform === Platform.KubernetesDeployment
+  );
 }
 
 /**
@@ -264,7 +279,10 @@ export function platformIsKubernetes(platform: string): boolean {
  * @param platform Reported platform
  */
 export function platformIsOpenShift(platform: string): boolean {
-  return platform === Platform.OpenShiftDaemonset || platform === Platform.OpenShiftDeployment;
+  return (
+    platform === Platform.OpenShiftDaemonset ||
+    platform === Platform.OpenShiftDeployment
+  );
 }
 
 /**

@@ -26,9 +26,8 @@ import {
 import { OverviewDestinationNode, ConfigurationNode } from "./nodes";
 import OverviewEdge from "./OverviewEdge";
 import { useOverviewPage } from "./OverviewPageContext";
+import colors from "../../styles/colors";
 import { GraphGradient } from "../../components/GraphComponents";
-
-import global from "../../styles/global.module.scss";
 
 gql`
   query getOverviewPage(
@@ -117,7 +116,6 @@ export const OverviewGraph: React.FC = () => {
     selectedDestinations,
     setMaxValues,
   } = useOverviewPage();
-
   const { enqueueSnackbar } = useSnackbar();
   const reactFlowInstance = useReactFlow();
   const navigate = useNavigate();
@@ -217,7 +215,7 @@ export const OverviewGraph: React.FC = () => {
     () => {},
     () => {},
     () => {},
-    false
+    true
   );
   updateMetricData(
     Page.Overview,
@@ -248,7 +246,7 @@ export const OverviewGraph: React.FC = () => {
           window.scrollBy(event.deltaX, event.deltaY);
         }}
         onNodesChange={onNodesChange}
-        className={global["graph"]}
+        style={{ backgroundColor: colors.backgroundGrey }}
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>

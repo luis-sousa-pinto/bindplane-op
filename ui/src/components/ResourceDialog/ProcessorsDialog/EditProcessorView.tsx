@@ -9,6 +9,7 @@ import {
 interface EditProcessorViewProps {
   processors: ResourceConfiguration[];
   editingIndex: number;
+  readOnly?: boolean;
   onEditProcessorSave: (values: FormValues) => void;
   onBack: () => void;
   onRemove: (removeIndex: number) => void;
@@ -17,6 +18,7 @@ interface EditProcessorViewProps {
 export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
   processors,
   editingIndex,
+  readOnly,
   onEditProcessorSave,
   onBack,
   onRemove,
@@ -52,6 +54,7 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         saveButtonLabel="Done"
         onBack={onBack}
         onDelete={() => onRemove(editingIndex)}
+        readOnly={readOnly}
       />
     </>
   );

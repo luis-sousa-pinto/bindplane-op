@@ -1,10 +1,11 @@
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { ResourceConfiguration } from "../../../graphql/generated";
 import { PlusCircleIcon } from "../../Icons";
 import { InlineProcessorLabel } from "./InlineProcessorLabel";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useCallback, useState } from "react";
+import { ViewOnlyProcessorLabel } from "./ViewOnlyProcessorLabel";
 
 import mixins from "../../../styles/mixins.module.scss";
 
@@ -13,6 +14,7 @@ interface Props {
   onAddProcessor: () => void;
   onEditProcessor: (index: number) => void;
   onProcessorsChange: (ps: ResourceConfiguration[]) => void;
+  disableEdit?: boolean;
 }
 
 export const InlineProcessorContainer: React.FC<Props> = ({
@@ -20,6 +22,7 @@ export const InlineProcessorContainer: React.FC<Props> = ({
   onProcessorsChange,
   onAddProcessor,
   onEditProcessor,
+  disableEdit = false,
 }) => {
   // manage state internally
   const [processors, setProcessors] = useState(processorsProp);
@@ -51,8 +54,25 @@ export const InlineProcessorContainer: React.FC<Props> = ({
   return (
     <>
       <DndProvider backend={HTML5Backend}>
+        {disableEdit && processors.length === 0 && (
+          <Stack
+            justifyContent="center"
+            alignItems="center"
+            width="100%"
+            marginBottom={2}
+          >
+            <Typography>No processors</Typography>
+          </Stack>
+        )}
         {processors.map((p, ix) => {
-          return (
+          return disableEdit ? (
+            <ViewOnlyProcessorLabel
+              key={`${p.name}-${ix}`}
+              index={ix}
+              processor={p}
+              onEdit={() => onEditProcessor(ix)}
+            />
+          ) : (
             <InlineProcessorLabel
               moveProcessor={moveProcessor}
               key={`${p.name}-${ix}`}
@@ -63,16 +83,18 @@ export const InlineProcessorContainer: React.FC<Props> = ({
             />
           );
         })}
-        <Stack alignItems="center">
-          <Button
-            variant="text"
-            startIcon={<PlusCircleIcon />}
-            classes={{ root: mixins["mb-2"] }}
-            onClick={onAddProcessor}
-          >
-            Add processor
-          </Button>
-        </Stack>
+        {!disableEdit && (
+          <Stack alignItems="center">
+            <Button
+              variant="text"
+              startIcon={<PlusCircleIcon />}
+              classes={{ root: mixins["mb-2"] }}
+              onClick={onAddProcessor}
+            >
+              Add processor
+            </Button>
+          </Stack>
+        )}
       </DndProvider>
     </>
   );

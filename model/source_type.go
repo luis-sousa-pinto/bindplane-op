@@ -14,6 +14,12 @@
 
 package model
 
+import "github.com/observiq/bindplane-op/model/version"
+
+type sourceTypeKind struct{}
+
+func (k *sourceTypeKind) NewEmptyResource() *SourceType { return &SourceType{} }
+
 // SourceType is a ResourceType used to define sources
 type SourceType struct {
 	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
@@ -29,10 +35,10 @@ func NewSourceType(name string, parameters []ParameterDefinition, supportedPlatf
 
 // NewSourceTypeWithSpec creates a new source-type with the specified name and spec.
 func NewSourceTypeWithSpec(name string, spec ResourceTypeSpec) *SourceType {
-	return &SourceType{
+	st := &SourceType{
 		ResourceType: ResourceType{
 			ResourceMeta: ResourceMeta{
-				APIVersion: V1,
+				APIVersion: version.V1,
 				Kind:       KindSourceType,
 				Metadata: Metadata{
 					Name: name,
@@ -41,6 +47,8 @@ func NewSourceTypeWithSpec(name string, spec ResourceTypeSpec) *SourceType {
 			Spec: spec,
 		},
 	}
+	st.EnsureMetadata(spec)
+	return st
 }
 
 // GetKind returns "SourceType"

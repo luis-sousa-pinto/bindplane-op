@@ -5,6 +5,8 @@
 *.so
 *.dylib
 
+
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -64,3 +66,6 @@ gha-creds-*.json
 
 # debugging
 __debug_bin
+
+# Don't ignore TLS test files
+!**/testdata/tls/*

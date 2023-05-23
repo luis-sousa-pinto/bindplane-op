@@ -1,0 +1,12 @@
+@use '../../styles/colors';
+
+.button {
+  width: 140px;
+
+  border: 1px solid colors.$bahama-blue;
+  color: colors.$bahama-blue;
+  background-color: colors.$white;
+  &:hover {
+    background-color: colors.$white;
+  }
+}

@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "react-flow-renderer";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
-import { InlineDestinationCard } from "../../Cards/InlineDestinationCard";
 import { ResourceDestinationCard } from "../../Cards/ResourceDestinationCard";
 import { usePipelineGraph } from "../PipelineGraphContext";
 import { isNodeDisabled } from "./nodeUtils";
@@ -30,17 +29,12 @@ function DestinationNode(params: {
       }}
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
     >
-      {attributes.isInline ? (
-        <InlineDestinationCard destinationIndex={destinationIndex} key={id} />
-      ) : (
         <ResourceDestinationCard
           key={id}
           destinationIndex={destinationIndex}
-          enableProcessors
           name={attributes.resourceId}
           disabled={isDisabled || isNotInHoverSet}
         />
-      )}
       <CardMeasurementContent>{metric}</CardMeasurementContent>
       <Handle type="target" position={Position.Left} />
     </div>

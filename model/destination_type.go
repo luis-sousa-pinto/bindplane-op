@@ -14,24 +14,30 @@
 
 package model
 
+import "github.com/observiq/bindplane-op/model/version"
+
+type destinationTypeKind struct{}
+
+func (k *destinationTypeKind) NewEmptyResource() *DestinationType { return &DestinationType{} }
+
 // DestinationType is a ResourceType used to define destinations
 type DestinationType struct {
 	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
-// NewDestinationType creates a new sourtype with the specified name,
+// NewDestinationType creates a new destination-type with the specified name,
 func NewDestinationType(name string, parameters []ParameterDefinition) *DestinationType {
 	return NewDestinationTypeWithSpec(name, ResourceTypeSpec{
 		Parameters: parameters,
 	})
 }
 
-// NewDestinationTypeWithSpec creates a new sourtype with the specified name and spec.
+// NewDestinationTypeWithSpec creates a new destination-type with the specified name and spec.
 func NewDestinationTypeWithSpec(name string, spec ResourceTypeSpec) *DestinationType {
-	return &DestinationType{
+	dt := &DestinationType{
 		ResourceType: ResourceType{
 			ResourceMeta: ResourceMeta{
-				APIVersion: V1,
+				APIVersion: version.V1,
 				Kind:       KindDestinationType,
 				Metadata: Metadata{
 					Name: name,
@@ -40,6 +46,8 @@ func NewDestinationTypeWithSpec(name string, spec ResourceTypeSpec) *Destination
 			Spec: spec,
 		},
 	}
+	dt.EnsureMetadata(spec)
+	return dt
 }
 
 // GetKind returns "DestinationType"

@@ -1,0 +1,22 @@
+@use '../../styles/colors';
+
+.box {
+  min-width: 800px;
+
+  padding: 8px 24px;
+
+  margin: auto;
+  background-color: colors.$background-grey;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #c6c9cb;
+}
+
+.tabs {
+  margin-bottom: 8px;
+}
+
+.select {
+  background-color: colors.$white;
+
+  width: 150px;
+}
