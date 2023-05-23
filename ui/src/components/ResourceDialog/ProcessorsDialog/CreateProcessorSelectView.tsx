@@ -154,14 +154,25 @@ export const CreateProcessorSelectView: React.FC<CreateProcessorSelectViewProps>
                 <CircularProgress />
               </Box>
             )}
-            {Object.keys(categorizedProcessorTypes).map((k) => (
+            {Object.keys(categorizedProcessorTypes)
+              .sort((a, b) => a.localeCompare(b))
+              .filter((k) => k !== "Advanced")
+              .map((k) => (
+                <ProcessorCategory
+                  key={k}
+                  title={k}
+                  processors={categorizedProcessorTypes[k]}
+                  onSelect={onSelect}
+                />
+              ))}
+            {categorizedProcessorTypes["Advanced"] && (
               <ProcessorCategory
-                key={k}
-                title={k}
-                processors={categorizedProcessorTypes[k]}
+                key="Advanced"
+                title="Advanced"
+                processors={categorizedProcessorTypes["Advanced"]}
                 onSelect={onSelect}
               />
-            ))}
+            )}
           </ResourceTypeButtonContainer>
         </ContentSection>
         {onBack && <ActionsSection>{backButton} </ActionsSection>}
@@ -181,7 +192,6 @@ function processorTypesByCategory(processorTypes: ProcessorType[]): { [category:
     return acc;
   }, {});
 }
-
 
 interface ProcessorCategoryProps {
   title: string;
