@@ -287,7 +287,7 @@ func (c *Configuration) evalComponents(ctx context.Context, store ResourceStore,
 
 	for i, destination := range c.Spec.Destinations {
 		destination := destination // copy to local variable to securely pass a reference to a loop variable
-		destName, destParts := evalDestination(ctx, &destination, fmt.Sprintf("destination%d", i), store, rc, errorHandler)
+		destName, destParts := evalDestination(ctx, i, &destination, fmt.Sprintf("destination%d", i), store, rc, errorHandler)
 		destinations[destName] = destParts
 	}
 
@@ -342,14 +342,14 @@ func evalProcessor(ctx context.Context, processor *ResourceConfiguration, defaul
 	return prc.Name(), prcType.eval(prc, errorHandler)
 }
 
-func evalDestination(ctx context.Context, destination *ResourceConfiguration, defaultName string, store ResourceStore, rc *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
+func evalDestination(ctx context.Context, idx int, destination *ResourceConfiguration, defaultName string, store ResourceStore, rc *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
 	dest, destType, err := findDestinationAndType(ctx, destination, defaultName, store)
 	if err != nil {
 		errorHandler(err)
 		return "", nil
 	}
 
-	destName := dest.Name()
+	destName := fmt.Sprintf("%s-%d", dest.Name(), idx)
 	if dest.Spec.Disabled || destination.Disabled {
 		return destName, otel.NewPartials()
 	}
@@ -709,9 +709,9 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 	for i, destination := range c.Spec.Destinations {
 		// We don't use the name, because the same destination may be used multiple times.
 		// Using the index guarantees uniqueness.
-		destinationSlug := fmt.Sprintf("destination-%d", i)
 		destinationName := destination.localName(KindDestination, i)
-		usage := pipelineUsage.destinations.usage(destinationName)
+		destinationSlug := fmt.Sprintf("%s-%d", destinationName, i)
+		usage := pipelineUsage.destinations.usage(destinationSlug)
 
 		// For now only add one intermediate node for each
 		// destination which represents all the processors on the destination.
