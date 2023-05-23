@@ -12,7 +12,7 @@ driver:
     ssh-keys: <%= ENV['USER'] + ':' + IO.binread("#{Dir.home}/.ssh/id_rsa.pub").rstrip! %>
   project: <%= ENV['PROJECT'] %>
   region: us-east1
-  machine_type: e2-small
+  machine_type: n2-standard-2
   preemptible: true
   disks:
     disk0:
@@ -25,15 +25,13 @@ transport:
   username: <%= ENV['USER'] %>
   ssh_key: ~/.ssh/id_rsa
 
-provisioner:
-  name: shell
-  script:    'test/inspec/package/provision.sh'
-  root_path: '/tmp'
-  # copies repo to instance
-  data_path: "dist/kitchen/"
-
 verifier:
   name: inspec
+  inputs:
+    # Detects the snapshot version by trimming the `bindplane_` prefix
+    # and linux_amd64.deb suffix. Also replaces the first `-` with a `~`.
+    # bindplane_1.13.0-SNAPSHOT-f5e9f661_linux_amd64.deb --> 1.13.0~SNAPSHOT-f5e9f661
+    version: <%= `ls dist/kitchen | grep linux_amd64.deb | rev | cut -c17- | rev | cut -c11- | sed 's/-SNAP/~SNAP/g'` %>
 
 platforms:
   - name: centos-7
@@ -78,7 +76,36 @@ platforms:
       image_family: sles-15
 
 suites:
-  - name: default
+  # Test fresh install of BindPlane OP using the install script.
+  - name: install
+    provisioner:
+      name: shell
+      script: test/inspec/package/install/provision.sh
+      root_path: /tmp
+      data_path: dist/kitchen/
     verifier:
       inspec_tests:
-        - test/inspec/package/
+        - test/inspec/package/install
+  # Test upgrading BindPlane OP using the install script
+  # for initial install and package manager for upgrade.
+  - name: upgrade
+    provisioner:
+      name: shell
+      script: test/inspec/package/upgrade/provision.sh
+      root_path: /tmp
+      data_path: dist/kitchen/
+    verifier:
+      inspec_tests:
+        - test/inspec/package/install
+        - test/inspec/package/upgrade
+  # Test uninstall. Ensure database and config file
+  # are left behind.
+  - name: remove
+    provisioner:
+      name: shell
+      script: test/inspec/package/remove/provision.sh
+      root_path: /tmp
+      data_path: dist/kitchen/
+    verifier:
+      inspec_tests:
+        - test/inspec/package/remove

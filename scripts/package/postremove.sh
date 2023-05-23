@@ -26,41 +26,28 @@
 
 set -e
 
-# Install creates the bindplane user and group using the
-# name 'bindplane'. The bindplane user does not have a shell.
-# This function can be called more than once as it is idempotent.
-install() {
-    username="bindplane"
-
-    if getent group "$username" &>/dev/null; then
-        echo "Group ${username} already exists."
-    else
-        groupadd "$username"
-    fi
-
-    if id "$username" &>/dev/null; then
-        echo "User ${username} already exists"
-        exit 0
-    else
-        useradd --shell /sbin/nologin --system "$username" -g "$username"
-    fi
+# Remove deletes the bindplane systemd service file
+# and reloads systemd. If the file does not exist, return early.
+remove() {
+    rm -f /usr/lib/systemd/system/bindplane.service || return
+    systemctl daemon-reload
 }
 
-# Upgrade should perform the same steps as install
+# Upgrade performs a no-op and is included here for future use.
 upgrade() {
-    install
+    return
 }
 
 action="$1"
 
 case "$action" in
-  "0" | "install")
-    install
+  "0" | "remove")
+    remove
     ;;
   "1" | "upgrade")
     upgrade
     ;;
   *)
-    install
+    remove
     ;;
 esac

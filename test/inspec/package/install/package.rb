@@ -1,3 +1,15 @@
+version = input('version', value: '')
+
+describe package('bindplane') do
+    it { should be_installed }
+    if os.family == 'debian'
+      its('version') { should eq version }
+    else
+      # rpm packages have a `-1` appended to them
+      its('version') { should eq "#{version}-1" }
+    end
+end
+
 describe file('/usr/local/bin/bindplane') do
     its('mode') { should cmp '0755' }
     its('owner') { should eq 'root' }

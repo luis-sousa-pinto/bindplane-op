@@ -13,35 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Install handles systemd service management for debian and rhel based
+# platforms. This function can be called more than once as it is idempotent.
+install() {
+    systemctl daemon-reload
 
-# Exit if not systemd
-case $(ps --no-headers -o comm 1) in
-    systemd)
+    # Debian based platforms should enable and start the bindplane service.
+    if command -v dpkg >/dev/null; then
+        systemctl enable --now bindplane
+    fi
+}
+
+# Upgrade performs the same steps as install.
+upgrade() {
+    install
+}
+
+action="$1"
+
+case "$action" in
+  "0" | "install")
+    install
     ;;
-    *)
-        # The script should exit cleanly when systemd is not detected. This could
-        # be a container runtime or an alternative like upstart or openrc.
-        echo "Init system unknown, skipping systemd configuration."
-        exit 0
+  "1" | "upgrade")
+    upgrade
+    ;;
+  *)
+    install
     ;;
 esac
-
-reload_systemd() {
-    systemctl daemon-reload
-}
-
-# DEB platforms should enable and start the service by default while
-# RPM based platforms do not.
-deb_post_install() {
-    systemctl daemon-reload
-    systemctl enable bindplane
-    systemctl restart bindplane
-}
-
-# Main
-
-if command -v dpkg >/dev/null; then
-    deb_post_install
-fi
-
-reload_systemd

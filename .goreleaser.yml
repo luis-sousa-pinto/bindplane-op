@@ -130,6 +130,7 @@ nfpms:
       mode: 0640
   scripts:
     preremove: "./scripts/package/preremove.sh"
+    postremove: "./scripts/package/postremove.sh"
     preinstall: "./scripts/package/preinstall.sh"
     postinstall: ./scripts/package/postinstall.sh
 
