@@ -591,7 +591,7 @@ func evalDestination(ctx context.Context, idx int, destination *ResourceConfigur
 	partials := destType.eval(dest, errorHandler)
 
 	if rc.pipelineTypeUsage != nil {
-		rc.pipelineTypeUsage.sources.setSupported(destName, partials)
+		rc.pipelineTypeUsage.destinations.setSupported(destName, partials)
 	}
 
 	d0partials := otel.NewPartials()
@@ -1075,7 +1075,7 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		// We don't use the name, because the same destination may be used multiple times.
 		// Using the index guarantees uniqueness.
 		destinationName := destination.localName(KindDestination, i)
-		destinationSlug := fmt.Sprintf("%s-%d", destinationName, i)
+		destinationSlug := fmt.Sprintf("%s-%d", TrimVersion(destinationName), i)
 		usage := pipelineUsage.destinations.usage(destinationSlug)
 
 		trimmedName := TrimVersion(destination.Name)
