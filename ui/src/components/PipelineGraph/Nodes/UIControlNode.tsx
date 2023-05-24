@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { AddResourceCard } from "../../Cards/AddResourceCard";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { Button } from "@mui/material";
 import { PlusCircleIcon } from "../../Icons";
 

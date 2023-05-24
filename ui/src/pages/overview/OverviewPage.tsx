@@ -1,5 +1,5 @@
 import { Box, Button, Card, Grid, Tooltip } from "@mui/material";
-import { ReactFlowProvider } from "react-flow-renderer";
+import { ReactFlowProvider } from "reactflow";
 import { withNavBar } from "../../components/NavBar";
 import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable";
 import { withRequireLogin } from "../../contexts/RequireLogin";

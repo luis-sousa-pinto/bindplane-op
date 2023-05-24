@@ -21,6 +21,8 @@ import { LoginPage } from "./pages/login";
 import { OverviewPage } from "./pages/overview/OverviewPage";
 import { DestinationsPage } from "./pages/destinations/DestinationsPage";
 
+import "reactflow/dist/style.css";
+
 export const App: React.FC = () => {
   return (
     <StyledEngineProvider injectFirst>

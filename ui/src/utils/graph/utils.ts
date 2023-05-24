@@ -1,4 +1,4 @@
-import { Edge, Position, MarkerType, Node } from "react-flow-renderer";
+import { Edge, Position, MarkerType, Node } from "reactflow";
 import { TELEMETRY_SIZE_METRICS } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";

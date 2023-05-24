@@ -1,5 +1,5 @@
 import { Card, Paper } from "@mui/material";
-import { ReactFlowProvider } from "react-flow-renderer";
+import { ReactFlowProvider } from "reactflow";
 import { ShowPageConfig } from "../../pages/configurations/configuration";
 import { DEFAULT_PERIOD } from "../MeasurementControlBar/MeasurementControlBar";
 import { ConfigurationFlow } from "./ConfigurationFlow";

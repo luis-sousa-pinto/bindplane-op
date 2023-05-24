@@ -2,11 +2,7 @@ import { gql } from "@apollo/client";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
-import ReactFlow, {
-  Controls,
-  useReactFlow,
-  useStore,
-} from "react-flow-renderer";
+import ReactFlow, { Controls, useReactFlow, useStore } from "reactflow";
 import { useNavigate } from "react-router-dom";
 import {
   DEFAULT_OVERVIEW_GRAPH_PERIOD,

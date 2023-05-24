@@ -1,5 +1,5 @@
 import { isNumber } from "lodash";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
 import { ProcessorCard } from "../../Cards/ProcessorCard";
 import { MinimumRequiredConfig } from "../PipelineGraph";
@@ -27,7 +27,7 @@ export function ProcessorNode({
     processorCount = source?.processors?.length ?? 0;
   } else {
     if (typeof attributes["destinationIndex"] === "number") {
-      resourceIndex = attributes["destinationIndex"]
+      resourceIndex = attributes["destinationIndex"];
     }
 
     const destination = configuration?.spec?.destinations![resourceIndex];

@@ -1,4 +1,4 @@
-import { Edge, Node, Position } from "react-flow-renderer";
+import { Edge, Node, Position } from "reactflow";
 import { TARGET_OFFSET_MULTIPLIER } from "../../components/PipelineGraph/ConfigurationFlow";
 import { Graph, GraphMetric } from "../../graphql/generated";
 import {

@@ -1,9 +1,5 @@
 import { useEffect, useMemo } from "react";
-import ReactFlow, {
-  Controls,
-  useReactFlow,
-  useStoreApi,
-} from "react-flow-renderer";
+import ReactFlow, { Controls, useReactFlow, useStoreApi } from "reactflow";
 import SourceNode from "./Nodes/SourceNode";
 import DestinationNode from "./Nodes/DestinationNode";
 import UIControlNode from "./Nodes/UIControlNode";
@@ -183,6 +179,11 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
         minZoom={0.1}
         preventScrolling={false}
         className={styles.grey}
+        // This is a hack to hide the graph from the viewport until
+        // we have called a fitView on the reactFlowInstance.  This
+        // is to prevent the graph from appearing out of view on
+        // first load.
+        defaultViewport={{ x: 1000, y: 1000, zoom: 1 }}
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../../components/CardMeasurementContent/CardMeasurementContent";
 import { OverviewDestinationCard } from "../../../components/Cards/OverviewDestinationCard";
 import { DEFAULT_TELEMETRY_TYPE } from "../../../components/MeasurementControlBar/MeasurementControlBar";
@@ -31,12 +31,12 @@ export function OverviewDestinationNode(params: {
     <div
       onMouseEnter={() => setHoveredNodeAndEdgeSet(connectedNodesAndEdges)}
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
-    >      
+    >
       <OverviewDestinationCard
-          name={attributes.resourceId}
-          disabled={isDisabled || isNotInHoverSet}
-          key={id}
-        />
+        name={attributes.resourceId}
+        disabled={isDisabled || isNotInHoverSet}
+        key={id}
+      />
       <CardMeasurementContent>{metric}</CardMeasurementContent>
       <Handle type="target" position={Position.Left} />
     </div>
