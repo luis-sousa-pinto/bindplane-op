@@ -1,10 +1,25 @@
 import { gql } from "@apollo/client";
-import { Card, CardContent, CardHeader, Divider } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  CircularProgress,
+  Divider,
+  Stack,
+} from "@mui/material";
 import { ConfigurationEditor } from "../../../components/ConfigurationEditor";
 import { RolloutHistory } from "../../../components/RolloutHistory";
-import { useGetConfigRolloutAgentsQuery } from "../../../graphql/generated";
-import styles from "./configuration-page.module.scss";
+import {
+  useGetConfigRolloutAgentsQuery,
+  useGetRenderedConfigLazyQuery,
+} from "../../../graphql/generated";
 import { useRefetchOnConfigurationChange } from "../../../hooks/useRefetchOnConfigurationChanges";
+import { RawOrTopologyControl } from "../../../components/PipelineGraph/RawOrTopologyControl";
+import { useEffect, useState } from "react";
+import { YamlEditor } from "../../../components/YamlEditor";
+
+import styles from "./configuration-page.module.scss";
 
 gql`
   query getConfigRolloutAgents($name: String!) {
@@ -15,6 +30,17 @@ gql`
         version
       }
       agentCount
+    }
+  }
+
+  query getRenderedConfigValue($name: String!) {
+    configuration(name: $name) {
+      metadata {
+        name
+        id
+        version
+      }
+      rendered
     }
   }
 `;
@@ -38,12 +64,33 @@ export const EditorSection: React.FC<EditorSectionProps> = ({
   isOtel,
   hideRolloutActions,
 }) => {
+  const [rawOrTopology, setRawOrTopology] = useState<"raw" | "topology">(
+    "topology"
+  );
+
   const { data, refetch } = useGetConfigRolloutAgentsQuery({
     variables: { name: configurationName },
     fetchPolicy: "cache-and-network",
   });
 
-  useRefetchOnConfigurationChange(configurationName, refetch);
+  const [fetchRawConfig, { data: rawData, refetch: refetchRaw }] =
+    useGetRenderedConfigLazyQuery({
+      variables: { name: configurationName },
+      fetchPolicy: "cache-and-network",
+    });
+
+  useEffect(() => {
+    if (rawOrTopology === "raw") {
+      fetchRawConfig();
+    }
+  }, [rawOrTopology, fetchRawConfig]);
+
+  function refetchQueries() {
+    refetch();
+    refetchRaw();
+  }
+
+  useRefetchOnConfigurationChange(configurationName, refetchQueries);
 
   const shouldShowRolloutHistory =
     (data?.configuration?.agentCount ?? 1) > 0 ||
@@ -60,11 +107,26 @@ export const EditorSection: React.FC<EditorSectionProps> = ({
       />
       <Divider />
       <CardContent classes={{ root: styles["card-content"] }}>
-        <ConfigurationEditor
-          configurationName={configurationName}
-          isOtel={isOtel}
-          hideRolloutActions={hideRolloutActions}
-        />
+        {!isOtel && (
+          <Box marginBottom={2}>
+            <RawOrTopologyControl
+              rawOrTopology={rawOrTopology}
+              setTopologyOrRaw={setRawOrTopology}
+            />
+          </Box>
+        )}
+
+        {rawOrTopology === "topology" && (
+          <ConfigurationEditor
+            configurationName={configurationName}
+            isOtel={isOtel}
+            hideRolloutActions={hideRolloutActions}
+          />
+        )}
+
+        {rawOrTopology === "raw" && (
+          <YamlOrLoading value={rawData?.configuration?.rendered} />
+        )}
       </CardContent>
       <Divider />
       {shouldShowRolloutHistory && (
@@ -74,4 +136,24 @@ export const EditorSection: React.FC<EditorSectionProps> = ({
       )}
     </Card>
   );
+};
+
+interface YamlOrLoadingProps {
+  value?: null | string;
+}
+const YamlOrLoading: React.FC<YamlOrLoadingProps> = ({ value }) => {
+  if (value === undefined) {
+    return (
+      <Stack
+        width="100%"
+        height="100%"
+        minHeight={200}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <CircularProgress />
+      </Stack>
+    );
+  }
+  return <YamlEditor value={value!} readOnly />;
 };

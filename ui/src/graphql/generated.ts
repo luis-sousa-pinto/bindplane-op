@@ -674,13 +674,6 @@ export type GetRenderedConfigQueryVariables = Exact<{
 
 export type GetRenderedConfigQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
-export type DestinationTypeQueryVariables = Exact<{
-  name: Scalars['String'];
-}>;
-
-
-export type DestinationTypeQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
-
 export type SourceTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
@@ -882,6 +875,13 @@ export type GetConfigRolloutAgentsQueryVariables = Exact<{
 
 export type GetConfigRolloutAgentsQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
+export type GetRenderedConfigValueQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetRenderedConfigValueQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
+
 export type GetConfigurationQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
@@ -1013,88 +1013,6 @@ export function useGetRenderedConfigLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type GetRenderedConfigQueryHookResult = ReturnType<typeof useGetRenderedConfigQuery>;
 export type GetRenderedConfigLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigLazyQuery>;
 export type GetRenderedConfigQueryResult = Apollo.QueryResult<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>;
-export const DestinationTypeDocument = gql`
-    query DestinationType($name: String!) {
-  destinationType(name: $name) {
-    metadata {
-      id
-      name
-      version
-      displayName
-      icon
-      displayName
-      description
-    }
-    spec {
-      parameters {
-        label
-        name
-        description
-        required
-        type
-        default
-        documentation {
-          text
-          url
-        }
-        relevantIf {
-          name
-          operator
-          value
-        }
-        advancedConfig
-        validValues
-        options {
-          creatable
-          trackUnchecked
-          sectionHeader
-          gridColumns
-          multiline
-          labels
-          metricCategories {
-            label
-            column
-            metrics {
-              name
-              description
-              kpi
-            }
-          }
-          password
-        }
-      }
-    }
-  }
-}
-    `;
-
-/**
- * __useDestinationTypeQuery__
- *
- * To run a query within a React component, call `useDestinationTypeQuery` and pass it any options that fit your needs.
- * When your component renders, `useDestinationTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useDestinationTypeQuery({
- *   variables: {
- *      name: // value for 'name'
- *   },
- * });
- */
-export function useDestinationTypeQuery(baseOptions: Apollo.QueryHookOptions<DestinationTypeQuery, DestinationTypeQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<DestinationTypeQuery, DestinationTypeQueryVariables>(DestinationTypeDocument, options);
-      }
-export function useDestinationTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DestinationTypeQuery, DestinationTypeQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<DestinationTypeQuery, DestinationTypeQueryVariables>(DestinationTypeDocument, options);
-        }
-export type DestinationTypeQueryHookResult = ReturnType<typeof useDestinationTypeQuery>;
-export type DestinationTypeLazyQueryHookResult = ReturnType<typeof useDestinationTypeLazyQuery>;
-export type DestinationTypeQueryResult = Apollo.QueryResult<DestinationTypeQuery, DestinationTypeQueryVariables>;
 export const SourceTypeDocument = gql`
     query SourceType($name: String!) {
   sourceType(name: $name) {
@@ -2525,6 +2443,46 @@ export function useGetConfigRolloutAgentsLazyQuery(baseOptions?: Apollo.LazyQuer
 export type GetConfigRolloutAgentsQueryHookResult = ReturnType<typeof useGetConfigRolloutAgentsQuery>;
 export type GetConfigRolloutAgentsLazyQueryHookResult = ReturnType<typeof useGetConfigRolloutAgentsLazyQuery>;
 export type GetConfigRolloutAgentsQueryResult = Apollo.QueryResult<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>;
+export const GetRenderedConfigValueDocument = gql`
+    query getRenderedConfigValue($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    rendered
+  }
+}
+    `;
+
+/**
+ * __useGetRenderedConfigValueQuery__
+ *
+ * To run a query within a React component, call `useGetRenderedConfigValueQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRenderedConfigValueQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRenderedConfigValueQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetRenderedConfigValueQuery(baseOptions: Apollo.QueryHookOptions<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>(GetRenderedConfigValueDocument, options);
+      }
+export function useGetRenderedConfigValueLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>(GetRenderedConfigValueDocument, options);
+        }
+export type GetRenderedConfigValueQueryHookResult = ReturnType<typeof useGetRenderedConfigValueQuery>;
+export type GetRenderedConfigValueLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigValueLazyQuery>;
+export type GetRenderedConfigValueQueryResult = Apollo.QueryResult<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>;
 export const GetConfigurationDocument = gql`
     query GetConfiguration($name: String!) {
   configuration(name: $name) {

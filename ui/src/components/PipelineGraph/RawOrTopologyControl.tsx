@@ -8,18 +8,18 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
   rawOrTopology,
   setTopologyOrRaw,
 }) => {
-
   const toggleRawOrTopology = (
     _: React.MouseEvent<HTMLElement>,
-    newValue: "topology" | "raw",
+    newValue: "topology" | "raw"
   ) => {
+    if (newValue === null) return;
     setTopologyOrRaw(newValue);
   };
   return (
     <ToggleButtonGroup
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
+        display: "flex",
+        justifyContent: "center",
       }}
       color="primary"
       value={rawOrTopology}
@@ -51,5 +51,5 @@ export const RawOrTopologyControl: React.FC<RawOrTopologyControlProps> = ({
         Raw
       </ToggleButton>
     </ToggleButtonGroup>
-  )
+  );
 };
