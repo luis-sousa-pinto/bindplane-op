@@ -22,7 +22,7 @@ spec:
 
     - name: brokers
       label: Brokers
-      description: List of brokers to connect to when sending metrics, traces and logs.
+      description: List of brokers to connect to when publishing metrics, traces and logs.
       type: strings
       default:
         - localhost:9092
@@ -30,7 +30,7 @@ spec:
 
     - name: timeout
       label: Timeout (seconds)
-      description: Timeout (seconds) for every attempt to send data to the backend.
+      description: Timeout (seconds) for every attempt to publish data to the backend.
       type: int
       default: 5
 
@@ -255,7 +255,7 @@ spec:
 
     - name: metric_topic
       label: Metric Topic
-      description: The name of the topic to export metrics to.
+      description: The name of the topic to publish metrics to.
       type: string
       options:
         gridColumns: 12
@@ -272,7 +272,7 @@ spec:
 
     - name: log_topic
       label: Log Topic
-      description: The name of the topic to export logs to.
+      description: The name of the topic to publish logs to.
       type: string
       options:
         gridColumns: 12
@@ -289,7 +289,7 @@ spec:
 
     - name: trace_topic
       label: Trace Topic
-      description: The name of the topic to export traces to.
+      description: The name of the topic to publish traces to.
       type: string
       options:
         gridColumns: 12
@@ -398,8 +398,8 @@ spec:
       default: true
       advancedConfig: true
       documentation:
-      - text: Read More
-        url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
       options:
         sectionHeader: true
       required: false
@@ -407,7 +407,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
