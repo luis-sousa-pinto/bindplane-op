@@ -37,8 +37,15 @@ builds:
 
 archives:
 - format: zip
-  # bindplane-v1.0.0-linux-amd64
+  id: bindplane
   name_template: 'bindplane-v{{ .Version }}-{{ .Os }}-{{ .Arch }}'
+  builds:
+    - bindplane
+- format: zip
+  id: bindplanectl
+  name_template: 'bindplanectl-v{{ .Version }}-{{ .Os }}-{{ .Arch }}'
+  builds:
+    - bindplanectl
 
 nfpms:
 - id: bindplanectl
@@ -327,6 +334,8 @@ brews:
     email: support@observiq.com
   homepage: "https://github.com/observIQ/bindplane-op"
   license: "Apache 2.0"
+  ids:
+    - bindplane
 
 release:
   # brew will fail if the release is a "draft"
