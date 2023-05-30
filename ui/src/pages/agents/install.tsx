@@ -55,7 +55,9 @@ export const InstallPageContent: React.FC = () => {
   const [installCommand, setCommand] = useState("");
   const [configs, setConfigs] = useState<string[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<string>("");
-  const { data } = useGetConfigurationNamesQuery();
+  const { data } = useGetConfigurationNamesQuery({
+    fetchPolicy: "network-only",
+  });
 
   // Don't show the command if the platform is k8s and no config is selected
   const shouldShowCommand =

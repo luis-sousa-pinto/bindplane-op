@@ -5,6 +5,8 @@ definitions:
         type: string
       configuration:
         description: tracked by BindPlane
+      configurationStatus:
+        $ref: '#/definitions/model.ConfigurationVersions'
       connectedAt:
         type: string
       disconnectedAt:
@@ -28,7 +30,6 @@ definitions:
       platform:
         type: string
       protocol:
-        description: used by the agent management protocol
         type: string
       remoteAddress:
         type: string
@@ -149,6 +150,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.AgentVersionSpec'
         description: Spec TODO(doc)
+      status:
+        $ref: '#/definitions/model.NoStatus'
     type: object
   model.AgentVersionResponse:
     properties:
@@ -194,16 +197,6 @@ definitions:
         type: array
     type: object
   model.AnyResource:
-    properties:
-      apiVersion:
-        type: string
-      kind:
-        $ref: '#/definitions/model.Kind'
-      metadata:
-        $ref: '#/definitions/model.Metadata'
-      spec:
-        additionalProperties: true
-        type: object
     type: object
   model.ApplyResponse:
     properties:
@@ -231,6 +224,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.ConfigurationSpec'
         description: Spec TODO(doc)
+      status:
+        $ref: '#/definitions/model.ConfigurationStatus'
     type: object
   model.ConfigurationResponse:
     properties:
@@ -255,6 +250,52 @@ definitions:
         items:
           $ref: '#/definitions/model.ResourceConfiguration'
         type: array
+    type: object
+  model.ConfigurationStatus:
+    properties:
+      current:
+        description: Current will be set to true on read if the configuration is the
+          current version
+        type: boolean
+      currentVersion:
+        allOf:
+        - $ref: '#/definitions/model.Version'
+        description: CurrentVersion is the version of the configuration that has most
+          recently completed a rollout
+      latest:
+        description: Latest will be set to true on read if the configuration is the
+          latest version
+        type: boolean
+      pending:
+        description: Pending will be set to true on read if the configuration is the
+          pending version
+        type: boolean
+      pendingVersion:
+        allOf:
+        - $ref: '#/definitions/model.Version'
+        description: |-
+          PendingVersion will be set to the version of a rollout that is in progress. It will be set to 0 when the rollout
+          completes.
+      rollout:
+        allOf:
+        - $ref: '#/definitions/model.Rollout'
+        description: Rollout contains status for the rollout of this configuration
+    type: object
+  model.ConfigurationVersions:
+    properties:
+      current:
+        description: Current is the configuration currently applied to the agent.
+        type: string
+      future:
+        description: |-
+          Future is the configuration that will be assigned to this agent when the rollout assigns the new configuration to
+          the agent. Once the rollout assigns the configuration, Pending will be set to this value and this will be cleared.
+        type: string
+      pending:
+        description: |-
+          Pending is the configuration that is assigned to the agent but may not be applied. Once this configuration is
+          confirmed, Current will be set to this value and this will be cleared.
+        type: string
     type: object
   model.ConfigurationsResponse:
     properties:
@@ -293,6 +334,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.DestinationResponse:
     properties:
@@ -309,6 +352,8 @@ definitions:
         $ref: '#/definitions/model.Metadata'
       spec:
         $ref: '#/definitions/model.ResourceTypeSpec'
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.DestinationTypeResponse:
     properties:
@@ -336,6 +381,13 @@ definitions:
       url:
         type: string
     type: object
+  model.HistoryResponse:
+    properties:
+      versions:
+        items:
+          $ref: '#/definitions/model.AnyResource'
+        type: array
+    type: object
   model.InstallCommandResponse:
     properties:
       command:
@@ -355,6 +407,7 @@ definitions:
     - ProcessorType
     - DestinationType
     - Unknown
+    - Rollout
     type: string
     x-enum-varnames:
     - KindProfile
@@ -369,6 +422,7 @@ definitions:
     - KindProcessorType
     - KindDestinationType
     - KindUnknown
+    - KindRollout
   model.Labels:
     type: object
   model.ManagerTLS:
@@ -388,9 +442,15 @@ definitions:
     type: object
   model.Metadata:
     properties:
+      dateModified:
+        type: string
       description:
         type: string
       displayName:
+        type: string
+      hash:
+        description: Hash is a hex formatted sha256 Hash of the json-encoded spec
+          that is used to determine if the spec has changed.
         type: string
       icon:
         type: string
@@ -400,6 +460,11 @@ definitions:
         $ref: '#/definitions/model.Labels'
       name:
         type: string
+      version:
+        allOf:
+        - $ref: '#/definitions/model.Version'
+        description: Version is a 1-based integer that is incremented each time the
+          spec is changed.
     type: object
   model.MetricCategory:
     properties:
@@ -423,6 +488,8 @@ definitions:
         type: boolean
       name:
         type: string
+    type: object
+  model.NoStatus:
     type: object
   model.Parameter:
     properties:
@@ -535,6 +602,15 @@ definitions:
       version:
         type: string
     type: object
+  model.PhaseAgentCount:
+    properties:
+      initial:
+        type: integer
+      maximum:
+        type: integer
+      multiplier:
+        type: number
+    type: object
   model.PostAgentVersionRequest:
     properties:
       version:
@@ -552,6 +628,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.ProcessorResponse:
     properties:
@@ -568,6 +646,8 @@ definitions:
         $ref: '#/definitions/model.Metadata'
       spec:
         $ref: '#/definitions/model.ResourceTypeSpec'
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.ProcessorTypeResponse:
     properties:
@@ -672,6 +752,85 @@ definitions:
       version:
         type: string
     type: object
+  model.Rollout:
+    properties:
+      name:
+        description: Name will be set to the Name of the configuration when requested
+          via Configuration.Rollout()
+        type: string
+      options:
+        allOf:
+        - $ref: '#/definitions/model.RolloutOptions'
+        description: Options are set when the Rollout is created based on the rollout
+          options specified in the configuration
+      phase:
+        description: Phase starts at zero and increments until all agents are updated.
+          In each phase, initial*multiplier^phase agents will be updated.
+        type: integer
+      progress:
+        allOf:
+        - $ref: '#/definitions/model.RolloutProgress'
+        description: Progress is the current progress of the rollout
+      status:
+        allOf:
+        - $ref: '#/definitions/model.RolloutStatus'
+        description: Status is the status of the rollout
+    type: object
+  model.RolloutOptions:
+    properties:
+      maxErrors:
+        description: MaxErrors is the maximum number of failed agents before the rollout
+          will be considered an error
+        type: integer
+      phaseAgentCount:
+        allOf:
+        - $ref: '#/definitions/model.PhaseAgentCount'
+        description: PhaseAgentCount determines the rate at which agents will be updated
+          during a rollout.
+      rollbackOnFailure:
+        description: |-
+          RollbackOnFailure determines if the rollout should be rolled back to the previous configuration if the rollout
+          fails.
+        type: boolean
+      startAutomatically:
+        description: |-
+          StartAutomatically determines if this rollout transitions immediately from RolloutStatusPending to
+          RolloutStatusStarted without requiring that it be started manually.
+        type: boolean
+    type: object
+  model.RolloutProgress:
+    properties:
+      completed:
+        description: Completed is the number of agents with new version with Connected
+          status
+        type: integer
+      errors:
+        description: Errors is the number of agents with new version with Error Status
+        type: integer
+      pending:
+        description: Pending is the number of agents that are currently being configured
+        type: integer
+      waiting:
+        description: Waiting is the number of agents that need to be scheduled for
+          configuration
+        type: integer
+    type: object
+  model.RolloutStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
+    x-enum-varnames:
+    - RolloutStatusPending
+    - RolloutStatusStarted
+    - RolloutStatusPaused
+    - RolloutStatusError
+    - RolloutStatusStable
+    - RolloutStatusReplaced
   model.Source:
     properties:
       apiVersion:
@@ -684,6 +843,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
         description: Spec TODO(doc)
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.SourceResponse:
     properties:
@@ -700,6 +861,8 @@ definitions:
         $ref: '#/definitions/model.Metadata'
       spec:
         $ref: '#/definitions/model.ResourceTypeSpec'
+      status:
+        $ref: '#/definitions/model.VersionStatus'
     type: object
   model.SourceTypeResponse:
     properties:
@@ -740,6 +903,21 @@ definitions:
     - StatusError
     - StatusInUse
     - StatusForbidden
+  model.Version:
+    enum:
+    - -2
+    - -1
+    - 0
+    type: integer
+    x-enum-varnames:
+    - VersionPending
+    - VersionCurrent
+    - VersionLatest
+  model.VersionStatus:
+    properties:
+      latest:
+        type: boolean
+    type: object
   rest.ErrorResponse:
     properties:
       errors:
@@ -750,6 +928,35 @@ definitions:
 info:
   contact: {}
 paths:
+  /{kind}/{name}/history:
+    get:
+      parameters:
+      - description: the kind of the resource
+        in: path
+        name: kind
+        required: true
+        type: string
+      - description: the name of the resource
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.HistoryResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Get the history of a resource
   /Agents:
     get:
       produces:
@@ -1498,6 +1705,158 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get Processor by name
+  /rollouts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ConfigurationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Get all rollouts
+    post:
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Update all active rollouts
+  /rollouts/{name}:
+    get:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Get rollout configuration by name
+  /rollouts/{name}/pause:
+    post:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Pause rollout by configuration name
+  /rollouts/{name}/resume:
+    post:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Resume rollout by configuration name
+  /rollouts/{name}/start:
+    post:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: the options for the rollout
+        in: body
+        name: options
+        schema:
+          $ref: '#/definitions/model.RolloutOptions'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Start rollout by configuration name
+  /rollouts/{name}/status:
+    get:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Status of configuration rollout by name
+  /rollouts/{name}/update:
+    post:
+      parameters:
+      - description: the name of the configuration
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.ConfigurationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Update rollout by configuration name
   /source-types:
     get:
       produces:
