@@ -225,8 +225,8 @@ export const OverviewGraph: React.FC = () => {
   return hasPipeline ? (
     <div style={{ height: "100%", width: "100%", paddingBottom: 75 }}>
       <ReactFlow
-        defaultNodes={nodes}
-        defaultEdges={edges}
+        nodes={nodes}
+        edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesConnectable={false}
