@@ -162,8 +162,8 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
   return (
     <div style={{ height: viewPortHeight, width: "100%" }}>
       <ReactFlow
-        defaultNodes={nodes}
-        defaultEdges={edges}
+        nodes={nodes}
+        edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         // Called by a react flow node when entering the viewport,
