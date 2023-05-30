@@ -578,6 +578,17 @@ func TestCleanupDisconnectedAgents(t *testing.T) {
 	defer store.Close()
 	runTestCleanupDisconnectedAgents(t, store)
 }
+func TestCountAgents(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestCountAgents(ctx, t, store)
+}
 
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 

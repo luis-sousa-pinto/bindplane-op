@@ -4298,11 +4298,12 @@ func runTestCountAgents(ctx context.Context, t *testing.T, store Store) {
 		require.NoError(t, err)
 	}
 
-	agentIDs, err := FindAgents(ctx, store.AgentIndex(ctx), model.FieldConfigurationPending, "c:2")
+	// test capitalization as well
+	agentIDs, err := FindAgents(ctx, store.AgentIndex(ctx), model.FieldConfigurationPending, "C:2")
 	require.NoError(t, err)
 	require.Equal(t, 4, len(agentIDs))
 
-	agentIDs, err = FindAgents(ctx, store.AgentIndex(ctx), model.FieldConfigurationFuture, "c:2")
+	agentIDs, err = FindAgents(ctx, store.AgentIndex(ctx), model.FieldConfigurationFuture, "C:2")
 	require.NoError(t, err)
 	require.Equal(t, 0, len(agentIDs))
 

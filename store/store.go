@@ -225,16 +225,7 @@ func StartedRolloutsFromIndex(_ context.Context, index search.Index) ([]string, 
 // FindAgents returns a list of agent IDs that match the specified key/value pair. The key must be a valid search field
 func FindAgents(ctx context.Context, idx search.Index, key string, value string) ([]string, error) {
 	q := key + ":" + value
-	query := &search.Query{
-		Original: q,
-		Tokens: []*search.QueryToken{
-			{
-				Original: q,
-				Name:     key,
-				Value:    value,
-			},
-		},
-	}
+	query := search.ParseQuery(q)
 	return idx.Search(ctx, query)
 }
 
