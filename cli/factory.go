@@ -210,7 +210,7 @@ func (f *Factory) BuildGetter(ctx context.Context) (get.Getter, error) {
 		return nil, fmt.Errorf("failed to build printer: %w", err)
 	}
 
-	return get.NewGetter(c, printer), nil
+	return get.NewGetter(c, printer, f.cfg.Output), nil
 }
 
 // BuildRollouter builds a rollouter.

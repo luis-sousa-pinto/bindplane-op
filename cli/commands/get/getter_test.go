@@ -35,6 +35,7 @@ func TestGetResource(t *testing.T) {
 		name             string
 		clientFunc       func() client.BindPlane
 		kind             model.Kind
+		format           string
 		id               string
 		expectedContents string
 		expectedErr      error
@@ -48,6 +49,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindAgent,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: `Agent=test-id`,
 		},
@@ -61,6 +63,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindAgentVersion,
+			format:           "table",
 			id:               "0.0.0",
 			expectedContents: `AgentVersion=0.0.0`,
 		},
@@ -74,8 +77,34 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindConfiguration,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "Configuration=test-id",
+		},
+		{
+			name: "raw configuration",
+			clientFunc: func() client.BindPlane {
+				c := clientmocks.NewMockBindPlane(t)
+				configuration := &model.Configuration{}
+				configuration.Metadata.ID = "test-id"
+				c.On("RawConfiguration", mock.Anything, "test-id").Return(configuration.Spec.Raw, nil)
+				return c
+			},
+			kind:             model.KindConfiguration,
+			format:           "raw",
+			id:               "test-id",
+			expectedContents: "",
+		},
+		{
+			name: "raw unsupported",
+			clientFunc: func() client.BindPlane {
+				c := clientmocks.NewMockBindPlane(t)
+				return c
+			},
+			kind:        model.KindAgent,
+			format:      "raw",
+			id:          "test-id",
+			expectedErr: errors.New("raw does not support resource type"),
 		},
 		{
 			name: "valid rollout",
@@ -94,6 +123,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindRollout,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "Rollout=test:0",
 		},
@@ -107,6 +137,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindDestinationType,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "DestinationType=test-id",
 		},
@@ -120,6 +151,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindDestination,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "Destination=test-id",
 		},
@@ -133,6 +165,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindProcessorType,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "ProcessorType=test-id",
 		},
@@ -146,6 +179,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindProcessor,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "Processor=test-id",
 		},
@@ -159,6 +193,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindSourceType,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "SourceType=test-id",
 		},
@@ -172,6 +207,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:             model.KindSource,
+			format:           "table",
 			id:               "test-id",
 			expectedContents: "Source=test-id",
 		},
@@ -183,6 +219,7 @@ func TestGetResource(t *testing.T) {
 				return c
 			},
 			kind:        model.KindAgent,
+			format:      "table",
 			id:          "test-id",
 			expectedErr: errors.New("not found"),
 		},
@@ -191,7 +228,7 @@ func TestGetResource(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			printer := &testPrinter{}
-			getter := NewGetter(tc.clientFunc(), printer)
+			getter := NewGetter(tc.clientFunc(), printer, tc.format)
 
 			err := getter.GetResource(context.Background(), tc.kind, tc.id)
 			switch tc.expectedErr {
@@ -367,7 +404,7 @@ func TestGetResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			printer := &testPrinter{}
-			getter := NewGetter(tc.clientFunc(), printer)
+			getter := NewGetter(tc.clientFunc(), printer, "table")
 
 			err := getter.GetResources(context.Background(), tc.kind, tc.ids)
 			switch tc.expectedErr {
@@ -540,7 +577,7 @@ func TestGetResourcesOfKind(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			printer := &testPrinter{}
-			getter := NewGetter(tc.clientFunc(), printer)
+			getter := NewGetter(tc.clientFunc(), printer, "table")
 
 			err := getter.GetResourcesOfKind(context.Background(), tc.kind, client.QueryOptions{})
 			switch tc.expectedErr {
@@ -623,7 +660,7 @@ func TestGetAllResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			printer := &testPrinter{}
-			getter := NewGetter(tc.clientFunc(), printer)
+			getter := NewGetter(tc.clientFunc(), printer, "table")
 
 			err := getter.GetAllResources(context.Background())
 			switch tc.expectedErr {
@@ -694,7 +731,7 @@ func TestGetResourceHistory(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockClient, mockPrinter := tc.mockSetup(t)
-			getter := NewGetter(mockClient, mockPrinter)
+			getter := NewGetter(mockClient, mockPrinter, "table")
 			err := getter.GetResourceHistory(context.Background(), tc.kind, tc.resourceID)
 			switch tc.expectedErr {
 			case nil:

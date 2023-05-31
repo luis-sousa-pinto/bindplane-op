@@ -57,21 +57,28 @@ type Builder interface {
 }
 
 // NewGetter returns a new Getter.
-func NewGetter(client client.BindPlane, printer printer.Printer) *DefaultGetter {
+func NewGetter(client client.BindPlane, printer printer.Printer, outputFormat string) *DefaultGetter {
 	return &DefaultGetter{
-		client:  client,
-		printer: printer,
+		client:       client,
+		printer:      printer,
+		outputFormat: outputFormat,
 	}
 }
 
 // DefaultGetter is the default implementation of Getter.
 type DefaultGetter struct {
-	client  client.BindPlane
-	printer printer.Printer
+	client       client.BindPlane
+	printer      printer.Printer
+	outputFormat string
 }
 
 // GetResource gets and prints a single resource.
 func (g *DefaultGetter) GetResource(ctx context.Context, kind model.Kind, id string) error {
+	// Special case for raw resource flag
+	if g.outputFormat == "raw" {
+		return g.GetRawResource(ctx, kind, id)
+	}
+
 	resource, err := g.getPrintableResource(ctx, kind, id)
 	if err != nil {
 		return err
@@ -186,6 +193,24 @@ func (g *DefaultGetter) GetResourceHistory(ctx context.Context, kind model.Kind,
 	}
 
 	g.printer.PrintResources(printables)
+	return nil
+}
+
+// GetRawResource gets and prints the raw version of a resource
+func (g *DefaultGetter) GetRawResource(ctx context.Context, kind model.Kind, id string) error {
+	var rawConfig string
+	var err error
+	switch kind {
+	case model.KindConfiguration:
+		rawConfig, err = g.client.RawConfiguration(ctx, id)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("raw does not support resource type: %s", kind)
+	}
+
+	fmt.Println(rawConfig)
 	return nil
 }
 
