@@ -29,6 +29,16 @@ spec:
         - text: Read more
           url: https://coralogix.com/docs/application-and-subsystem-names/
 
+    - name: subsystem_name
+      label: Subsystem Name
+      description: Objects are tagged in Coralogix with this Subsystem name
+      type: string
+      default: ""
+      required: true
+      documentation:
+        - text: Read more
+          url: https://coralogix.com/docs/application-and-subsystem-names/
+
     - name: region
       label: Region
       description: Region of your account. Determines where to send telemetry data.
@@ -40,7 +50,57 @@ spec:
         - APAC2
         - EUROPE1
         - EUROPE2
+        - (AWS PrivateLink) USA1
+        - (AWS PrivateLink) APAC1
+        - (AWS PrivateLink) APAC2
+        - (AWS PrivateLink) EUROPE1
+        - (AWS PrivateLink) EUROPE2
+        - Custom Domain
       default: EUROPE1
+
+    - name: domain
+      label: Custom Domain
+      description: Specify a custom domain to send telemetry data to.
+      required: true
+      type: string
+      default: ""
+      relevantIf:
+        - name: region
+          operator: equals
+          value: "Custom Domain"
+
+    - name: resource_attributes
+      label: Resource Attributes
+      description: |
+        Enable to use resource attributes to set Coralogix AppName and SubSystem.
+        If disabled, the Application Name and Subsystem Name parameters will be used.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+
+    - name: application_name_attributes
+      label: Application Name Resource Attributes
+      description: Ordered list of resource attributes that are used for Coralogix AppName
+      type: strings
+      default: []
+      relevantIf:
+        - name: resource_attributes
+          operator: equals
+          value: true
+
+    - name: subsystem_name_attributes
+      label: SubSystem Resource Attributes
+      description: Ordered list of resource attributes that are used for Coralogix SubSystem
+      type: strings
+      default: []
+      relevantIf:
+        - name: resource_attributes
+          operator: equals
+          value: true
+
+
+    # Advanced Configuration
 
     # Metric Enable
     - name: enable_metrics
@@ -60,16 +120,6 @@ spec:
       type: bool
       default: true
 
-    # Advanced Configuration
-    - name: subsystem_name
-      label: Subsystem Name
-      description: Objects are tagged in Coralogix with this Subsystem name
-      type: string
-      default: ""
-      advancedConfig: true
-      documentation:
-        - text: Read more
-          url: https://coralogix.com/docs/application-and-subsystem-names/
 
     - name: timeout
       label: Timeout (seconds)
@@ -77,36 +127,6 @@ spec:
       type: int
       default: 5
       advancedConfig: true
-
-    - name: resource_attributes
-      label: Resource Attributes
-      type: bool
-      default: false
-      options:
-        sectionHeader: true
-      advancedConfig: true
-
-    - name: application_name_attributes
-      label: Application Name Resource Attributes
-      description: Ordered list of resource attributes that are used for Coralogix AppName
-      type: strings
-      default: []
-      advancedConfig: true
-      relevantIf:
-        - name: resource_attributes
-          operator: equals
-          value: true
-
-    - name: subsystem_name_attributes
-      label: SubSystem Resource Attributes
-      description: Ordered list of resource attributes that are used for Coralogix SubSystem
-      type: strings
-      default: []
-      advancedConfig: true
-      relevantIf:
-        - name: resource_attributes
-          operator: equals
-          value: true
 
     # Retry on failure
     - name: retry_on_failure_enabled
@@ -216,7 +236,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -247,15 +267,26 @@ spec:
 
           {{ if eq .region "USA1" }}
             {{ $url_suffix = "coralogix.us:443" }}
-          {{ end }}
-          {{ if eq .region "APAC1" }}
+          {{ else if eq .region "APAC1" }}
             {{ $url_suffix = "app.coralogix.in:443" }}
-          {{ end }}
-          {{ if eq .region "APAC2" }}
+          {{ else if eq .region "APAC2" }}
             {{ $url_suffix = "coralogixsg.com:443" }}
-          {{ end }}
-          {{ if eq .region "EUROPE2" }}
+          {{ else if eq .region "EUROPE1" }}
+            {{ $url_suffix = "coralogix.com:443" }}
+          {{ else if eq .region "EUROPE2" }}
             {{ $url_suffix = "eu2.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) USA1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC1" }}
+            {{ $url_suffix = "private.coralogix.in:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC2" }}
+            {{ $url_suffix = "private.coralogixsg.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE2" }}
+            {{ $url_suffix = "private.eu2.coralogix.com:443" }}
+          {{ else if eq .region "Custom Domain" }}
+            {{ $url_suffix = .domain }}
           {{ end }}
 
           logs:
@@ -292,6 +323,12 @@ spec:
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
+    processors: |
+      - resourcedetection:
+          override: false
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
 
   metrics:
     extensions: |
@@ -308,15 +345,26 @@ spec:
 
           {{ if eq .region "USA1" }}
             {{ $url_suffix = "coralogix.us:443" }}
-          {{ end }}
-          {{ if eq .region "APAC1" }}
+          {{ else if eq .region "APAC1" }}
             {{ $url_suffix = "app.coralogix.in:443" }}
-          {{ end }}
-          {{ if eq .region "APAC2" }}
+          {{ else if eq .region "APAC2" }}
             {{ $url_suffix = "coralogixsg.com:443" }}
-          {{ end }}
-          {{ if eq .region "EUROPE2" }}
+          {{ else if eq .region "EUROPE1" }}
+            {{ $url_suffix = "coralogix.com:443" }}
+          {{ else if eq .region "EUROPE2" }}
             {{ $url_suffix = "eu2.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) USA1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC1" }}
+            {{ $url_suffix = "private.coralogix.in:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC2" }}
+            {{ $url_suffix = "private.coralogixsg.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE2" }}
+            {{ $url_suffix = "private.eu2.coralogix.com:443" }}
+          {{ else if eq .region "Custom Domain" }}
+            {{ $url_suffix = .domain }}
           {{ end }}
 
           metrics:
@@ -353,6 +401,12 @@ spec:
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
+    processors: |
+      - resourcedetection:
+          override: false
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
 
   traces:
     extensions: |
@@ -372,15 +426,26 @@ spec:
 
           {{ if eq .region "USA1" }}
             {{ $url_suffix = "coralogix.us:443" }}
-          {{ end }}
-          {{ if eq .region "APAC1" }}
+          {{ else if eq .region "APAC1" }}
             {{ $url_suffix = "app.coralogix.in:443" }}
-          {{ end }}
-          {{ if eq .region "APAC2" }}
+          {{ else if eq .region "APAC2" }}
             {{ $url_suffix = "coralogixsg.com:443" }}
-          {{ end }}
-          {{ if eq .region "EUROPE2" }}
+          {{ else if eq .region "EUROPE1" }}
+            {{ $url_suffix = "coralogix.com:443" }}
+          {{ else if eq .region "EUROPE2" }}
             {{ $url_suffix = "eu2.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) USA1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC1" }}
+            {{ $url_suffix = "private.coralogix.in:443" }}
+          {{ else if eq .region "(AWS PrivateLink) APAC2" }}
+            {{ $url_suffix = "private.coralogixsg.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE1" }}
+            {{ $url_suffix = "private.coralogix.com:443" }}
+          {{ else if eq .region "(AWS PrivateLink) EUROPE2" }}
+            {{ $url_suffix = "private.eu2.coralogix.com:443" }}
+          {{ else if eq .region "Custom Domain" }}
+            {{ $url_suffix = .domain }}
           {{ end }}
 
           traces:
@@ -417,3 +482,9 @@ spec:
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
+    processors: |
+      - resourcedetection:
+          override: false
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
