@@ -1,0 +1,169 @@
+apiVersion: bindplane.observiq.com/v1
+kind: ProcessorType
+metadata:
+  name: filter_field
+  displayName: Filter by Field
+  description: Include or exclude telemetry based on field values.
+  labels:
+    category: Filter-And-Reduce
+spec:
+  version: 0.0.1
+  parameters:
+    - name: telemetry_types
+      label: Enable Telemetry
+      type: enums
+      description: "Select which types of telemetry you'd like to enable this processor for."
+      validValues: ["Metrics", "Logs", "Traces"]
+      default: ["Metrics", "Logs", "Traces"]
+      options:
+        gridColumns: 12
+
+    - name: action
+      label: Action
+      description: Whether to include or exclude matches. When set to include, anything that does not match is filtered.
+      type: enum
+      validValues:
+        - include
+        - exclude
+      default: exclude
+
+    - name: match_type
+      label: Match Type
+      description: "Method for matching values. Strict matching requires that 'value' be an exact match. Regexp matching uses an re2 regex."
+      documentation:
+        - text: re2 Syntax
+          url: https://github.com/google/re2/wiki/Syntax
+      type: enum
+      validValues:
+        - strict
+        - regexp
+      default: strict
+
+    - name: attributes
+      label: Attribute Keys
+      description: Attribute key value pairs to filter on. Telemetry is filtered if all attribute, resource, and body key pairs are matched.
+      type: map
+      default: {}
+      options:
+        gridColumns: 12
+
+    - name: resources
+      label: Resource Keys
+      description: Resource key value pairs to filter on. Telemetry is filtered if all attribute, resource, and body key pairs are matched.
+      type: map
+      default: {}
+      options:
+        gridColumns: 12
+
+    - name: bodies
+      label: Body Keys
+      description: Log body key value pairs to filter on. Log records filtered if all attribute, resource, and body key pairs are matched.
+      type: map
+      default: {}
+      options:
+        gridColumns: 12
+
+  metrics:
+    processors: |
+      {{ if has "Metrics" .telemetry_types }}
+      {{ if or .resources .attributes }}      
+      - filter/metrics:
+          error_mode: ignore
+          metrics:
+            datapoint:
+            - {{ if eq .action "include" }} not{{ end }} (
+              {{- $firstAttr := true -}}
+              {{ range $k, $v := .attributes }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(attributes[{{ $k | quote }}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              {{- range $k, $v := .resources }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(resource.attributes[{{ $k | quote}}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              )
+      {{ end }}
+      {{ end }}
+
+  logs:
+    processors: |
+      {{ if has "Logs" .telemetry_types }}
+      {{ if or .resources .attributes .bodies }}
+      - filter/logs:
+          error_mode: ignore
+          logs:
+            log_record:
+            - {{ if eq .action "include" }} not{{ end }} (
+              {{- $firstAttr := true -}}
+              {{ range $k, $v := .attributes }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(attributes[{{ $k | quote }}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              {{- range $k, $v := .resources }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(resource.attributes[{{ $k | quote}}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              {{- range $k, $v := .bodies }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              body[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(body[{{ $k | quote}}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              )
+      {{ end }}
+      {{ end }}
+
+  traces:
+    processors: |
+      {{ if has "Traces" .telemetry_types }}
+      {{ if or .resources .attributes }}      
+      - filter/traces:
+          error_mode: ignore
+          traces:
+            span:
+            - {{ if eq .action "include" }} not{{ end }} (
+              {{- $firstAttr := true -}}
+              {{ range $k, $v := .attributes }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(attributes[{{ $k | quote }}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              {{- range $k, $v := .resources }}
+              {{ if not $firstAttr }} and{{ end }} 
+              {{- if eq $.match_type "strict" }}
+              resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
+              {{ else }}
+              IsMatch(resource.attributes[{{ $k | quote}}], {{ $v | quote }})
+              {{ end }}
+              {{- $firstAttr = false -}}
+              {{ end }}
+              )
+      {{ end }}
+      {{ end }}

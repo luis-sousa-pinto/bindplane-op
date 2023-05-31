@@ -2,6 +2,7 @@ import {
   TextField,
   createFilterOptions,
   Autocomplete,
+  Stack,
   Typography,
 } from "@mui/material";
 import { isFunction } from "lodash";
@@ -45,6 +46,16 @@ const SelectParamInput: React.FC<ParamInputProps<string>> = ({
           color={readOnly ? colors.disabled : undefined}
         >
           {definition.description}
+          {definition.documentation && (
+            // Block display so that the link doesn't span the whole length of the outer div.
+            <Stack component={"span"} style={{ display: "block" }}>
+              {definition.documentation.map((d) => (
+                <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
+                  {d.text}
+                </a>
+              ))}
+            </Stack>
+          )}
         </Typography>
       }
       required={definition.required}
