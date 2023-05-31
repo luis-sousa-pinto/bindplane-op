@@ -15,14 +15,175 @@
 package record
 
 import (
+	"context"
 	"encoding/base64"
+	"math"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
+	"go.opentelemetry.io/collector/pdata/pmetric"
 )
+
+func TestConvertMetrics(t *testing.T) {
+	testTimestamp := time.Date(2022, time.September, 15, 1, 1, 1, 1, time.UTC)
+	startTestTimestamp := time.Date(2022, time.September, 15, 1, 12, 1, 1, time.UTC)
+	testCases := []struct {
+		name     string
+		input    func() pmetric.Metrics
+		expected []*Metric
+	}{
+		{
+			name: "no metrics",
+			input: func() pmetric.Metrics {
+				return pmetric.NewMetrics()
+			},
+			expected: []*Metric{},
+		},
+		{
+			name: "All Types",
+			input: func() pmetric.Metrics {
+				metrics := pmetric.NewMetrics()
+				rm := metrics.ResourceMetrics().AppendEmpty()
+				rm.Resource().Attributes().PutStr("resource", "one")
+				sm := rm.ScopeMetrics().AppendEmpty()
+
+				sumMetric := sm.Metrics().AppendEmpty()
+				sumMetric.SetUnit("bytes")
+				sumMetric.SetName("sum metric")
+				sumDP := sumMetric.SetEmptySum().DataPoints().AppendEmpty()
+				sumDP.SetIntValue(1234)
+				sumDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				sumDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+				sumDP.Attributes().PutBool("sum", true)
+
+				gaugeMetric := sm.Metrics().AppendEmpty()
+				gaugeMetric.SetUnit("psi")
+				gaugeMetric.SetName("gauge metric")
+				gaugeDP := gaugeMetric.SetEmptyGauge().DataPoints().AppendEmpty()
+				gaugeDP.SetDoubleValue(0.1)
+				gaugeDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				gaugeDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+				gaugeDP.Attributes().PutDouble("double", 1.2)
+
+				summaryMetric := sm.Metrics().AppendEmpty()
+				summaryMetric.SetUnit("fish")
+				summaryMetric.SetName("summary metric")
+				summaryDP := summaryMetric.SetEmptySummary().DataPoints().AppendEmpty()
+				summaryDP.QuantileValues().AppendEmpty().SetValue(0.5)
+				summaryDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				summaryDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+
+				return metrics
+			},
+			expected: []*Metric{
+				{
+					Name:           "sum metric",
+					Timestamp:      testTimestamp,
+					StartTimestamp: startTestTimestamp,
+					Value:          int64(1234),
+					Unit:           "bytes",
+					Type:           pmetric.MetricTypeSum.String(),
+					Attributes: map[string]any{
+						"sum": true,
+					},
+					Resource: map[string]any{
+						"resource": "one",
+					},
+				},
+				{
+					Name:           "gauge metric",
+					Timestamp:      testTimestamp,
+					StartTimestamp: startTestTimestamp,
+					Value:          float64(0.1),
+					Unit:           "psi",
+					Type:           pmetric.MetricTypeGauge.String(),
+					Attributes: map[string]any{
+						"double": float64(1.2),
+					},
+					Resource: map[string]any{
+						"resource": "one",
+					},
+				},
+				{
+					Name:           "summary metric",
+					Timestamp:      testTimestamp,
+					StartTimestamp: startTestTimestamp,
+					Value: map[string]any{
+						"0": float64(0.5),
+					},
+					Unit:       "fish",
+					Type:       pmetric.MetricTypeSummary.String(),
+					Attributes: map[string]any{},
+					Resource: map[string]any{
+						"resource": "one",
+					},
+				},
+			},
+		},
+		{
+			name: "NaN and Inf filtering",
+			input: func() pmetric.Metrics {
+				metrics := pmetric.NewMetrics()
+				rm := metrics.ResourceMetrics().AppendEmpty()
+				rm.Resource().Attributes().PutStr("resource", "one")
+				sm := rm.ScopeMetrics().AppendEmpty()
+
+				gaugeMetric := sm.Metrics().AppendEmpty()
+				gaugeMetric.SetUnit("psi")
+				gaugeMetric.SetName("gauge metric")
+				gauge := gaugeMetric.SetEmptyGauge()
+				gaugeDP := gauge.DataPoints().AppendEmpty()
+				gaugeDP.SetDoubleValue(0.1)
+				gaugeDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				gaugeDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+				gaugeDP.Attributes().PutDouble("double", 1.2)
+
+				nanDP := gauge.DataPoints().AppendEmpty()
+				nanDP.SetDoubleValue(math.NaN())
+				nanDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				nanDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+
+				infDP := gauge.DataPoints().AppendEmpty()
+				infDP.SetDoubleValue(math.Inf(1))
+				infDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				infDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+
+				negInfDP := gauge.DataPoints().AppendEmpty()
+				negInfDP.SetDoubleValue(math.Inf(-1))
+				negInfDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				negInfDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+
+				return metrics
+			},
+			expected: []*Metric{
+				{
+					Name:           "gauge metric",
+					Timestamp:      testTimestamp,
+					StartTimestamp: startTestTimestamp,
+					Value:          float64(0.1),
+					Unit:           "psi",
+					Type:           pmetric.MetricTypeGauge.String(),
+					Attributes: map[string]any{
+						"double": float64(1.2),
+					},
+					Resource: map[string]any{
+						"resource": "one",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := ConvertMetrics(context.Background(), tc.input())
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
 
 func TestConvertLogs(t *testing.T) {
 	testCases := []struct {

@@ -17,7 +17,9 @@ package record
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -27,6 +29,10 @@ import (
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.opentelemetry.io/otel"
 )
+
+// errIllegalFloatValue is the error returned when converting metric values is the value is a float64 NaN or Inf.
+// These values will not marshal to JSON correctly see https://github.com/golang/go/issues/25721 for more context.
+var errIllegalFloatValue = errors.New("values of NaN or Inf are not supported")
 
 var tracer = otel.Tracer("record")
 
@@ -108,11 +114,18 @@ func getMetricRecordsFromSum(metric pmetric.Metric, resourceAttributes map[strin
 	points := sum.DataPoints()
 	for i := 0; i < points.Len(); i++ {
 		point := points.At(i)
+
+		// Don't record values that have illegal float values as they won't marshal to json
+		dataVal, err := getDataPointValue(point)
+		if errors.Is(err, errIllegalFloatValue) {
+			continue
+		}
+
 		record := Metric{
 			Name:           metricName,
 			Timestamp:      point.Timestamp().AsTime(),
 			StartTimestamp: point.StartTimestamp().AsTime(),
-			Value:          getDataPointValue(point),
+			Value:          dataVal,
 			Unit:           metricUnit,
 			Type:           metricType,
 			Attributes:     point.Attributes().AsRaw(),
@@ -133,14 +146,22 @@ func getMetricRecordsFromGauge(metric pmetric.Metric, resourceAttributes map[str
 	points := gauge.DataPoints()
 	for i := 0; i < points.Len(); i++ {
 		point := points.At(i)
+
+		// Don't record values that have illegal float values as they won't marshal to json
+		dataVal, err := getDataPointValue(point)
+		if errors.Is(err, errIllegalFloatValue) {
+			continue
+		}
+
 		record := Metric{
-			Name:       metricName,
-			Timestamp:  point.Timestamp().AsTime(),
-			Value:      getDataPointValue(point),
-			Unit:       metricUnit,
-			Type:       metricType,
-			Attributes: point.Attributes().AsRaw(),
-			Resource:   resourceAttributes,
+			Name:           metricName,
+			Timestamp:      point.Timestamp().AsTime(),
+			StartTimestamp: point.StartTimestamp().AsTime(),
+			Value:          dataVal,
+			Unit:           metricUnit,
+			Type:           metricType,
+			Attributes:     point.Attributes().AsRaw(),
+			Resource:       resourceAttributes,
 		}
 		metricRecords = append(metricRecords, &record)
 	}
@@ -173,14 +194,19 @@ func getMetricRecordsFromSummary(metric pmetric.Metric, resourceAttributes map[s
 }
 
 // getDataPointValue gets the value of a data point
-func getDataPointValue(point pmetric.NumberDataPoint) interface{} {
+func getDataPointValue(point pmetric.NumberDataPoint) (interface{}, error) {
 	switch point.ValueType() {
 	case pmetric.NumberDataPointValueTypeDouble:
-		return point.DoubleValue()
+		doubleVal := point.DoubleValue()
+		if math.IsNaN(doubleVal) || math.IsInf(doubleVal, 0) {
+			return nil, errIllegalFloatValue
+		}
+
+		return doubleVal, nil
 	case pmetric.NumberDataPointValueTypeInt:
-		return point.IntValue()
+		return point.IntValue(), nil
 	default:
-		return 0
+		return 0, nil
 	}
 }
 
