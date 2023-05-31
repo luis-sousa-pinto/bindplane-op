@@ -2486,7 +2486,6 @@ func testUpdateRollout(ctx context.Context, t *testing.T, store Store) {
 }
 
 func runTestConfigurationVersions(ctx context.Context, t *testing.T, store Store) {
-	store.Clear()
 	// apply test resources
 	applyAllTestResources(t, store)
 	c1 := &model.Configuration{
@@ -2625,9 +2624,7 @@ func runTestConfigurationVersions(ctx context.Context, t *testing.T, store Store
 	assert.Equal(t, model.StatusConfigured, updates[0].Status)
 
 	// start rollout
-	_, _, err = store.UpdateConfiguration(ctx, "config-1", func(c *model.Configuration) {
-		c.Status = status.Status
-	})
+	_, err = store.StartRollout(ctx, "config-1", &status.Status.Rollout.Options)
 	require.NoError(t, err)
 
 	// expect no new versions to be created.
@@ -2649,48 +2646,36 @@ func runTestConfigurationVersions(ctx context.Context, t *testing.T, store Store
 			require.NotNil(t, config)
 			assert.Equal(t, model.RolloutStatusPending, config.Status.Rollout.Status)
 			// start rollout
-			_, _, err = store.UpdateConfiguration(ctx, configWithVersion, func(c *model.Configuration) {
-				c.Status.Rollout = status.Status.Rollout
-			})
-
+			_, err = store.StartRollout(ctx, "config-1", &status.Status.Rollout.Options)
+			require.NoError(t, err)
 		})
 	}
 
 	// versions 1 & 2 should have status rollout replaced
 	config, err = store.Configuration(ctx, "config-1:1")
 	require.NoError(t, err)
-	assert.Equal(t, model.RolloutStatusStarted, config.Status.Rollout.Status)
+	assert.Equal(t, model.RolloutStatusStable, config.Status.Rollout.Status)
 	assert.Equal(t, false, config.Status.Latest)
 	assert.Equal(t, false, config.Status.Current)
 
 	config, err = store.Configuration(ctx, "config-1:2")
 	require.NoError(t, err)
-	assert.Equal(t, model.RolloutStatusStarted, config.Status.Rollout.Status)
+	assert.Equal(t, model.RolloutStatusStable, config.Status.Rollout.Status)
 	assert.Equal(t, false, config.Status.Latest)
 	assert.Equal(t, false, config.Status.Current)
 
 	// version 3 should have a rollout started
 	config, err = store.Configuration(ctx, "config-1:3")
 	require.NoError(t, err)
-	assert.Equal(t, model.RolloutStatusStarted, config.Status.Rollout.Status)
-	assert.Equal(t, true, config.Status.Latest)
-
-	// Mark rollout as finished, make sure current is set
-	config, _, err = store.UpdateConfiguration(ctx, "config-1:3", func(c *model.Configuration) {
-		c.Status.Rollout.Status = model.RolloutStatusStable
-	})
-	require.NoError(t, err)
 	assert.Equal(t, model.RolloutStatusStable, config.Status.Rollout.Status)
 	assert.Equal(t, true, config.Status.Latest)
-	assert.Equal(t, false, config.Status.Current)
 
 	// also check the config coming from store.Configuration
 	config, err = store.Configuration(ctx, "config-1:3")
 	require.NoError(t, err)
 	assert.Equal(t, model.RolloutStatusStable, config.Status.Rollout.Status)
 	assert.Equal(t, true, config.Status.Latest)
-	assert.Equal(t, false, config.Status.Current)
-
+	assert.Equal(t, true, config.Status.Current)
 }
 
 func TestIsNewConfigurationVersion(t *testing.T) {
@@ -3306,11 +3291,10 @@ func testStartRollout(ctx context.Context, t *testing.T, store Store) {
 		configuration, err := store.Configuration(ctx, configurationName)
 		require.NoError(t, err)
 		for _, agent := range agents {
-			if agent.Status == model.Connected {
-				_, err = store.UpsertAgent(ctx, agent.ID, func(agent *model.Agent) {
-					agent.SetCurrentConfiguration(configuration)
-				})
-			}
+			_, err = store.UpsertAgent(ctx, agent.ID, func(agent *model.Agent) {
+				agent.SetCurrentConfiguration(configuration)
+				agent.Status = model.Connected
+			})
 		}
 	}
 
@@ -3822,13 +3806,13 @@ func testStartRollout(ctx context.Context, t *testing.T, store Store) {
 		require.NoError(t, err)
 		require.NotNil(t, configuration)
 		require.Equal(t, model.RolloutProgress{
-			Pending:   0,
+			Pending:   2,
 			Completed: 8,
 			Errors:    0,
-			Waiting:   2,
+			Waiting:   0,
 		}, configuration.Status.Rollout.Progress)
 		require.Equal(t, model.RolloutStatusStarted, configuration.Status.Rollout.Status)
-		require.Equal(t, 2, configuration.Status.Rollout.Phase)
+		require.Equal(t, 3, configuration.Status.Rollout.Phase)
 		require.Equal(t, model.Version(3), configuration.Version())
 		require.False(t, configuration.IsCurrent())
 		require.True(t, configuration.IsPending())

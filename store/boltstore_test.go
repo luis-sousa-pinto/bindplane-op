@@ -275,7 +275,6 @@ func TestUpsertAgent(t *testing.T) {
 		assert.Equal(t, got.Name, "updated")
 	})
 }
-
 func TestBoltStoreNotifyUpdates(t *testing.T) {
 	db, err := storetest.InitTestBboltDB(t, testBuckets)
 	require.NoError(t, err)
@@ -287,6 +286,17 @@ func TestBoltStoreNotifyUpdates(t *testing.T) {
 	done := make(chan bool, 1)
 
 	runNotifyUpdatesTests(t, store, done)
+}
+func TestAgentConfigurationTests(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runAgentConfigurationTests(ctx, t, store, func(s Store) {})
 }
 
 func TestBoltStoreDeleteChannel(t *testing.T) {
@@ -588,6 +598,103 @@ func TestCountAgents(t *testing.T) {
 	defer store.Close()
 
 	runTestCountAgents(ctx, t, store)
+}
+
+func TestStatus(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestStatus(ctx, t, store)
+}
+
+func TestUpdateRollout(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	testUpdateRollout(ctx, t, store)
+}
+
+func TestConfigurationVersions(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestConfigurationVersions(ctx, t, store)
+}
+
+func TestUpdateRollouts(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestUpdateRollouts(ctx, t, store)
+}
+
+func TestResumeErroredRollout(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	testResumeErroredRollout(ctx, t, store)
+}
+
+func TestStartRollout(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	testStartRollout(ctx, t, store)
+}
+
+func TestDependencyUpdates(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestDependencyUpdates(ctx, t, store, func(t *testing.T) {
+		store.Clear()
+	})
+}
+func TestCurrentRolloutsForConfiguration(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runTestCurrentRolloutsForConfiguration(ctx, t, store)
 }
 
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
