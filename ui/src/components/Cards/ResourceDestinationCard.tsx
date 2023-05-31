@@ -136,36 +136,39 @@ const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
     );
 
     updatedDestination.setParamsFromMap(formValues);
-    const updatedProcessors = formValues.processors;
+    // TODO(cpheps): Validate this is ok in the long run.
+    // Commenting this out now as we don't need to update the processor on save.
+    // The formValues.processors is always empty and wipes out the destination processors
+    // const updatedProcessors = formValues.processors;
 
-    // Assign processors to the configuration if we have an
-    // index for the destination, implying that we are editing this
-    // destination on a particular config and that processors are enabled.
-    if (destinationIndex != null) {
-      const updatedConfig = new BPConfiguration(configuration);
-      updatedConfig.replaceDestination(
-        {
-          name: updatedDestination.name(),
-          processors: updatedProcessors,
-          disabled: updatedDestination.spec.disabled,
-        },
-        destinationIndex
-      );
+    // // Assign processors to the configuration if we have an
+    // // index for the destination, implying that we are editing this
+    // // destination on a particular config and that processors are enabled.
+    // if (destinationIndex != null) {
+    //   const updatedConfig = new BPConfiguration(configuration);
+    //   updatedConfig.replaceDestination(
+    //     {
+    //       name: updatedDestination.name(),
+    //       processors: updatedProcessors,
+    //       disabled: updatedDestination.spec.disabled,
+    //     },
+    //     destinationIndex
+    //   );
 
-      try {
-        const update = await updatedConfig.apply();
-        if (update.status === UpdateStatus.INVALID) {
-          throw new Error(
-            `failed to apply configuration, got status ${update.status}`
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        enqueueSnackbar("Failed to update configuration.", {
-          variant: "error",
-        });
-      }
-    }
+    //   try {
+    //     const update = await updatedConfig.apply();
+    //     if (update.status === UpdateStatus.INVALID) {
+    //       throw new Error(
+    //         `failed to apply configuration, got status ${update.status}`
+    //       );
+    //     }
+    //   } catch (err) {
+    //     console.error(err);
+    //     enqueueSnackbar("Failed to update configuration.", {
+    //       variant: "error",
+    //     });
+    //   }
+    // }
 
     try {
       const update = await updatedDestination.apply();
