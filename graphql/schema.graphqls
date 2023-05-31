@@ -146,6 +146,7 @@ type ConfigurationSpec {
 
 type ResourceConfiguration {
   name: String
+  displayName: String
   type: String
   parameters: [Parameter!]
   processors: [ResourceConfiguration!]
@@ -538,6 +539,7 @@ input ParameterInput {
 
 input ProcessorInput {
   name: String
+  displayName: String
   type: String
   parameters: [ParameterInput!]
   disabled: Boolean

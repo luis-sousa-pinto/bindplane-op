@@ -319,6 +319,7 @@ func (r *Rollout) AgentsNextPhase() int {
 // ResourceConfiguration defines Sources and Destinations within a Configuration or Processors within a Source or Destination.
 type ResourceConfiguration struct {
 	Name              string `json:"name,omitempty" yaml:"name,omitempty" mapstructure:"name"`
+	DisplayName       string `json:"displayName,omitempty" yaml:"displayName,omitempty" mapstructure:"displayName"`
 	ParameterizedSpec `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 

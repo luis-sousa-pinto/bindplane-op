@@ -189,6 +189,7 @@ const CUSTOM_PROCESSOR = {
     displayName: "Custom",
     description: "Insert a custom OpenTelemetry processor configuration.",
     version: 0,
+    labels: [],
   },
   spec: {
     telemetryTypes: ["metrics", "logs", "traces"],
@@ -524,6 +525,7 @@ describe("ProcessorDialogComponent", () => {
             processors: [
               {
                 type: "custom",
+                displayName: "Awesome Processor",
                 parameters: [
                   {
                     name: "telemetry_types",
@@ -596,8 +598,13 @@ describe("ProcessorDialogComponent", () => {
     await screen.findByText("Edit Processor: Custom");
 
     // Change the value of the textbox
-    fireEvent.change(screen.getByRole("textbox"), {
+    fireEvent.change(screen.getByTestId("yaml-editor"), {
       target: { value: "edited" },
+    });
+
+    // Change the display name
+    fireEvent.change(screen.getByLabelText("Display Name"), {
+      target: { value: "Awesome Processor" },
     });
 
     // Save it
@@ -605,7 +612,8 @@ describe("ProcessorDialogComponent", () => {
 
     // Verify we're back on the main view and Custom is present
     await screen.findByText("Source File: Processors");
-    screen.getByText("Custom");
+    screen.getByText("Awesome Processor");
+    screen.getByText("Custom:");
     screen.getByText("Save").click();
 
     await waitFor(() => expect(saveCalled).toBe(true));
@@ -625,6 +633,7 @@ describe("ProcessorDialogComponent", () => {
             processors: [
               {
                 type: "custom",
+                displayName: "Rad Processor",
                 parameters: [
                   {
                     name: "telemetry_types",
@@ -694,8 +703,12 @@ describe("ProcessorDialogComponent", () => {
     const editButton = await screen.findByTestId("edit-processor-0");
     editButton.click();
 
-    fireEvent.change(screen.getByRole("textbox"), {
+    fireEvent.change(screen.getByTestId("yaml-editor"), {
       target: { value: "edited" },
+    });
+
+    fireEvent.change(screen.getByLabelText("Display Name"), {
+      target: { value: "Rad Processor" },
     });
 
     screen.getByText("Done").click();
@@ -894,7 +907,7 @@ async function addCustomProcessorToSource(screen: Screen) {
 
   // Go to the configure view
   await screen.findByText("Add Processor: Custom");
-  fireEvent.change(screen.getByRole("textbox"), {
+  fireEvent.change(screen.getByTestId("yaml-editor"), {
     target: { value: "blah" },
   });
 
@@ -915,7 +928,7 @@ async function addCustomProcessorToDestination(screen: Screen) {
 
   // Go to the configure view
   await screen.findByText("Add Processor: Custom");
-  fireEvent.change(screen.getByRole("textbox"), {
+  fireEvent.change(screen.getByTestId("yaml-editor"), {
     target: { value: "blah" },
   });
 

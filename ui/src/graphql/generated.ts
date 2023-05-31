@@ -376,6 +376,7 @@ export type Processor = {
 
 export type ProcessorInput = {
   disabled?: InputMaybe<Scalars['Boolean']>;
+  displayName?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   parameters?: InputMaybe<Array<ParameterInput>>;
   type?: InputMaybe<Scalars['String']>;
@@ -533,6 +534,7 @@ export type RemoveAgentConfigurationInput = {
 export type ResourceConfiguration = {
   __typename?: 'ResourceConfiguration';
   disabled: Scalars['Boolean'];
+  displayName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   parameters?: Maybe<Array<Parameter>>;
   processors?: Maybe<Array<ResourceConfiguration>>;
@@ -887,7 +889,7 @@ export type GetConfigurationQueryVariables = Exact<{
 }>;
 
 
-export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null, version: number }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
+export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null, version: number }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
 
 export type DestinationsAndTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2499,12 +2501,14 @@ export const GetConfigurationDocument = gql`
       sources {
         type
         name
+        displayName
         parameters {
           name
           value
         }
         processors {
           type
+          displayName
           parameters {
             name
             value
@@ -2516,12 +2520,14 @@ export const GetConfigurationDocument = gql`
       destinations {
         type
         name
+        displayName
         parameters {
           name
           value
         }
         processors {
           type
+          displayName
           parameters {
             name
             value

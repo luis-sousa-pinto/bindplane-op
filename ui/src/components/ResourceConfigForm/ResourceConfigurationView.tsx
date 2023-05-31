@@ -23,6 +23,8 @@ export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 export interface FormValues {
   // The name of the Source or Destination
   name?: string;
+  // The display name of the Source or Processor
+  displayName?: string;
   // The values for the Parameters
   [key: string]: any;
   // The inline processors configured for the Source or Destination
@@ -31,7 +33,7 @@ export interface FormValues {
 
 interface ResourceConfigurationViewProps {
   // Display name for the resource
-  displayName: string;
+  resourceTypeDisplayName: string;
 
   description: string;
 
@@ -50,6 +52,9 @@ interface ResourceConfigurationViewProps {
   // If present the form will have a name field at the top and will be sent
   // as the formValues["name"] key.
   includeNameField?: boolean;
+
+  // The initial display name, saved as as the formValues["displayName"] key.
+  displayName?: string;
 
   // Used to validate the name field if includeNameField is present.
   existingResourceNames?: string[];
@@ -81,11 +86,12 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 }
 
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
-  displayName,
+  resourceTypeDisplayName,
   description,
   parameters,
   parameterDefinitions,
   includeNameField,
+  displayName,
   existingResourceNames,
   kind,
   onDelete,
@@ -105,11 +111,12 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
 
   return (
     <ConfigureResourceView
-      displayName={displayName}
+      resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
       kind={kind}
       formValues={formValues}
       includeNameField={includeNameField}
+      displayName={displayName}
       existingResourceNames={existingResourceNames}
       parameterDefinitions={parameterDefinitions}
       onBack={onBack}
@@ -129,12 +136,14 @@ const MemoizedComponent = memo(ResourceConfigurationViewComponent);
 export const ResourceConfigurationView: React.FC<
   ResourceConfigurationViewProps
 > = (props) => {
-  const { parameterDefinitions, parameters, includeNameField } = props;
+  const { parameterDefinitions, parameters, includeNameField, displayName } =
+    props;
 
   const initValues = initFormValues(
     parameterDefinitions,
     parameters,
-    includeNameField
+    includeNameField,
+    displayName
   );
 
   const initErrors = initFormErrors(

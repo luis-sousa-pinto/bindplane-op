@@ -167,7 +167,7 @@ describe("ResourceForm component", () => {
     render(
       <ResourceConfigForm
         kind="destination"
-        displayName={ResourceType2.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType2.metadata.displayName!}
         description={ResourceType2.metadata.description!}
         parameterDefinitions={ResourceType2.spec.parameters}
       />
@@ -180,7 +180,7 @@ describe("ResourceForm component", () => {
     render(
       <ResourceConfigForm
         kind="destination"
-        displayName={ResourceType2.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType2.metadata.displayName!}
         description={ResourceType2.metadata.description!}
         parameterDefinitions={ResourceType2.spec.parameters}
       />
@@ -197,7 +197,7 @@ describe("ResourceForm component", () => {
     render(
       <ResourceConfigForm
         kind="destination"
-        displayName={ResourceType3.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType3.metadata.displayName!}
         description={ResourceType3.metadata.description!}
         parameterDefinitions={ResourceType3.spec.parameters}
       />
@@ -228,7 +228,7 @@ describe("ResourceForm component", () => {
       <ResourceConfigForm
         onSave={onSave}
         kind="source"
-        displayName={ResourceType1.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType1.metadata.displayName!}
         description={ResourceType1.metadata.description!}
         parameterDefinitions={ResourceType1.spec.parameters}
         includeNameField
@@ -267,7 +267,7 @@ describe("ResourceForm component", () => {
       <ResourceConfigForm
         onSave={onSave}
         kind="source"
-        displayName={ResourceType1.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType1.metadata.displayName!}
         description={ResourceType1.metadata.description!}
         parameterDefinitions={ResourceType1.spec.parameters}
         includeNameField
@@ -296,7 +296,7 @@ describe("ResourceForm component", () => {
           saveCalled = true;
         }}
         kind="destination"
-        displayName={ResourceType1.metadata.displayName!}
+        resourceTypeDisplayName={ResourceType1.metadata.displayName!}
         description={ResourceType1.metadata.description!}
         parameterDefinitions={ResourceType1.spec.parameters}
         includeNameField
@@ -334,7 +334,7 @@ describe("ResourceForm component", () => {
           saveCalled = true;
         }}
         kind="destination"
-        displayName={"Title"}
+        resourceTypeDisplayName={"Title"}
         description={ResourceType1.metadata.description!}
         parameterDefinitions={definitions}
       />
@@ -370,7 +370,7 @@ describe("ResourceForm component", () => {
             saveCalled = true;
           }}
           kind="destination"
-          displayName={"Title"}
+          resourceTypeDisplayName={"Title"}
           description={ResourceType1.metadata.description!}
           parameterDefinitions={[mapParameter]}
         />
@@ -388,7 +388,7 @@ describe("ResourceForm component", () => {
             saveCalled = true;
           }}
           kind="destination"
-          displayName={"Title"}
+          resourceTypeDisplayName={"Title"}
           description={ResourceType1.metadata.description!}
           parameterDefinitions={[mapParameter]}
         />
@@ -409,7 +409,7 @@ describe("ResourceForm component", () => {
         <ResourceConfigForm
           onSave={() => {}}
           kind="source"
-          displayName={"Title"}
+          resourceTypeDisplayName={"Title"}
           description={""}
           parameterDefinitions={[
             stringDef,
@@ -649,7 +649,7 @@ describe("ConfigureResourceContent readOnly", () => {
     render(
       <ConfigureResourceContent
         kind={"source"}
-        displayName={""}
+        resourceTypeDisplayName={""}
         description={""}
         formValues={{}}
         parameterDefinitions={[]}
@@ -669,7 +669,7 @@ describe("ConfigureResourceContent readOnly", () => {
     render(
       <ConfigureResourceContent
         kind={"source"}
-        displayName={""}
+        resourceTypeDisplayName={""}
         description={""}
         formValues={{}}
         parameterDefinitions={[]}

@@ -34,7 +34,7 @@ const edgeTypes = {
   configurationEdge: ConfigurationEdge,
 };
 
-export const TARGET_OFFSET_MULTIPLIER = 250;
+export const TARGET_OFFSET_MULTIPLIER = 300;
 
 interface ConfigurationFlowProps {
   period: string;

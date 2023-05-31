@@ -9,7 +9,7 @@ describe("ConfigureResourceView", () => {
       <MockedProvider>
         <ConfigureResourceView
           kind={"destination"}
-          displayName={"Friendly Name"}
+          resourceTypeDisplayName={"Friendly Name"}
           description={"description"}
           paused={false}
           formValues={{}}
@@ -29,7 +29,7 @@ describe("ConfigureResourceView", () => {
       <MockedProvider>
         <ConfigureResourceView
           kind={"destination"}
-          displayName={"Friendly Name"}
+          resourceTypeDisplayName={"Friendly Name"}
           description={"description"}
           paused={true}
           formValues={{}}

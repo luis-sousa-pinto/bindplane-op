@@ -288,7 +288,9 @@ export const StepThree: React.FC = () => {
 
     return (
       <EditResourceDialog
-        displayName={formValues.destination.resourceConfiguration.name!}
+        resourceTypeDisplayName={
+          formValues.destination.resourceConfiguration.name!
+        }
         description={currentDestinationType.metadata.description ?? ""}
         fullWidth
         maxWidth="sm"

@@ -1,11 +1,5 @@
 import { gql } from "@apollo/client";
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { memo, useMemo, useState } from "react";
 import { ConfirmDeleteResourceDialog } from "../ConfirmDeleteResourceDialog";
@@ -15,10 +9,9 @@ import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPDestination } from "../../utils/classes";
 import { FormValues } from "../ResourceConfigForm";
 import { classes } from "../../utils/styles";
-import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
-import { truncateLabel } from "../../utils/graph/utils";
 import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
 import { trimVersion } from "../../utils/version-helpers";
+import { ResourceCard } from "./ResourceCard";
 
 import styles from "./cards.module.scss";
 
@@ -103,10 +96,11 @@ interface ResourceDestinationCardProps {
   disabled?: boolean;
 }
 
-
-const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
-  ({ name, destinationIndex, disabled }) => {
-  const { configuration, refetchConfiguration,  readOnlyGraph } = usePipelineGraph();
+const ResourceDestinationCardComponent: React.FC<
+  ResourceDestinationCardProps
+> = ({ name, destinationIndex, disabled }) => {
+  const { configuration, refetchConfiguration, readOnlyGraph } =
+    usePipelineGraph();
   const { enqueueSnackbar } = useSnackbar();
   const [editing, setEditing] = useState(false);
   const [confirmDeleteOpen, setDeleteOpen] = useState(false);
@@ -124,7 +118,6 @@ const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
     variables: { name: versionedName || name },
     fetchPolicy: "cache-and-network",
   });
-
 
   function closeEditDialog() {
     setEditing(false);
@@ -325,53 +318,16 @@ const ResourceDestinationCardComponent: React.FC<ResourceDestinationCardProps> =
           : undefined,
       ])}
     >
-      <Card
-        className={classes([
-          styles["resource-card"],
-          disabled ? styles.disabled : undefined,
-          data.destinationWithType.destination?.spec.disabled
-            ? styles.paused
-            : undefined,
-        ])}
+      <ResourceCard
+        name={name}
+        icon={data.destinationWithType?.destinationType?.metadata.icon}
+        paused={data.destinationWithType.destination?.spec.disabled}
+        disabled={disabled}
         onClick={() => setEditing(true)}
-      >
-        <CardActionArea className={styles.action}>
-          <NoMaxWidthTooltip title={name.length > 20 ? name : ""}>
-            <CardContent>
-              <Stack alignItems="center">
-                <span
-                  className={styles.icon}
-                  style={{
-                    backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
-                  }}
-                />
-                <Typography
-                  component="div"
-                  fontWeight={600}
-                  gutterBottom
-                  fontSize={name.length > 15 ? 11 : 16}
-                >
-                  {truncateLabel(name, 20)}
-                </Typography>
-                {data.destinationWithType.destination?.spec.disabled && (
-                  <Typography
-                    component="div"
-                    fontWeight={400}
-                    fontSize={14}
-                    variant="overline"
-                  >
-                    Paused
-                  </Typography>
-                )}
-              </Stack>
-            </CardContent>
-          </NoMaxWidthTooltip>
-        </CardActionArea>
-      </Card>
-
+      />
       <EditResourceDialog
         kind="destination"
-        displayName={name}
+        resourceTypeDisplayName={name}
         description={
           data.destinationWithType.destinationType.metadata.description ?? ""
         }

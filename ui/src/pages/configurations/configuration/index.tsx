@@ -38,12 +38,14 @@ gql`
         sources {
           type
           name
+          displayName
           parameters {
             name
             value
           }
           processors {
             type
+            displayName
             parameters {
               name
               value
@@ -55,12 +57,14 @@ gql`
         destinations {
           type
           name
+          displayName
           parameters {
             name
             value
           }
           processors {
             type
+            displayName
             parameters {
               name
               value

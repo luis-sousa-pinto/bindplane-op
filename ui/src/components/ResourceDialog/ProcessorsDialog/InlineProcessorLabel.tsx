@@ -165,7 +165,13 @@ export const InlineProcessorLabel: React.FC<Props> = ({
       >
         <Stack direction={"row"} spacing={1}>
           <MenuIcon className={styles["hover-icon"]} />
-          <Typography>{data?.processorType?.metadata.displayName}</Typography>
+          <Typography fontWeight={600}>
+            {data?.processorType?.metadata.displayName}
+            {processor.displayName && ":"}
+          </Typography>
+          {processor.displayName && (
+            <Typography>{processor.displayName}</Typography>
+          )}
         </Stack>
 
         <IconButton onClick={onEdit} data-testid={`edit-processor-${index}`}>

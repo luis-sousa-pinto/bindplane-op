@@ -45,7 +45,10 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
   return (
     <>
       <ResourceConfigForm
-        displayName={data?.processorType?.metadata.displayName ?? ""}
+        resourceTypeDisplayName={
+          data?.processorType?.metadata.displayName ?? ""
+        }
+        displayName={processors[editingIndex]?.displayName ?? ""}
         description={data?.processorType?.metadata.description ?? ""}
         kind={"processor"}
         parameterDefinitions={data?.processorType?.spec.parameters ?? []}

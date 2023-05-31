@@ -3,6 +3,7 @@ import { Parameter, ParameterDefinition } from "../../../graphql/generated";
 import { ParameterInput } from "../../ResourceConfigForm/ParameterInput";
 import { useResourceFormValues } from "../../ResourceConfigForm/ResourceFormContext";
 import { satisfiesRelevantIf } from "../../ResourceConfigForm/satisfiesRelevantIf";
+import { ResourceDisplayNameInput } from "../../ResourceConfigForm/ParameterInput/ResourceDisplayNameInput";
 
 import mixins from "../../../styles/mixins.module.scss";
 
@@ -12,16 +13,23 @@ interface Props {
 }
 
 export const ProcessorForm: React.FC<Props> = ({ parameterDefinitions }) => {
-  const { formValues } = useResourceFormValues();
+  const { formValues, setFormValues } = useResourceFormValues();
   return (
     <form>
       <Grid container spacing={3} className={mixins["mb-5"]}>
+        <Grid item xs={6}>
+          <ResourceDisplayNameInput
+            value={formValues.displayName}
+            onValueChange={(v: string) =>
+              setFormValues((prev) => ({ ...prev, displayName: v }))
+            }
+          />
+        </Grid>
         <Grid item xs={12}>
           <Typography fontWeight={600} fontSize={24}>
             Configure
           </Typography>
         </Grid>
-
         {parameterDefinitions.length === 0 ? (
           <Grid item>
             <Typography>No additional configuration needed.</Typography>

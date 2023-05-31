@@ -29,7 +29,7 @@ export const ConfigureView: React.FC<ConfigureViewProps> = ({
       existingResourceNames={resources?.map((r) => r.metadata.name)}
       onBack={clearResource}
       onSave={(fv) => handleSaveNew(fv, selected)}
-      displayName={selected.metadata.displayName ?? ""}
+      resourceTypeDisplayName={selected.metadata.displayName ?? ""}
       description={selected.metadata.description ?? ""}
       parameterDefinitions={selected.spec.parameters ?? []}
     />

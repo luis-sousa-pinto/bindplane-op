@@ -363,11 +363,12 @@ type ComplexityRoot struct {
 	}
 
 	ResourceConfiguration struct {
-		Disabled   func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Parameters func(childComplexity int) int
-		Processors func(childComplexity int) int
-		Type       func(childComplexity int) int
+		Disabled    func(childComplexity int) int
+		DisplayName func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Parameters  func(childComplexity int) int
+		Processors  func(childComplexity int) int
+		Type        func(childComplexity int) int
 	}
 
 	ResourceTypeSpec struct {
@@ -1976,6 +1977,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ResourceConfiguration.Disabled(childComplexity), true
 
+	case "ResourceConfiguration.displayName":
+		if e.complexity.ResourceConfiguration.DisplayName == nil {
+			break
+		}
+
+		return e.complexity.ResourceConfiguration.DisplayName(childComplexity), true
+
 	case "ResourceConfiguration.name":
 		if e.complexity.ResourceConfiguration.Name == nil {
 			break
@@ -2555,6 +2563,7 @@ type ConfigurationSpec {
 
 type ResourceConfiguration {
   name: String
+  displayName: String
   type: String
   parameters: [Parameter!]
   processors: [ResourceConfiguration!]
@@ -2947,6 +2956,7 @@ input ParameterInput {
 
 input ProcessorInput {
   name: String
+  displayName: String
   type: String
   parameters: [ParameterInput!]
   disabled: Boolean
@@ -5814,6 +5824,8 @@ func (ec *executionContext) fieldContext_ConfigurationSpec_sources(ctx context.C
 			switch field.Name {
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_ResourceConfiguration_displayName(ctx, field)
 			case "type":
 				return ec.fieldContext_ResourceConfiguration_type(ctx, field)
 			case "parameters":
@@ -5867,6 +5879,8 @@ func (ec *executionContext) fieldContext_ConfigurationSpec_destinations(ctx cont
 			switch field.Name {
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_ResourceConfiguration_displayName(ctx, field)
 			case "type":
 				return ec.fieldContext_ResourceConfiguration_type(ctx, field)
 			case "parameters":
@@ -10430,6 +10444,8 @@ func (ec *executionContext) fieldContext_ParameterizedSpec_processors(ctx contex
 			switch field.Name {
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_ResourceConfiguration_displayName(ctx, field)
 			case "type":
 				return ec.fieldContext_ResourceConfiguration_type(ctx, field)
 			case "parameters":
@@ -12830,6 +12846,47 @@ func (ec *executionContext) fieldContext_ResourceConfiguration_name(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _ResourceConfiguration_displayName(ctx context.Context, field graphql.CollectedField, obj *model1.ResourceConfiguration) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceConfiguration_displayName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DisplayName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceConfiguration_displayName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceConfiguration",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ResourceConfiguration_type(ctx context.Context, field graphql.CollectedField, obj *model1.ResourceConfiguration) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ResourceConfiguration_type(ctx, field)
 	if err != nil {
@@ -12956,6 +13013,8 @@ func (ec *executionContext) fieldContext_ResourceConfiguration_processors(ctx co
 			switch field.Name {
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_ResourceConfiguration_displayName(ctx, field)
 			case "type":
 				return ec.fieldContext_ResourceConfiguration_type(ctx, field)
 			case "parameters":
@@ -16980,7 +17039,7 @@ func (ec *executionContext) unmarshalInputProcessorInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "type", "parameters", "disabled"}
+	fieldsInOrder := [...]string{"name", "displayName", "type", "parameters", "disabled"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16992,6 +17051,14 @@ func (ec *executionContext) unmarshalInputProcessorInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			it.Name, err = ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalOString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19631,6 +19698,10 @@ func (ec *executionContext) _ResourceConfiguration(ctx context.Context, sel ast.
 		case "name":
 
 			out.Values[i] = ec._ResourceConfiguration_name(ctx, field, obj)
+
+		case "displayName":
+
+			out.Values[i] = ec._ResourceConfiguration_displayName(ctx, field, obj)
 
 		case "type":
 

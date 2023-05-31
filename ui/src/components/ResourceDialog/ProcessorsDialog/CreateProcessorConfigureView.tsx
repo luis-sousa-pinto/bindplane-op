@@ -76,7 +76,11 @@ const CreateProcessorConfigureViewComponent: React.FC<
 export const CreateProcessorConfigureView: React.FC<
   CreateProcessorConfigureViewProps
 > = (props) => {
-  const initValues = initFormValues(props.processorType.spec.parameters);
+  const initValues = initFormValues(
+    props.processorType.spec.parameters,
+    null,
+    false
+  );
   const initErrors = initFormErrors(
     props.processorType.spec.parameters,
     initValues,

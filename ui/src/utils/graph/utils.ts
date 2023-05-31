@@ -4,7 +4,7 @@ import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";
 import { Graph, GraphMetric } from "../../graphql/generated";
 
-export const GRAPH_NODE_OFFSET = 160;
+export const GRAPH_NODE_OFFSET = 150;
 export const GRAPH_PADDING = 300;
 
 export const enum Page {
@@ -62,12 +62,12 @@ export function getNodesAndEdges(
   //       the spacing.
 
   const offset = GRAPH_NODE_OFFSET;
-  const sourceOffsetMultiplier = 250;
+  const sourceOffsetMultiplier = 350;
 
   // This number gives the horizontal spacing between sources and targets
   // TODO: make function of Cards bounding box
   const processorYoffset = 35;
-  const targetProcOffsetMultiplier = 270;
+  const targetProcOffsetMultiplier = 330;
 
   // if there's only one source or one destination we need to layout add source and add destination cards
   // we also need to add edges between the source/destination and the add source/add destination cards

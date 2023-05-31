@@ -9,6 +9,7 @@ import { TitleSection, ContentSection } from "../DialogComponents";
 import { initFormErrors } from "./init-form-values";
 import { ParameterSection } from "./ParameterSection";
 import { PauseIcon, PlayIcon } from "../Icons";
+import { ResourceDisplayNameInput } from "./ParameterInput/ResourceDisplayNameInput";
 
 import mixins from "../../styles/mixins.module.scss";
 
@@ -39,10 +40,11 @@ function groupParameters(parameters: ParameterDefinition[]): ParameterGroup[] {
 
 interface ConfigureResourceViewProps {
   kind: "source" | "destination" | "processor";
-  displayName: string;
+  resourceTypeDisplayName: string;
   description: string;
   formValues: { [key: string]: any };
   includeNameField?: boolean;
+  displayName?: string;
   existingResourceNames?: string[];
   parameterDefinitions: ParameterDefinition[];
   onBack?: () => void;
@@ -57,10 +59,11 @@ interface ConfigureResourceViewProps {
 
 export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   kind,
-  displayName,
+  resourceTypeDisplayName,
   description,
   formValues,
   includeNameField,
+  displayName,
   existingResourceNames,
   parameterDefinitions,
   onBack,
@@ -136,8 +139,8 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   const title = useMemo(() => {
     const capitalizedResource = kind[0].toUpperCase() + kind.slice(1);
     const action = purpose === "create" ? "Add" : "Edit";
-    return `${action} ${capitalizedResource}: ${displayName}`;
-  }, [displayName, kind, purpose]);
+    return `${action} ${capitalizedResource}: ${resourceTypeDisplayName}`;
+  }, [resourceTypeDisplayName, kind, purpose]);
 
   return (
     <>
@@ -159,7 +162,17 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
                 />
               </Grid>
             )}
-
+            {kind !== "destination" && (
+              <Grid item xs={6}>
+                <ResourceDisplayNameInput
+                  readOnly={readOnly}
+                  value={displayName}
+                  onValueChange={(v: string) =>
+                    setFormValues((prev) => ({ ...prev, displayName: v }))
+                  }
+                />
+              </Grid>
+            )}
             <Grid item xs={12}>
               <Typography fontWeight={600} fontSize={24}>
                 Configure
