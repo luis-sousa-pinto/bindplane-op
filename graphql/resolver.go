@@ -782,6 +782,13 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		if position != string(model.MeasurementPositionDestinationAfterProcessors) {
 			continue
 		}
+		
+		splitStrs := strings.Split(resourceName, "-")
+		if len(splitStrs) > 1 {
+			splitStrs = splitStrs[0:len(splitStrs)-1]
+		}
+		resourceName = strings.Join(splitStrs, "-")
+
 		includeDestination(metric, pipelineType, resourceName)
 		includeConfiguration(metric, pipelineType)
 

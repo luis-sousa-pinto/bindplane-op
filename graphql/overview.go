@@ -127,7 +127,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 		}
 		activeFlags = activeFlags | configUsage.ActiveFlags()
 
-		for _, d := range c.Spec.Destinations {
+		for i, d := range c.Spec.Destinations {
 			// ignore inline destinations which are not supported in the UI
 			if d.Name == "" {
 				continue
@@ -147,7 +147,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 			if destNode, ok := destNodes[destinationKey]; !ok {
 				destAttrs := graph.MakeAttributes(string(model.KindDestination), destinationKey)
 				destAttrs.AddAttribute("agentCount", len(agentIDs))
-				destAttrs.AddAttribute("activeTypeFlags", configUsage.ActiveFlagsForDestination(d.Name))
+				destAttrs.AddAttribute("activeTypeFlags", configUsage.ActiveFlagsForDestination(fmt.Sprintf("%s-%d", model.TrimVersion(d.Name), i)))
 
 				destinationNode := &graph.Node{
 					ID:         destNodeID,
