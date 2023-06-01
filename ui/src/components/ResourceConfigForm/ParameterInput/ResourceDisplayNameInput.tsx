@@ -38,7 +38,7 @@ const ResourceDisplayNameInputComponent: React.FC<
         name={"displayName"}
         fullWidth
         size="small"
-        label={"Display Name"}
+        label={"Short Description"}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"

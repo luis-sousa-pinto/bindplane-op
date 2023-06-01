@@ -602,8 +602,8 @@ describe("ProcessorDialogComponent", () => {
       target: { value: "edited" },
     });
 
-    // Change the display name
-    fireEvent.change(screen.getByLabelText("Display Name"), {
+    // Change the Short Description
+    fireEvent.change(screen.getByLabelText("Short Description"), {
       target: { value: "Awesome Processor" },
     });
 
@@ -707,7 +707,7 @@ describe("ProcessorDialogComponent", () => {
       target: { value: "edited" },
     });
 
-    fireEvent.change(screen.getByLabelText("Display Name"), {
+    fireEvent.change(screen.getByLabelText("Short Description"), {
       target: { value: "Rad Processor" },
     });
 
