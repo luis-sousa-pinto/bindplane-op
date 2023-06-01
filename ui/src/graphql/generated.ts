@@ -502,6 +502,8 @@ export type QueryProcessorTypeArgs = {
 export type QuerySnapshotArgs = {
   agentID: Scalars['String'];
   pipelineType: PipelineType;
+  position?: InputMaybe<Scalars['String']>;
+  resourceName?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -781,9 +783,19 @@ export type GetConfigRolloutStatusQueryVariables = Exact<{
 
 export type GetConfigRolloutStatusQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', pending: boolean, current: boolean, latest: boolean, rollout: { __typename?: 'Rollout', status: number, phase: number, completed: number, errors: number, pending: number, waiting: number } } } | null };
 
+export type AgentsWithConfigurationQueryVariables = Exact<{
+  selector?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type AgentsWithConfigurationQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', agents: Array<{ __typename?: 'Agent', id: string, name: string }> } };
+
 export type SnapshotQueryVariables = Exact<{
   agentID: Scalars['String'];
   pipelineType: PipelineType;
+  position?: InputMaybe<Scalars['String']>;
+  resourceName?: InputMaybe<Scalars['String']>;
 }>;
 
 
@@ -1820,9 +1832,53 @@ export function useGetConfigRolloutStatusLazyQuery(baseOptions?: Apollo.LazyQuer
 export type GetConfigRolloutStatusQueryHookResult = ReturnType<typeof useGetConfigRolloutStatusQuery>;
 export type GetConfigRolloutStatusLazyQueryHookResult = ReturnType<typeof useGetConfigRolloutStatusLazyQuery>;
 export type GetConfigRolloutStatusQueryResult = Apollo.QueryResult<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>;
+export const AgentsWithConfigurationDocument = gql`
+    query agentsWithConfiguration($selector: String, $query: String) {
+  agents(selector: $selector, query: $query) {
+    agents {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useAgentsWithConfigurationQuery__
+ *
+ * To run a query within a React component, call `useAgentsWithConfigurationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAgentsWithConfigurationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAgentsWithConfigurationQuery({
+ *   variables: {
+ *      selector: // value for 'selector'
+ *      query: // value for 'query'
+ *   },
+ * });
+ */
+export function useAgentsWithConfigurationQuery(baseOptions?: Apollo.QueryHookOptions<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>(AgentsWithConfigurationDocument, options);
+      }
+export function useAgentsWithConfigurationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>(AgentsWithConfigurationDocument, options);
+        }
+export type AgentsWithConfigurationQueryHookResult = ReturnType<typeof useAgentsWithConfigurationQuery>;
+export type AgentsWithConfigurationLazyQueryHookResult = ReturnType<typeof useAgentsWithConfigurationLazyQuery>;
+export type AgentsWithConfigurationQueryResult = Apollo.QueryResult<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>;
 export const SnapshotDocument = gql`
-    query snapshot($agentID: String!, $pipelineType: PipelineType!) {
-  snapshot(agentID: $agentID, pipelineType: $pipelineType) {
+    query snapshot($agentID: String!, $pipelineType: PipelineType!, $position: String, $resourceName: String) {
+  snapshot(
+    agentID: $agentID
+    pipelineType: $pipelineType
+    position: $position
+    resourceName: $resourceName
+  ) {
     metrics {
       name
       timestamp
@@ -1867,6 +1923,8 @@ export const SnapshotDocument = gql`
  *   variables: {
  *      agentID: // value for 'agentID'
  *      pipelineType: // value for 'pipelineType'
+ *      position: // value for 'position'
+ *      resourceName: // value for 'resourceName'
  *   },
  * });
  */

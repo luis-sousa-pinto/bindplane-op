@@ -349,7 +349,7 @@ type ComplexityRoot struct {
 		ProcessorType         func(childComplexity int, name string) int
 		ProcessorTypes        func(childComplexity int) int
 		Processors            func(childComplexity int) int
-		Snapshot              func(childComplexity int, agentID string, pipelineType otel.PipelineType) int
+		Snapshot              func(childComplexity int, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) int
 		Source                func(childComplexity int, name string) int
 		SourceType            func(childComplexity int, name string) int
 		SourceTypes           func(childComplexity int) int
@@ -513,7 +513,7 @@ type QueryResolver interface {
 	DestinationsInConfigs(ctx context.Context) ([]*model1.Destination, error)
 	DestinationTypes(ctx context.Context) ([]*model1.DestinationType, error)
 	DestinationType(ctx context.Context, name string) (*model1.DestinationType, error)
-	Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType) (*model.Snapshot, error)
+	Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model.Snapshot, error)
 	AgentMetrics(ctx context.Context, period string, ids []string) (*model.GraphMetrics, error)
 	ConfigurationMetrics(ctx context.Context, period string, name *string) (*model.GraphMetrics, error)
 	OverviewMetrics(ctx context.Context, period string, configIDs []string, destinationIDs []string) (*model.GraphMetrics, error)
@@ -1909,7 +1909,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Snapshot(childComplexity, args["agentID"].(string), args["pipelineType"].(otel.PipelineType)), true
+		return e.complexity.Query.Snapshot(childComplexity, args["agentID"].(string), args["pipelineType"].(otel.PipelineType), args["position"].(*string), args["resourceName"].(*string)), true
 
 	case "Query.source":
 		if e.complexity.Query.Source == nil {
@@ -2910,7 +2910,7 @@ type Query {
   destinationTypes: [DestinationType!]!
   destinationType(name: String!): DestinationType
 
-  snapshot(agentID: String!, pipelineType: PipelineType!): Snapshot!
+  snapshot(agentID: String!, pipelineType: PipelineType!, position: String, resourceName: String): Snapshot!
 
   agentMetrics(period: String!, ids: [ID!]): GraphMetrics!
   configurationMetrics(period: String!, name: String): GraphMetrics!
@@ -3395,6 +3395,24 @@ func (ec *executionContext) field_Query_snapshot_args(ctx context.Context, rawAr
 		}
 	}
 	args["pipelineType"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["position"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["position"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["resourceName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resourceName"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resourceName"] = arg3
 	return args, nil
 }
 
@@ -12300,7 +12318,7 @@ func (ec *executionContext) _Query_snapshot(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Snapshot(rctx, fc.Args["agentID"].(string), fc.Args["pipelineType"].(otel.PipelineType))
+		return ec.resolvers.Query().Snapshot(rctx, fc.Args["agentID"].(string), fc.Args["pipelineType"].(otel.PipelineType), fc.Args["position"].(*string), fc.Args["resourceName"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

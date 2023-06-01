@@ -3,11 +3,12 @@ import { memo } from "react";
 
 import styles from "./dialog-components.module.scss";
 
-const ContentSectionComponent: React.FC<React.PropsWithChildren<{}>> = ({
+const ContentSectionComponent: React.FC<React.PropsWithChildren<{ dividers?: boolean }>> = ({
+  dividers,
   children,
 }) => {
   return (
-    <DialogContent classes={{ root: styles.content }}>{children}</DialogContent>
+    <DialogContent dividers={dividers} classes={{ root: styles.content }}>{children}</DialogContent>
   );
 };
 

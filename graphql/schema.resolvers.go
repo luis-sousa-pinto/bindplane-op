@@ -314,8 +314,8 @@ func (r *queryResolver) DestinationType(ctx context.Context, name string) (*mode
 }
 
 // Snapshot is the resolver for the snapshot field.
-func (r *queryResolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType) (*model1.Snapshot, error) {
-	return r.Resolver.Snapshot(ctx, agentID, pipelineType)
+func (r *queryResolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model1.Snapshot, error) {
+	return r.Resolver.Snapshot(ctx, agentID, pipelineType, position, resourceName)
 }
 
 // AgentMetrics is the resolver for the agentMetrics field.

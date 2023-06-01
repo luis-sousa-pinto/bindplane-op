@@ -457,20 +457,21 @@ func (r *Resolver) DestinationsInConfigs(ctx context.Context) ([]*model.Destinat
 }
 
 // Snapshot returns a snapshot of the agent with the specified id and pipeline type
-func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType) (*model1.Snapshot, error) {
+func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model1.Snapshot, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	signals := &model1.Snapshot{}
+	store := r.Bindplane.Store()
 
 	// get the agent
-	agent, err := r.Bindplane.Store().Agent(ctx, agentID)
+	agent, err := store.Agent(ctx, agentID)
 	if err != nil {
 		return signals, err
 	}
 
 	// construct a reporting config for this agent
-	config, err := r.Bindplane.Store().AgentConfiguration(ctx, agent)
+	config, err := store.AgentConfiguration(ctx, agent)
 	if err != nil {
 		return signals, err
 	}
@@ -478,10 +479,15 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		return signals, fmt.Errorf("no configuration available for agent %s", agentID)
 	}
 
+	snapshotProcessorName := otel.SnapshotProcessorName
+	if position != nil && resourceName != nil {
+		snapshotProcessorName = model.SnapshotProcessor(model.MeasurementPosition(*position), *resourceName)
+	}
+
 	reportRequest := func(id string) protocol.Report {
 		rc := protocol.Report{
 			Snapshot: protocol.Snapshot{
-				Processor:    string(otel.SnapshotProcessorName),
+				Processor:    string(snapshotProcessorName),
 				PipelineType: pipelineType,
 				Endpoint: protocol.ReportEndpoint{
 					URL: fmt.Sprintf("%s/v1/otlphttp/v1/%s", r.Bindplane.BindPlaneURL(), pipelineType),
@@ -514,7 +520,8 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 
 		select {
 		case <-ctx.Done():
-		case signals.Logs = <-result:
+		case logs := <-result:
+			signals.Logs = record.ConvertLogs(logs)
 		}
 	case otel.Metrics:
 		id, result, cancel := r.Bindplane.Relayers().Metrics().AwaitResult()
@@ -526,7 +533,8 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 
 		select {
 		case <-ctx.Done():
-		case signals.Metrics = <-result:
+		case metrics := <-result:
+			signals.Metrics = record.ConvertMetrics(ctx, metrics)
 		}
 	case otel.Traces:
 		id, result, cancel := r.Bindplane.Relayers().Traces().AwaitResult()
@@ -538,7 +546,8 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 
 		select {
 		case <-ctx.Done():
-		case signals.Traces = <-result:
+		case traces := <-result:
+			signals.Traces = record.ConvertTraces(traces)
 		}
 	}
 

@@ -548,6 +548,7 @@ func evalSource(ctx context.Context, source *ResourceConfiguration, defaultName 
 	}
 
 	addMeasureProcessors(partials, MeasurementPositionSourceBeforeProcessors, src.Name(), rc)
+	addSnapshotProcessor(partials, MeasurementPositionSourceBeforeProcessors, src.Name(), rc)
 
 	// evaluate the processors associated with the source
 	for i, processor := range source.Processors {
@@ -562,6 +563,11 @@ func evalSource(ctx context.Context, source *ResourceConfiguration, defaultName 
 	addMeasureProcessors(partials, MeasurementPositionSourceAfterProcessors, src.Name(), rc)
 
 	return srcName, partials
+}
+
+// EvalProcessor exposes evalProcessor for observathon
+func EvalProcessor(ctx context.Context, processor *ResourceConfiguration, defaultName string, store ResourceStore, rc *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
+	return evalProcessor(ctx, processor, defaultName, store, rc, errorHandler)
 }
 
 func evalProcessor(ctx context.Context, processor *ResourceConfiguration, defaultName string, store ResourceStore, _ *renderContext, errorHandler TemplateErrorHandler) (string, otel.Partials) {
@@ -597,6 +603,7 @@ func evalDestination(ctx context.Context, idx int, destination *ResourceConfigur
 
 	d0partials := otel.NewPartials()
 	addMeasureProcessors(d0partials, MeasurementPositionDestinationBeforeProcessors, destName, rc)
+	addSnapshotProcessor(d0partials, MeasurementPositionDestinationBeforeProcessors, destName, rc)
 
 	destProcessors := otel.NewPartials()
 	// evaluate the processors associated with the destination
@@ -1154,6 +1161,25 @@ func addMeasureProcessor(partial *otel.Partial, processorName otel.ComponentID) 
 			"sampling_ratio": 1,
 		},
 	})
+}
+
+// SnapshotProcessor returns the ComponentID of the snapshot processor for a given position and resource name
+func SnapshotProcessor(position MeasurementPosition, resourceName string) otel.ComponentID {
+	if resourceName == "" {
+		return otel.SnapshotProcessorName
+	}
+	return otel.ComponentID(fmt.Sprintf("%s/_%s_%s", otel.SnapshotProcessorName, position, resourceName))
+}
+
+func addSnapshotProcessor(partials otel.Partials, position MeasurementPosition, resourceName string, rc *renderContext) {
+	if !rc.IncludeSnapshotProcessor {
+		return
+	}
+	for _, pipelineType := range []otel.PipelineType{otel.Logs, otel.Metrics, otel.Traces} {
+		processorName := SnapshotProcessor(position, resourceName)
+		partial := partials[pipelineType]
+		partial.Processors = append(partial.Processors, otel.ComponentMap{processorName: nil})
+	}
 }
 
 type pipelineUsage struct {

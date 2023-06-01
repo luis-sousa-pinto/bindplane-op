@@ -18,9 +18,11 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/collector/pdata/plog"
+	"go.opentelemetry.io/collector/pdata/pmetric"
+	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 
-	"github.com/observiq/bindplane-op/otlp/record"
 	"github.com/observiq/bindplane-op/server"
 )
 
@@ -30,32 +32,32 @@ const HeaderSessionID = "X-BindPlane-Session-ID"
 
 // Relayers is a wrapper around multiple Relayer instances used for different types of results
 type Relayers struct {
-	logs    *Relayer[[]*record.Log]
-	metrics *Relayer[[]*record.Metric]
-	traces  *Relayer[[]*record.Trace]
+	logs    *Relayer[plog.Logs]
+	metrics *Relayer[pmetric.Metrics]
+	traces  *Relayer[ptrace.Traces]
 }
 
 // NewRelayers returns a new set of Relayers
 func NewRelayers(logger *zap.Logger) *Relayers {
 	return &Relayers{
-		logs:    newRelayer[[]*record.Log](logger),
-		metrics: newRelayer[[]*record.Metric](logger),
-		traces:  newRelayer[[]*record.Trace](logger),
+		logs:    newRelayer[plog.Logs](logger),
+		metrics: newRelayer[pmetric.Metrics](logger),
+		traces:  newRelayer[ptrace.Traces](logger),
 	}
 }
 
 // Metrics returns the Relayer for metrics
-func (r *Relayers) Metrics() server.Relayer[[]*record.Metric] {
+func (r *Relayers) Metrics() server.Relayer[pmetric.Metrics] {
 	return r.metrics
 }
 
 // Logs returns the Relayer for logs
-func (r *Relayers) Logs() server.Relayer[[]*record.Log] {
+func (r *Relayers) Logs() server.Relayer[plog.Logs] {
 	return r.logs
 }
 
 // Traces returns the Relayer for traces
-func (r *Relayers) Traces() server.Relayer[[]*record.Trace] {
+func (r *Relayers) Traces() server.Relayer[ptrace.Traces] {
 	return r.traces
 }
 

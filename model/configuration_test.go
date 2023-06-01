@@ -673,6 +673,8 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_googlecloud-0:
         enabled: true
         sampling_ratio: 1
@@ -719,10 +721,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_logs_googlecloud-0
@@ -742,10 +746,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_metrics_googlecloud-0
@@ -848,6 +854,8 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_googlecloud-0:
         enabled: true
         sampling_ratio: 1
@@ -899,10 +907,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_logs_googlecloud-0
@@ -922,10 +932,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_metrics_googlecloud-0
@@ -1031,6 +1043,8 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_googlecloud-0:
         enabled: true
         sampling_ratio: 1
@@ -1082,10 +1096,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_logs_googlecloud-0
@@ -1105,10 +1121,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_metrics_googlecloud-0
@@ -1208,6 +1226,8 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_googlecloud-0:
         enabled: true
         sampling_ratio: 1
@@ -1256,10 +1276,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_logs_googlecloud-0
@@ -1279,10 +1301,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - resourceattributetransposer/googlecloud-0__processor0
                 - resourceattributetransposer/googlecloud-0__processor1
                 - throughputmeasurement/_d1_metrics_googlecloud-0
@@ -1377,6 +1401,9 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_cabin-production-logs-1: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_cabin-production-logs-1:
         enabled: true
         sampling_ratio: 1
@@ -1433,10 +1460,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_cabin-production-logs-1
+                - snapshotprocessor/_d0_cabin-production-logs-1
                 - throughputmeasurement/_d1_logs_cabin-production-logs-1
                 - batch/cabin-production-logs
                 - snapshotprocessor
@@ -1447,9 +1476,11 @@ service:
                 - plugin/source0__macos
                 - plugin/source0__journald
             processors:
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - throughputmeasurement/_d1_logs_googlecloud-0
                 - batch/googlecloud
                 - snapshotprocessor
@@ -1467,10 +1498,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - throughputmeasurement/_d1_metrics_googlecloud-0
                 - batch/googlecloud
                 - snapshotprocessor
@@ -1555,6 +1588,9 @@ processors:
             - from: from.attribute2
               to: to.attribute2
     snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_d0_googlecloud-1: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_googlecloud-0:
         enabled: true
         sampling_ratio: 1
@@ -1613,10 +1649,12 @@ service:
                 - plugin/source0__journald
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - throughputmeasurement/_d1_logs_googlecloud-0
                 - batch/googlecloud
                 - snapshotprocessor
@@ -1627,9 +1665,11 @@ service:
                 - plugin/source0__macos
                 - plugin/source0__journald
             processors:
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_d0_logs_googlecloud-1
+                - snapshotprocessor/_d0_googlecloud-1
                 - throughputmeasurement/_d1_logs_googlecloud-1
                 - batch/googlecloud
                 - snapshotprocessor
@@ -1647,10 +1687,12 @@ service:
                 - hostmetrics/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
                 - throughputmeasurement/_d1_metrics_googlecloud-0
                 - batch/googlecloud
                 - snapshotprocessor
@@ -1660,9 +1702,11 @@ service:
             receivers:
                 - hostmetrics/source0
             processors:
+                - snapshotprocessor/_s0_source0
                 - resourceattributetransposer/source0__processor0
                 - resourceattributetransposer/source0__processor1
                 - throughputmeasurement/_d0_metrics_googlecloud-1
+                - snapshotprocessor/_d0_googlecloud-1
                 - throughputmeasurement/_d1_metrics_googlecloud-1
                 - batch/googlecloud
                 - snapshotprocessor
@@ -2094,6 +2138,8 @@ processors:
     batch/_agent_metrics: null
     batch/destination0: null
     snapshotprocessor: null
+    snapshotprocessor/_d0_destination0-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_destination0-0:
         enabled: true
         sampling_ratio: 1
@@ -2152,8 +2198,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_logs_destination0-0
                 - batch/destination0
                 - snapshotprocessor
@@ -2171,8 +2219,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_metrics_destination0-0
                 - batch/destination0
                 - snapshotprocessor
@@ -2183,8 +2233,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_traces_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_traces_source0
                 - throughputmeasurement/_d0_traces_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_traces_destination0-0
                 - batch/destination0
                 - snapshotprocessor
@@ -2243,6 +2295,8 @@ processors:
     batch/_agent_metrics: null
     batch/destination0: null
     snapshotprocessor: null
+    snapshotprocessor/_d0_destination0-0: null
+    snapshotprocessor/_s0_source0: null
     throughputmeasurement/_d0_logs_destination0-0:
         enabled: true
         sampling_ratio: 1
@@ -2303,8 +2357,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_logs_source0
                 - throughputmeasurement/_d0_logs_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_logs_destination0-0
                 - batch/destination0
                 - snapshotprocessor
@@ -2322,8 +2378,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_metrics_source0
                 - throughputmeasurement/_d0_metrics_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_metrics_destination0-0
                 - batch/destination0
                 - snapshotprocessor
@@ -2334,8 +2392,10 @@ service:
                 - otlp/source0
             processors:
                 - throughputmeasurement/_s0_traces_source0
+                - snapshotprocessor/_s0_source0
                 - throughputmeasurement/_s1_traces_source0
                 - throughputmeasurement/_d0_traces_destination0-0
+                - snapshotprocessor/_d0_destination0-0
                 - throughputmeasurement/_d1_traces_destination0-0
                 - batch/destination0
                 - snapshotprocessor

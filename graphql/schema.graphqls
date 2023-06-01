@@ -493,7 +493,7 @@ type Query {
   destinationTypes: [DestinationType!]!
   destinationType(name: String!): DestinationType
 
-  snapshot(agentID: String!, pipelineType: PipelineType!): Snapshot!
+  snapshot(agentID: String!, pipelineType: PipelineType!, position: String, resourceName: String): Snapshot!
 
   agentMetrics(period: String!, ids: [ID!]): GraphMetrics!
   configurationMetrics(period: String!, name: String): GraphMetrics!

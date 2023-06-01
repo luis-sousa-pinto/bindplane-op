@@ -1,5 +1,8 @@
 import { Button } from "@mui/material";
 import {
+  ActionsSection
+} from "../../DialogComponents";
+import {
   FormValues,
   initFormValues,
   isValid,
@@ -8,16 +11,11 @@ import {
   ValidationContextProvider,
 } from "../../ResourceConfigForm";
 import { initFormErrors } from "../../ResourceConfigForm/init-form-values";
-import { ProcessorForm } from "./ProcessorForm";
 import {
   FormValueContextProvider,
   useResourceFormValues,
 } from "../../ResourceConfigForm/ResourceFormContext";
-import {
-  ActionsSection,
-  ContentSection,
-  TitleSection,
-} from "../../DialogComponents";
+import { ProcessorForm } from "./ProcessorForm";
 
 interface CreateProcessorConfigureViewProps {
   processorType: ProcessorType;
@@ -50,15 +48,11 @@ const CreateProcessorConfigureViewComponent: React.FC<
 
   return (
     <>
-      <TitleSection
-        title={`Add Processor: ${processorType.metadata.displayName}`}
+      <ProcessorForm
+        title={processorType.metadata.displayName ?? ""}
         description={processorType.metadata.description ?? ""}
-        onClose={onClose}
+        parameterDefinitions={processorType.spec.parameters}
       />
-
-      <ContentSection>
-        <ProcessorForm parameterDefinitions={processorType.spec.parameters} />
-      </ContentSection>
 
       <ActionsSection>
         <Button variant="contained" color="secondary" onClick={onBack}>

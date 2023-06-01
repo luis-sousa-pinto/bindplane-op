@@ -37,6 +37,9 @@ interface ResourceConfigurationViewProps {
 
   description: string;
 
+  heading?: string;
+  subHeading?: string;
+
   // Used to determine some form values.
   kind: "destination" | "source" | "processor";
 
@@ -79,6 +82,10 @@ interface ResourceConfigurationViewProps {
 
   // readOnly will display the form as disabled inputs.
   readOnly?: boolean;
+
+  // embedded will signal to the component that the form is being displayed in an existing modal and should not have its
+  // own header with close button.
+  embedded?: boolean;
 }
 
 interface ComponentProps extends ResourceConfigurationViewProps {
@@ -88,6 +95,8 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   resourceTypeDisplayName,
   description,
+  heading,
+  subHeading,
   parameters,
   parameterDefinitions,
   includeNameField,
@@ -102,6 +111,7 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   onBack,
   initValues,
   readOnly,
+  embedded,
 }) => {
   const { formValues } = useResourceFormValues();
 
@@ -113,6 +123,8 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
     <ConfigureResourceView
       resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
+      heading={heading}
+      subHeading={subHeading}
       kind={kind}
       formValues={formValues}
       includeNameField={includeNameField}
@@ -127,6 +139,7 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
       paused={paused}
       onTogglePause={onTogglePause}
       readOnly={readOnly}
+      embedded={embedded}
     />
   );
 };

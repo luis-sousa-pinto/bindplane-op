@@ -58,8 +58,7 @@ func Logs(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	logs := record.ConvertLogs(otlpLogs.Logs())
-	if err := relay(c, bindplane.Relayers().Logs(), logs); err != nil {
+	if err := relay(c, bindplane.Relayers().Logs(), otlpLogs.Logs()); err != nil {
 		c.Error(err)
 		return
 	}
@@ -82,7 +81,7 @@ func Metrics(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	// could be snapshot metrics or agent metrics
 	if isSnapshotMetrics(c, metrics) {
-		if err := relay(c, bindplane.Relayers().Metrics(), metrics); err != nil {
+		if err := relay(c, bindplane.Relayers().Metrics(), otlpMetrics.Metrics()); err != nil {
 			c.Error(err)
 			return
 		}
@@ -129,8 +128,7 @@ func Traces(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	traces := record.ConvertTraces(otlpTraces.Traces())
-	if err := relay(c, bindplane.Relayers().Traces(), traces); err != nil {
+	if err := relay(c, bindplane.Relayers().Traces(), otlpTraces.Traces()); err != nil {
 		c.Error(err)
 		return
 	}

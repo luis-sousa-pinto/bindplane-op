@@ -5,13 +5,18 @@ import { ResourceNameInput, useValidationContext, isValid } from ".";
 import { useResourceFormValues } from "./ResourceFormContext";
 import { useResourceDialog } from "../ResourceDialog/ResourceDialogContext";
 import { memo, useMemo } from "react";
-import { TitleSection, ContentSection } from "../DialogComponents";
+import {
+  TitleSection,
+  ContentSection,
+  ActionsSection,
+} from "../DialogComponents";
 import { initFormErrors } from "./init-form-values";
 import { ParameterSection } from "./ParameterSection";
 import { PauseIcon, PlayIcon } from "../Icons";
 import { ResourceDisplayNameInput } from "./ParameterInput/ResourceDisplayNameInput";
 
 import mixins from "../../styles/mixins.module.scss";
+import { ViewHeading } from "../ResourceDialog/ProcessorsDialog/ViewHeading";
 
 export interface ParameterGroup {
   advanced: boolean;
@@ -42,6 +47,8 @@ interface ConfigureResourceViewProps {
   kind: "source" | "destination" | "processor";
   resourceTypeDisplayName: string;
   description: string;
+  heading?: string;
+  subHeading?: string;
   formValues: { [key: string]: any };
   includeNameField?: boolean;
   displayName?: string;
@@ -55,12 +62,15 @@ interface ConfigureResourceViewProps {
   disableSave?: boolean;
   paused?: boolean;
   readOnly?: boolean;
+  embedded?: boolean;
 }
 
 export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   kind,
   resourceTypeDisplayName,
   description,
+  heading,
+  subHeading,
   formValues,
   includeNameField,
   displayName,
@@ -74,6 +84,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   onTogglePause,
   paused,
   readOnly,
+  embedded,
 }) => {
   const { touchAll, setErrors } = useValidationContext();
   const { setFormValues } = useResourceFormValues();
@@ -142,87 +153,118 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
     return `${action} ${capitalizedResource}: ${resourceTypeDisplayName}`;
   }, [resourceTypeDisplayName, kind, purpose]);
 
+  if (embedded) {
+    // embedded doesn't have a title section so we use the heading and subheading instead
+    heading = title;
+    subHeading = description;
+  }
+  const ActionsContainer = embedded ? ActionsSection : DialogActions;
+
+  const playPauseButtons =
+    !readOnly && togglePauseButton ? (
+      <ActionsContainer>
+        {paused != null &&
+          (paused ? (
+            <Button disabled={true} startIcon={<PauseIcon />}>
+              Paused
+            </Button>
+          ) : (
+            <Button disabled={true} startIcon={<PlayIcon />}>
+              Running
+            </Button>
+          ))}
+        {!readOnly && togglePauseButton}
+      </ActionsContainer>
+    ) : null;
+
+  const actionButtons = (
+    <ActionsContainer
+      sx={{
+        marginLeft: "auto",
+      }}
+    >
+      {!readOnly && deleteButton}
+      {backButton}
+      {!readOnly && primaryButton}
+    </ActionsContainer>
+  );
+
+  const form = (
+    <form data-testid="resource-form">
+      <Grid container spacing={3} className={mixins["mb-5"]}>
+        {includeNameField && (
+          <Grid item xs={6}>
+            <ResourceNameInput
+              readOnly={readOnly}
+              kind={kind}
+              value={formValues.name}
+              onValueChange={(v: string) =>
+                setFormValues((prev) => ({ ...prev, name: v }))
+              }
+              existingNames={existingResourceNames}
+            />
+          </Grid>
+        )}
+        <Grid item xs={12}>
+          {embedded ? (
+            <ViewHeading heading={resourceTypeDisplayName} subHeading={description} />
+          ) : (
+            <Typography fontWeight={600} fontSize={24}>
+              Configure
+            </Typography>
+          )}
+        </Grid>
+
+        {kind !== "destination" && (
+          <Grid item xs={7}>
+            <ResourceDisplayNameInput
+              readOnly={readOnly}
+              value={displayName}
+              onValueChange={(v: string) =>
+                setFormValues((prev) => ({ ...prev, displayName: v }))
+              }
+            />
+          </Grid>
+        )}
+        {groups.length === 0 ? (
+          <Grid item>
+            <Typography>No additional configuration needed.</Typography>
+          </Grid>
+        ) : (
+          <>
+            {groups.map((g, ix) => (
+              <ParameterSection
+                key={`param-group-${ix}`}
+                group={g}
+                readOnly={readOnly}
+              />
+            ))}
+          </>
+        )}
+      </Grid>
+    </form>
+  );
+
   return (
     <>
-      <TitleSection title={title} description={description} onClose={onClose} />
+      {!embedded && (
+        <TitleSection
+          title={title}
+          description={description}
+          onClose={onClose}
+        />
+      )}
 
-      <ContentSection>
-        <form data-testid="resource-form">
-          <Grid container spacing={3} className={mixins["mb-5"]}>
-            {includeNameField && (
-              <Grid item xs={6}>
-                <ResourceNameInput
-                  readOnly={readOnly}
-                  kind={kind}
-                  value={formValues.name}
-                  onValueChange={(v: string) =>
-                    setFormValues((prev) => ({ ...prev, name: v }))
-                  }
-                  existingNames={existingResourceNames}
-                />
-              </Grid>
-            )}
-            {kind !== "destination" && (
-              <Grid item xs={6}>
-                <ResourceDisplayNameInput
-                  readOnly={readOnly}
-                  value={displayName}
-                  onValueChange={(v: string) =>
-                    setFormValues((prev) => ({ ...prev, displayName: v }))
-                  }
-                />
-              </Grid>
-            )}
-            <Grid item xs={12}>
-              <Typography fontWeight={600} fontSize={24}>
-                Configure
-              </Typography>
-            </Grid>
+      {embedded ? form : <ContentSection dividers>{form}</ContentSection>}
 
-            {groups.length === 0 ? (
-              <Grid item>
-                <Typography>No additional configuration needed.</Typography>
-              </Grid>
-            ) : (
-              <>
-                {groups.map((g, ix) => (
-                  <ParameterSection
-                    key={`param-group-${ix}`}
-                    group={g}
-                    readOnly={readOnly}
-                  />
-                ))}
-              </>
-            )}
-          </Grid>
-        </form>
-      </ContentSection>
-
-      <Stack direction="row">
-        <DialogActions>
-          {paused != null &&
-            (paused ? (
-              <Button disabled={true} startIcon={<PauseIcon />}>
-                Paused
-              </Button>
-            ) : (
-              <Button disabled={true} startIcon={<PlayIcon />}>
-                Running
-              </Button>
-            ))}
-          {!readOnly && togglePauseButton}
-        </DialogActions>
-
-        <DialogActions
-          sx={{
-            marginLeft: "auto",
-          }}
-        >
-          {!readOnly && deleteButton}
-          {backButton}
-          {!readOnly && primaryButton}
-        </DialogActions>
-      </Stack>
+      {playPauseButtons ? (
+        <Stack direction="row">
+          {playPauseButtons}
+          {actionButtons}
+        </Stack>
+      ) : (
+        actionButtons
+      )}
     </>
   );
 };

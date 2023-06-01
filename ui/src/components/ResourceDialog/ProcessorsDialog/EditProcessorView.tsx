@@ -50,6 +50,7 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         }
         displayName={processors[editingIndex]?.displayName ?? ""}
         description={data?.processorType?.metadata.description ?? ""}
+        heading="Edit Processor"
         kind={"processor"}
         parameterDefinitions={data?.processorType?.spec.parameters ?? []}
         parameters={processors[editingIndex]?.parameters}
@@ -58,6 +59,7 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         onBack={onBack}
         onDelete={() => onRemove(editingIndex)}
         readOnly={readOnly}
+        embedded={true}
       />
     </>
   );

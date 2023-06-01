@@ -17,8 +17,10 @@ package server
 import (
 	"github.com/observiq/bindplane-op/agent"
 	"github.com/observiq/bindplane-op/authenticator"
-	"github.com/observiq/bindplane-op/otlp/record"
 	"github.com/observiq/bindplane-op/store"
+	"go.opentelemetry.io/collector/pdata/plog"
+	"go.opentelemetry.io/collector/pdata/pmetric"
+	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 )
 
@@ -51,9 +53,9 @@ type BindPlane interface {
 
 // Relayers is a wrapper around multiple Relayer instances used for different types of results
 type Relayers interface {
-	Metrics() Relayer[[]*record.Metric]
-	Logs() Relayer[[]*record.Log]
-	Traces() Relayer[[]*record.Trace]
+	Metrics() Relayer[pmetric.Metrics]
+	Logs() Relayer[plog.Logs]
+	Traces() Relayer[ptrace.Traces]
 }
 
 // Relayer forwards results to consumers awaiting the results. It is intentionally generic and is used to support cases where the request for results is decoupled from the response with the results.

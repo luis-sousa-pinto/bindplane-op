@@ -187,7 +187,7 @@ const CUSTOM_PROCESSOR = {
     name: "custom",
     id: "custom-id",
     displayName: "Custom",
-    description: "Insert a custom OpenTelemetry processor configuration.",
+    description: "Enter any supported Processor and the YAML will be inserted into the configuration. OpenTelemetry processor configuration.",
     version: 0,
     labels: [],
   },
@@ -595,7 +595,7 @@ describe("ProcessorDialogComponent", () => {
     const editButton = await screen.findByTestId("edit-processor-0");
     editButton.click();
 
-    await screen.findByText("Edit Processor: Custom");
+    await screen.findByText("Custom");
 
     // Change the value of the textbox
     fireEvent.change(screen.getByTestId("yaml-editor"), {
@@ -797,7 +797,7 @@ describe("ProcessorDialogComponent", () => {
     await screen.findByText("Source File: Processors");
     screen.getByTestId("edit-processor-0").click();
 
-    await screen.findByText("Edit Processor: Custom");
+    await screen.findByText("Custom");
     screen.getByText("Delete").click();
 
     await screen.findByText("Source File: Processors");
@@ -884,7 +884,7 @@ describe("ProcessorDialogComponent", () => {
     await screen.findByText("Destination google-cloud-dest: Processors");
     screen.getByTestId("edit-processor-0").click();
 
-    await screen.findByText("Edit Processor: Custom");
+    await screen.findByText("Custom");
     screen.getByText("Delete").click();
 
     await screen.findByText("Destination google-cloud-dest: Processors");
@@ -902,11 +902,11 @@ async function addCustomProcessorToSource(screen: Screen) {
   screen.getByText("Add processor").click();
 
   // Verify we're on select view
-  await screen.findByText("File: Add a processor");
+  await screen.findByText("Add a processor");
   screen.getByText("Custom").click();
 
   // Go to the configure view
-  await screen.findByText("Add Processor: Custom");
+  await screen.findByText("Custom");
   fireEvent.change(screen.getByTestId("yaml-editor"), {
     target: { value: "blah" },
   });
@@ -915,7 +915,7 @@ async function addCustomProcessorToSource(screen: Screen) {
   screen.getByText("Done").click();
 
   // Verify we're back on the main view and Custom is present
-  await screen.findByText("Source File: Processors");
+  await screen.findByText("Add processor");
   screen.getByText("Custom");
 }
 async function addCustomProcessorToDestination(screen: Screen) {
@@ -923,11 +923,11 @@ async function addCustomProcessorToDestination(screen: Screen) {
   screen.getByText("Add processor").click();
 
   // Verify we're on select view
-  await screen.findByText("google-cloud-dest: Add a processor");
+  await screen.findByText("Add a processor");
   screen.getByText("Custom").click();
 
   // Go to the configure view
-  await screen.findByText("Add Processor: Custom");
+  await screen.findByText("Custom");
   fireEvent.change(screen.getByTestId("yaml-editor"), {
     target: { value: "blah" },
   });
@@ -936,6 +936,6 @@ async function addCustomProcessorToDestination(screen: Screen) {
   screen.getByText("Done").click();
 
   // verify we're back on the main view and Custom is present
-  await screen.findByText("Destination google-cloud-dest: Processors");
+  await screen.findByText("Add processor");
   screen.getByText("Custom");
 }

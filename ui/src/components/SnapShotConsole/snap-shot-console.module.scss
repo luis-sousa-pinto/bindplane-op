@@ -33,6 +33,17 @@
   }
 }
 
+.footer {
+  bottom: 0;
+  position: sticky;
+  display: flex;
+  background-color: #f6f6f6;
+  border-radius: 0 0 4px 4px;
+  p {
+    padding: 6px 8px;
+  }
+}
+
 .container {
   height: calc(100vh - 500px);
 }
