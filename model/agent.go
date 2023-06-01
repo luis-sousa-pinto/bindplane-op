@@ -331,6 +331,9 @@ func (a *Agent) SetPendingConfiguration(configuration *Configuration) {
 		a.ConfigurationStatus.Future = ""
 	}
 	a.ConfigurationStatus.Pending = nameAndVersion
+	if a.Status == Error {
+		a.Status = Configuring
+	}
 }
 
 // SetFutureConfiguration sets the Future configuration in the ConfigurationStatus on the agent based on the specified
@@ -550,8 +553,6 @@ func (a *Agent) IndexFields(index modelSearch.Indexer) {
 	index("status", a.StatusDisplayText())
 
 	// index the configuration name and current, pending, and future versions
-	configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
-	index("configuration", configuration)
 	index(FieldConfigurationCurrent, a.ConfigurationStatus.Current)
 	index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
 	index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
