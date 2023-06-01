@@ -1,0 +1,128 @@
+apiVersion: bindplane.observiq.com/v1
+kind: ProcessorType
+metadata:
+  name: rename_field
+  displayName: Rename Field
+  description: Rename a resource, attribute, or body field.
+  labels:
+    category: Transform
+spec:
+  version: 0.0.1
+  parameters:
+    - name: telemetry_types
+      label: Enable Telemetry
+      type: enums
+      description: "Select which types of telemetry you'd like to enable this processor for."
+      validValues: ["Metrics", "Logs", "Traces"]
+      default: ["Metrics", "Logs", "Traces"]
+
+    - name: resource_keys
+      label: Resource Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+
+    - name: attribute_keys
+      label: Attribute Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+
+    - name: body_keys
+      label: Body Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs"]
+
+  metrics:
+    processors: |
+      {{ if has "Metrics" .telemetry_types }}
+      {{ if or .resource_keys .attribute_keys }}
+      - transform/metrics:
+          metric_statements:
+            {{ if .resource_keys }}
+            - context: resource
+              statements:
+              {{ range $k, $v := .resource_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+            {{ if .attribute_keys }}
+            - context: datapoint
+              statements:
+              {{ range $k, $v := .attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+      {{ end }}
+      {{ end }}
+  logs:
+    processors: |
+      {{ if has "Logs" .telemetry_types }}
+      {{ if or .resource_keys .attribute_keys .body_keys }}
+      - transform/logs:
+          log_statements:
+            {{ if .resource_keys }}
+            - context: resource
+              statements:
+              {{ range $k, $v := .resource_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+            {{ if .attribute_keys }}
+            - context: log
+              statements:
+              {{ range $k, $v := .attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+            {{ if .body_keys }}
+            - context: log
+              statements:
+              {{ range $k, $v := .body_keys }}
+              - replace_all_patterns(body, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+      {{ end }}
+      {{ end }}
+  traces:
+    processors: |
+      {{ if has "Traces" .telemetry_types }}
+      {{ if or .resource_keys .attribute_keys }}
+      - transform/traces:
+          log_statements:
+            {{ if .resource_keys }}
+            - context: resource
+              statements:
+              {{ range $k, $v := .resource_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+            {{ if .attribute_keys }}
+            - context: span
+              statements:
+              {{ range $k, $v := .attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ end }}
+            {{ end }}
+      {{ end }}
+      {{ end }}
