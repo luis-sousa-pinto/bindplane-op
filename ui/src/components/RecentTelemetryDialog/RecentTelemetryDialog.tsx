@@ -37,7 +37,7 @@ const RecentTelemetryBody: React.FC<{
   const { logs, metrics, traces, pipelineType } = useSnapshot();
   const footer = `Showing recent ${pipelineType}`;
   return (
-    <DialogContainer title="Recent Telemetry" description="Showing a snapshot of recent telemetry taken from the current agent configuration before it is sent to a destination" onClose={handleClose}>
+    <DialogContainer title="Recent Telemetry" description="Showing a snapshot of recent telemetry taken before it is sent to a destination" onClose={handleClose}>
       <SnapshotConsole
         logs={logs}
         metrics={metrics}
