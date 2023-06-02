@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { AddResourceCard } from "../../Cards/AddResourceCard";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { Button } from "@mui/material";
 import { PlusCircleIcon } from "../../Icons";
 
@@ -10,7 +10,7 @@ function UIControlNode({
   data,
 }: {
   data: {
-    onClick: React.Dispatch<React.SetStateAction<boolean>>;
+    onClick: () => void;
     buttonText: string;
     handlePosition: Position;
     handleType: "source" | "target";
@@ -21,7 +21,7 @@ function UIControlNode({
     <>
       {data.isButton ? (
         <Button
-          onClick={() => data.onClick(true)}
+          onClick={data.onClick}
           variant="contained"
           startIcon={<PlusCircleIcon />}
           classes={{ root: mixins["float-right"] }}

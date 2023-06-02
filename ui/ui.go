@@ -25,16 +25,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"github.com/observiq/bindplane-op/internal/server"
+	exposedserver "github.com/observiq/bindplane-op/server"
 )
 
 //go:embed build
 var staticFS embed.FS
 
 // AddRoutes serves the static file system for the UI React App.
-func AddRoutes(router gin.IRouter, bindplane server.BindPlane) {
+func AddRoutes(router gin.IRouter, bindplane exposedserver.BindPlane) {
 
-	router.GET("/js/_globals.js", func(ctx *gin.Context) { globalJS(ctx, bindplane) })
+	router.GET("/js/_globals.js", func(ctx *gin.Context) { globalJS(ctx) })
 
 	embeddedBuildFolder := newStaticFileSystem(bindplane.Logger())
 	fallbackFileSystem := newFallbackFileSystem(embeddedBuildFolder, bindplane.Logger())

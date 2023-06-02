@@ -1,10 +1,13 @@
 import { Button, Stack } from "@mui/material";
 import { DialogResource, ResourceType } from ".";
 import { ResourceTypeButton } from "../ResourceTypeButton";
-import { ActionsSection } from "./ActionSection";
-import { ContentSection } from "./ContentSection";
 import { useResourceDialog } from "./ResourceDialogContext";
-import { TitleSection } from "./TitleSection";
+import {
+  TitleSection,
+  ContentSection,
+  ActionsSection,
+} from "../DialogComponents";
+import { filterResourcesByType } from "./utils";
 
 interface ChooseViewProps {
   resources: DialogResource[];
@@ -24,9 +27,7 @@ export const ChooseView: React.FC<ChooseViewProps> = ({
 }) => {
   const { onClose } = useResourceDialog();
 
-  const matchingResources = resources?.filter(
-    (r) => r.spec.type === selected!.metadata.name
-  );
+  const matchingResources = filterResourcesByType(resources, selected);
 
   return (
     <>

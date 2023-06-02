@@ -39,6 +39,7 @@ import { ConfirmDeleteResourceDialog } from "../../../../components/ConfirmDelet
 import { useSnackbar } from "notistack";
 import { BPConfiguration } from "../../../../utils/classes/configuration";
 import { BPResourceConfiguration } from "../../../../utils/classes/resource-configuration";
+import { trimVersion } from "../../../../utils/version-helpers";
 
 import styles from "./assisted-config-wizard.module.scss";
 import mixins from "../../../../styles/mixins.module.scss";
@@ -52,10 +53,12 @@ gql`
       apiVersion
       metadata {
         id
+        version
         name
         displayName
         description
         icon
+        version
       }
       spec {
         version
@@ -103,6 +106,7 @@ gql`
     destinations {
       metadata {
         id
+        version
         name
       }
       spec {
@@ -150,6 +154,7 @@ export const StepThree: React.FC = () => {
         metadata: {
           name: formValues.destination.resourceConfiguration.name!,
           id: formValues.destination.resourceConfiguration.name!,
+          version: 0,
         },
       };
 
@@ -165,6 +170,7 @@ export const StepThree: React.FC = () => {
         labels: {
           platform: formValues.platform,
         },
+        version: 0,
       },
     });
 
@@ -282,7 +288,9 @@ export const StepThree: React.FC = () => {
 
     return (
       <EditResourceDialog
-        displayName={formValues.destination.resourceConfiguration.name!}
+        resourceTypeDisplayName={
+          formValues.destination.resourceConfiguration.name!
+        }
         description={currentDestinationType.metadata.description ?? ""}
         fullWidth
         maxWidth="sm"
@@ -312,7 +320,7 @@ export const StepThree: React.FC = () => {
     );
 
     const destinationType = data?.destinationTypes.find(
-      (dt) => dt.metadata.name === destinationConfig.type
+      (dt) => dt.metadata.name === trimVersion(destinationConfig.type!)
     );
 
     const icon = destinationType?.metadata.icon;

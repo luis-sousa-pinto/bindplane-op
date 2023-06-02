@@ -26,10 +26,29 @@
 
 set -e
 
-# Stop and disable service
-if systemctl disable --now bindplane ; then
-    echo "Service stopped: bindplane"
-    echo "Service disabled: bindplane"
-else
-    exit 0
-fi
+# Remove stops and disables the bindplane service.
+remove() {
+    if systemctl disable --now bindplane ; then
+        echo "Service stopped: bindplane"
+        echo "Service disabled: bindplane"
+    fi
+}
+
+# Upgrade performs a no-op and is included here for future use.
+upgrade() {
+    return
+}
+
+action="$1"
+
+case "$action" in
+  "0" | "remove")
+    remove
+    ;;
+  "1" | "upgrade")
+    upgrade
+    ;;
+  *)
+    remove
+    ;;
+esac

@@ -15,6 +15,7 @@
 package model
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"strings"
@@ -56,11 +57,28 @@ const (
 type Labeled interface {
 	// GetLabels TODO(doc)
 	GetLabels() Labels
+	// SetLabels TODO(doc)
+	SetLabels(l Labels)
 }
 
 // Labels is a wrapper around Kubernetes labels.Set struct, which is just a type definition for map[string]string.
 type Labels struct {
 	labels.Set `json:"-" yaml:",inline"`
+}
+
+// Value is used to translate to a JSONB field for postgres storage
+func (l Labels) Value() (driver.Value, error) {
+	return l.MarshalJSON()
+}
+
+// Scan is used to translate from a JSONB field in postgres to ResourceType
+func (l *Labels) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return l.UnmarshalJSON(b)
 }
 
 // LabelsFromMap will create a set of labels from a map of name/value pairs. It will validate that the names and values
@@ -163,7 +181,7 @@ func (l Labels) filtered(hasBindPlanePrefix bool) Labels {
 
 // MarshalJSON marshals the Labels as jsoniter. An empty Labels will be marshalled as `{}`
 func (l *Labels) MarshalJSON() ([]byte, error) {
-	// serialize null as empty
+	// serialize nil as empty
 	if l.Set == nil {
 		return []byte("{}"), nil
 	}

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// go:build integration
 //go:build integration
 // +build integration
 
@@ -23,12 +24,12 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/observiq/bindplane-op/common"
+	"github.com/observiq/bindplane-op/config"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -47,11 +48,12 @@ func containerImage() (string, error) {
 
 func defaultServerEnv() map[string]string {
 	return map[string]string{
-		"BINDPLANE_CONFIG_USERNAME":        "oiq",
-		"BINDPLANE_CONFIG_PASSWORD":        "password",
-		"BINDPLANE_CONFIG_SESSIONS_SECRET": uuid.NewString(),
-		"BINDPLANE_CONFIG_SECRET_KEY":      uuid.NewString(),
-		"BINDPLANE_CONFIG_LOG_OUTPUT":      "stdout",
+		"BINDPLANE_USERNAME":         "oiq",
+		"BINDPLANE_PASSWORD":         "password",
+		"BINDPLANE_SESSION_SECRET":   uuid.NewString(),
+		"BINDPLANE_STORE_TYPE":       config.StoreTypeBBolt,
+		"BINDPLANE_STORE_BBOLT_PATH": "/data/storage",
+		"BINDPLANE_LOGGING_OUTPUT":   "stdout",
 	}
 }
 
@@ -72,7 +74,7 @@ func bindplaneContainer(t *testing.T, env map[string]string) (testcontainers.Con
 	var target testcontainers.ContainerMountTarget = "/tmp"
 	mount := testcontainers.ContainerMount{
 		Source: testcontainers.GenericBindMountSource{
-			HostPath: path.Join(dir, "testdata"),
+			HostPath: filepath.Join(dir, "testdata"),
 		},
 		Target: target,
 	}
@@ -127,11 +129,13 @@ func TestIntegrationHttp(t *testing.T) {
 		Scheme: "http",
 	}
 
-	defaultClientConfig := common.Client{
-		Common: common.Common{
-			Username:  "oiq",
-			Password:  "password",
-			ServerURL: endpoint.String(),
+	defaultClientConfig := config.Config{
+		Network: config.Network{
+			RemoteURL: endpoint.String(),
+		},
+		Auth: config.Auth{
+			Username: "oiq",
+			Password: "password",
 		},
 	}
 
@@ -139,7 +143,7 @@ func TestIntegrationHttp(t *testing.T) {
 	require.NoError(t, err, "failed to create client config: %v", err)
 	require.NotNil(t, client)
 
-	_, err = client.Agents(context.Background())
+	_, err = client.Agents(context.Background(), QueryOptions{})
 	require.NoError(t, err)
 }
 
@@ -147,8 +151,8 @@ func TestIntegrationHttp(t *testing.T) {
 // using https / server side tls.
 func TestIntegrationHttps(t *testing.T) {
 	env := defaultServerEnv()
-	env["BINDPLANE_CONFIG_TLS_CERT"] = "/tmp/bindplane.crt"
-	env["BINDPLANE_CONFIG_TLS_KEY"] = "/tmp/bindplane.key"
+	env["BINDPLANE_TLS_CERT"] = "/tmp/bindplane.crt"
+	env["BINDPLANE_TLS_KEY"] = "/tmp/bindplane.key"
 
 	container, port, err := bindplaneContainer(t, env)
 	if err != nil {
@@ -168,12 +172,14 @@ func TestIntegrationHttps(t *testing.T) {
 		Scheme: "https",
 	}
 
-	defaultClientConfig := common.Client{
-		Common: common.Common{
-			Username:  "oiq",
-			Password:  "password",
-			ServerURL: endpoint.String(),
-			TLSConfig: common.TLSConfig{
+	defaultClientConfig := config.Config{
+		Auth: config.Auth{
+			Username: "oiq",
+			Password: "password",
+		},
+		Network: config.Network{
+			RemoteURL: endpoint.String(),
+			TLS: config.TLS{
 				CertificateAuthority: []string{
 					"testdata/bindplane-ca.crt",
 				},
@@ -185,7 +191,7 @@ func TestIntegrationHttps(t *testing.T) {
 	require.NoError(t, err, "failed to create client config: %v", err)
 	require.NotNil(t, client)
 
-	_, err = client.Agents(context.Background())
+	_, err = client.Agents(context.Background(), QueryOptions{})
 	require.NoError(t, err)
 }
 
@@ -193,9 +199,9 @@ func TestIntegrationHttps(t *testing.T) {
 // client / server authentication (mutual TLS).
 func TestIntegrationHttpsMutualTLS(t *testing.T) {
 	env := defaultServerEnv()
-	env["BINDPLANE_CONFIG_TLS_CERT"] = "/tmp/bindplane.crt"
-	env["BINDPLANE_CONFIG_TLS_KEY"] = "/tmp/bindplane.key"
-	env["BINDPLANE_CONFIG_TLS_CA"] = "/tmp/bindplane-ca.crt"
+	env["BINDPLANE_TLS_CERT"] = "/tmp/bindplane.crt"
+	env["BINDPLANE_TLS_KEY"] = "/tmp/bindplane.key"
+	env["BINDPLANE_TLS_CA"] = "/tmp/bindplane-ca.crt"
 
 	container, port, err := bindplaneContainer(t, env)
 	if err != nil {
@@ -216,12 +222,14 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 	}
 
 	// Base config can be copied and modified by the test case
-	defaultClientConfig := common.Client{
-		Common: common.Common{
-			Username:  "oiq",
-			Password:  "password",
-			ServerURL: endpoint.String(),
-			TLSConfig: common.TLSConfig{
+	defaultClientConfig := config.Config{
+		Auth: config.Auth{
+			Username: "oiq",
+			Password: "password",
+		},
+		Network: config.Network{
+			RemoteURL: endpoint.String(),
+			TLS: config.TLS{
 				Certificate: "testdata/bindplane.crt",
 				PrivateKey:  "testdata/bindplane.key",
 				CertificateAuthority: []string{
@@ -243,7 +251,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				_, err = client.Agents(context.Background())
+				_, err = client.Agents(context.Background(), QueryOptions{})
 				return err
 			},
 			"",
@@ -252,12 +260,12 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Agents Request Error",
 			func() error {
 				c := defaultClientConfig
-				c.ServerURL = "xxx://invalid"
+				c.Network.RemoteURL = "xxx://invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
 				}
-				_, err = client.Agents(context.Background())
+				_, err = client.Agents(context.Background(), QueryOptions{})
 				return err
 			},
 			"unsupported protocol scheme",
@@ -269,7 +277,8 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				opts := WithLimit(-1)
+
+				opts := QueryOptions{Limit: -1}
 				_, err = client.Agents(context.Background(), opts)
 				return err
 			},
@@ -279,12 +288,12 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Agents Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
 				}
-				_, err = client.Agents(context.Background())
+				_, err = client.Agents(context.Background(), QueryOptions{})
 				return err
 			},
 			"401 Unauthorized",
@@ -305,7 +314,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Agent Request Error",
 			func() error {
 				c := defaultClientConfig
-				c.ServerURL = "xxx://invalid"
+				c.Network.RemoteURL = "xxx://invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -319,7 +328,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Agent Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -345,7 +354,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteAgents",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -371,7 +380,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Configurations Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -397,7 +406,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Configuration Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -422,7 +431,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteConfiguration Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -447,7 +456,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"RawConfiguration Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -473,7 +482,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Source Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -499,7 +508,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Sources Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -524,7 +533,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteSource Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -550,7 +559,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"SourceTypes Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -576,7 +585,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"SourceType Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -601,7 +610,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteSourceType Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -627,7 +636,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Destinations Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -653,7 +662,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Destination Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -678,7 +687,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteDestination Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -703,7 +712,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DestinationTypes Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -729,7 +738,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DestinationType Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -754,7 +763,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"DeleteDestinationType Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -779,7 +788,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Apply Request Error",
 			func() error {
 				c := defaultClientConfig
-				c.ServerURL = "xxx://invalid"
+				c.Network.RemoteURL = "xxx://invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -809,7 +818,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Apply Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -835,7 +844,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Delete Request Error",
 			func() error {
 				c := defaultClientConfig
-				c.ServerURL = "invalid://invalid"
+				c.Network.RemoteURL = "invalid://invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -865,7 +874,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Delete Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -908,7 +917,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"Version Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -934,7 +943,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"AgentInstallCommand Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -971,7 +980,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"AgentLabels Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -1013,7 +1022,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"ApplyAgentLabels Unauthorized",
 			func() error {
 				c := defaultClientConfig
-				c.Username = "invalid"
+				c.Auth.Username = "invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err
@@ -1027,7 +1036,7 @@ func TestIntegrationHttpsMutualTLS(t *testing.T) {
 			"ApplyAgentLabels Request Error",
 			func() error {
 				c := defaultClientConfig
-				c.ServerURL = "invalid://invalid"
+				c.Network.RemoteURL = "invalid://invalid"
 				client, err := NewBindPlane(&c, zap.NewNop())
 				if err != nil {
 					return err

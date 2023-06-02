@@ -15,7 +15,9 @@ export type Scalars = {
   Float: number;
   Any: any;
   Map: any;
+  RolloutStatus: number;
   Time: any;
+  Version: number;
 };
 
 export type Agent = {
@@ -88,6 +90,7 @@ export type ClearAgentUpgradeErrorInput = {
 
 export type Configuration = {
   __typename?: 'Configuration';
+  activeTypes?: Maybe<Array<Scalars['String']>>;
   agentCount?: Maybe<Scalars['Int']>;
   apiVersion: Scalars['String'];
   graph?: Maybe<Graph>;
@@ -95,6 +98,7 @@ export type Configuration = {
   metadata: Metadata;
   rendered?: Maybe<Scalars['String']>;
   spec: ConfigurationSpec;
+  status: ConfigurationStatus;
 };
 
 export type ConfigurationChange = {
@@ -110,6 +114,15 @@ export type ConfigurationSpec = {
   raw?: Maybe<Scalars['String']>;
   selector?: Maybe<AgentSelector>;
   sources?: Maybe<Array<ResourceConfiguration>>;
+};
+
+export type ConfigurationStatus = {
+  __typename?: 'ConfigurationStatus';
+  current: Scalars['Boolean'];
+  currentVersion: Scalars['Version'];
+  latest: Scalars['Boolean'];
+  pending: Scalars['Boolean'];
+  rollout: Rollout;
 };
 
 export type Configurations = {
@@ -152,6 +165,11 @@ export type Edge = {
   id: Scalars['String'];
   source: Scalars['String'];
   target: Scalars['String'];
+};
+
+export type EditConfigurationDescriptionInput = {
+  description: Scalars['String'];
+  name: Scalars['String'];
 };
 
 export enum EventType {
@@ -198,12 +216,14 @@ export type Log = {
 
 export type Metadata = {
   __typename?: 'Metadata';
+  dateModified?: Maybe<Scalars['Time']>;
   description?: Maybe<Scalars['String']>;
   displayName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   labels?: Maybe<Scalars['Map']>;
   name: Scalars['String'];
+  version: Scalars['Version'];
 };
 
 export type Metric = {
@@ -235,6 +255,7 @@ export type MetricOption = {
 export type Mutation = {
   __typename?: 'Mutation';
   clearAgentUpgradeError?: Maybe<Scalars['Boolean']>;
+  editConfigurationDescription?: Maybe<Scalars['Boolean']>;
   removeAgentConfiguration?: Maybe<Agent>;
   updateProcessors?: Maybe<Scalars['Boolean']>;
 };
@@ -242,6 +263,11 @@ export type Mutation = {
 
 export type MutationClearAgentUpgradeErrorArgs = {
   input: ClearAgentUpgradeErrorInput;
+};
+
+
+export type MutationEditConfigurationDescriptionArgs = {
+  input: EditConfigurationDescriptionInput;
 };
 
 
@@ -327,6 +353,13 @@ export type ParameterizedSpec = {
   type: Scalars['String'];
 };
 
+export type PhaseAgentCount = {
+  __typename?: 'PhaseAgentCount';
+  initial: Scalars['Int'];
+  maximum: Scalars['Int'];
+  multiplier: Scalars['Float'];
+};
+
 export enum PipelineType {
   Logs = 'logs',
   Metrics = 'metrics',
@@ -343,6 +376,7 @@ export type Processor = {
 
 export type ProcessorInput = {
   disabled?: InputMaybe<Scalars['Boolean']>;
+  displayName?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   parameters?: InputMaybe<Array<ParameterInput>>;
   type?: InputMaybe<Scalars['String']>;
@@ -362,6 +396,7 @@ export type Query = {
   agentMetrics: GraphMetrics;
   agents: Agents;
   configuration?: Maybe<Configuration>;
+  configurationHistory: Array<Configuration>;
   configurationMetrics: GraphMetrics;
   configurations: Configurations;
   destination?: Maybe<Destination>;
@@ -402,6 +437,11 @@ export type QueryAgentsArgs = {
 
 
 export type QueryConfigurationArgs = {
+  name: Scalars['String'];
+};
+
+
+export type QueryConfigurationHistoryArgs = {
   name: Scalars['String'];
 };
 
@@ -462,6 +502,8 @@ export type QueryProcessorTypeArgs = {
 export type QuerySnapshotArgs = {
   agentID: Scalars['String'];
   pipelineType: PipelineType;
+  position?: InputMaybe<Scalars['String']>;
+  resourceName?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -494,6 +536,7 @@ export type RemoveAgentConfigurationInput = {
 export type ResourceConfiguration = {
   __typename?: 'ResourceConfiguration';
   disabled: Scalars['Boolean'];
+  displayName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   parameters?: Maybe<Array<Parameter>>;
   processors?: Maybe<Array<ResourceConfiguration>>;
@@ -511,6 +554,25 @@ export type ResourceTypeSpec = {
   supportedPlatforms: Array<Scalars['String']>;
   telemetryTypes: Array<PipelineType>;
   version: Scalars['String'];
+};
+
+export type Rollout = {
+  __typename?: 'Rollout';
+  completed: Scalars['Int'];
+  errors: Scalars['Int'];
+  options?: Maybe<RolloutOptions>;
+  pending: Scalars['Int'];
+  phase: Scalars['Int'];
+  status: Scalars['RolloutStatus'];
+  waiting: Scalars['Int'];
+};
+
+export type RolloutOptions = {
+  __typename?: 'RolloutOptions';
+  maxErrors: Scalars['Int'];
+  phaseAgentCount?: Maybe<PhaseAgentCount>;
+  rollbackOnFailure: Scalars['Boolean'];
+  startAutomatically: Scalars['Boolean'];
 };
 
 export type Snapshot = {
@@ -602,26 +664,61 @@ export type UpdateProcessorsInput = {
   resourceType: ResourceTypeKind;
 };
 
-export type DestinationTypeQueryVariables = Exact<{
+export type GetLatestConfigVersionQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type DestinationTypeQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetLatestConfigVersionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null };
+
+export type GetRenderedConfigQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetRenderedConfigQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type SourceTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetDestinationWithTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+
+export type GetCurrentConfigVersionQueryVariables = Exact<{
+  configurationName: Scalars['String'];
+}>;
+
+
+export type GetCurrentConfigVersionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, version: number, labels?: any | null } } | null };
+
+export type GetLatestConfigDescriptionQueryVariables = Exact<{
+  configurationName: Scalars['String'];
+}>;
+
+
+export type GetLatestConfigDescriptionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null } } | null };
+
+export type EditConfigDescriptionMutationVariables = Exact<{
+  input: EditConfigurationDescriptionInput;
+}>;
+
+
+export type EditConfigDescriptionMutation = { __typename?: 'Mutation', editConfigurationDescription?: boolean | null };
+
+export type GetConfigurationVersionsQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetConfigurationVersionsQuery = { __typename?: 'Query', configurationHistory: Array<{ __typename?: 'Configuration', activeTypes?: Array<string> | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', current: boolean, pending: boolean, latest: boolean } }> };
 
 export type RemoveAgentConfigurationMutationVariables = Exact<{
   input: RemoveAgentConfigurationInput;
@@ -642,28 +739,28 @@ export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', co
 export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, description?: string | null, name: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetProcessorTypeQueryVariables = Exact<{
   type: Scalars['String'];
 }>;
 
 
-export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, name: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type ProcessorDialogSourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null };
+export type ProcessorDialogSourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', name: string, id: string, version: number, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null };
 
 export type ProcessorDialogDestinationTypeQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type ProcessorDialogDestinationTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null } };
+export type ProcessorDialogDestinationTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null } };
 
 export type UpdateProcessorsMutationVariables = Exact<{
   input: UpdateProcessorsInput;
@@ -672,9 +769,33 @@ export type UpdateProcessorsMutationVariables = Exact<{
 
 export type UpdateProcessorsMutation = { __typename?: 'Mutation', updateProcessors?: boolean | null };
 
+export type GetRolloutHistoryQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetRolloutHistoryQuery = { __typename?: 'Query', configurationHistory: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string, id: string, version: number, dateModified?: any | null }, status: { __typename?: 'ConfigurationStatus', rollout: { __typename?: 'Rollout', status: number, errors: number } } }> };
+
+export type GetConfigRolloutStatusQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetConfigRolloutStatusQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', pending: boolean, current: boolean, latest: boolean, rollout: { __typename?: 'Rollout', status: number, phase: number, completed: number, errors: number, pending: number, waiting: number } } } | null };
+
+export type AgentsWithConfigurationQueryVariables = Exact<{
+  selector?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type AgentsWithConfigurationQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', agents: Array<{ __typename?: 'Agent', id: string, name: string }> } };
+
 export type SnapshotQueryVariables = Exact<{
   agentID: Scalars['String'];
   pipelineType: PipelineType;
+  position?: InputMaybe<Scalars['String']>;
+  resourceName?: InputMaybe<Scalars['String']>;
 }>;
 
 
@@ -686,7 +807,7 @@ export type AgentsTableQueryVariables = Exact<{
 }>;
 
 
-export type AgentsTableQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', query?: string | null, latestVersion: string, agents: Array<{ __typename?: 'Agent', id: string, architecture?: string | null, hostName?: string | null, labels?: any | null, platform?: string | null, version?: string | null, name: string, home?: string | null, operatingSystem?: string | null, macAddress?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
+export type AgentsTableQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', query?: string | null, latestVersion: string, agents: Array<{ __typename?: 'Agent', id: string, architecture?: string | null, hostName?: string | null, labels?: any | null, platform?: string | null, version?: string | null, name: string, home?: string | null, operatingSystem?: string | null, macAddress?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type AgentsTableMetricsSubscriptionVariables = Exact<{
   period: Scalars['String'];
@@ -703,7 +824,7 @@ export type GetConfigurationTableQueryVariables = Exact<{
 }>;
 
 
-export type GetConfigurationTableQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', query?: string | null, configurations: Array<{ __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null, description?: string | null } }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
+export type GetConfigurationTableQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', query?: string | null, configurations: Array<{ __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, labels?: any | null, description?: string | null } }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type ConfigurationChangesSubscriptionVariables = Exact<{
   selector?: InputMaybe<Scalars['String']>;
@@ -711,7 +832,7 @@ export type ConfigurationChangesSubscriptionVariables = Exact<{
 }>;
 
 
-export type ConfigurationChangesSubscription = { __typename?: 'Subscription', configurationChanges: Array<{ __typename?: 'ConfigurationChange', eventType: EventType, configuration: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null } } }> };
+export type ConfigurationChangesSubscription = { __typename?: 'Subscription', configurationChanges: Array<{ __typename?: 'ConfigurationChange', eventType: EventType, configuration: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, description?: string | null, labels?: any | null } } }> };
 
 export type ConfigurationTableMetricsSubscriptionVariables = Exact<{
   period: Scalars['String'];
@@ -725,14 +846,14 @@ export type GetDestinationTypeDisplayInfoQueryVariables = Exact<{
 }>;
 
 
-export type GetDestinationTypeDisplayInfoQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, icon?: string | null, name: string } } | null };
+export type GetDestinationTypeDisplayInfoQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null } } | null };
 
 export type GetSourceTypeDisplayInfoQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type GetSourceTypeDisplayInfoQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, displayName?: string | null, icon?: string | null, name: string } } | null };
+export type GetSourceTypeDisplayInfoQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null } } | null };
 
 export type ClearAgentUpgradeErrorMutationVariables = Exact<{
   input: ClearAgentUpgradeErrorInput;
@@ -747,46 +868,60 @@ export type AgentChangesSubscriptionVariables = Exact<{
 }>;
 
 
-export type AgentChangesSubscription = { __typename?: 'Subscription', agentChanges: Array<{ __typename?: 'AgentChange', changeType: AgentChangeType, agent: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, home?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null } }> };
+export type AgentChangesSubscription = { __typename?: 'Subscription', agentChanges: Array<{ __typename?: 'AgentChange', changeType: AgentChangeType, agent: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, home?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null } }> };
 
 export type GetAgentAndConfigurationsQueryVariables = Exact<{
   agentId: Scalars['ID'];
 }>;
 
 
-export type GetAgentAndConfigurationsQuery = { __typename?: 'Query', agent?: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, remoteAddress?: string | null, home?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, errorMessage?: string | null, upgradeAvailable?: string | null, features: number, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } } | null, upgrade?: { __typename?: 'AgentUpgrade', status: number, version: string, error?: string | null } | null } | null, configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null } }> } };
+export type GetAgentAndConfigurationsQuery = { __typename?: 'Query', agent?: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, remoteAddress?: string | null, home?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, errorMessage?: string | null, upgradeAvailable?: string | null, features: number, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, version: number, name: string } } | null, upgrade?: { __typename?: 'AgentUpgrade', status: number, version: string, error?: string | null } | null } | null, configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, labels?: any | null }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null } }> } };
 
 export type GetConfigurationNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetConfigurationNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, labels?: any | null } }> } };
+export type GetConfigurationNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, labels?: any | null } }> } };
+
+export type GetConfigRolloutAgentsQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetConfigRolloutAgentsQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
+
+export type GetRenderedConfigValueQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
+
+
+export type GetRenderedConfigValueQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type GetConfigurationQueryVariables = Exact<{
   name: Scalars['String'];
 }>;
 
 
-export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
+export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null, version: number }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', type?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
 
 export type DestinationsAndTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
+export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
 
 export type SourceTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SourceTypesQuery = { __typename?: 'Query', sourceTypes: Array<{ __typename?: 'SourceType', apiVersion: string, kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', supportedPlatforms: Array<string>, version: string, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', name: string, label: string, description: string, advancedConfig?: boolean | null, required: boolean, type: ParameterType, validValues?: Array<string> | null, default?: any | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type SourceTypesQuery = { __typename?: 'Query', sourceTypes: Array<{ __typename?: 'SourceType', apiVersion: string, kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', supportedPlatforms: Array<string>, version: string, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', name: string, label: string, description: string, advancedConfig?: boolean | null, required: boolean, type: ParameterType, validValues?: Array<string> | null, default?: any | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetConfigNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetConfigNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string } }> } };
+export type GetConfigNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } }> } };
 
 export type DestinationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
+export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 export type GetOverviewPageQueryVariables = Exact<{
   configIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
@@ -810,96 +945,95 @@ export type OverviewMetricsSubscription = { __typename?: 'Subscription', overvie
 export type DestinationsInConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
+export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 
-export const DestinationTypeDocument = gql`
-    query DestinationType($name: String!) {
-  destinationType(name: $name) {
+export const GetLatestConfigVersionDocument = gql`
+    query getLatestConfigVersion($name: String!) {
+  configuration(name: $name) {
     metadata {
       id
       name
-      displayName
-      icon
-      displayName
-      description
-    }
-    spec {
-      parameters {
-        label
-        name
-        description
-        required
-        type
-        default
-        documentation {
-          text
-          url
-        }
-        relevantIf {
-          name
-          operator
-          value
-        }
-        advancedConfig
-        validValues
-        options {
-          creatable
-          trackUnchecked
-          sectionHeader
-          gridColumns
-          multiline
-          labels
-          metricCategories {
-            label
-            column
-            metrics {
-              name
-              description
-              kpi
-            }
-          }
-          password
-        }
-      }
+      version
     }
   }
 }
     `;
 
 /**
- * __useDestinationTypeQuery__
+ * __useGetLatestConfigVersionQuery__
  *
- * To run a query within a React component, call `useDestinationTypeQuery` and pass it any options that fit your needs.
- * When your component renders, `useDestinationTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetLatestConfigVersionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetLatestConfigVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useDestinationTypeQuery({
+ * const { data, loading, error } = useGetLatestConfigVersionQuery({
  *   variables: {
  *      name: // value for 'name'
  *   },
  * });
  */
-export function useDestinationTypeQuery(baseOptions: Apollo.QueryHookOptions<DestinationTypeQuery, DestinationTypeQueryVariables>) {
+export function useGetLatestConfigVersionQuery(baseOptions: Apollo.QueryHookOptions<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<DestinationTypeQuery, DestinationTypeQueryVariables>(DestinationTypeDocument, options);
+        return Apollo.useQuery<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>(GetLatestConfigVersionDocument, options);
       }
-export function useDestinationTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DestinationTypeQuery, DestinationTypeQueryVariables>) {
+export function useGetLatestConfigVersionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<DestinationTypeQuery, DestinationTypeQueryVariables>(DestinationTypeDocument, options);
+          return Apollo.useLazyQuery<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>(GetLatestConfigVersionDocument, options);
         }
-export type DestinationTypeQueryHookResult = ReturnType<typeof useDestinationTypeQuery>;
-export type DestinationTypeLazyQueryHookResult = ReturnType<typeof useDestinationTypeLazyQuery>;
-export type DestinationTypeQueryResult = Apollo.QueryResult<DestinationTypeQuery, DestinationTypeQueryVariables>;
+export type GetLatestConfigVersionQueryHookResult = ReturnType<typeof useGetLatestConfigVersionQuery>;
+export type GetLatestConfigVersionLazyQueryHookResult = ReturnType<typeof useGetLatestConfigVersionLazyQuery>;
+export type GetLatestConfigVersionQueryResult = Apollo.QueryResult<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>;
+export const GetRenderedConfigDocument = gql`
+    query getRenderedConfig($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    rendered
+  }
+}
+    `;
+
+/**
+ * __useGetRenderedConfigQuery__
+ *
+ * To run a query within a React component, call `useGetRenderedConfigQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRenderedConfigQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRenderedConfigQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetRenderedConfigQuery(baseOptions: Apollo.QueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
+      }
+export function useGetRenderedConfigLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
+        }
+export type GetRenderedConfigQueryHookResult = ReturnType<typeof useGetRenderedConfigQuery>;
+export type GetRenderedConfigLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigLazyQuery>;
+export type GetRenderedConfigQueryResult = Apollo.QueryResult<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>;
 export const SourceTypeDocument = gql`
     query SourceType($name: String!) {
   sourceType(name: $name) {
     metadata {
       id
       name
+      version
       displayName
       icon
       displayName
@@ -979,9 +1113,11 @@ export const GetDestinationWithTypeDocument = gql`
   destinationWithType(name: $name) {
     destination {
       metadata {
-        id
         name
+        version
+        id
         labels
+        version
       }
       spec {
         type
@@ -996,6 +1132,7 @@ export const GetDestinationWithTypeDocument = gql`
       metadata {
         id
         name
+        version
         icon
         description
       }
@@ -1070,6 +1207,163 @@ export function useGetDestinationWithTypeLazyQuery(baseOptions?: Apollo.LazyQuer
 export type GetDestinationWithTypeQueryHookResult = ReturnType<typeof useGetDestinationWithTypeQuery>;
 export type GetDestinationWithTypeLazyQueryHookResult = ReturnType<typeof useGetDestinationWithTypeLazyQuery>;
 export type GetDestinationWithTypeQueryResult = Apollo.QueryResult<GetDestinationWithTypeQuery, GetDestinationWithTypeQueryVariables>;
+export const GetCurrentConfigVersionDocument = gql`
+    query getCurrentConfigVersion($configurationName: String!) {
+  configuration(name: $configurationName) {
+    metadata {
+      id
+      name
+      version
+      labels
+    }
+    agentCount
+  }
+}
+    `;
+
+/**
+ * __useGetCurrentConfigVersionQuery__
+ *
+ * To run a query within a React component, call `useGetCurrentConfigVersionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCurrentConfigVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCurrentConfigVersionQuery({
+ *   variables: {
+ *      configurationName: // value for 'configurationName'
+ *   },
+ * });
+ */
+export function useGetCurrentConfigVersionQuery(baseOptions: Apollo.QueryHookOptions<GetCurrentConfigVersionQuery, GetCurrentConfigVersionQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCurrentConfigVersionQuery, GetCurrentConfigVersionQueryVariables>(GetCurrentConfigVersionDocument, options);
+      }
+export function useGetCurrentConfigVersionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentConfigVersionQuery, GetCurrentConfigVersionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCurrentConfigVersionQuery, GetCurrentConfigVersionQueryVariables>(GetCurrentConfigVersionDocument, options);
+        }
+export type GetCurrentConfigVersionQueryHookResult = ReturnType<typeof useGetCurrentConfigVersionQuery>;
+export type GetCurrentConfigVersionLazyQueryHookResult = ReturnType<typeof useGetCurrentConfigVersionLazyQuery>;
+export type GetCurrentConfigVersionQueryResult = Apollo.QueryResult<GetCurrentConfigVersionQuery, GetCurrentConfigVersionQueryVariables>;
+export const GetLatestConfigDescriptionDocument = gql`
+    query getLatestConfigDescription($configurationName: String!) {
+  configuration(name: $configurationName) {
+    metadata {
+      id
+      name
+      version
+      description
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetLatestConfigDescriptionQuery__
+ *
+ * To run a query within a React component, call `useGetLatestConfigDescriptionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetLatestConfigDescriptionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetLatestConfigDescriptionQuery({
+ *   variables: {
+ *      configurationName: // value for 'configurationName'
+ *   },
+ * });
+ */
+export function useGetLatestConfigDescriptionQuery(baseOptions: Apollo.QueryHookOptions<GetLatestConfigDescriptionQuery, GetLatestConfigDescriptionQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetLatestConfigDescriptionQuery, GetLatestConfigDescriptionQueryVariables>(GetLatestConfigDescriptionDocument, options);
+      }
+export function useGetLatestConfigDescriptionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLatestConfigDescriptionQuery, GetLatestConfigDescriptionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetLatestConfigDescriptionQuery, GetLatestConfigDescriptionQueryVariables>(GetLatestConfigDescriptionDocument, options);
+        }
+export type GetLatestConfigDescriptionQueryHookResult = ReturnType<typeof useGetLatestConfigDescriptionQuery>;
+export type GetLatestConfigDescriptionLazyQueryHookResult = ReturnType<typeof useGetLatestConfigDescriptionLazyQuery>;
+export type GetLatestConfigDescriptionQueryResult = Apollo.QueryResult<GetLatestConfigDescriptionQuery, GetLatestConfigDescriptionQueryVariables>;
+export const EditConfigDescriptionDocument = gql`
+    mutation editConfigDescription($input: EditConfigurationDescriptionInput!) {
+  editConfigurationDescription(input: $input)
+}
+    `;
+export type EditConfigDescriptionMutationFn = Apollo.MutationFunction<EditConfigDescriptionMutation, EditConfigDescriptionMutationVariables>;
+
+/**
+ * __useEditConfigDescriptionMutation__
+ *
+ * To run a mutation, you first call `useEditConfigDescriptionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditConfigDescriptionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editConfigDescriptionMutation, { data, loading, error }] = useEditConfigDescriptionMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useEditConfigDescriptionMutation(baseOptions?: Apollo.MutationHookOptions<EditConfigDescriptionMutation, EditConfigDescriptionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditConfigDescriptionMutation, EditConfigDescriptionMutationVariables>(EditConfigDescriptionDocument, options);
+      }
+export type EditConfigDescriptionMutationHookResult = ReturnType<typeof useEditConfigDescriptionMutation>;
+export type EditConfigDescriptionMutationResult = Apollo.MutationResult<EditConfigDescriptionMutation>;
+export type EditConfigDescriptionMutationOptions = Apollo.BaseMutationOptions<EditConfigDescriptionMutation, EditConfigDescriptionMutationVariables>;
+export const GetConfigurationVersionsDocument = gql`
+    query getConfigurationVersions($name: String!) {
+  configurationHistory(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    activeTypes
+    status {
+      current
+      pending
+      latest
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetConfigurationVersionsQuery__
+ *
+ * To run a query within a React component, call `useGetConfigurationVersionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConfigurationVersionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConfigurationVersionsQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetConfigurationVersionsQuery(baseOptions: Apollo.QueryHookOptions<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>(GetConfigurationVersionsDocument, options);
+      }
+export function useGetConfigurationVersionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>(GetConfigurationVersionsDocument, options);
+        }
+export type GetConfigurationVersionsQueryHookResult = ReturnType<typeof useGetConfigurationVersionsQuery>;
+export type GetConfigurationVersionsLazyQueryHookResult = ReturnType<typeof useGetConfigurationVersionsLazyQuery>;
+export type GetConfigurationVersionsQueryResult = Apollo.QueryResult<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>;
 export const RemoveAgentConfigurationDocument = gql`
     mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
   removeAgentConfiguration(input: $input) {
@@ -1153,10 +1447,12 @@ export const GetProcessorTypesDocument = gql`
     query getProcessorTypes {
   processorTypes {
     metadata {
-      id
       displayName
       description
       name
+      labels
+      version
+      id
     }
     spec {
       parameters {
@@ -1236,9 +1532,10 @@ export const GetProcessorTypeDocument = gql`
     query getProcessorType($type: String!) {
   processorType(name: $type) {
     metadata {
-      id
       displayName
       name
+      version
+      id
       description
     }
     spec {
@@ -1319,8 +1616,9 @@ export const ProcessorDialogSourceTypeDocument = gql`
     query processorDialogSourceType($name: String!) {
   sourceType(name: $name) {
     metadata {
-      id
       name
+      id
+      version
       displayName
       description
     }
@@ -1365,6 +1663,7 @@ export const ProcessorDialogDestinationTypeDocument = gql`
       metadata {
         id
         name
+        version
         displayName
         description
       }
@@ -1434,9 +1733,152 @@ export function useUpdateProcessorsMutation(baseOptions?: Apollo.MutationHookOpt
 export type UpdateProcessorsMutationHookResult = ReturnType<typeof useUpdateProcessorsMutation>;
 export type UpdateProcessorsMutationResult = Apollo.MutationResult<UpdateProcessorsMutation>;
 export type UpdateProcessorsMutationOptions = Apollo.BaseMutationOptions<UpdateProcessorsMutation, UpdateProcessorsMutationVariables>;
+export const GetRolloutHistoryDocument = gql`
+    query getRolloutHistory($name: String!) {
+  configurationHistory(name: $name) {
+    metadata {
+      name
+      id
+      version
+      dateModified
+    }
+    status {
+      rollout {
+        status
+        errors
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetRolloutHistoryQuery__
+ *
+ * To run a query within a React component, call `useGetRolloutHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRolloutHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRolloutHistoryQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetRolloutHistoryQuery(baseOptions: Apollo.QueryHookOptions<GetRolloutHistoryQuery, GetRolloutHistoryQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRolloutHistoryQuery, GetRolloutHistoryQueryVariables>(GetRolloutHistoryDocument, options);
+      }
+export function useGetRolloutHistoryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRolloutHistoryQuery, GetRolloutHistoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRolloutHistoryQuery, GetRolloutHistoryQueryVariables>(GetRolloutHistoryDocument, options);
+        }
+export type GetRolloutHistoryQueryHookResult = ReturnType<typeof useGetRolloutHistoryQuery>;
+export type GetRolloutHistoryLazyQueryHookResult = ReturnType<typeof useGetRolloutHistoryLazyQuery>;
+export type GetRolloutHistoryQueryResult = Apollo.QueryResult<GetRolloutHistoryQuery, GetRolloutHistoryQueryVariables>;
+export const GetConfigRolloutStatusDocument = gql`
+    query getConfigRolloutStatus($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    agentCount
+    status {
+      pending
+      current
+      latest
+      rollout {
+        status
+        phase
+        completed
+        errors
+        pending
+        waiting
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetConfigRolloutStatusQuery__
+ *
+ * To run a query within a React component, call `useGetConfigRolloutStatusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConfigRolloutStatusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConfigRolloutStatusQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetConfigRolloutStatusQuery(baseOptions: Apollo.QueryHookOptions<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>(GetConfigRolloutStatusDocument, options);
+      }
+export function useGetConfigRolloutStatusLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>(GetConfigRolloutStatusDocument, options);
+        }
+export type GetConfigRolloutStatusQueryHookResult = ReturnType<typeof useGetConfigRolloutStatusQuery>;
+export type GetConfigRolloutStatusLazyQueryHookResult = ReturnType<typeof useGetConfigRolloutStatusLazyQuery>;
+export type GetConfigRolloutStatusQueryResult = Apollo.QueryResult<GetConfigRolloutStatusQuery, GetConfigRolloutStatusQueryVariables>;
+export const AgentsWithConfigurationDocument = gql`
+    query agentsWithConfiguration($selector: String, $query: String) {
+  agents(selector: $selector, query: $query) {
+    agents {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useAgentsWithConfigurationQuery__
+ *
+ * To run a query within a React component, call `useAgentsWithConfigurationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAgentsWithConfigurationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAgentsWithConfigurationQuery({
+ *   variables: {
+ *      selector: // value for 'selector'
+ *      query: // value for 'query'
+ *   },
+ * });
+ */
+export function useAgentsWithConfigurationQuery(baseOptions?: Apollo.QueryHookOptions<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>(AgentsWithConfigurationDocument, options);
+      }
+export function useAgentsWithConfigurationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>(AgentsWithConfigurationDocument, options);
+        }
+export type AgentsWithConfigurationQueryHookResult = ReturnType<typeof useAgentsWithConfigurationQuery>;
+export type AgentsWithConfigurationLazyQueryHookResult = ReturnType<typeof useAgentsWithConfigurationLazyQuery>;
+export type AgentsWithConfigurationQueryResult = Apollo.QueryResult<AgentsWithConfigurationQuery, AgentsWithConfigurationQueryVariables>;
 export const SnapshotDocument = gql`
-    query snapshot($agentID: String!, $pipelineType: PipelineType!) {
-  snapshot(agentID: $agentID, pipelineType: $pipelineType) {
+    query snapshot($agentID: String!, $pipelineType: PipelineType!, $position: String, $resourceName: String) {
+  snapshot(
+    agentID: $agentID
+    pipelineType: $pipelineType
+    position: $position
+    resourceName: $resourceName
+  ) {
     metrics {
       name
       timestamp
@@ -1481,6 +1923,8 @@ export const SnapshotDocument = gql`
  *   variables: {
  *      agentID: // value for 'agentID'
  *      pipelineType: // value for 'pipelineType'
+ *      position: // value for 'position'
+ *      resourceName: // value for 'resourceName'
  *   },
  * });
  */
@@ -1517,6 +1961,7 @@ export const AgentsTableDocument = gql`
         metadata {
           id
           name
+          version
         }
       }
     }
@@ -1606,6 +2051,7 @@ export const GetConfigurationTableDocument = gql`
     configurations {
       metadata {
         id
+        version
         name
         labels
         description
@@ -1656,6 +2102,7 @@ export const ConfigurationChangesDocument = gql`
     configuration {
       metadata {
         id
+        version
         name
         description
         labels
@@ -1731,9 +2178,10 @@ export const GetDestinationTypeDisplayInfoDocument = gql`
   destinationType(name: $name) {
     metadata {
       id
+      name
+      version
       displayName
       icon
-      name
     }
   }
 }
@@ -1771,9 +2219,10 @@ export const GetSourceTypeDisplayInfoDocument = gql`
   sourceType(name: $name) {
     metadata {
       id
+      name
+      version
       displayName
       icon
-      name
     }
   }
 }
@@ -1862,6 +2311,7 @@ export const AgentChangesDocument = gql`
         metadata {
           id
           name
+          version
         }
       }
     }
@@ -1917,6 +2367,7 @@ export const GetAgentAndConfigurationsDocument = gql`
     configurationResource {
       metadata {
         id
+        version
         name
       }
     }
@@ -1933,6 +2384,7 @@ export const GetAgentAndConfigurationsDocument = gql`
       metadata {
         id
         name
+        version
         labels
       }
       spec {
@@ -1977,6 +2429,7 @@ export const GetConfigurationNamesDocument = gql`
       metadata {
         id
         name
+        version
         labels
       }
     }
@@ -2010,6 +2463,86 @@ export function useGetConfigurationNamesLazyQuery(baseOptions?: Apollo.LazyQuery
 export type GetConfigurationNamesQueryHookResult = ReturnType<typeof useGetConfigurationNamesQuery>;
 export type GetConfigurationNamesLazyQueryHookResult = ReturnType<typeof useGetConfigurationNamesLazyQuery>;
 export type GetConfigurationNamesQueryResult = Apollo.QueryResult<GetConfigurationNamesQuery, GetConfigurationNamesQueryVariables>;
+export const GetConfigRolloutAgentsDocument = gql`
+    query getConfigRolloutAgents($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    agentCount
+  }
+}
+    `;
+
+/**
+ * __useGetConfigRolloutAgentsQuery__
+ *
+ * To run a query within a React component, call `useGetConfigRolloutAgentsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConfigRolloutAgentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConfigRolloutAgentsQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetConfigRolloutAgentsQuery(baseOptions: Apollo.QueryHookOptions<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>(GetConfigRolloutAgentsDocument, options);
+      }
+export function useGetConfigRolloutAgentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>(GetConfigRolloutAgentsDocument, options);
+        }
+export type GetConfigRolloutAgentsQueryHookResult = ReturnType<typeof useGetConfigRolloutAgentsQuery>;
+export type GetConfigRolloutAgentsLazyQueryHookResult = ReturnType<typeof useGetConfigRolloutAgentsLazyQuery>;
+export type GetConfigRolloutAgentsQueryResult = Apollo.QueryResult<GetConfigRolloutAgentsQuery, GetConfigRolloutAgentsQueryVariables>;
+export const GetRenderedConfigValueDocument = gql`
+    query getRenderedConfigValue($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    rendered
+  }
+}
+    `;
+
+/**
+ * __useGetRenderedConfigValueQuery__
+ *
+ * To run a query within a React component, call `useGetRenderedConfigValueQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRenderedConfigValueQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRenderedConfigValueQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetRenderedConfigValueQuery(baseOptions: Apollo.QueryHookOptions<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>(GetRenderedConfigValueDocument, options);
+      }
+export function useGetRenderedConfigValueLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>(GetRenderedConfigValueDocument, options);
+        }
+export type GetRenderedConfigValueQueryHookResult = ReturnType<typeof useGetRenderedConfigValueQuery>;
+export type GetRenderedConfigValueLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigValueLazyQuery>;
+export type GetRenderedConfigValueQueryResult = Apollo.QueryResult<GetRenderedConfigValueQuery, GetRenderedConfigValueQueryVariables>;
 export const GetConfigurationDocument = gql`
     query GetConfiguration($name: String!) {
   configuration(name: $name) {
@@ -2018,18 +2551,22 @@ export const GetConfigurationDocument = gql`
       name
       description
       labels
+      version
     }
+    agentCount
     spec {
       raw
       sources {
         type
         name
+        displayName
         parameters {
           name
           value
         }
         processors {
           type
+          displayName
           parameters {
             name
             value
@@ -2041,12 +2578,14 @@ export const GetConfigurationDocument = gql`
       destinations {
         type
         name
+        displayName
         parameters {
           name
           value
         }
         processors {
           type
+          displayName
           parameters {
             name
             value
@@ -2123,10 +2662,12 @@ export const DestinationsAndTypesDocument = gql`
     apiVersion
     metadata {
       id
+      version
       name
       displayName
       description
       icon
+      version
     }
     spec {
       version
@@ -2174,6 +2715,7 @@ export const DestinationsAndTypesDocument = gql`
   destinations {
     metadata {
       id
+      version
       name
     }
     spec {
@@ -2222,6 +2764,7 @@ export const SourceTypesDocument = gql`
     metadata {
       id
       name
+      version
       displayName
       description
       icon
@@ -2305,6 +2848,7 @@ export const GetConfigNamesDocument = gql`
       metadata {
         id
         name
+        version
       }
     }
   }
@@ -2344,6 +2888,7 @@ export const DestinationsDocument = gql`
     metadata {
       id
       name
+      version
     }
     spec {
       type
@@ -2497,6 +3042,7 @@ export const DestinationsInConfigsDocument = gql`
     kind
     metadata {
       id
+      version
       name
     }
     spec {

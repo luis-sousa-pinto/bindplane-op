@@ -16,6 +16,7 @@ const TEST_CONFIGS: GetConfigurationTableQuery["configurations"]["configurations
       metadata: {
         id: "config-1",
         name: "config-1",
+        version: 1,
         description: "description for config-1",
         labels: {
           env: "test",
@@ -28,6 +29,7 @@ const TEST_CONFIGS: GetConfigurationTableQuery["configurations"]["configurations
       metadata: {
         id: "config-2",
         name: "config-2",
+        version: 1,
         description: "description for config-2",
         labels: {
           env: "test",
@@ -93,6 +95,7 @@ describe("OverviewConfigurationsTable", () => {
       <MemoryRouter>
         <MockedProvider mocks={mocks} addTypename={false}>
           <ConfigurationsTable
+            allowSelection
             overviewPage={true}
             enableDelete={false}
             setSelected={setSelected}
@@ -128,6 +131,7 @@ describe("ConfigurationsTable", () => {
       <MemoryRouter>
         <MockedProvider mocks={mocks} addTypename={false}>
           <ConfigurationsTable
+            allowSelection
             overviewPage={false}
             setSelected={setSelected}
             selected={selected}

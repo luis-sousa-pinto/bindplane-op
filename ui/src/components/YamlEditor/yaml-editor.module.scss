@@ -1,9 +1,43 @@
-.code-container {
+@use "../../styles/typography";
+@use "../../styles/colors";
+
+.editor {
   max-height: 500px;
   transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+  font-size: 12px;
+  font-family: typography.$font-family-monospace;
+  background-color: colors.$background-grey;
 }
 
 .expanded {
   max-height: 10000px;
   transition: max-height 0.5s ease-in-out;
+}
+
+.container {
+  background-color: colors.$background-grey;
+  border: 1px solid colors.$background-grey;
+}
+
+.editable {
+  background-color: #fff;
+  border: 1px solid colors.$revolver;
+}
+
+.bg-white {
+  background-color: #fff;
+}
+
+.actions {
+  float: right;
+  margin: 8px 8px 0 0;
+}
+
+.btn-container {
+  position: absolute;
+  bottom: 32px;
+
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }

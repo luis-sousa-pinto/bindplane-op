@@ -71,6 +71,26 @@ describe("ResourceDialog", () => {
     screen.getByText(Destination1.metadata.name);
     screen.getByText("Create New");
   });
+
+  it("can still create a new destination with existing of the same type", async () => {
+    render(
+      <NewResourceDialog
+        platform="linux"
+        onClose={() => {}}
+        resourceTypes={[ResourceType1, ResourceType2]}
+        resources={[Destination1]}
+        title={""}
+        kind={"destination"}
+        open={true}
+      />
+    );
+    screen.getByText(ResourceType1.metadata.displayName!).click();
+    screen.getByText(Destination1.metadata.name);
+    screen.getByText("Create New").click();
+
+    // Look for the Name input
+    screen.getByTestId("name-field");
+  });
 });
 
 describe("SelectView", () => {

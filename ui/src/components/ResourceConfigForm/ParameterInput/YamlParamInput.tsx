@@ -9,6 +9,7 @@ import { ParamInputProps } from "./ParameterInput";
 const YamlParamInputComponent: React.FC<ParamInputProps<string>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   const [isFocused, setFocused] = useState(false);
@@ -42,6 +43,7 @@ const YamlParamInputComponent: React.FC<ParamInputProps<string>> = ({
         required={definition.required}
         name={definition.name}
         value={value ?? ""}
+        disabled={readOnly}
         onValueChange={handleValueChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}

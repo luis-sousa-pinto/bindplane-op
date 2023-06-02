@@ -26,6 +26,7 @@ const ConfigurationsPageContent: React.FC = () => {
       </Button>
 
       <ConfigurationsTable
+        allowSelection
         selected={selected}
         setSelected={setSelected}
         enableDelete={true}

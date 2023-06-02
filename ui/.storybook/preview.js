@@ -17,6 +17,8 @@ export const parameters = {
 import { ThemeProvider as Emotion10ThemeProvider } from "emotion-theming";
 import { MemoryRouter } from "react-router-dom";
 
+import "../src/styles/globals.scss";
+
 const defaultTheme = createTheme();
 
 // This is a workaround to style storybook with MUI v5

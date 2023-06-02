@@ -23,6 +23,8 @@ export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 export interface FormValues {
   // The name of the Source or Destination
   name?: string;
+  // The display name of the Source or Processor
+  displayName?: string;
   // The values for the Parameters
   [key: string]: any;
   // The inline processors configured for the Source or Destination
@@ -31,9 +33,12 @@ export interface FormValues {
 
 interface ResourceConfigurationViewProps {
   // Display name for the resource
-  displayName: string;
+  resourceTypeDisplayName: string;
 
   description: string;
+
+  heading?: string;
+  subHeading?: string;
 
   // Used to determine some form values.
   kind: "destination" | "source" | "processor";
@@ -50,6 +55,9 @@ interface ResourceConfigurationViewProps {
   // If present the form will have a name field at the top and will be sent
   // as the formValues["name"] key.
   includeNameField?: boolean;
+
+  // The initial display name, saved as as the formValues["displayName"] key.
+  displayName?: string;
 
   // Used to validate the name field if includeNameField is present.
   existingResourceNames?: string[];
@@ -71,6 +79,13 @@ interface ResourceConfigurationViewProps {
 
   // Callback for when the Pause/Resume button is clicked
   onTogglePause?: () => void;
+
+  // readOnly will display the form as disabled inputs.
+  readOnly?: boolean;
+
+  // embedded will signal to the component that the form is being displayed in an existing modal and should not have its
+  // own header with close button.
+  embedded?: boolean;
 }
 
 interface ComponentProps extends ResourceConfigurationViewProps {
@@ -78,11 +93,14 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 }
 
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
-  displayName,
+  resourceTypeDisplayName,
   description,
+  heading,
+  subHeading,
   parameters,
   parameterDefinitions,
   includeNameField,
+  displayName,
   existingResourceNames,
   kind,
   onDelete,
@@ -92,6 +110,8 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   onTogglePause,
   onBack,
   initValues,
+  readOnly,
+  embedded,
 }) => {
   const { formValues } = useResourceFormValues();
 
@@ -101,11 +121,14 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
 
   return (
     <ConfigureResourceView
-      displayName={displayName}
+      resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
+      heading={heading}
+      subHeading={subHeading}
       kind={kind}
       formValues={formValues}
       includeNameField={includeNameField}
+      displayName={displayName}
       existingResourceNames={existingResourceNames}
       parameterDefinitions={parameterDefinitions}
       onBack={onBack}
@@ -115,39 +138,44 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
       disableSave={!isDirty}
       paused={paused}
       onTogglePause={onTogglePause}
+      readOnly={readOnly}
+      embedded={embedded}
     />
   );
 };
 
 const MemoizedComponent = memo(ResourceConfigurationViewComponent);
 
-export const ResourceConfigurationView: React.FC<ResourceConfigurationViewProps> =
-  (props) => {
-    const { parameterDefinitions, parameters, includeNameField } = props;
+export const ResourceConfigurationView: React.FC<
+  ResourceConfigurationViewProps
+> = (props) => {
+  const { parameterDefinitions, parameters, includeNameField, displayName } =
+    props;
 
-    const initValues = initFormValues(
-      parameterDefinitions,
-      parameters,
-      includeNameField
-    );
+  const initValues = initFormValues(
+    parameterDefinitions,
+    parameters,
+    includeNameField,
+    displayName
+  );
 
-    const initErrors = initFormErrors(
-      parameterDefinitions,
-      initValues,
-      props.kind,
-      props.includeNameField,
-      props.existingResourceNames
-    );
+  const initErrors = initFormErrors(
+    parameterDefinitions,
+    initValues,
+    props.kind,
+    props.includeNameField,
+    props.existingResourceNames
+  );
 
-    return (
-      <FormValueContextProvider initValues={initValues}>
-        <ValidationContextProvider
-          initErrors={initErrors}
-          definitions={props.parameterDefinitions}
-          includeNameField={includeNameField}
-        >
-          <MemoizedComponent initValues={initValues} {...props} />
-        </ValidationContextProvider>
-      </FormValueContextProvider>
-    );
-  };
+  return (
+    <FormValueContextProvider initValues={initValues}>
+      <ValidationContextProvider
+        initErrors={initErrors}
+        definitions={props.parameterDefinitions}
+        includeNameField={includeNameField}
+      >
+        <MemoizedComponent initValues={initValues} {...props} />
+      </ValidationContextProvider>
+    </FormValueContextProvider>
+  );
+};

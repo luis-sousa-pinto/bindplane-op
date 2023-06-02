@@ -1,4 +1,4 @@
-@use '../../../styles/colors';
+@use "../../../styles/colors";
 
 .title-button-row {
   display: flex;
@@ -17,4 +17,21 @@
 
 .row-width {
   width: 18px;
+}
+
+.section-card {
+  min-width: 800px;
+  max-width: 1600px;
+
+  margin: auto;
+  margin-bottom: 2rem;
+}
+
+.padding {
+  margin-left: 24px;
+  margin-right: 48px;
+}
+
+.card-content {
+  padding: 24px;
 }

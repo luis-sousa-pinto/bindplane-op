@@ -17,14 +17,17 @@ import {
 export function initFormValues(
   definitions: ParameterDefinition[],
   parameters?: Parameter[] | null,
-  includeNameField?: boolean
+  includeNameField?: boolean,
+  displayName?: string
 ): FormValues {
   // Assign defaults
   let defaults: FormValues = {};
   if (includeNameField) {
     defaults.name = "";
   }
-
+  if (displayName) {
+    defaults.displayName = displayName;
+  }
   for (const definition of definitions) {
     defaults[definition.name] = definition.default;
   }

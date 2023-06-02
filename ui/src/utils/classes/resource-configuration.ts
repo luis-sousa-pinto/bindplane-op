@@ -6,12 +6,14 @@ import {
 
 export class BPResourceConfiguration implements ResourceConfiguration {
   name?: Maybe<string> | undefined;
+  displayName: Maybe<string> | undefined;
   type?: Maybe<string> | undefined;
   parameters?: Maybe<Parameter[]> | undefined;
   processors?: Maybe<ResourceConfiguration[]> | undefined;
   disabled: boolean;
   constructor(rc?: ResourceConfiguration) {
     this.name = rc?.name;
+    this.displayName = rc?.displayName;
     this.type = rc?.type;
     this.parameters = rc?.parameters;
     this.processors = rc?.processors;
@@ -35,6 +37,12 @@ export class BPResourceConfiguration implements ResourceConfiguration {
     if (map.name != null && map.name !== "") {
       this.name = map.name;
       delete map.name;
+    }
+    
+    // Set displayName field if present
+    if (map.displayName != null) {
+      this.displayName = map.displayName;
+      delete map.displayName;
     }
 
     // Set processors field if present

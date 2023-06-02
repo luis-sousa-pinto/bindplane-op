@@ -38,11 +38,11 @@ RUN \
     chown bindplane:bindplane /data && \
     chmod 0750 /data
 ENV BINDPLANE_CONFIG_HOME="/data"
-ENV BINDPLANE_CONFIG_LOG_OUTPUT="stdout"
+ENV BINDPLANE_LOGGING_OUTPUT="stdout"
 
 # Bind to all interfaces and use port 3001
-ENV BINDPLANE_CONFIG_HOST=0.0.0.0
-ENV BINDPLANE_CONFIG_PORT="3001"
+ENV BINDPLANE_HOST=0.0.0.0
+ENV BINDPLANE_PORT="3001"
 EXPOSE 3001
 
 USER bindplane

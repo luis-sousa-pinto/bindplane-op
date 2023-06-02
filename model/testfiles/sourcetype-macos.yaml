@@ -5,6 +5,7 @@ metadata:
   displayName: Mac OS
   icon: /public/bindplane-logo.png
   description: Log parser for MacOS
+  version: 1
 spec:
   # settings below take directly from stanza-plugins
   version: 0.0.2

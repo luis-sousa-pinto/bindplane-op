@@ -1,5 +1,5 @@
 import { isNumber } from "lodash";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
 import { ProcessorCard } from "../../Cards/ProcessorCard";
 import { MinimumRequiredConfig } from "../PipelineGraph";
@@ -15,7 +15,7 @@ export function ProcessorNode({
     configuration: MinimumRequiredConfig;
   };
 }) {
-  const { id, metric, configuration } = data;
+  const { id, metric, configuration, attributes } = data;
 
   const isSource = isSourceID(id);
 
@@ -26,10 +26,9 @@ export function ProcessorNode({
     const source = configuration?.spec?.sources![getSourceIndex(id)];
     processorCount = source?.processors?.length ?? 0;
   } else {
-    resourceIndex =
-      configuration?.spec?.destinations?.findIndex(
-        (d) => d.name === getDestinationName(id)
-      ) ?? -1;
+    if (typeof attributes["destinationIndex"] === "number") {
+      resourceIndex = attributes["destinationIndex"];
+    }
 
     const destination = configuration?.spec?.destinations![resourceIndex];
     processorCount = destination?.processors?.length ?? 0;

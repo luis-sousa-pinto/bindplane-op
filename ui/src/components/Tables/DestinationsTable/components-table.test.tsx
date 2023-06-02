@@ -41,7 +41,9 @@ const MOCKS: MockedResponse[] = [
     result: {
       data: {
         metadata: {
+          id: "destination-1-id",
           name: "destination-1-name",
+          version: 1,
           icon: "",
           displayName: "",
         },
@@ -58,7 +60,9 @@ const MOCKS: MockedResponse[] = [
     result: {
       data: {
         metadata: {
+          id: "destination-1-id",
           name: "destination-2-name",
+          version: 1,
           icon: "",
           displayName: "",
         },

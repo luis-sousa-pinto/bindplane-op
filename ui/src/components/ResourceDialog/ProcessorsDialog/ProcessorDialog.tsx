@@ -1,17 +1,20 @@
 import { gql } from "@apollo/client";
-import { Dialog, DialogProps } from "@mui/material";
+import { Dialog, DialogProps, Grid } from "@mui/material";
 import { isEqual } from "lodash";
 import { useSnackbar } from "notistack";
 import { useEffect, useMemo, useState } from "react";
 import {
-  useProcessorDialogSourceTypeLazyQuery,
-  useProcessorDialogDestinationTypeLazyQuery,
   GetProcessorTypesQuery,
-  ResourceTypeKind,
-  useUpdateProcessorsMutation,
+  PipelineType,
   ResourceConfiguration,
+  ResourceTypeKind,
+  useProcessorDialogDestinationTypeLazyQuery,
+  useProcessorDialogSourceTypeLazyQuery,
+  useUpdateProcessorsMutation,
 } from "../../../graphql/generated";
 import { BPResourceConfiguration } from "../../../utils/classes";
+import { trimVersion } from "../../../utils/version-helpers";
+import { DialogContainer } from "../../DialogComponents/DialogContainer";
 import { usePipelineGraph } from "../../PipelineGraph/PipelineGraphContext";
 import {
   CreateProcessorConfigureView,
@@ -19,19 +22,26 @@ import {
   EditProcessorView,
   FormValues,
 } from "../../ResourceConfigForm";
+import { SnapshotConsole } from "../../SnapShotConsole/SnapShotConsole";
 import { ResourceDialogContextProvider } from "../ResourceDialogContext";
 import { AllProcessorsView } from "./AllProcessorsView";
+import {
+  SnapshotContextProvider,
+  useSnapshot,
+} from "../../SnapShotConsole/SnapshotContext";
 
 interface ProcessorDialogProps extends DialogProps {
   processors: ResourceConfiguration[];
+  readOnly?: boolean;
 }
 
 gql`
   query processorDialogSourceType($name: String!) {
     sourceType(name: $name) {
       metadata {
-        id
         name
+        id
+        version
         displayName
         description
       }
@@ -47,6 +57,7 @@ gql`
         metadata {
           id
           name
+          version
           displayName
           description
         }
@@ -71,12 +82,13 @@ enum Page {
 
 export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 
-export const ProcessorDialog: React.FC = (props) => {
+export const ProcessorDialog: React.FC = () => {
   const {
     editProcessorsInfo,
     configuration,
     editProcessorsOpen,
     closeProcessorDialog,
+    readOnlyGraph,
   } = usePipelineGraph();
 
   if (editProcessorsInfo === null) {
@@ -104,12 +116,14 @@ export const ProcessorDialog: React.FC = (props) => {
       open={editProcessorsOpen}
       onClose={closeProcessorDialog}
       processors={processors}
+      readOnly={readOnlyGraph}
     />
   );
 };
 
 export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   processors: processorsProp,
+  readOnly,
   ...dialogProps
 }) => {
   const {
@@ -117,6 +131,7 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
     configuration,
     closeProcessorDialog,
     refetchConfiguration,
+    selectedTelemetryType,
   } = usePipelineGraph();
 
   const [processors, setProcessors] = useState(processorsProp);
@@ -309,16 +324,32 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   }
 
   // displayName for sources is the sourceType name, for destinations it's the destination name
-  const displayName = useMemo(() => {
+  const { resourceName, displayName } = useMemo(() => {
     if (editProcessorsInfo == null) {
-      return undefined;
+      return {
+        resourceName: "",
+        displayName: "",
+      };
     }
-
     if (editProcessorsInfo.resourceType === "source") {
-      return sourceTypeData?.sourceType?.metadata.displayName;
-    } else {
-      return configuration?.spec?.destinations?.[editProcessorsInfo.index].name;
+      return {
+        resourceName: `source${editProcessorsInfo.index}`,
+        displayName: sourceTypeData?.sourceType?.metadata.displayName,
+      };
     }
+    const name =
+      configuration?.spec?.destinations?.[editProcessorsInfo.index].name;
+    if (name) {
+      const trimName = trimVersion(name);
+      return {
+        resourceName: `${trimName}-${editProcessorsInfo.index}`,
+        displayName: trimName,
+      };
+    }
+    return {
+      resourceName: `dest${editProcessorsInfo.index}`,
+      displayName: `dest${editProcessorsInfo.index}`,
+    };
   }, [
     configuration?.spec?.destinations,
     editProcessorsInfo,
@@ -326,24 +357,25 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   ]);
 
   let current: JSX.Element;
+  let buttons: JSX.Element | undefined;
   switch (view) {
     case Page.MAIN:
       current = (
-        <AllProcessorsView
-          processors={processors}
-          parentDisplayName={displayName ?? "unknown"}
-          onAddProcessor={() => setView(Page.CREATE_PROCESSOR_SELECT)}
-          onClose={handleClose}
-          onEditProcessor={handleEditProcessorClick}
-          onSave={handleSave}
-          onProcessorsChange={setProcessors}
-        />
+        <>
+          <AllProcessorsView
+            processors={processors}
+            onAddProcessor={() => setView(Page.CREATE_PROCESSOR_SELECT)}
+            onEditProcessor={handleEditProcessorClick}
+            onSave={handleSave}
+            onProcessorsChange={setProcessors}
+            readOnly={Boolean(readOnly)}
+          />
+        </>
       );
       break;
     case Page.CREATE_PROCESSOR_SELECT:
       current = (
         <CreateProcessorSelectView
-          onClose={handleClose}
           displayName={displayName ?? "unknown"}
           telemetryTypes={
             editProcessorsInfo?.resourceType === "source"
@@ -374,15 +406,85 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
           onEditProcessorSave={handleSaveExisting}
           onBack={handleReturnToAll}
           onRemove={handleRemoveProcessor}
+          readOnly={readOnly}
         />
       );
   }
 
+  const parentDisplayName = displayName ?? "unknown";
+  const title = useMemo(() => {
+    const kind =
+      editProcessorsInfo?.resourceType === "source" ? "Source" : "Destination";
+    return `${kind} ${parentDisplayName}: Processors`;
+  }, [editProcessorsInfo?.resourceType, parentDisplayName]);
+
+  const description =
+    "Processors are run on data after it's received and prior to being sent to a destination. They will be executed in the order they appear below.";
+
+  const snapshotPosition =
+    editProcessorsInfo?.resourceType === "source" ? "s0" : "d0";
+
   return (
     <ResourceDialogContextProvider onClose={handleClose} purpose={"edit"}>
-      <Dialog {...dialogProps} fullWidth maxWidth={"md"} onClose={handleClose}>
-        {current}
-      </Dialog>
+      <SnapshotContextProvider
+        pipelineType={convertTelemetryType(selectedTelemetryType)}
+        processors={processors}
+        position={snapshotPosition}
+        resourceName={resourceName}
+        showAgentSelector={true}
+      >
+        <Dialog {...dialogProps} maxWidth={"xl"} fullWidth onClose={handleClose}>
+          <DialogContainer
+            title={title}
+            description={description}
+            onClose={handleClose}
+            buttons={buttons}
+          >
+            <ProcessorsBody>{current}</ProcessorsBody>
+          </DialogContainer>
+        </Dialog>
+      </SnapshotContextProvider>
     </ResourceDialogContextProvider>
+  );
+};
+
+function convertTelemetryType(telemetryType: string): PipelineType {
+  switch (telemetryType) {
+    case PipelineType.Logs:
+      return PipelineType.Logs;
+    case PipelineType.Metrics:
+      return PipelineType.Metrics;
+    case PipelineType.Traces:
+      return PipelineType.Traces;
+    default:
+      return PipelineType.Logs;
+  }
+}
+
+export const ProcessorsBody: React.FC<{}> = ({ children }) => {
+  const {
+    logs,
+    metrics,
+    traces,
+    pipelineType,
+  } = useSnapshot();
+
+  const footer = `Showing recent ${pipelineType}`;
+  return (
+    <>
+      <Grid container spacing={2}>
+        <Grid item xs={7}>
+          <SnapshotConsole
+            logs={logs}
+            metrics={metrics}
+            traces={traces}
+            footer={footer}
+          />
+        </Grid>
+        <Grid item xs={5}>
+          {children}
+        </Grid>
+      </Grid>
+    </>
   );
 };

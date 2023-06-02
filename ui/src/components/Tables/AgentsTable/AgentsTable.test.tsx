@@ -10,8 +10,9 @@ const a1: AgentsTableAgent = {
   status: 1,
   configurationResource: {
     metadata: {
-      id: "",
       name: "",
+      id: "",
+      version: 0,
     },
   },
 };
@@ -21,8 +22,9 @@ const a2: AgentsTableAgent = {
   status: 1,
   configurationResource: {
     metadata: {
-      id: "",
       name: "",
+      id: "",
+      version: 1,
     },
   },
 };
@@ -32,8 +34,9 @@ const a3: AgentsTableAgent = {
   status: 1,
   configurationResource: {
     metadata: {
-      id: "",
       name: "",
+      id: "",
+      version: 2,
     },
   },
 };
@@ -43,8 +46,9 @@ const a4: AgentsTableAgent = {
   status: 1,
   configurationResource: {
     metadata: {
-      id: "",
       name: "",
+      id: "",
+      version: 2,
     },
   },
 };
@@ -54,8 +58,9 @@ const a5: AgentsTableAgent = {
   status: 1,
   configurationResource: {
     metadata: {
-      id: "",
       name: "",
+      id: "",
+      version: 2,
     },
   },
 };

@@ -43,6 +43,12 @@ import { RawOrTopologyControl } from "../../components/PipelineGraph/RawOrTopolo
 import { Config } from "../../components/ManageConfigForm/types";
 import { ConfigurationSelect } from "../../components/ManageConfigForm/ConfigurationSelect";
 import { classes } from "../../utils/styles";
+import { YamlEditor } from "../../components/YamlEditor";
+import {
+  DEFAULT_PERIOD,
+  DEFAULT_TELEMETRY_TYPE,
+  MeasurementControlBar,
+} from "../../components/MeasurementControlBar";
 import { UpgradeError } from "../../components/UpgradeError";
 
 import mixins from "../../styles/mixins.module.scss";
@@ -71,6 +77,7 @@ gql`
       configurationResource {
         metadata {
           id
+          version
           name
         }
       }
@@ -87,6 +94,7 @@ gql`
         metadata {
           id
           name
+          version
           labels
         }
         spec {
@@ -97,11 +105,15 @@ gql`
   }
 `;
 
-const AgentPageContent: React.FC = () => {
+export const AgentPageContent: React.FC = () => {
   const { id } = useParams();
   const snackbar = useSnackbar();
   const [importOpen, setImportOpen] = useState(false);
   const [recentTelemetryOpen, setRecentTelemetryOpen] = useState(false);
+  const [selectedTelemetry, setSelectedTelemetry] = useState(
+    DEFAULT_TELEMETRY_TYPE
+  );
+  const [period, setPeriod] = useState(DEFAULT_PERIOD);
 
   // AgentChanges subscription to trigger a refetch.
   const agentChanges = useAgentChangesContext();
@@ -176,8 +188,9 @@ const AgentPageContent: React.FC = () => {
     fetchPolicy: "cache-and-network",
   });
   const configGraph = configQuery.data?.configuration;
-  const [rawOrTopology, setTopologyOrRaw] =
-    useState<"topology" | "raw">("topology");
+  const [rawOrTopologyTab, setRawOrTopologyTab] = useState<"topology" | "raw">(
+    "topology"
+  );
   const [editing, setEditing] = useState(false);
 
   const [selectedConfig, setSelectedConfig] = useState<Config | undefined>(
@@ -189,8 +202,9 @@ const AgentPageContent: React.FC = () => {
 
   const isRaw =
     configGraph?.spec?.raw != null && configGraph?.spec?.raw.length > 0;
+
   useEffect(() => {
-    setTopologyOrRaw(isRaw ? "raw" : "topology");
+    setRawOrTopologyTab(isRaw ? "raw" : "topology");
   }, [isRaw]);
 
   const viewTelemetryButton = useMemo(() => {
@@ -360,8 +374,8 @@ const AgentPageContent: React.FC = () => {
           {/* Toggle topology/raw */}
           {configGraph && !editing && !isRaw && (
             <RawOrTopologyControl
-              rawOrTopology={rawOrTopology}
-              setTopologyOrRaw={setTopologyOrRaw}
+              rawOrTopology={rawOrTopologyTab}
+              setTopologyOrRaw={setRawOrTopologyTab}
             />
           )}
           {data.agent.errorMessage && !editing && (
@@ -375,13 +389,31 @@ const AgentPageContent: React.FC = () => {
           )}
           {/* Graph or YAML */}
           {configGraph && !editing && (
-            <PipelineGraph
-              configuration={configGraph}
-              refetchConfiguration={configQuery.refetch}
-              agent={data.agent?.id}
-              yamlValue={data.agent.configuration?.Collector || ""}
-              rawOrTopology={rawOrTopology}
-            />
+            <>
+              {rawOrTopologyTab === "topology" ? (
+                <div>
+                  <MeasurementControlBar
+                    telemetry={selectedTelemetry}
+                    onTelemetryTypeChange={setSelectedTelemetry}
+                    period={period}
+                    onPeriodChange={setPeriod}
+                  />
+                  <PipelineGraph
+                    agentId={data.agent.id}
+                    configurationName={`${data.agent.configurationResource?.metadata.name}:${data.agent.configurationResource?.metadata.version}`}
+                    selectedTelemetry={selectedTelemetry}
+                    period={period}
+                    readOnly
+                  />
+                </div>
+              ) : (
+                <YamlEditor
+                  value={data.agent.configuration?.Collector || ""}
+                  readOnly
+                  limitHeight
+                />
+              )}
+            </>
           )}
         </Stack>
       </CardContainer>

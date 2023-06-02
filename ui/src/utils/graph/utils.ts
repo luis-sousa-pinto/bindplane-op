@@ -1,15 +1,16 @@
-import { Edge, Position, MarkerType, Node } from "react-flow-renderer";
+import { Edge, Position, MarkerType, Node } from "reactflow";
 import { TELEMETRY_SIZE_METRICS } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";
 import { Graph, GraphMetric } from "../../graphql/generated";
 
-export const GRAPH_NODE_OFFSET = 160;
+export const GRAPH_NODE_OFFSET = 150;
 export const GRAPH_PADDING = 300;
 
 export const enum Page {
   Overview,
   Configuration,
+  Agent,
 }
 
 export const enum MetricPosition {
@@ -44,7 +45,7 @@ export function getNodesAndEdges(
   refetchConfiguration: () => void,
   setAddSourceDialogOpen: (b: boolean) => void,
   setAddDestDialogOpen: (b: boolean) => void,
-  isConfigurationPage: boolean
+  readOnly: boolean
 ): {
   nodes: Node[];
   edges: Edge[];
@@ -61,17 +62,20 @@ export function getNodesAndEdges(
   //       the spacing.
 
   const offset = GRAPH_NODE_OFFSET;
-  const sourceOffsetMultiplier = 250;
+  const sourceOffsetMultiplier = 350;
 
   // This number gives the horizontal spacing between sources and targets
   // TODO: make function of Cards bounding box
   const processorYoffset = 35;
-  const targetProcOffsetMultiplier = 270;
+  const targetProcOffsetMultiplier = 330;
 
   // if there's only one source or one destination we need to layout add source and add destination cards
   // we also need to add edges between the source/destination and the add source/add destination cards
   const addSourceCard = graph.sources?.length === 0;
   const addDestinationCard = graph.targets?.length === 0;
+
+  const isConfigurationFlow =
+    page === Page.Configuration || page === Page.Agent;
 
   // layout sources
   if (addSourceCard) {
@@ -193,7 +197,7 @@ export function getNodesAndEdges(
     const n = graph.intermediates[i];
 
     const x =
-      (isConfigurationPage && offsets[n.id] < 2 ? 2 : offsets[n.id]) *
+      (isConfigurationFlow && offsets[n.id] < 2 ? 2 : offsets[n.id]) *
       targetProcOffsetMultiplier;
 
     if (!isSourceID(n.id)) {
@@ -283,7 +287,7 @@ export function getNodesAndEdges(
     for (let i = 0; i < (graph.targets ?? []).length; i++) {
       const n = graph.targets[i];
       const x =
-        (isConfigurationPage && offsets[n.id] < 3 ? 3 : offsets[n.id]) *
+        (isConfigurationFlow && offsets[n.id] < 3 ? 3 : offsets[n.id]) *
         targetOffsetMultiplier;
 
       nodes.push({
@@ -317,12 +321,14 @@ export function getNodesAndEdges(
   }
 
   // Add the add source and add destination buttons
-  if (isConfigurationPage) {
+  if (isConfigurationFlow) {
     if (max < 3) {
       max = 3;
     }
 
-    if (!addSourceCard) {
+    // Add an Add Source button if we aren't using the Add Source Card and
+    // the graph is not read only.
+    if (!addSourceCard && !readOnly) {
       nodes.push({
         id: "add-source",
         data: {
@@ -337,7 +343,9 @@ export function getNodesAndEdges(
         type: "uiControlNode",
       });
     }
-    if (!addDestinationCard) {
+    // Add an Add Destination button if we aren't using the Add Destination Card and
+    // the graph is not read only.
+    if (!addDestinationCard && !readOnly) {
       nodes.push({
         id: "add-destination",
         data: {
@@ -382,7 +390,7 @@ export function getNodesAndEdges(
       data: {
         connectedNodesAndEdges: [e.id],
       },
-      type: page === Page.Configuration ? "configurationEdge" : "overviewEdge",
+      type: isConfigurationFlow ? "configurationEdge" : "overviewEdge",
     };
 
     edges.push(edge);

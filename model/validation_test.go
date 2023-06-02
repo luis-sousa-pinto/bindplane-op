@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestConfigurationValidate(t *testing.T) {
@@ -27,13 +28,13 @@ func TestConfigurationValidate(t *testing.T) {
 		testfile                     string
 		expectValidateError          string
 		expectValidateWithStoreError string
+		expectYAML                   string
 	}{
 		{
 			testfile:                     "configuration-invalid-spec-fields.yaml",
 			expectValidateError:          "1 error occurred:\n\t* configuration must specify raw or sources and destinations\n\n",
 			expectValidateWithStoreError: "1 error occurred:\n\t* configuration must specify raw or sources and destinations\n\n",
 		},
-
 		{
 			testfile:                     "configuration-raw-malformed.yaml",
 			expectValidateError:          "1 error occurred:\n\t* unable to parse spec.raw as yaml: yaml: line 29: did not find expected key\n\n",
@@ -69,25 +70,44 @@ func TestConfigurationValidate(t *testing.T) {
 			testfile:                     "configuration-ok.yaml",
 			expectValidateError:          "",
 			expectValidateWithStoreError: "",
+			expectYAML:                   "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: false\n        - type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: true\n    destinations:\n        - name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
 		},
 		{
 			testfile:                     "configuration-ok-empty.yaml",
 			expectValidateError:          "",
 			expectValidateWithStoreError: "",
+			expectYAML:                   "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: \"\"\n    selector:\n        matchLabels:\n            configuration: macos\n",
+		},
+		{
+			testfile:   "configuration-ok-versioned-resources.yaml",
+			expectYAML: "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n    destinations:\n        - name: cabin-production-logs:1\n        - name: cabin-production-logs:1\n        - name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
 		},
 	}
 
 	store := newTestResourceStore()
 
 	macos := testResource[*SourceType](t, "sourcetype-macos.yaml")
-	store.sourceTypes[macos.Name()] = macos
+	store.sourceTypes.add(macos)
+
+	// add two more versions of macos
+	macos2, err := Clone(macos)
+	require.NoError(t, err)
+	macos2.SetVersion(2)
+	store.sourceTypes.add(macos2)
+
+	macos3, err := Clone(macos)
+	require.NoError(t, err)
+	macos3.SetVersion(3)
+	store.sourceTypes.addLatest(macos3)
+
+	resourceattributetransposer := testResource[*ProcessorType](t, "processortype-resourceattributetransposer.yaml")
+	store.processorTypes.addLatest(resourceattributetransposer)
 
 	cabin := testResource[*Destination](t, "destination-cabin.yaml")
-	store.destinations[cabin.Name()] = cabin
+	store.destinations.addLatest(cabin)
 
 	cabinType := testResource[*DestinationType](t, "destinationtype-cabin.yaml")
-	store.destinationTypes[cabinType.Name()] = cabinType
-
+	store.destinationTypes.addLatest(cabinType)
 	for _, test := range tests {
 		t.Run(test.testfile, func(t *testing.T) {
 			config := validateResource[*Configuration](t, test.testfile)
@@ -108,6 +128,12 @@ func TestConfigurationValidate(t *testing.T) {
 			} else {
 				require.Error(t, err)
 				require.Equal(t, test.expectValidateWithStoreError, err.Error())
+			}
+
+			if test.expectYAML != "" {
+				yaml, err := yaml.Marshal(config)
+				require.NoError(t, err)
+				require.Equal(t, test.expectYAML, string(yaml))
 			}
 		})
 	}
@@ -184,11 +210,13 @@ func TestSourceValidate(t *testing.T) {
 		testfile                     string
 		expectValidateError          string
 		expectValidateWithStoreError string
+		expectYAML                   string
 	}{
 		{
 			testfile:                     "source-ok.yaml",
 			expectValidateError:          "",
 			expectValidateWithStoreError: "",
+			expectYAML:                   "apiVersion: bindplane.observiq.com/v1\nkind: Source\nmetadata:\n    name: bar\n    description: bar is my old macbook with a touchbar\n    version: 1\nspec:\n    type: MacOS:1\n    parameters:\n        - name: enable_system_log\n          value: true\n        - name: collection_interval_seconds\n          value: \"100\"\n",
 		},
 		{
 			testfile:                     "source-bad-name.yaml",
@@ -225,7 +253,7 @@ func TestSourceValidate(t *testing.T) {
 	store := newTestResourceStore()
 
 	macos := testResource[*SourceType](t, "sourcetype-macos.yaml")
-	store.sourceTypes[macos.Name()] = macos
+	store.sourceTypes.add(macos)
 
 	for _, test := range tests {
 		t.Run(test.testfile, func(t *testing.T) {
@@ -247,6 +275,12 @@ func TestSourceValidate(t *testing.T) {
 			} else {
 				require.Error(t, err)
 				require.Equal(t, test.expectValidateWithStoreError, err.Error())
+			}
+
+			if test.expectYAML != "" {
+				yaml, err := yaml.Marshal(src)
+				require.NoError(t, err)
+				require.Equal(t, test.expectYAML, string(yaml))
 			}
 		})
 	}

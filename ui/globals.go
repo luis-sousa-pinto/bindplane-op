@@ -22,9 +22,7 @@ import (
 	"text/template"
 
 	"github.com/gin-gonic/gin"
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/server"
-	"github.com/observiq/bindplane-op/internal/version"
+	"github.com/observiq/bindplane-op/version"
 )
 
 const templateStr = `var __BINDPLANE_VERSION__ = "{{.Version}}";
@@ -46,7 +44,7 @@ func newConfigOptions() *configOptions {
 }
 
 // generateGlobalJS generates the static javascript file for the UI.
-func generateGlobalJS(_ *common.Server) (string, error) {
+func generateGlobalJS() (string, error) {
 	tmp, err := template.New("globals").Parse(templateStr)
 	if err != nil {
 		return fallbackJs, err
@@ -63,8 +61,8 @@ func generateGlobalJS(_ *common.Server) (string, error) {
 	return w.String(), nil
 }
 
-func globalJS(ctx *gin.Context, bindplane server.BindPlane) {
-	js, err := generateGlobalJS(bindplane.Config())
+func globalJS(ctx *gin.Context) {
+	js, err := generateGlobalJS()
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return

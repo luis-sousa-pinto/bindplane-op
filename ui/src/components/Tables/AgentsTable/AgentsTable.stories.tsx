@@ -6,6 +6,7 @@ import {
   AgentsTableQuery,
 } from "../../../graphql/generated";
 import { AgentTable } from "../AgentTable";
+import { AgentsTableField } from "./AgentsDataGrid";
 import { generateAgents } from "./__testutil__/generate-agents";
 
 export default {
@@ -18,12 +19,16 @@ export default {
     },
     columnFields: {
       options: [
-        "name",
-        "status",
-        "version",
-        "configuration",
-        "operatingSystem",
-        "labels",
+        AgentsTableField.NAME,
+        AgentsTableField.STATUS,
+        AgentsTableField.VERSION,
+        AgentsTableField.CONFIGURATION,
+        AgentsTableField.CONFIGURATION_VERSION,
+        AgentsTableField.OPERATING_SYSTEM,
+        AgentsTableField.LABELS,
+        AgentsTableField.LOGS,
+        AgentsTableField.METRICS,
+        AgentsTableField.TRACES,
       ],
       control: "multi-select",
     },

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { EdgeProps } from "react-flow-renderer";
+import { EdgeProps } from "reactflow";
 import { usePipelineGraph } from "../PipelineGraphContext";
 
 import { CustomEdge, CustomEdgeData } from "../../GraphComponents";

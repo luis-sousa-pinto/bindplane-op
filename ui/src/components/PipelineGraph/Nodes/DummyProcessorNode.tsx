@@ -1,6 +1,6 @@
 import { Card, Stack } from "@mui/material";
 
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { ProcessorIcon } from "../../Icons";
 
 import styles from "../../Cards/cards.module.scss";

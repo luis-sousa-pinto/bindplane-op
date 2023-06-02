@@ -1,11 +1,5 @@
 import { gql } from "@apollo/client";
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Typography } from "@mui/material";
 import { isNumber } from "lodash";
 import { useSnackbar } from "notistack";
 import { useState } from "react";
@@ -14,10 +8,9 @@ import { EditResourceDialog } from "../ResourceDialog/EditResourceDialog";
 import { useSourceTypeQuery } from "../../graphql/generated";
 import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPResourceConfiguration } from "../../utils/classes";
-import { classes } from "../../utils/styles";
 import { MinimumRequiredConfig } from "../PipelineGraph/PipelineGraph";
-
-import styles from "./cards.module.scss";
+import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
+import { ResourceCard } from "./ResourceCard";
 
 gql`
   query SourceType($name: String!) {
@@ -25,6 +18,7 @@ gql`
       metadata {
         id
         name
+        version
         displayName
         icon
         displayName
@@ -80,6 +74,7 @@ export const InlineSourceCard: React.FC<{
   refetchConfiguration: () => void;
 }> = ({ id, disabled, configuration, refetchConfiguration }) => {
   const sourceIndex = getSourceIndex(id);
+  const { readOnlyGraph } = usePipelineGraph();
 
   const source = configuration?.spec?.sources![sourceIndex];
   const name = source?.type || "";
@@ -94,8 +89,7 @@ export const InlineSourceCard: React.FC<{
   const { enqueueSnackbar } = useSnackbar();
 
   const icon = data?.sourceType?.metadata.icon;
-  const displayName = data?.sourceType?.metadata.displayName ?? "";
-  const fontSize = displayName.length > 16 ? 14 : undefined;
+  const resourceTypeDisplayName = data?.sourceType?.metadata.displayName ?? "";
 
   function closeEditDialog() {
     setEditing(false);
@@ -193,48 +187,19 @@ export const InlineSourceCard: React.FC<{
 
   return (
     <>
-      <Card
-        className={classes([
-          styles["resource-card"],
-          disabled ? styles.disabled : undefined,
-          source?.disabled ? styles.paused : undefined,
-        ])}
+      <ResourceCard
+        dataTestID={`source-card-${id}`}
+        name={resourceTypeDisplayName}
+        displayName={source?.displayName ?? undefined}
+        icon={icon}
+        disabled={disabled || source?.disabled}
+        paused={source?.disabled}
         onClick={() => setEditing(true)}
-      >
-        <CardActionArea className={styles.action}>
-          <CardContent data-testid={`source-card-${id}`}>
-            <Stack alignItems="center" textAlign={"center"} height="100%">
-              <span
-                className={styles.icon}
-                style={{ backgroundImage: `url(${icon})` }}
-              />
-              <Typography
-                component="div"
-                fontWeight={600}
-                fontSize={fontSize}
-                gutterBottom
-              >
-                {displayName}
-              </Typography>
-              {/* TODO: horizontal line separating displayName from Paused */}
-              {source?.disabled && (
-                <Typography
-                  component="div"
-                  fontWeight={400}
-                  fontSize={14}
-                  variant="overline"
-                >
-                  Paused
-                </Typography>
-              )}
-            </Stack>
-          </CardContent>
-        </CardActionArea>
-      </Card>
-
+      />
       <EditResourceDialog
-        displayName={displayName}
+        resourceTypeDisplayName={resourceTypeDisplayName}
         description={data?.sourceType?.metadata.description ?? ""}
+        displayName={source?.displayName ?? ""}
         kind="source"
         parameters={source?.parameters ?? []}
         parameterDefinitions={data.sourceType.spec.parameters}
@@ -245,6 +210,7 @@ export const InlineSourceCard: React.FC<{
         onSave={onSave}
         paused={source?.disabled}
         onTogglePause={onTogglePause}
+        readOnly={readOnlyGraph}
       />
 
       <ConfirmDeleteResourceDialog

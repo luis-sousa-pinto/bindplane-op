@@ -1,107 +1,159 @@
 import { Card, Paper } from "@mui/material";
-import { ReactFlowProvider } from "react-flow-renderer";
+import { ReactFlowProvider } from "reactflow";
 import { ShowPageConfig } from "../../pages/configurations/configuration";
-import {
-  DEFAULT_PERIOD,
-  DEFAULT_TELEMETRY_TYPE,
-  MeasurementControlBar,
-} from "../MeasurementControlBar/MeasurementControlBar";
+import { DEFAULT_PERIOD } from "../MeasurementControlBar/MeasurementControlBar";
 import { ConfigurationFlow } from "./ConfigurationFlow";
 import { PipelineGraphProvider } from "./PipelineGraphContext";
-import { firstActiveTelemetry } from "./Nodes/nodeUtils";
-import { YamlEditor } from "../YamlEditor";
 import { ProcessorDialog } from "../ResourceDialog/ProcessorsDialog";
-import { useQueryParam, StringParam } from "use-query-params";
 import {
-  PERIOD_PARAM_NAME,
-  TELEMETRY_TYPE_PARAM_NAME,
-} from "../../utils/state";
-import { useEffect } from "react";
+  useConfigurationMetricsSubscription,
+  useGetConfigurationQuery,
+} from "../../graphql/generated";
+import { useState } from "react";
+import { AddSourcesSection } from "../../pages/configurations/configuration/AddSourcesSection";
+import { AddDestinationsSection } from "../../pages/configurations/configuration/AddDestinationsSection";
+import { trimVersion } from "../../utils/version-helpers";
+import { ApolloError, gql } from "@apollo/client";
+import { useSnackbar } from "notistack";
+import { Page } from "../../utils/graph/utils";
+import { GraphGradient, MaxValueMap } from "../GraphComponents";
 
 import styles from "./pipeline-graph.module.scss";
 
+gql`
+  subscription ConfigurationMetrics(
+    $period: String!
+    $name: String!
+    $agent: String
+  ) {
+    configurationMetrics(period: $period, name: $name, agent: $agent) {
+      metrics {
+        name
+        nodeID
+        pipelineType
+        value
+        unit
+      }
+      maxMetricValue
+      maxLogValue
+      maxTraceValue
+    }
+  }
+`;
+
 export type MinimumRequiredConfig = Partial<ShowPageConfig>;
+
 interface PipelineGraphProps {
-  configuration: MinimumRequiredConfig;
-  refetchConfiguration: () => void;
-  agent: string;
-  yamlValue: string;
-  rawOrTopology: "raw" | "topology";
+  selectedTelemetry: string;
+  period: string;
+  // configurationName is the versioned configuration name
+  configurationName: string;
+  // agentId can be specified to show the pipeline/telemetry for an agent
+  agentId?: string;
+  // readOnly will set edit dialogs to be read only
+  readOnly?: boolean;
+
+  // skipMeasurements will skip the subscription for pipeline measurements
+  skipMeasurements?: boolean;
 }
 
 export const PipelineGraph: React.FC<PipelineGraphProps> = ({
-  configuration,
-  refetchConfiguration,
-  agent,
-  yamlValue,
-  rawOrTopology,
+  configurationName,
+  agentId,
+  selectedTelemetry,
+  period,
+  readOnly,
+  skipMeasurements,
 }) => {
-  const [selectedPeriod, setPeriodURL] = useQueryParam(
-    PERIOD_PARAM_NAME,
-    StringParam
-  );
-  const setPeriod = (p: string) => {
-    setPeriodURL(p, "replaceIn");
-  };
+  const { enqueueSnackbar } = useSnackbar();
 
-  const [selectedTelemetry, setSelectedTelemetryURL] = useQueryParam(
-    TELEMETRY_TYPE_PARAM_NAME,
-    StringParam
-  );
-  const setSelectedTelemetry = (t: string) => {
-    setSelectedTelemetryURL(t, "replaceIn");
-  };
-
-  const activeTelemetry =
-    firstActiveTelemetry(configuration?.graph?.attributes) ??
-    DEFAULT_TELEMETRY_TYPE;
-  useEffect(() => {
-    if (!selectedPeriod) {
-      setPeriod(DEFAULT_PERIOD);
-    }
-    if (!selectedTelemetry) {
-      setSelectedTelemetry(activeTelemetry);
-    }
+  const [addSourceOpen, setAddSourceOpen] = useState(false);
+  const [addDestinationOpen, setAddDestinationOpen] = useState(false);
+  const [maxValues, setMaxValues] = useState<MaxValueMap>({
+    maxMetricValue: 0,
+    maxLogValue: 0,
+    maxTraceValue: 0,
   });
 
-  if (rawOrTopology === "topology") {
-    return (
-      <PipelineGraphProvider
-        selectedTelemetryType={selectedTelemetry || DEFAULT_PERIOD}
-        configuration={configuration}
-        refetchConfiguration={refetchConfiguration}
-      >
-        <GraphContainer>
-          <Card style={{ border: 0 }}>
-            <MeasurementControlBar
-              telemetry={selectedTelemetry || activeTelemetry}
-              onTelemetryTypeChange={setSelectedTelemetry}
-              period={selectedPeriod || DEFAULT_PERIOD}
-              onPeriodChange={setPeriod}
-            />
-            <ReactFlowProvider>
-              <ConfigurationFlow
-                period={selectedPeriod || DEFAULT_PERIOD}
-                selectedTelemetry={selectedTelemetry || activeTelemetry}
-                configuration={configuration}
-                refetchConfiguration={refetchConfiguration}
-                agent={agent}
-              />
-            </ReactFlowProvider>
-          </Card>
-        </GraphContainer>
-        <ProcessorDialog />
-      </PipelineGraphProvider>
-    );
-  } else {
-    return (
-      <YamlEditor
-        value={yamlValue === "" ? "Raw configuration unavailable" : yamlValue}
-        readOnly
-        limitHeight
-      />
-    );
+  function onError(err: ApolloError) {
+    console.error(err);
+    enqueueSnackbar(err.message, { variant: "error" });
   }
+
+  const { data, refetch: refetchConfiguration } = useGetConfigurationQuery({
+    variables: {
+      name: configurationName,
+    },
+    fetchPolicy: "cache-and-network",
+    onError,
+  });
+
+  const { data: measurementData } = useConfigurationMetricsSubscription({
+    variables: {
+      period,
+      name: trimVersion(configurationName),
+      agent: agentId,
+    },
+    onError,
+    onData({ data }) {
+      if (data.data?.configurationMetrics) {
+        setMaxValues({
+          maxMetricValue: data.data.configurationMetrics.maxMetricValue,
+          maxLogValue: data.data.configurationMetrics.maxLogValue,
+          maxTraceValue: data.data.configurationMetrics.maxTraceValue,
+        });
+      }
+    },
+    skip: skipMeasurements,
+  });
+
+  return (
+    <PipelineGraphProvider
+      selectedTelemetryType={selectedTelemetry || DEFAULT_PERIOD}
+      configuration={data?.configuration}
+      refetchConfiguration={refetchConfiguration}
+      addSourceOpen={addSourceOpen}
+      setAddSourceOpen={setAddSourceOpen}
+      addDestinationOpen={addDestinationOpen}
+      setAddDestinationOpen={setAddDestinationOpen}
+      readOnly={readOnly}
+      maxValues={maxValues}
+    >
+      <GraphContainer>
+        <Card className={styles.card}>
+          <ReactFlowProvider>
+            <ConfigurationFlow
+              period={period}
+              selectedTelemetry={selectedTelemetry}
+              page={agentId ? Page.Agent : Page.Configuration}
+              loading={data?.configuration == null}
+              measurementData={measurementData}
+            />
+          </ReactFlowProvider>
+        </Card>
+      </GraphContainer>
+      <ProcessorDialog />
+
+      {!readOnly && data?.configuration && (
+        <>
+          <AddSourcesSection
+            configuration={data.configuration}
+            refetch={refetchConfiguration}
+            setAddDialogOpen={setAddSourceOpen}
+            addDialogOpen={addSourceOpen}
+          />
+          <AddDestinationsSection
+            configuration={data.configuration}
+            refetch={refetchConfiguration}
+            setAddDialogOpen={setAddDestinationOpen}
+            addDialogOpen={addDestinationOpen}
+          />
+        </>
+      )}
+
+      <GraphGradient />
+    </PipelineGraphProvider>
+  );
 };
 
 const GraphContainer: React.FC = ({ children }) => {

@@ -40,14 +40,23 @@ type AnyResourceStatus struct {
 
 // Message returns the summary of the ResourceStatus, e.g. "exporter updated"
 func (s *AnyResourceStatus) Message() string {
-	if s.Reason != "" {
-		return fmt.Sprintf("%s %s %s\n\t%s", s.Resource.Kind, s.Resource.Name(), s.Status, s.Reason)
+	r, err := ParseResource(&s.Resource)
+	if err != nil {
+		r = &s.Resource
 	}
-	return fmt.Sprintf("%s %s %s", s.Resource.Kind, s.Resource.Name(), s.Status)
+	rs := ResourceStatus{Resource: r, Status: s.Status, Reason: s.Reason}
+	return rs.String()
 }
 
 func (s *ResourceStatus) String() string {
-	return fmt.Sprintf("%s %s %s", s.Resource.GetKind(), s.Resource.Name(), s.Status)
+	name := s.Resource.UniqueKey()
+	if HasVersionKind(s.Resource.GetKind()) {
+		name = JoinVersion(name, s.Resource.Version())
+	}
+	if s.Reason != "" {
+		return fmt.Sprintf("%s %s %s\n\t%s", s.Resource.GetKind(), name, s.Status, s.Reason)
+	}
+	return fmt.Sprintf("%s %s %s", s.Resource.GetKind(), name, s.Status)
 }
 
 // NewResourceStatus TODO(doc)
@@ -55,9 +64,14 @@ func NewResourceStatus(r Resource, s UpdateStatus) *ResourceStatus {
 	return &ResourceStatus{Resource: r, Status: s}
 }
 
-// NewResourceStatusWithReason returns a status for an invalid resource
+// NewResourceStatusWithReason returns a status for a resource with the specified reason
 func NewResourceStatusWithReason(r Resource, s UpdateStatus, reason string) *ResourceStatus {
 	return &ResourceStatus{Resource: r, Status: s, Reason: reason}
+}
+
+// NewResourceStatusWithError returns a status for an invalid resource
+func NewResourceStatusWithError(r Resource, err error) *ResourceStatus {
+	return NewResourceStatusWithReason(r, StatusError, err.Error())
 }
 
 // UpdateStatus is part of ResourceStatus that indicates the result of ApplyResources and DeleteResources on the Store.
@@ -84,6 +98,9 @@ const (
 
 	// StatusInUse is used when attempting to delete a resource that is being referenced by another
 	StatusInUse UpdateStatus = "in-use"
+
+	// StatusForbidden is used when attempting to modify or delete a resource without sufficient permission
+	StatusForbidden UpdateStatus = "forbidden"
 )
 
 // PrintResourceUpdates TODO(doc)

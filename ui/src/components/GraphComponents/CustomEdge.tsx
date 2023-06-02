@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { EdgeProps, getBezierPath } from "react-flow-renderer";
+import { EdgeProps, getBezierPath } from "reactflow";
 import { classes } from "../../utils/styles";
 import { isNodeDisabled } from "../PipelineGraph/Nodes/nodeUtils";
 
@@ -46,7 +46,7 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
 }) => {
   hoveredSet ||= [];
 
-  const edgePath = getBezierPath({
+  const [path] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -99,7 +99,7 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
   return (
     <>
       {metrics}
-      <path id={id} className={classes(pathClasses)} d={edgePath}>
+      <path id={id} className={classes(pathClasses)} d={path}>
         <animate
           attributeName="stroke-dashoffset"
           from="0"

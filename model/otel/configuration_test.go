@@ -131,7 +131,7 @@ func TestAddAgentMetricsPipeline(t *testing.T) {
 	rc := NewRenderContext("testid", "testname", "http://test", false, nil)
 	rc.IncludeMeasurements = true
 	c := NewConfiguration()
-	c.AddAgentMetricsPipeline(rc)
+	c.AddAgentMetricsPipeline(rc, map[string]string{})
 
 	expect := map[string]any{
 		"endpoint": "http://test/v1/otlphttp",
@@ -146,6 +146,7 @@ func TestAddAgentMetricsPipeline(t *testing.T) {
 			"num_consumers": 1,
 			"queue_size":    60,
 		},
+		"headers": map[string]string{},
 	}
 
 	require.True(t, c.Exporters.hasComponent("otlphttp/_agent_metrics"))

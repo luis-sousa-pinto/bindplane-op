@@ -19,13 +19,25 @@ export interface PipelineGraphContextValue {
   ) => void;
   closeProcessorDialog(): void;
   editProcessorsOpen: boolean;
-  setMaxValues: (v: MaxValueMap) => void;
   maxValues: MaxValueMap;
+
+  readOnlyGraph?: boolean;
+
+  addSourceOpen: boolean;
+  addDestinationOpen: boolean;
+  setAddSourceOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAddDestinationOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 export interface PipelineGraphProviderProps {
   configuration: MinimumRequiredConfig;
   refetchConfiguration: () => void;
   selectedTelemetryType: string;
+  readOnly?: boolean;
+  addSourceOpen: boolean;
+  addDestinationOpen: boolean;
+  setAddSourceOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAddDestinationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  maxValues: MaxValueMap;
 }
 
 interface EditProcessorsInfo {
@@ -42,6 +54,7 @@ const defaultValue: PipelineGraphContextValue = {
       name: "",
       description: undefined,
       labels: undefined,
+      version: 0,
     },
     spec: {
       __typename: undefined,
@@ -60,12 +73,15 @@ const defaultValue: PipelineGraphContextValue = {
   closeProcessorDialog: () => {},
   editProcessorsInfo: null,
   editProcessorsOpen: false,
-  setMaxValues: () => {},
   maxValues: {
     maxMetricValue: 0,
     maxLogValue: 0,
     maxTraceValue: 0,
   },
+  setAddSourceOpen: () => {},
+  setAddDestinationOpen: () => {},
+  addSourceOpen: false,
+  addDestinationOpen: false,
 };
 
 export const PipelineContext = createContext(defaultValue);
@@ -75,13 +91,15 @@ export const PipelineGraphProvider: React.FC<PipelineGraphProviderProps> = ({
   selectedTelemetryType,
   configuration,
   refetchConfiguration,
+  setAddSourceOpen,
+  setAddDestinationOpen,
+  addSourceOpen,
+  addDestinationOpen,
+  readOnly,
+  maxValues,
 }) => {
   const [hoveredSet, setHoveredNodeAndEdgeSet] = useState<string[]>([]);
-  const [maxValues, setMaxValues] = useState<MaxValueMap>({
-    maxMetricValue: 0,
-    maxLogValue: 0,
-    maxTraceValue: 0,
-  });
+
   const [editProcessorsInfo, setEditingProcessors] = useState<{
     resourceType: "source" | "destination";
     index: number;
@@ -115,7 +133,11 @@ export const PipelineGraphProvider: React.FC<PipelineGraphProviderProps> = ({
         closeProcessorDialog,
         editProcessorsInfo,
         editProcessorsOpen,
-        setMaxValues,
+        readOnlyGraph: readOnly,
+        setAddSourceOpen,
+        setAddDestinationOpen,
+        addSourceOpen,
+        addDestinationOpen,
         maxValues,
       }}
     >

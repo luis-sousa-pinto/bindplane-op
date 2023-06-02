@@ -13,13 +13,15 @@ import {
 } from "./pages";
 import { theme } from "./theme";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material";
-import { ViewConfiguration } from "./pages/configurations/configuration";
+import { ConfigurationPage } from "./pages/configurations/configuration";
 import { NewRawConfigurationPage } from "./pages/configurations/new-raw";
 import { SnackbarProvider } from "notistack";
 import { BindplaneVersion } from "./components/BindplaneVersion";
 import { LoginPage } from "./pages/login";
 import { OverviewPage } from "./pages/overview/OverviewPage";
 import { DestinationsPage } from "./pages/destinations/DestinationsPage";
+
+import "reactflow/dist/style.css";
 
 export const App: React.FC = () => {
   return (
@@ -50,7 +52,7 @@ export const App: React.FC = () => {
                       element={<NewRawConfigurationPage />}
                     />
                     <Route path="new" element={<NewConfigurationPage />} />
-                    <Route path=":name" element={<ViewConfiguration />} />
+                    <Route path=":name" element={<ConfigurationPage />} />
                   </Route>
                   <Route path="destinations">
                     <Route index element={<DestinationsPage />} />

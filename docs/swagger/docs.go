@@ -16,6 +16,116 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/Agents": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Agents",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AgentsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Configurations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Configurations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Destinations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Destinations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DestinationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Processors": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Processors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ProcessorsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/Sources": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Sources",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SourcesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/agent-versions": {
             "get": {
                 "produces": [
@@ -196,26 +306,6 @@ const docTemplate = `{
             }
         },
         "/agents": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List agents",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.AgentsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "produces": [
                     "application/json"
@@ -592,38 +682,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/configurations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Configurations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ConfigurationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/configurations/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get configuration by name",
+                "summary": "Get Configuration by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the configuration",
+                        "description": "the name of the Configuration",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -860,38 +928,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/destinations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List destinations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.DestinationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/destinations/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get destination by name",
+                "summary": "Get Destination by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the destination",
+                        "description": "the name of the Destination",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -1042,38 +1088,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/processors": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List processors",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ProcessorsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/processors/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get processor by name",
+                "summary": "Get Processor by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the processor",
+                        "description": "the name of the Processor",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -1122,6 +1146,242 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all rollouts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update all active rollouts",
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get rollout configuration by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}/pause": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Pause rollout by configuration name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}/resume": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Resume rollout by configuration name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}/start": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Start rollout by configuration name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "the options for the rollout",
+                        "name": "options",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/model.RolloutOptions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}/status": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Status of configuration rollout by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{name}/update": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update rollout by configuration name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the name of the configuration",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationResponse"
                         }
                     },
                     "500": {
@@ -1224,38 +1484,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/sources": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List sources",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.SourcesResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/sources/{name}": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get source by name",
+                "summary": "Get Source by name",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the name of the source",
+                        "description": "the name of the Source",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -1331,6 +1569,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/{kind}/{name}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the history of a resource",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the kind of the resource",
+                        "name": "kind",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the name of the resource",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.HistoryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1342,6 +1624,9 @@ const docTemplate = `{
                 },
                 "configuration": {
                     "description": "tracked by BindPlane"
+                },
+                "configurationStatus": {
+                    "$ref": "#/definitions/model.ConfigurationVersions"
                 },
                 "connectedAt": {
                     "type": "string"
@@ -1377,7 +1662,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "protocol": {
-                    "description": "used by the agent management protocol",
                     "type": "string"
                 },
                 "remoteAddress": {
@@ -1557,6 +1841,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.AgentVersionSpec"
                         }
                     ]
+                },
+                "status": {
+                    "$ref": "#/definitions/model.NoStatus"
                 }
             }
         },
@@ -1627,22 +1914,7 @@ const docTemplate = `{
             }
         },
         "model.AnyResource": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "type": "string"
-                },
-                "kind": {
-                    "$ref": "#/definitions/model.Kind"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/model.Metadata"
-                },
-                "spec": {
-                    "type": "object",
-                    "additionalProperties": true
-                }
-            }
+            "type": "object"
         },
         "model.ApplyResponse": {
             "type": "object",
@@ -1685,6 +1957,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.ConfigurationSpec"
                         }
                     ]
+                },
+                "status": {
+                    "$ref": "#/definitions/model.ConfigurationStatus"
                 }
             }
         },
@@ -1722,6 +1997,64 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.ResourceConfiguration"
                     }
+                }
+            }
+        },
+        "model.ConfigurationStatus": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "description": "Current will be set to true on read if the configuration is the current version",
+                    "type": "boolean"
+                },
+                "currentVersion": {
+                    "description": "CurrentVersion is the version of the configuration that has most recently completed a rollout",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    ]
+                },
+                "latest": {
+                    "description": "Latest will be set to true on read if the configuration is the latest version",
+                    "type": "boolean"
+                },
+                "pending": {
+                    "description": "Pending will be set to true on read if the configuration is the pending version",
+                    "type": "boolean"
+                },
+                "pendingVersion": {
+                    "description": "PendingVersion will be set to the version of a rollout that is in progress. It will be set to 0 when the rollout\ncompletes.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    ]
+                },
+                "rollout": {
+                    "description": "Rollout contains status for the rollout of this configuration",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Rollout"
+                        }
+                    ]
+                }
+            }
+        },
+        "model.ConfigurationVersions": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "description": "Current is the configuration currently applied to the agent.",
+                    "type": "string"
+                },
+                "future": {
+                    "description": "Future is the configuration that will be assigned to this agent when the rollout assigns the new configuration to\nthe agent. Once the rollout assigns the configuration, Pending will be set to this value and this will be cleared.",
+                    "type": "string"
+                },
+                "pending": {
+                    "description": "Pending is the configuration that is assigned to the agent but may not be applied. Once this configuration is\nconfirmed, Current will be set to this value and this will be cleared.",
+                    "type": "string"
                 }
             }
         },
@@ -1783,6 +2116,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.ParameterizedSpec"
                         }
                     ]
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -1808,6 +2144,9 @@ const docTemplate = `{
                 },
                 "spec": {
                     "$ref": "#/definitions/model.ResourceTypeSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -1852,6 +2191,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.HistoryResponse": {
+            "type": "object",
+            "properties": {
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AnyResource"
+                    }
+                }
+            }
+        },
         "model.InstallCommandResponse": {
             "type": "object",
             "properties": {
@@ -1874,7 +2224,8 @@ const docTemplate = `{
                 "SourceType",
                 "ProcessorType",
                 "DestinationType",
-                "Unknown"
+                "Unknown",
+                "Rollout"
             ],
             "x-enum-varnames": [
                 "KindProfile",
@@ -1888,7 +2239,8 @@ const docTemplate = `{
                 "KindSourceType",
                 "KindProcessorType",
                 "KindDestinationType",
-                "KindUnknown"
+                "KindUnknown",
+                "KindRollout"
             ]
         },
         "model.Labels": {
@@ -1920,10 +2272,17 @@ const docTemplate = `{
         "model.Metadata": {
             "type": "object",
             "properties": {
+                "dateModified": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
                 "displayName": {
+                    "type": "string"
+                },
+                "hash": {
+                    "description": "Hash is a hex formatted sha256 Hash of the json-encoded spec that is used to determine if the spec has changed.",
                     "type": "string"
                 },
                 "icon": {
@@ -1937,6 +2296,14 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "version": {
+                    "description": "Version is a 1-based integer that is incremented each time the spec is changed.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Version"
+                        }
+                    ]
                 }
             }
         },
@@ -1974,6 +2341,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.NoStatus": {
+            "type": "object"
         },
         "model.Parameter": {
             "type": "object",
@@ -2117,6 +2487,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PhaseAgentCount": {
+            "type": "object",
+            "properties": {
+                "initial": {
+                    "type": "integer"
+                },
+                "maximum": {
+                    "type": "integer"
+                },
+                "multiplier": {
+                    "type": "number"
+                }
+            }
+        },
         "model.PostAgentVersionRequest": {
             "type": "object",
             "properties": {
@@ -2144,6 +2528,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.ParameterizedSpec"
                         }
                     ]
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -2169,6 +2556,9 @@ const docTemplate = `{
                 },
                 "spec": {
                     "$ref": "#/definitions/model.ResourceTypeSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -2334,6 +2724,108 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Rollout": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name will be set to the Name of the configuration when requested via Configuration.Rollout()",
+                    "type": "string"
+                },
+                "options": {
+                    "description": "Options are set when the Rollout is created based on the rollout options specified in the configuration",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RolloutOptions"
+                        }
+                    ]
+                },
+                "phase": {
+                    "description": "Phase starts at zero and increments until all agents are updated. In each phase, initial*multiplier^phase agents will be updated.",
+                    "type": "integer"
+                },
+                "progress": {
+                    "description": "Progress is the current progress of the rollout",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RolloutProgress"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "Status is the status of the rollout",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RolloutStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "model.RolloutOptions": {
+            "type": "object",
+            "properties": {
+                "maxErrors": {
+                    "description": "MaxErrors is the maximum number of failed agents before the rollout will be considered an error",
+                    "type": "integer"
+                },
+                "phaseAgentCount": {
+                    "description": "PhaseAgentCount determines the rate at which agents will be updated during a rollout.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.PhaseAgentCount"
+                        }
+                    ]
+                },
+                "rollbackOnFailure": {
+                    "description": "RollbackOnFailure determines if the rollout should be rolled back to the previous configuration if the rollout\nfails.",
+                    "type": "boolean"
+                },
+                "startAutomatically": {
+                    "description": "StartAutomatically determines if this rollout transitions immediately from RolloutStatusPending to\nRolloutStatusStarted without requiring that it be started manually.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.RolloutProgress": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "description": "Completed is the number of agents with new version with Connected status",
+                    "type": "integer"
+                },
+                "errors": {
+                    "description": "Errors is the number of agents with new version with Error Status",
+                    "type": "integer"
+                },
+                "pending": {
+                    "description": "Pending is the number of agents that are currently being configured",
+                    "type": "integer"
+                },
+                "waiting": {
+                    "description": "Waiting is the number of agents that need to be scheduled for configuration",
+                    "type": "integer"
+                }
+            }
+        },
+        "model.RolloutStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "x-enum-varnames": [
+                "RolloutStatusPending",
+                "RolloutStatusStarted",
+                "RolloutStatusPaused",
+                "RolloutStatusError",
+                "RolloutStatusStable",
+                "RolloutStatusReplaced"
+            ]
+        },
         "model.Source": {
             "type": "object",
             "properties": {
@@ -2353,6 +2845,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.ParameterizedSpec"
                         }
                     ]
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -2378,6 +2873,9 @@ const docTemplate = `{
                 },
                 "spec": {
                     "$ref": "#/definitions/model.ResourceTypeSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.VersionStatus"
                 }
             }
         },
@@ -2420,7 +2918,8 @@ const docTemplate = `{
                 "deleted",
                 "invalid",
                 "error",
-                "in-use"
+                "in-use",
+                "forbidden"
             ],
             "x-enum-varnames": [
                 "StatusUnchanged",
@@ -2429,8 +2928,30 @@ const docTemplate = `{
                 "StatusDeleted",
                 "StatusInvalid",
                 "StatusError",
-                "StatusInUse"
+                "StatusInUse",
+                "StatusForbidden"
             ]
+        },
+        "model.Version": {
+            "type": "integer",
+            "enum": [
+                -2,
+                -1,
+                0
+            ],
+            "x-enum-varnames": [
+                "VersionPending",
+                "VersionCurrent",
+                "VersionLatest"
+            ]
+        },
+        "model.VersionStatus": {
+            "type": "object",
+            "properties": {
+                "latest": {
+                    "type": "boolean"
+                }
+            }
         },
         "rest.ErrorResponse": {
             "type": "object",
@@ -2456,8 +2977,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {

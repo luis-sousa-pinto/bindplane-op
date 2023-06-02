@@ -20,14 +20,20 @@ import (
 
 	"github.com/observiq/bindplane-op/model/otel"
 	"github.com/observiq/bindplane-op/model/validation"
+	"github.com/observiq/bindplane-op/model/version"
 )
+
+type processorKind struct{}
+
+func (k *processorKind) NewEmptyResource() *Processor { return &Processor{} }
 
 // Processor will generate an exporter and be at the end of a pipeline
 type Processor struct {
 	// ResourceMeta TODO(doc)
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
 	// Spec TODO(doc)
-	Spec ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Processor)(nil)
@@ -43,8 +49,18 @@ func (s *Processor) ValidateWithStore(ctx context.Context, store ResourceStore) 
 	return errs.Warnings(), errs.Result()
 }
 
+// UpdateDependencies updates the dependencies for this resource to use the latest version.
+func (s *Processor) UpdateDependencies(ctx context.Context, store ResourceStore) error {
+	return s.Spec.updateDependencies(ctx, KindProcessor, store)
+}
+
 // GetKind returns "Processor"
 func (s *Processor) GetKind() Kind { return KindProcessor }
+
+// GetSpec returns the spec for this resource.
+func (s *Processor) GetSpec() any {
+	return s.Spec
+}
 
 // ResourceTypeName is the name of the ResourceType that renders this resource type
 func (s *Processor) ResourceTypeName() string {
@@ -71,9 +87,9 @@ func NewProcessor(name string, processorTypeName string, parameters []Parameter)
 
 // NewProcessorWithSpec creates a new Processor with the specified spec
 func NewProcessorWithSpec(name string, spec ParameterizedSpec) *Processor {
-	return &Processor{
+	p := &Processor{
 		ResourceMeta: ResourceMeta{
-			APIVersion: "bindplane.observiq.com/v1",
+			APIVersion: version.V1,
 			Kind:       KindProcessor,
 			Metadata: Metadata{
 				Name:   name,
@@ -82,6 +98,8 @@ func NewProcessorWithSpec(name string, spec ParameterizedSpec) *Processor {
 		},
 		Spec: spec,
 	}
+	p.EnsureMetadata(spec)
+	return p
 }
 
 // FindProcessor returns a Processor from the store if it exists. If it doesn't exist, it creates a new Processor with the
@@ -91,7 +109,7 @@ func FindProcessor(ctx context.Context, processor *ResourceConfiguration, defaul
 		// inline source
 		return NewProcessor(defaultName, processor.Type, processor.Parameters), nil
 	}
-	// find the processor and override parameters
+	// named processor
 	prc, err := store.Processor(ctx, processor.Name)
 	if err != nil {
 		return nil, err
@@ -99,8 +117,7 @@ func FindProcessor(ctx context.Context, processor *ResourceConfiguration, defaul
 	if prc == nil {
 		return nil, fmt.Errorf("unknown %s: %s", KindProcessor, processor.Name)
 	}
-	spec := prc.Spec.overrideParameters(processor.Parameters)
-	return NewProcessorWithSpec(prc.Name(), spec), nil
+	return prc, nil
 }
 
 // ----------------------------------------------------------------------
@@ -113,15 +130,9 @@ func (s *Processor) PrintableFieldTitles() []string {
 // PrintableFieldValue returns the field value for a title, used for printing a table of resources
 func (s *Processor) PrintableFieldValue(title string) string {
 	switch title {
-	case "ID":
-		return s.ID()
-	case "Name":
-		return s.Name()
 	case "Type":
 		return s.ResourceTypeName()
-	case "Description":
-		return s.Metadata.Description
 	default:
-		return "-"
+		return s.ResourceMeta.PrintableFieldValue(title)
 	}
 }

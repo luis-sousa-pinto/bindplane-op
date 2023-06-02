@@ -1,4 +1,4 @@
-import { Edge, Node, Position } from "react-flow-renderer";
+import { Edge, Node, Position } from "reactflow";
 import { TARGET_OFFSET_MULTIPLIER } from "../../components/PipelineGraph/ConfigurationFlow";
 import { Graph, GraphMetric } from "../../graphql/generated";
 import {
@@ -305,7 +305,7 @@ describe("getNodesAndEdges", () => {
       () => {},
       setAddSourceDialogOpen,
       setAddDestDialogOpen,
-      true
+      false
     );
 
     expect(nodes).toHaveLength(4);

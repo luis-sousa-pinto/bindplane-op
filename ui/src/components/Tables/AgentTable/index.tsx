@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { GetAgentAndConfigurationsQuery } from "../../../graphql/generated";
 import { AgentStatus } from "../../../types/agents";
 import { renderAgentDate, renderAgentLabels } from "../utils";
-import { ArrowUpIcon, ChevronDown, ChevronUp } from "../../Icons";
+import { ArrowUpIcon } from "../../Icons";
 import { upgradeAgent } from "../../../utils/rest/upgrade-agent";
 import { isEmpty } from "lodash";
+import { ExpandButton } from "../../ExpandButton";
 
 import styles from "./agent-table.module.scss";
 import mixins from "../../../styles/mixins.module.scss";
-import globals from "../../../styles/global.module.scss";
 
 type AgentTableAgent = NonNullable<GetAgentAndConfigurationsQuery["agent"]>;
 interface AgentTableProps {
@@ -78,28 +78,10 @@ export const AgentTable: React.FC<AgentTableProps> = ({ agent }) => {
               justifyContent="center"
             >
               <Grid item flex={1} xs={12} sm={12}>
-                {!expanded && (
-                  <Button
-                    className={globals["expand-button"]}
-                    variant="contained"
-                    size="small"
-                    onClick={() => setExpanded(true)}
-                    endIcon={<ChevronDown />}
-                  >
-                    Show more
-                  </Button>
-                )}
-                {expanded && (
-                  <Button
-                    className={globals["expand-button"]}
-                    variant="contained"
-                    size="small"
-                    onClick={() => setExpanded(false)}
-                    endIcon={<ChevronUp />}
-                  >
-                    Show less
-                  </Button>
-                )}
+                <ExpandButton
+                  expanded={expanded}
+                  onToggleExpanded={() => setExpanded((prev) => !prev)}
+                />
               </Grid>
             </Grid>
           </Box>

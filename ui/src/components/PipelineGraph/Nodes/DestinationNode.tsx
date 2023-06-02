@@ -1,7 +1,6 @@
 import { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
-import { InlineDestinationCard } from "../../Cards/InlineDestinationCard";
 import { ResourceDestinationCard } from "../../Cards/ResourceDestinationCard";
 import { usePipelineGraph } from "../PipelineGraphContext";
 import { isNodeDisabled } from "./nodeUtils";
@@ -17,7 +16,12 @@ function DestinationNode(params: {
   };
 }): JSX.Element {
   const { id, attributes, metric } = params.data;
-  const { hoveredSet, setHoveredNodeAndEdgeSet, selectedTelemetryType } = usePipelineGraph();
+  const destinationIndex =
+    typeof attributes["destinationIndex"] === "number"
+      ? attributes["destinationIndex"]
+      : -1;
+  const { hoveredSet, setHoveredNodeAndEdgeSet, selectedTelemetryType } =
+    usePipelineGraph();
   const isDisabled = isNodeDisabled(selectedTelemetryType, attributes);
   const isNotInHoverSet =
     hoveredSet.length > 0 &&
@@ -29,16 +33,12 @@ function DestinationNode(params: {
       }}
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
     >
-      {attributes.isInline ? (
-        <InlineDestinationCard id={id.replace("destination/", "")} key={id} />
-      ) : (
-        <ResourceDestinationCard
-          key={id}
-          enableProcessors
-          name={attributes.resourceId}
-          disabled={isDisabled || isNotInHoverSet}
-        />
-      )}
+      <ResourceDestinationCard
+        key={id}
+        destinationIndex={destinationIndex}
+        name={attributes.resourceId}
+        disabled={isDisabled || isNotInHoverSet}
+      />
       <CardMeasurementContent>{metric}</CardMeasurementContent>
       <Handle type="target" position={Position.Left} />
     </div>

@@ -1,10 +1,10 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - internal/graphql/*.graphqls
+  - graphql/*.graphqls
 
 # Where should the generated server code go?
 exec:
-  filename: internal/graphql/generated/server_gen.go
+  filename: graphql/generated/server_gen.go
   package: generated
 
 # Uncomment to enable federation
@@ -14,13 +14,13 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: internal/graphql/model/models_gen.go
+  filename: graphql/model/models_gen.go
   package: model
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: internal/graphql
+  dir: graphql
   package: graphql
 
 # Optional: turn on use `gqlgen:"fieldName"` tags in your models
@@ -38,8 +38,8 @@ skip_validation: true
 autobind:
   - "github.com/observiq/bindplane-op/model"
   - "github.com/observiq/bindplane-op/model/graph"
-  - "github.com/observiq/bindplane-op/internal/otlp/record"
-  - "github.com/observiq/bindplane-op/internal/store/search"
+  - "github.com/observiq/bindplane-op/otlp/record"
+  - "github.com/observiq/bindplane-op/store/search"
 
 # This section declares type mapping between the GraphQL and go type systems
 #

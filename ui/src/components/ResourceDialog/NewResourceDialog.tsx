@@ -6,6 +6,7 @@ import { SelectView } from "./SelectView";
 import { ChooseView } from "./ChooseView";
 import { ConfigureView } from "./ConfigureView";
 import { DialogResource, ResourceType } from ".";
+import { someResourceOfType } from "./utils";
 
 interface ResourceDialogProps extends DialogProps {
   kind: "destination" | "source";
@@ -70,6 +71,7 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
   }, [dialogProps.open]);
 
   function clearResource() {
+    setCreateNew(false);
     setSelected(null);
     setCreateNew(false);
   }
@@ -100,7 +102,8 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
         />
       );
     } else if (
-      resources?.some((r) => r.spec.type === selected.metadata.name) &&
+      resources &&
+      someResourceOfType(resources, selected) &&
       !createNew
     ) {
       // There are existing resources that match the selected type.

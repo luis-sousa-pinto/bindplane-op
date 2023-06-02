@@ -4,6 +4,8 @@ metadata:
   name: custom
   displayName: Custom
   description: Insert a custom OpenTelemetry processor configuration.
+  labels:
+    category: Advanced
 
 spec:
   version: 0.0.1

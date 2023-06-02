@@ -21,15 +21,17 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/opamp/mocks"
-	"github.com/observiq/bindplane-op/internal/server"
-	serverMocks "github.com/observiq/bindplane-op/internal/server/mocks"
-	"github.com/observiq/bindplane-op/internal/store"
+	"github.com/observiq/bindplane-op/config"
+	"github.com/observiq/bindplane-op/internal/opamp/connections/mocks"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
+	bpopamp "github.com/observiq/bindplane-op/opamp"
+	bpserver "github.com/observiq/bindplane-op/server"
+	serverMocks "github.com/observiq/bindplane-op/server/mocks"
+	"github.com/observiq/bindplane-op/store"
 	"github.com/open-telemetry/opamp-go/protobufs"
 	opamp "github.com/open-telemetry/opamp-go/server/types"
 
@@ -38,7 +40,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func testServer(manager server.Manager) *opampServer {
+func testServer(manager bpserver.Manager) *opampServer {
 	return newServer(manager, zap.NewNop())
 }
 
@@ -62,7 +64,8 @@ func TestServerSendHeartbeat(t *testing.T) {
 	manager := serverMocks.NewMockManager(t)
 	conn := mocks.NewMockConnection(t)
 	server := testServer(manager)
-	server.connections.connect(conn, "known")
+	server.connections.OnConnecting(context.Background(), "known")
+	server.connections.OnMessage("known", conn)
 
 	conn.On("Send", mock.Anything, mock.Anything).Return(nil)
 
@@ -115,7 +118,7 @@ func TestUpdateOpAmpAgentDetails(t *testing.T) {
 		},
 	}
 
-	updateOpAmpAgentDetails(&agent, conn, desc)
+	bpopamp.UpdateOpAmpAgentDetails(&agent, conn, desc)
 
 	require.Nil(t, agent.DisconnectedAt)
 	require.Equal(t, "instance.id", agent.ID)
@@ -166,7 +169,7 @@ func TestUpdateOpAmpAgentDetails2(t *testing.T) {
 		},
 	}
 
-	updateOpAmpAgentDetails(&agent, conn, desc)
+	bpopamp.UpdateOpAmpAgentDetails(&agent, conn, desc)
 
 	require.Nil(t, agent.DisconnectedAt)
 	require.Equal(t, "instance.id", agent.ID)
@@ -217,7 +220,7 @@ func TestUpdateOpAmpAgentDetails3(t *testing.T) {
 		},
 	}
 
-	updateOpAmpAgentDetails(&agent, conn, desc)
+	bpopamp.UpdateOpAmpAgentDetails(&agent, conn, desc)
 
 	require.Nil(t, agent.DisconnectedAt)
 	require.Equal(t, "instance.id", agent.ID)
@@ -241,18 +244,20 @@ func TestUpdateOpAmpAgentDetails3(t *testing.T) {
 }
 
 func TestServerOnConnecting(t *testing.T) {
+	ctx := context.TODO()
+
 	testCases := []struct {
 		name          string
 		authorization string
-		createManager func(t *testing.T) server.Manager
+		createManager func(t *testing.T) *serverMocks.MockManager
 		expect        opamp.ConnectionResponse
 	}{
 		{
 			name:          "Missing key",
 			authorization: "",
-			createManager: func(t *testing.T) server.Manager {
+			createManager: func(t *testing.T) *serverMocks.MockManager {
 				manager := serverMocks.NewMockManager(t)
-				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(ctx, false)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
@@ -263,9 +268,9 @@ func TestServerOnConnecting(t *testing.T) {
 		{
 			name:          "Invalid key",
 			authorization: "Secret-Key bad-key",
-			createManager: func(t *testing.T) server.Manager {
+			createManager: func(t *testing.T) *serverMocks.MockManager {
 				manager := serverMocks.NewMockManager(t)
-				manager.On("VerifySecretKey", mock.Anything, "bad-key").Return(false)
+				manager.On("VerifySecretKey", mock.Anything, "bad-key").Return(ctx, false)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
@@ -276,9 +281,9 @@ func TestServerOnConnecting(t *testing.T) {
 		{
 			name:          "Valid key",
 			authorization: "Secret-Key good-key",
-			createManager: func(t *testing.T) server.Manager {
+			createManager: func(t *testing.T) *serverMocks.MockManager {
 				manager := serverMocks.NewMockManager(t)
-				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(true)
+				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(ctx, true)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
@@ -289,9 +294,9 @@ func TestServerOnConnecting(t *testing.T) {
 		{
 			name:          "Missing prefix",
 			authorization: "good-key",
-			createManager: func(t *testing.T) server.Manager {
+			createManager: func(t *testing.T) *serverMocks.MockManager {
 				manager := serverMocks.NewMockManager(t)
-				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(ctx, false)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
@@ -302,9 +307,9 @@ func TestServerOnConnecting(t *testing.T) {
 		{
 			name:          "Invalid prefix",
 			authorization: "Secret-Key: good-key",
-			createManager: func(t *testing.T) server.Manager {
+			createManager: func(t *testing.T) *serverMocks.MockManager {
 				manager := serverMocks.NewMockManager(t)
-				manager.On("VerifySecretKey", mock.Anything, "").Return(false)
+				manager.On("VerifySecretKey", mock.Anything, "").Return(ctx, false)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
@@ -317,7 +322,12 @@ func TestServerOnConnecting(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			manager := tc.createManager(t)
+			updater := serverMocks.NewMockUpdater(t)
+			if tc.expect.Accept {
+				updater.On("Start", mock.Anything).Return()
+			}
 			server := testServer(manager)
+			server.updater = updater
 			server.compatibleOpAMPVersions = []string{"v0.2.0"}
 			request := &http.Request{
 				Header: http.Header{
@@ -332,6 +342,11 @@ func TestServerOnConnecting(t *testing.T) {
 			response := server.OnConnecting(request)
 			require.Equal(t, tc.expect.Accept, response.Accept)
 			require.Equal(t, tc.expect.HTTPStatusCode, response.HTTPStatusCode)
+			if tc.expect.Accept {
+				require.Eventually(t, func() bool {
+					return updater.AssertExpectations(t)
+				}, 100*time.Millisecond, 10*time.Millisecond)
+			}
 		})
 	}
 }
@@ -389,19 +404,19 @@ service:
 		SessionsSecret:   "supersecret-key",
 		MaxEventsToMerge: 1000,
 	}, zap.NewNop())
-	testManager, err := server.NewManager(
-		&common.Server{
-			SecretKey: "secret",
+	testManager := bpserver.NewManager(
+		&config.Config{
+			Auth: config.Auth{
+				SecretKey: "secret",
+			},
 		},
 		testMapStore,
 		nil,
 		logger,
 	)
-	require.NoError(t, err)
 
-	conn := &testConnection{
-		addr: testAddr{"127.0.0.1"},
-	}
+	conn := mocks.NewMockConnection(t)
+	conn.On("RemoteAddr").Maybe().Return(nil)
 	server := testServer(testManager)
 	testManager.EnableProtocol(server)
 
@@ -435,7 +450,7 @@ service:
 				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
 			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
-				require.ElementsMatch(t, []string{agentID}, server.connections.agentIDs())
+				require.ElementsMatch(t, []string{agentID}, server.connections.ConnectedAgentIDs(context.TODO()))
 				agent, err := server.manager.Agent(context.TODO(), agentID)
 				require.NoError(t, err)
 				require.Equal(t, "Connected", agent.StatusDisplayText())
@@ -644,6 +659,11 @@ service:
 				Capabilities: capabilities,
 				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
+			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+				agent, err := server.manager.Agent(context.Background(), agentID)
+				require.NoError(t, err)
+				require.Equal(t, "api-test:0", agent.ConfigurationStatus.Current)
+			},
 		},
 		{
 			name: "skipped message ignores contents and requests full information",
@@ -680,6 +700,7 @@ service:
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			server.connections.OnConnecting(context.TODO(), agentID)
 			result := server.OnMessage(conn, test.message)
 
 			// compare messages
@@ -688,6 +709,7 @@ service:
 			if test.verify != nil {
 				test.verify(t, server, result)
 			}
+			conn.AssertExpectations(t)
 		})
 	}
 }
@@ -765,7 +787,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 				Status:       test.initialStatus,
 				ErrorMessage: test.initialErrorMessage,
 			}
-			updateAgentStatus(zap.NewNop(), agent, test.remoteStatus)
+			bpopamp.UpdateAgentStatus(zap.NewNop(), agent, test.remoteStatus)
 			require.Equal(t, test.expectStatus, agent.Status)
 			require.Equal(t, test.expectErrorMessage, agent.ErrorMessage)
 		})
@@ -866,15 +888,28 @@ func TestOnConnectingOpAMPCompatibility(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testManager, err := server.NewManager(&common.Server{SecretKey: "a0f1db77-818a-4f1a-81a3-7b6a9613ef41"}, nil, nil, zap.NewNop())
-		require.NoError(t, err)
+		cfg := &config.Config{
+			Auth: config.Auth{
+				SecretKey: "a0f1db77-818a-4f1a-81a3-7b6a9613ef41",
+			},
+		}
+		testManager := bpserver.NewManager(cfg, nil, nil, zap.NewNop())
 		testServer := newServer(testManager, zap.NewNop())
 		testServer.compatibleOpAMPVersions = []string{"v0.2.0"}
+		updater := serverMocks.NewMockUpdater(t)
+		if test.expect.Accept {
+			updater.On("Start", mock.Anything).Return()
+		}
+		testServer.updater = updater
+
 		t.Run(test.name, func(t *testing.T) {
 			response := testServer.OnConnecting(&test.request)
 			require.Equal(t, test.expect.Accept, response.Accept)
 			require.Equal(t, test.expect.HTTPStatusCode, response.HTTPStatusCode)
 			require.Equal(t, test.expect.HTTPResponseHeader, response.HTTPResponseHeader)
+			require.Eventually(t, func() bool {
+				return updater.AssertExpectations(t)
+			}, 100*time.Millisecond, 10*time.Millisecond)
 		})
 	}
 }

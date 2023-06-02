@@ -2,11 +2,7 @@ import { gql } from "@apollo/client";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
-import ReactFlow, {
-  Controls,
-  useReactFlow,
-  useStore,
-} from "react-flow-renderer";
+import ReactFlow, { Controls, useReactFlow, useStore } from "reactflow";
 import { useNavigate } from "react-router-dom";
 import {
   DEFAULT_OVERVIEW_GRAPH_PERIOD,
@@ -26,9 +22,8 @@ import {
 import { OverviewDestinationNode, ConfigurationNode } from "./nodes";
 import OverviewEdge from "./OverviewEdge";
 import { useOverviewPage } from "./OverviewPageContext";
+import colors from "../../styles/colors";
 import { GraphGradient } from "../../components/GraphComponents";
-
-import global from "../../styles/global.module.scss";
 
 gql`
   query getOverviewPage(
@@ -117,7 +112,6 @@ export const OverviewGraph: React.FC = () => {
     selectedDestinations,
     setMaxValues,
   } = useOverviewPage();
-
   const { enqueueSnackbar } = useSnackbar();
   const reactFlowInstance = useReactFlow();
   const navigate = useNavigate();
@@ -217,7 +211,7 @@ export const OverviewGraph: React.FC = () => {
     () => {},
     () => {},
     () => {},
-    false
+    true
   );
   updateMetricData(
     Page.Overview,
@@ -231,8 +225,8 @@ export const OverviewGraph: React.FC = () => {
   return hasPipeline ? (
     <div style={{ height: "100%", width: "100%", paddingBottom: 75 }}>
       <ReactFlow
-        defaultNodes={nodes}
-        defaultEdges={edges}
+        nodes={nodes}
+        edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesConnectable={false}
@@ -248,7 +242,7 @@ export const OverviewGraph: React.FC = () => {
           window.scrollBy(event.deltaX, event.deltaY);
         }}
         onNodesChange={onNodesChange}
-        className={global["graph"]}
+        style={{ backgroundColor: colors.backgroundGrey }}
       >
         <Controls showZoom={false} showInteractive={false} />
       </ReactFlow>

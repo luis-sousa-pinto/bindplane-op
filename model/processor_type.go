@@ -14,6 +14,12 @@
 
 package model
 
+import "github.com/observiq/bindplane-op/model/version"
+
+type processorTypeKind struct{}
+
+func (k *processorTypeKind) NewEmptyResource() *ProcessorType { return &ProcessorType{} }
+
 // ProcessorType is a ResourceType used to define sources
 type ProcessorType struct {
 	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
@@ -28,10 +34,10 @@ func NewProcessorType(name string, parameters []ParameterDefinition) *ProcessorT
 
 // NewProcessorTypeWithSpec creates a new processor-type with the specified name and spec.
 func NewProcessorTypeWithSpec(name string, spec ResourceTypeSpec) *ProcessorType {
-	return &ProcessorType{
+	pt := &ProcessorType{
 		ResourceType: ResourceType{
 			ResourceMeta: ResourceMeta{
-				APIVersion: V1,
+				APIVersion: version.V1,
 				Kind:       KindProcessorType,
 				Metadata: Metadata{
 					Name: name,
@@ -40,6 +46,8 @@ func NewProcessorTypeWithSpec(name string, spec ResourceTypeSpec) *ProcessorType
 			Spec: spec,
 		},
 	}
+	pt.EnsureMetadata(spec)
+	return pt
 }
 
 // GetKind returns "ProcessorType"

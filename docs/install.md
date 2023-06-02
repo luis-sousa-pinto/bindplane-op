@@ -85,13 +85,12 @@ docker run -d \
     --name bindplane \
     --restart always \
     --mount source=bindplane,target=/data \
-    -e BINDPLANE_CONFIG_USERNAME=admin \
-    -e BINDPLANE_CONFIG_PASSWORD=admin \
-    -e BINDPLANE_CONFIG_SERVER_URL=http://localhost:3001 \
-    -e BINDPLANE_CONFIG_REMOTE_URL=ws://localhost:3001 \
-    -e BINDPLANE_CONFIG_SESSIONS_SECRET=2c23c9d3-850f-4062-a5c8-3f9b814ae144 \
-    -e BINDPLANE_CONFIG_SECRET_KEY=8a5353f7-bbf4-4eea-846d-a6d54296b781 \
-    -e BINDPLANE_CONFIG_LOG_OUTPUT=stdout \
+    -e BINDPLANE_USERNAME=admin \
+    -e BINDPLANE_PASSWORD=admin \
+    -e BINDPLANE_REMOTE_URL=http://localhost:3001 \
+    -e BINDPLANE_SESSIONS_SECRET=2c23c9d3-850f-4062-a5c8-3f9b814ae144 \
+    -e BINDPLANE_SECRET_KEY=8a5353f7-bbf4-4eea-846d-a6d54296b781 \
+    -e BINDPLANE_LOGGING_OUTPUT=stdout \
     -p 3001:3001 \
     observiq/bindplane:latest
 ```

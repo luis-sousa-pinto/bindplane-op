@@ -93,7 +93,7 @@ const APOLLO_CLIENT = new ApolloClient({
         },
       },
       Metadata: {
-        keyFields: ["id", "name"],
+        keyFields: ["id", "name", "version"],
       },
     },
   }),

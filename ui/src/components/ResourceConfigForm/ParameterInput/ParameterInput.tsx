@@ -20,11 +20,13 @@ export interface ParamInputProps<T> {
   definition: ParameterDefinition;
   value?: T;
   onValueChange?: (v: T) => void;
+  readOnly?: boolean;
 }
 
-export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
-  definition,
-}) => {
+export const ParameterInput: React.FC<{
+  definition: ParameterDefinition;
+  readOnly?: boolean;
+}> = ({ definition, readOnly }) => {
   const { formValues, setFormValues } = useResourceFormValues();
   const onValueChange = useMemo(
     () => (newValue: any) => {
@@ -41,6 +43,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -50,6 +53,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -59,6 +63,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -68,6 +73,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -77,6 +83,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -86,6 +93,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -95,6 +103,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -104,6 +113,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -113,6 +123,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -122,6 +133,7 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
             definition={definition}
             value={formValues[definition.name]}
             onValueChange={onValueChange}
+            readOnly={readOnly}
           />
         );
 
@@ -132,11 +144,12 @@ export const ParameterInput: React.FC<{ definition: ParameterDefinition }> = ({
               definition={definition}
               value={formValues[definition.name]}
               onValueChange={onValueChange}
+              readOnly={readOnly}
             />
           </>
         );
     }
-  }, [definition, formValues, onValueChange]);
+  }, [definition, formValues, onValueChange, readOnly]);
 
   const gridColumns = useMemo(() => {
     if (isMetricsType(definition)) {

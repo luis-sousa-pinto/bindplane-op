@@ -1,223 +1,161 @@
-import { ApolloError, gql, NetworkStatus } from "@apollo/client";
 import {
   Alert,
   CircularProgress,
+  Grid,
   IconButton,
   Stack,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { memo, useEffect, useMemo, useState } from "react";
-import {
-  PipelineType,
-  SnapshotQuery,
-  useSnapshotQuery,
-} from "../../graphql/generated";
+import { memo } from "react";
+import { PipelineType } from "../../graphql/generated";
+import { RefreshIcon } from "../Icons";
 import { SnapshotRow } from "./SnapShotRow";
-import { RefreshIcon, XIcon } from "../Icons";
-import { isEmpty } from "lodash";
 
+import { AgentSelector } from "./AgentSelector";
 import styles from "./snap-shot-console.module.scss";
+import { Log, Metric, Trace, useSnapshot } from "./SnapshotContext";
+
+const TOGGLE_WIDTH = 150;
 
 interface Props {
-  agentID: string;
-  initialType: PipelineType;
-  onClose: () => void;
+  hideControls?: boolean;
+  logs: Log[];
+  metrics: Metric[];
+  traces: Trace[];
+  footer: string;
 }
 
-type Metric = SnapshotQuery["snapshot"]["metrics"][0];
-type Log = SnapshotQuery["snapshot"]["logs"][0];
-type Trace = SnapshotQuery["snapshot"]["traces"][0];
+export const SnapshotConsole: React.FC<Props> = memo(
+  ({ hideControls, logs, metrics, traces, footer }) => {
+    const {
+      loading,
+      showAgentSelector,
+      pipelineType,
+      setPipelineType,
+      agentID,
+      setAgentID,
+      error,
+      setError,
+      refresh,
+    } = useSnapshot();
 
-// while the query includes all three pipeline types, only the pipelineType specified will have results
-gql`
-  query snapshot($agentID: String!, $pipelineType: PipelineType!) {
-    snapshot(agentID: $agentID, pipelineType: $pipelineType) {
-      metrics {
-        name
-        timestamp
-        value
-        unit
-        type
-        attributes
-        resource
-      }
-      logs {
-        timestamp
-        body
-        severity
-        attributes
-        resource
-      }
-      traces {
-        name
-        traceID
-        spanID
-        parentSpanID
-        start
-        end
-        attributes
-        resource
-      }
-    }
+    return (
+      <>
+        <MessagesContainer
+          type={PipelineType.Logs}
+          display={pipelineType === PipelineType.Logs}
+          loading={loading}
+          messages={logs}
+          footer={footer}
+        />
+
+        <MessagesContainer
+          type={PipelineType.Metrics}
+          display={pipelineType === PipelineType.Metrics}
+          loading={loading}
+          messages={metrics}
+          footer={footer}
+        />
+
+        <MessagesContainer
+          type={PipelineType.Traces}
+          display={pipelineType === PipelineType.Traces}
+          loading={loading}
+          messages={traces}
+          footer={footer}
+        />
+
+        {!hideControls && (
+          <>
+            <Grid
+              container
+              spacing={2}
+              sx={{ width: "100%" }}
+              alignItems={"center"}
+              marginY={1}
+            >
+              <Grid
+                item
+                xs={"auto"}
+                sx={{ minWidth: "25%", textAlign: "left" }}
+              >
+                {showAgentSelector && (
+                  <AgentSelector
+                    agentID={agentID}
+                    onChange={setAgentID}
+                    onError={setError}
+                  />
+                )}
+              </Grid>
+              <Grid item xs={6} sx={{ textAlign: "center" }}>
+                <ToggleButtonGroup
+                  size={"small"}
+                  color="primary"
+                  value={pipelineType}
+                  exclusive
+                  onChange={(_, value) => {
+                    if (value != null) {
+                      setPipelineType(value);
+                    }
+                  }}
+                  aria-label="Telemetry Type"
+                >
+                  <ToggleButton
+                    sx={{ width: TOGGLE_WIDTH }}
+                    value={PipelineType.Logs}
+                  >
+                    Logs
+                  </ToggleButton>
+                  <ToggleButton
+                    sx={{ width: TOGGLE_WIDTH }}
+                    value={PipelineType.Metrics}
+                  >
+                    Metrics
+                  </ToggleButton>
+                  <ToggleButton
+                    sx={{ width: TOGGLE_WIDTH }}
+                    value={PipelineType.Traces}
+                  >
+                    Traces
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Grid>
+              <Grid item xs={3} sx={{ textAlign: "right" }}>
+                <IconButton
+                  color={"primary"}
+                  disabled={loading}
+                  onClick={refresh}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+
+            {error && (
+              <Alert sx={{ marginTop: 2 }} color="error">
+                {error.message}
+              </Alert>
+            )}
+          </>
+        )}
+      </>
+    );
   }
-`;
-
-export const SnapshotConsole: React.FC<Props> = ({
-  agentID,
-  initialType,
-  onClose,
-}) => {
-  const [logs, setLogs] = useState<Log[] | null>(null);
-  const [metrics, setMetrics] = useState<Metric[] | null>(null);
-  const [traces, setTraces] = useState<Trace[] | null>(null);
-  const [type, setType] = useState<PipelineType>(initialType);
-  const [error, setError] = useState<ApolloError>();
-
-  const { loading, refetch, networkStatus } = useSnapshotQuery({
-    variables: { agentID, pipelineType: initialType },
-    onCompleted: (data) => {
-      if (!isEmpty(data.snapshot.logs)) {
-        setLogs(data.snapshot.logs.slice().reverse());
-      }
-
-      if (!isEmpty(data.snapshot.metrics)) {
-        setMetrics(data.snapshot.metrics.slice().reverse());
-      }
-
-      if (!isEmpty(data.snapshot.traces)) {
-        setTraces(data.snapshot.traces.slice().reverse());
-      }
-    },
-    onError: (error) => {
-      setError(error);
-    },
-    fetchPolicy: "network-only",
-    notifyOnNetworkStatusChange: true,
-  });
-
-  useEffect(() => {
-    switch (type) {
-      case PipelineType.Logs:
-        if (logs == null) {
-          refetch({ agentID, pipelineType: PipelineType.Logs });
-        }
-        break;
-      case PipelineType.Metrics:
-        if (metrics == null) {
-          refetch({ agentID, pipelineType: PipelineType.Metrics });
-        }
-        break;
-      case PipelineType.Traces:
-        if (traces == null) {
-          refetch({ agentID, pipelineType: PipelineType.Traces });
-        }
-        break;
-    }
-  }, [type, refetch, logs, metrics, traces, agentID]);
-
-  const busy = useMemo(
-    () => loading || networkStatus === NetworkStatus.refetch,
-    [loading, networkStatus]
-  );
-
-  return (
-    <>
-      <Stack
-        direction="row"
-        sx={{ width: "100%" }}
-        alignItems={"center"}
-        justifyContent="space-between"
-        marginBottom={2}
-      >
-        <div /> {/** Used as a spacer */}
-        <ToggleButtonGroup
-          size={"small"}
-          color="primary"
-          value={type}
-          exclusive
-          onChange={(_, value) => {
-            if (value != null) {
-              setType(value);
-            }
-          }}
-          aria-label="Telemetry Type"
-        >
-          <ToggleButton sx={{ width: 200 }} value={PipelineType.Logs}>
-            Logs
-          </ToggleButton>
-          <ToggleButton sx={{ width: 200 }} value={PipelineType.Metrics}>
-            Metrics
-          </ToggleButton>
-          <ToggleButton sx={{ width: 200 }} value={PipelineType.Traces}>
-            Traces
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <div>
-          <IconButton
-            color={"primary"}
-            disabled={busy}
-            onClick={() => refetch({ agentID, pipelineType: type })}
-          >
-            <RefreshIcon />
-          </IconButton>
-          <IconButton onClick={onClose}>
-            <XIcon />
-          </IconButton>
-        </div>
-      </Stack>
-
-      <MessagesContainer
-        type={PipelineType.Logs}
-        display={type === PipelineType.Logs}
-        loading={busy}
-        messages={logs}
-      />
-
-      <MessagesContainer
-        type={PipelineType.Metrics}
-        display={type === PipelineType.Metrics}
-        loading={busy}
-        messages={metrics}
-      />
-
-      <MessagesContainer
-        type={PipelineType.Traces}
-        display={type === PipelineType.Traces}
-        loading={busy}
-        messages={traces}
-      />
-
-      <Typography marginY={1} color="secondary">
-        Showing recent {type}
-      </Typography>
-
-      {error && (
-        <Alert sx={{ marginTop: 2 }} color="error">
-          {error.message}
-        </Alert>
-      )}
-    </>
-  );
-};
+);
 
 const MessagesContainerComponent: React.FC<{
   messages: (Log | Metric | Trace)[] | null;
   type: PipelineType;
   display: boolean;
   loading?: boolean;
-}> = ({ messages, type, display, loading }) => {
+  footer: string;
+}> = ({ messages, type, display, loading, footer }) => {
   return (
     <div style={{ display: display ? "inline" : "none" }}>
       <div className={styles.container}>
         <div className={styles.console}>
-          <div className={styles.header}>
-            <div className={styles.ch} />
-            <div className={styles.dt}>Time</div>
-            <div className={styles.lg}>Message</div>
-          </div>
-
           <div className={styles.stack}>
             {loading ? (
               <Stack
@@ -230,11 +168,28 @@ const MessagesContainerComponent: React.FC<{
               </Stack>
             ) : (
               <>
+                {!messages?.length && (
+                  <Stack
+                    height="100%"
+                    width={"100%"}
+                    justifyContent="center"
+                    alignItems="center"
+                    bgcolor={"#fcfcfc"}
+                  >
+                    <Typography color="secondary">No recent {type}</Typography>
+                  </Stack>
+                )}
                 {messages?.map((m, ix) => (
                   <SnapshotRow key={`${type}-${ix}`} message={m} type={type} />
                 ))}
               </>
             )}
+          </div>
+
+          <div className={styles.footer}>
+            <Typography color="secondary" fontSize={12}>
+              {footer}
+            </Typography>
           </div>
         </div>
       </div>

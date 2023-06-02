@@ -41,6 +41,7 @@ gql`
       metadata {
         id
         name
+        version
         displayName
         description
         icon
@@ -285,7 +286,7 @@ export const StepTwo: React.FC = (props) => {
       </div>
 
       <EditResourceDialog
-        displayName={editingSourceType?.metadata.displayName ?? ""}
+        resourceTypeDisplayName={editingSourceType?.metadata.displayName ?? ""}
         description={editingSourceType?.metadata.displayName ?? ""}
         parameterDefinitions={editingSourceType?.spec.parameters ?? []}
         fullWidth

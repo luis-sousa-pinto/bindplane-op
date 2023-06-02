@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { EdgeProps } from "react-flow-renderer";
+import { EdgeProps } from "reactflow";
 import { useOverviewPage } from "./OverviewPageContext";
 import { DEFAULT_TELEMETRY_TYPE } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { CustomEdge, CustomEdgeData } from "../../components/GraphComponents";

@@ -216,7 +216,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ui/coverage/lcov.info
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -249,13 +249,13 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.out
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
   # Run Goreleaser to build binaries, packages, and container images.
   build:
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest-4-cores"
     needs:
       - setup-environment
     steps:
@@ -372,8 +372,11 @@ jobs:
         run: |
           bash .github/workflows/scripts/create-test-server-config.sh
           sudo systemctl restart bindplane
-      - name: Run Cinc Tests (Server Package)
-        run: sudo cinc-auditor exec test/inspec/package/package.rb
+
+      - name: Test Server Install
+        run: |
+          VERSION=$(ls dist/ | grep -v bindplanectl | grep linux_amd64.deb | rev | cut -c17- | rev | cut -c11- | sed 's/-SNAP/~SNAP/g')
+          sudo cinc-auditor exec test/inspec/package/install/package.rb --input version=$VERSION
 
       - name: Run Cinc Tests (Container Image)
         run: make inspec-continer-image

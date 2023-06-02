@@ -1,12 +1,23 @@
-@use '../../styles/colors';
+@use "../../styles/colors";
 
 .container {
+  width: 100%;
   min-width: 800px;
-  max-width: 1600px;
+  max-width: 2000px;
   padding: 0;
   margin: auto;
   margin-bottom: 2rem;
-  border: 1px solid #d9d9d9;
   z-index: 1;
   position: relative;
+
+  border: none;
+}
+
+.card {
+  border-radius: 0 0 4px;
+  border: none;
+}
+
+.grey {
+  background-color: colors.$background-grey;
 }

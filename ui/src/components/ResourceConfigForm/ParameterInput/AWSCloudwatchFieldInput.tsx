@@ -26,6 +26,7 @@ interface ItemValue {
 export const AWSCloudwatchInput: React.FC<ParamInputProps<InputValue>> = ({
   definition,
   value: paramValue,
+  readOnly,
   onValueChange,
 }) => {
   const initValue =
@@ -118,6 +119,7 @@ export const AWSCloudwatchInput: React.FC<ParamInputProps<InputValue>> = ({
               padding={2}
             >
               <StringParamInput
+                readOnly={readOnly}
                 definition={{
                   name: "named_groups_" + index,
                   label: "ID",
@@ -131,6 +133,7 @@ export const AWSCloudwatchInput: React.FC<ParamInputProps<InputValue>> = ({
               />
 
               <StringsParamInput
+                readOnly={readOnly}
                 definition={{
                   name: "aws.names",
                   label: "Names",
@@ -145,6 +148,7 @@ export const AWSCloudwatchInput: React.FC<ParamInputProps<InputValue>> = ({
               />
 
               <StringsParamInput
+                readOnly={readOnly}
                 definition={{
                   name: "aws.prefixes",
                   label: "Prefixes",
@@ -169,7 +173,11 @@ export const AWSCloudwatchInput: React.FC<ParamInputProps<InputValue>> = ({
         );
       })}
       <Stack width={"100%"} alignItems="center">
-        <Button startIcon={<PlusCircleIcon />} onClick={addNewField}>
+        <Button
+          startIcon={<PlusCircleIcon />}
+          onClick={addNewField}
+          disabled={readOnly}
+        >
           New field
         </Button>
       </Stack>

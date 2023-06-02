@@ -19,3 +19,12 @@ package model
 type HasUniqueKey interface {
 	UniqueKey() string
 }
+
+// UniqueKeys returns the list of unique keys for the specified resources
+func UniqueKeys[S ~[]T, T HasUniqueKey](resources S) []string {
+	keys := make([]string, 0, len(resources))
+	for _, r := range resources {
+		keys = append(keys, r.UniqueKey())
+	}
+	return keys
+}

@@ -1,5 +1,9 @@
 import nock from "nock";
-import { APIVersion, ResourceKind, UpdateStatus } from "../../../types/resources";
+import {
+  APIVersion,
+  ResourceKind,
+  UpdateStatus,
+} from "../../../types/resources";
 import { DeleteResponse } from "../../../types/rest";
 import { DeleteDialog } from "./DeleteDialog";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -9,7 +13,7 @@ const DELETE_RESPONSE: DeleteResponse = {
     {
       status: UpdateStatus.DELETED,
       resource: {
-        metadata: { name: "config-1", id: "uuid" },
+        metadata: { name: "config-1", id: "uuid", version: 1 },
         kind: ResourceKind.CONFIGURATION,
         spec: {},
         apiVersion: APIVersion.V1,

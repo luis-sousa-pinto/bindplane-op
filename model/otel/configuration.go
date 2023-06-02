@@ -277,6 +277,19 @@ func (p *Partial) HasNoReceiversOrExporters() bool {
 	return len(p.Receivers)+len(p.Exporters) == 0
 }
 
+// IsRoute returns true if this partial contains the route receiver.
+func (p *Partial) IsRoute() bool {
+	for _, m := range p.Receivers {
+		for id := range m {
+			if strings.HasPrefix(string(id), "route/") {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // Append adds components from another partial by appending each of the component lists together
 func (p *Partial) Append(o *Partial) {
 	p.Receivers = append(p.Receivers, o.Receivers...)
@@ -381,7 +394,7 @@ func (c *Configuration) AddExtension(name ComponentID, extension any) {
 }
 
 // AddAgentMetricsPipeline adds the measurements pipeline to the configuration
-func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
+func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[string]string) {
 	if !rc.IncludeMeasurements {
 		return
 	}
@@ -404,6 +417,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext) {
 
 	endpoint := fmt.Sprintf("%s/v1/otlphttp", rc.BindPlaneURL)
 	otlphttp := map[string]any{
+		"headers":  headers,
 		"endpoint": endpoint,
 		// Default retry values can be found at:
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L249
@@ -488,7 +502,13 @@ func (c *Configuration) AddPipeline(name string, pipelineType PipelineType, sour
 
 	// add any processors specified
 	p.AddProcessors(rc, c.Processors.addComponents(s.Processors))
-	p.AddProcessors(rc, c.Processors.addComponents(d.Processors))
+	if !s.IsRoute() {
+		// All components are allowed if this isn't the route pipeline
+		p.AddProcessors(rc, c.Processors.addComponents(d.Processors))
+	} else {
+		// This is the route pipeline, so we avoid certain components that may cause feedback loops.
+		p.AddProcessors(rc, c.Processors.addNonRoutingComponents(d.Processors))
+	}
 
 	if rc.IncludeSnapshotProcessor {
 		// add the snapshot processor before the exporter
@@ -527,6 +547,39 @@ func (c ComponentMap) addComponents(componentList ComponentList) []ComponentID {
 		}
 	}
 	return ids
+}
+
+// addNonRoutingComponents adds the components to the map and returns their ids as a convenience to build the pipeline
+// It skips adding components that route to the route receiver
+func (c ComponentMap) addNonRoutingComponents(componentList ComponentList) []ComponentID {
+	ids := []ComponentID{}
+	for _, components := range componentList {
+		for id, component := range components {
+			if isRoutingComponent(id) {
+				continue
+			}
+
+			c[id] = component
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
+var routingComponentPrefixes = []string{
+	"logcount/",
+	"datapointcount/",
+	"spancount/",
+	"metricextract/",
+}
+
+func isRoutingComponent(id ComponentID) bool {
+	for _, prefix := range routingComponentPrefixes {
+		if strings.HasPrefix(string(id), prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 // AddReceivers adds receivers to the pipeline

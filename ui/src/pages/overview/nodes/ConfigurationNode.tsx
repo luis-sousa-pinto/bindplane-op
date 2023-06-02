@@ -1,4 +1,4 @@
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { ConfigurationCard } from "../../../components/Cards/ConfigurationCard";
 import { DEFAULT_TELEMETRY_TYPE } from "../../../components/MeasurementControlBar/MeasurementControlBar";
 import { isNodeDisabled } from "../../../components/PipelineGraph/Nodes/nodeUtils";

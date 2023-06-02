@@ -18,34 +18,25 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/version"
+	"github.com/observiq/bindplane-op/version"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateGlobalJS(t *testing.T) {
-	type args struct {
-		config *common.Server
-	}
-
 	tests := []struct {
 		name    string
-		args    args
 		wantErr bool
 		want    string
 	}{
 		{
 			"renders template",
-			args{
-				config: &common.Server{},
-			},
 			false,
 			fmt.Sprintf("var __BINDPLANE_VERSION__ = \"%s\";\n", version.NewVersion().String()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := generateGlobalJS(tt.args.config)
+			got, err := generateGlobalJS()
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {

@@ -12,12 +12,14 @@ import { memo, useState } from "react";
 import { validateStringsField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
 import { ParamInputProps } from "./ParameterInput";
+import colors from "../../../styles/colors";
 
 import styles from "./parameter-input.module.scss";
 
 const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   const [inputValue, setInputValue] = useState("");
@@ -67,6 +69,7 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
         options={[]}
         multiple
         disableClearable
+        disabled={readOnly}
         freeSolo
         // value and onChange pertain to the string[] value of the input
         value={value ?? []}
@@ -92,12 +95,14 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
             {...params}
             label={label}
             size={"small"}
+            disabled={readOnly}
             helperText={
               <>
                 <Typography
                   fontSize={"0.75rem"}
                   component="span"
                   whiteSpace="pre-wrap"
+                  color={readOnly ? colors.disabled : undefined}
                 >
                   {definition.description}
                 </Typography>

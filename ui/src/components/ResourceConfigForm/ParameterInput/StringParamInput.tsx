@@ -15,6 +15,7 @@ import { ParamInputProps } from "./ParameterInput";
 const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   const { errors, setError, touched, touch } = useValidationContext();
@@ -53,6 +54,7 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
       }}
       value={value}
       onChange={handleValueChange}
+      disabled={readOnly}
       onBlur={() => touch(definition.name)}
       name={definition.name}
       fullWidth

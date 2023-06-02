@@ -17,14 +17,19 @@ package model
 import (
 	"encoding/hex"
 	"fmt"
-	"net/url"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/observiq/bindplane-op/internal/util/semver"
+	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/model/validation"
+	"github.com/observiq/bindplane-op/model/version"
+	"github.com/observiq/bindplane-op/util/semver"
 )
+
+type agentVersionKind struct{}
+
+func (k *agentVersionKind) NewEmptyResource() *AgentVersion { return &AgentVersion{} }
 
 // AgentVersion is the resource for a version of an agent and includes links to install scripts and downloads links for
 // the agent release.
@@ -32,7 +37,8 @@ type AgentVersion struct {
 	// ResourceMeta TODO(doc)
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
 	// Spec TODO(doc)
-	Spec AgentVersionSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	Spec                 AgentVersionSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
+	StatusType[NoStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
 // AgentVersionSpec is the spec for an AgentVersion
@@ -67,7 +73,7 @@ type AgentDownload struct {
 func NewAgentVersion(spec AgentVersionSpec) *AgentVersion {
 	return &AgentVersion{
 		ResourceMeta: ResourceMeta{
-			APIVersion: V1,
+			APIVersion: version.V1,
 			Kind:       KindAgentVersion,
 			Metadata: Metadata{
 				Name: fmt.Sprintf("%s-%s", spec.Type, spec.Version),
@@ -84,13 +90,18 @@ func (v *AgentVersion) GetKind() Kind {
 	return KindAgentVersion
 }
 
+// GetSpec returns the spec for this resource.
+func (v *AgentVersion) GetSpec() any {
+	return v.Spec
+}
+
 // AgentType returns the type of agent for this AgentVersion
 func (v *AgentVersion) AgentType() string {
 	return v.Spec.Type
 }
 
-// Version returns the version of the AgentVersion
-func (v *AgentVersion) Version() string {
+// AgentVersion returns the version of the AgentVersion
+func (v *AgentVersion) AgentVersion() string {
 	return v.Spec.Version
 }
 
@@ -125,7 +136,7 @@ func (v *AgentVersion) Download(platform string) *AgentDownload {
 
 // SemanticVersion returns a parsed semantic version that can be used to compare to other versions
 func (v *AgentVersion) SemanticVersion() *semver.Version {
-	return semver.Parse(v.Version())
+	return semver.Parse(v.AgentVersion())
 }
 
 // HashBytes returns the Hash of the download decoded as a byte array or nil if the hash is unspecified or invalid. This
@@ -188,8 +199,7 @@ func (d *AgentDownload) validate(platform string, errs validation.Errors) {
 }
 
 func validateURL(name string, urlString string, errs validation.Errors) {
-	_, err := url.Parse(urlString)
-	if err != nil {
+	if err := common.ValidateURL(urlString, []string{}); err != nil {
 		errs.Add(fmt.Errorf("%s is invalid: %w", name, err))
 	}
 }
@@ -223,7 +233,7 @@ func (v *AgentVersion) PrintableFieldValue(title string) string {
 	case "Type":
 		return v.AgentType()
 	case "Version":
-		return v.Version()
+		return v.AgentVersion()
 	case "Public":
 		return fmt.Sprintf("%t", v.Public())
 	case "Date":
@@ -236,7 +246,7 @@ func (v *AgentVersion) PrintableFieldValue(title string) string {
 	case "URL":
 		return v.Spec.ReleaseNotesURL
 	default:
-		return "-"
+		return v.ResourceMeta.PrintableFieldValue(title)
 	}
 }
 

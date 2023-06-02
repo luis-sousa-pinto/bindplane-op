@@ -12,66 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package main is the entry point for the bindplanectl command line tool.
+// Package main is the entrypoint for the bindplane command line interface.
+// It determines the home directory, and adds all commands to the root command.
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/observiq/bindplane-op/common"
-	"github.com/observiq/bindplane-op/internal/cli"
-	"github.com/observiq/bindplane-op/internal/cli/commands"
-	"github.com/observiq/bindplane-op/internal/cli/commands/apply"
-	"github.com/observiq/bindplane-op/internal/cli/commands/copy"
-	"github.com/observiq/bindplane-op/internal/cli/commands/delete"
-	"github.com/observiq/bindplane-op/internal/cli/commands/get"
-	"github.com/observiq/bindplane-op/internal/cli/commands/initialize"
-	"github.com/observiq/bindplane-op/internal/cli/commands/install"
-	"github.com/observiq/bindplane-op/internal/cli/commands/label"
-	"github.com/observiq/bindplane-op/internal/cli/commands/profile"
-	"github.com/observiq/bindplane-op/internal/cli/commands/sync"
-	"github.com/observiq/bindplane-op/internal/cli/commands/update"
-	"github.com/observiq/bindplane-op/internal/cli/commands/validate"
-	"github.com/observiq/bindplane-op/internal/cli/commands/version"
+	"github.com/observiq/bindplane-op/cli"
+	"github.com/observiq/bindplane-op/cli/commands/apply"
+	"github.com/observiq/bindplane-op/cli/commands/delete"
+	"github.com/observiq/bindplane-op/cli/commands/get"
+	"github.com/observiq/bindplane-op/cli/commands/initialize"
+	"github.com/observiq/bindplane-op/cli/commands/install"
+	"github.com/observiq/bindplane-op/cli/commands/label"
+	"github.com/observiq/bindplane-op/cli/commands/profile"
+	"github.com/observiq/bindplane-op/cli/commands/rollout"
+	"github.com/observiq/bindplane-op/cli/commands/root"
+	"github.com/observiq/bindplane-op/cli/commands/sync"
+	"github.com/observiq/bindplane-op/cli/commands/update"
+	"github.com/observiq/bindplane-op/cli/commands/version"
+	"github.com/observiq/bindplane-op/routes"
 	"github.com/spf13/cobra"
 )
 
 func main() {
-	home := commands.BindplaneHome()
-
-	var h = profile.NewHelper(home)
-
-	// We need to perform this before creating a new bindplane cli because bindplane cli
-	// creates a new logger with a file in ~/.bindplane
-	err := h.HomeFolderSetup()
+	routeBuilder := &routes.CombinedRouteBuilder{}
+	factory := cli.NewFactory(routeBuilder)
+	rootCmd, err := root.Command()
 	if err != nil {
-		fmt.Printf("error while trying to set up BindPlane home directory %s, %s\n", home, err.Error())
+		fmt.Printf("Failed to create root command: %s", err.Error())
 		os.Exit(1)
 	}
 
-	// Initialize the BindPlane CLI
-	bindplaneConfig := common.InitConfig(home)
-	bindplane := cli.NewBindPlane(bindplaneConfig, os.Stdout)
-
-	rootCmd := commands.Command(bindplane, "bindplanectl")
-
-	// Client does not contain serve command
+	// Server contains all commands
 	rootCmd.AddCommand(
-		apply.Command(bindplane),
-		get.Command(bindplane),
-		label.Command(bindplane),
-		delete.Command(bindplane),
-		profile.Command(h),
-		version.Command(bindplane),
-		initialize.Command(bindplane, h, initialize.ClientMode),
-		install.Command(bindplane),
-		sync.Command(bindplane),
-		update.Command(bindplane),
-		validate.Command(bindplane),
-		copy.Command(bindplane),
+		cli.AddValidationPrerun(apply.Command(factory), factory),
+		cli.AddValidationPrerun(get.Command(factory), factory),
+		cli.AddValidationPrerun(label.Command(factory), factory),
+		cli.AddValidationPrerun(delete.Command(factory), factory),
+		cli.AddLoadConfigPrerun(profile.Command(factory), factory),
+		cli.AddLoadConfigPrerun(version.Command(factory), factory),
+		cli.AddLoadConfigPrerun(initialize.Command(factory), factory),
+		cli.AddValidationPrerun(install.Command(factory), factory),
+		cli.AddValidationPrerun(sync.Command(factory), factory),
+		cli.AddValidationPrerun(update.Command(factory), factory),
+		cli.AddValidationPrerun(rollout.Command(factory), factory),
 	)
 
 	cobra.CheckErr(rootCmd.Execute())
-	bindplane.Shutdown()
 }

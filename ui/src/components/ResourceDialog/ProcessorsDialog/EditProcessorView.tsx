@@ -9,6 +9,7 @@ import {
 interface EditProcessorViewProps {
   processors: ResourceConfiguration[];
   editingIndex: number;
+  readOnly?: boolean;
   onEditProcessorSave: (values: FormValues) => void;
   onBack: () => void;
   onRemove: (removeIndex: number) => void;
@@ -17,6 +18,7 @@ interface EditProcessorViewProps {
 export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
   processors,
   editingIndex,
+  readOnly,
   onEditProcessorSave,
   onBack,
   onRemove,
@@ -43,8 +45,12 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
   return (
     <>
       <ResourceConfigForm
-        displayName={data?.processorType?.metadata.displayName ?? ""}
+        resourceTypeDisplayName={
+          data?.processorType?.metadata.displayName ?? ""
+        }
+        displayName={processors[editingIndex]?.displayName ?? ""}
         description={data?.processorType?.metadata.description ?? ""}
+        heading="Edit Processor"
         kind={"processor"}
         parameterDefinitions={data?.processorType?.spec.parameters ?? []}
         parameters={processors[editingIndex]?.parameters}
@@ -52,6 +58,8 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         saveButtonLabel="Done"
         onBack={onBack}
         onDelete={() => onRemove(editingIndex)}
+        readOnly={readOnly}
+        embedded={true}
       />
     </>
   );

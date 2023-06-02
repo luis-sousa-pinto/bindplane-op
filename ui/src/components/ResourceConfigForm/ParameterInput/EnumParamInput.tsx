@@ -2,11 +2,14 @@ import {
   TextField,
   createFilterOptions,
   Autocomplete,
+  Stack,
   Typography,
 } from "@mui/material";
 import { isFunction } from "lodash";
 import { ChangeEvent, memo } from "react";
 import { ParamInputProps } from "./ParameterInput";
+
+import colors from "../../../styles/colors";
 
 const EnumParamInputComponent: React.FC<ParamInputProps<string>> = (props) => {
   return props.definition.options.creatable ? (
@@ -19,14 +22,18 @@ const EnumParamInputComponent: React.FC<ParamInputProps<string>> = (props) => {
 const SelectParamInput: React.FC<ParamInputProps<string>> = ({
   definition,
   value,
+  readOnly,
   onValueChange,
 }) => {
   return (
     <TextField
-      value={value ?? ""}
-      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-        isFunction(onValueChange) && onValueChange(e.target.value)
+      value={value}
+      onChange={
+        isFunction(onValueChange)
+          ? (e: ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)
+          : undefined
       }
+      disabled={readOnly}
       name={definition.name}
       fullWidth
       size="small"
@@ -36,8 +43,19 @@ const SelectParamInput: React.FC<ParamInputProps<string>> = ({
           component={"span"}
           whiteSpace={"pre-wrap"}
           fontSize="0.75rem"
+          color={readOnly ? colors.disabled : undefined}
         >
           {definition.description}
+          {definition.documentation && (
+            // Block display so that the link doesn't span the whole length of the outer div.
+            <Stack component={"span"} style={{ display: "block" }}>
+              {definition.documentation.map((d) => (
+                <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
+                  {d.text}
+                </a>
+              ))}
+            </Stack>
+          )}
         </Typography>
       }
       required={definition.required}

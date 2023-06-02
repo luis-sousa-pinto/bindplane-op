@@ -5,7 +5,8 @@ import { ResourceDialogContextProvider } from "./ResourceDialogContext";
 import { isFunction } from "lodash";
 
 interface EditResourceDialogProps extends DialogProps {
-  displayName: string;
+  resourceTypeDisplayName: string;
+  displayName?: string;
   description: string;
   onSave: (values: { [key: string]: any }) => void;
   onDelete?: () => void;
@@ -19,14 +20,16 @@ interface EditResourceDialogProps extends DialogProps {
   telemetryTypes?: string[];
   paused?: boolean;
   onTogglePause?: () => void;
+  readOnly?: boolean;
 }
 
 const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
+  displayName,
   onSave,
   onDelete,
   onTogglePause,
   onCancel,
-  displayName,
+  resourceTypeDisplayName,
   description,
   parameters,
   parameterDefinitions,
@@ -34,12 +37,14 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
   telemetryTypes,
   includeNameField = false,
   paused = false,
+  readOnly,
   ...dialogProps
 }) => {
   return (
     <Dialog {...dialogProps} onClose={onCancel} fullWidth maxWidth="md">
       <ResourceConfigForm
         includeNameField={includeNameField}
+        resourceTypeDisplayName={resourceTypeDisplayName}
         displayName={displayName}
         description={description}
         kind={kind}
@@ -50,6 +55,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
         telemetryTypes={telemetryTypes}
         paused={paused}
         onTogglePause={onTogglePause}
+        readOnly={readOnly}
       />
     </Dialog>
   );

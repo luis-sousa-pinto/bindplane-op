@@ -13,7 +13,9 @@ import {
 } from "../../types/resources";
 import { applyResources } from "../rest/apply-resources";
 
-export class BPConfiguration implements Configuration {
+export class BPConfiguration
+  implements Pick<Configuration, "apiVersion" | "kind" | "metadata" | "spec">
+{
   apiVersion: string;
   kind: string;
   spec: ConfigurationSpec;
@@ -29,6 +31,7 @@ export class BPConfiguration implements Configuration {
     this.metadata = configuration?.metadata ?? {
       name: "",
       id: "",
+      version: 1,
     };
   }
 
@@ -133,5 +136,15 @@ export class BPConfiguration implements Configuration {
     }
 
     return update;
+  }
+
+  /**
+   * setRaw sets value on the spec.raw field.
+   * @param value The raw configuration string to set.
+   */
+  setRaw(value: string) {
+    const newSpec = cloneDeep(this.spec);
+    newSpec.raw = value;
+    this.spec = newSpec;
   }
 }

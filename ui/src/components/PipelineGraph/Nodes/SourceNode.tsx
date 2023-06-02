@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
 import { InlineSourceCard } from "../../Cards/InlineSourceCard";
 import { MinimumRequiredConfig } from "../PipelineGraph";

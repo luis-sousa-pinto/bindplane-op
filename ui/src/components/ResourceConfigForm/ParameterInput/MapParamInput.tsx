@@ -6,6 +6,7 @@ import {
   IconButton,
   Box,
   Button,
+  FormLabel,
 } from "@mui/material";
 import { useState, useMemo, memo } from "react";
 import { TrashIcon, PlusCircleIcon } from "../../Icons";
@@ -15,7 +16,7 @@ import { ParamInputProps } from "./ParameterInput";
 
 const MapParamInputComponent: React.FC<
   ParamInputProps<Record<string, string>>
-> = ({ definition, value, onValueChange }) => {
+> = ({ definition, value, readOnly, onValueChange }) => {
   const initValue = valueToTupleArray(value);
   const [controlValue, setControlValue] = useState<Tuple[]>(initValue);
 
@@ -101,10 +102,10 @@ const MapParamInputComponent: React.FC<
 
   return (
     <>
-      <label aria-required={definition.required} htmlFor={definition.name}>
+      <FormLabel aria-required={definition.required} htmlFor={definition.name}>
         {definition.label}
         {definition.required && " *"}
-      </label>
+      </FormLabel>
 
       {touched[definition.name] && errors[definition.name] && (
         <FormHelperText key={"error-text"} error>
@@ -118,7 +119,9 @@ const MapParamInputComponent: React.FC<
       {definition.documentation && (
         <FormHelperText>
           {definition.documentation.map((d) => (
-            <a href={d.url} rel="noreferrer" target="_blank">{d.text}</a>
+            <a href={d.url} rel="noreferrer" target="_blank">
+              {d.text}
+            </a>
           ))}
         </FormHelperText>
       )}
@@ -126,10 +129,10 @@ const MapParamInputComponent: React.FC<
       <Stack spacing={1}>
         <Stack direction="row">
           <Typography marginLeft={1} fontWeight={600} width={220}>
-            {definition.options?.labels?.key ?? 'Key'}
+            {definition.options?.labels?.key ?? "Key"}
           </Typography>
           <Typography marginLeft={2} fontWeight={600}>
-            {definition.options?.labels?.value ?? 'Value'}
+            {definition.options?.labels?.value ?? "Value"}
           </Typography>
         </Stack>
         {controlValue.map(([k, v], rowIndex) => {
@@ -146,6 +149,7 @@ const MapParamInputComponent: React.FC<
                 autoFocus={
                   rowIndex !== 0 && rowIndex === controlValue.length - 1
                 }
+                disabled={readOnly}
                 id={`${definition.name}-input-${rowIndex * 2}`}
                 key={`${definition.name}-${rowIndex}-0-input`}
                 data-testid={`${definition.name}-${rowIndex}-0-input`}
@@ -162,6 +166,7 @@ const MapParamInputComponent: React.FC<
                 id={`${definition.name}-input-${rowIndex * 2 + 1}`}
                 key={`${definition.name}-${rowIndex}-1-input`}
                 data-testid={`${definition.name}-${rowIndex}-1-input`}
+                disabled={readOnly}
                 size="small"
                 type="text"
                 value={v}
@@ -174,6 +179,7 @@ const MapParamInputComponent: React.FC<
               <IconButton
                 key={`${definition.name}-${rowIndex}-remove-button`}
                 size={"small"}
+                disabled={readOnly}
                 onClick={() => handleDeleteRow(rowIndex)}
                 data-testid={`${definition.name}-${rowIndex}-remove-button`}
               >
@@ -189,6 +195,7 @@ const MapParamInputComponent: React.FC<
 
       <Box marginLeft={1} marginTop={1}>
         <Button
+          disabled={readOnly}
           startIcon={<PlusCircleIcon />}
           onClick={() => setControlValue((prev) => addRow(prev))}
         >
