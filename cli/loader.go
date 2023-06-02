@@ -32,57 +32,67 @@ type Loader interface {
 	ValidateConfig(ctx context.Context) error
 }
 
-// preRun is a function that runs before the command
-type preRun func(cmd *cobra.Command, args []string) error
+// PreRun is a function that runs before the command
+type PreRun func(cmd *cobra.Command, args []string) error
 
-// addPrerunToExistingCmd adds a pre run to an existing command
-func addPrerunToExistingCmd(cmd *cobra.Command, new preRun) *cobra.Command {
-	if cmd.PersistentPreRunE != nil {
-		// If there is already a persistent pre run, we need to wrap it
-		// so that it runs after the config load pre run
-		oldPreRun := cmd.PersistentPreRunE
-		cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-			if err := new(cmd, args); err != nil {
+// PreRunAdder is a function that adds a pre run to a command
+type PreRunAdder func(cmd *cobra.Command, loader Loader) PreRun
+
+// CombinePreruns combines preruns into a single prerun
+func CombinePreruns(oldPreRun PreRun, newPreRuns []PreRun) PreRun {
+	return func(cmd *cobra.Command, args []string) error {
+		// run all preruns
+		for _, prerun := range newPreRuns {
+			if err := prerun(cmd, args); err != nil {
 				return err
 			}
+		}
+
+		if oldPreRun != nil {
 			return oldPreRun(cmd, args)
 		}
-	} else {
-		cmd.PersistentPreRunE = new
+
+		return nil
 	}
+}
+
+// AddPrerunsToExistingCmd adds preruns to an existing command in the order they are given
+func AddPrerunsToExistingCmd(cmd *cobra.Command, loader Loader, prerunAdders ...PreRunAdder) *cobra.Command {
+	var oldPreRun PreRun
+	if cmd.PersistentPreRunE != nil {
+		oldPreRun = cmd.PersistentPreRunE
+	}
+	preruns := []PreRun{}
+	for _, adder := range prerunAdders {
+		preruns = append(preruns, adder(cmd, loader))
+	}
+
+	cmd.PersistentPreRunE = CombinePreruns(oldPreRun, preruns)
 	return cmd
 }
 
 // AddValidationPrerun adds the validation pre run to the command
-func AddValidationPrerun(cmd *cobra.Command, loader Loader) *cobra.Command {
-	validatePreRun := func(cmd *cobra.Command, args []string) error {
+func AddValidationPrerun(_ *cobra.Command, loader Loader) PreRun {
+	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		return loader.ValidateConfig(ctx)
 	}
-
-	cmd = addPrerunToExistingCmd(cmd, validatePreRun)
-	cmd = AddLoadConfigPrerun(cmd, loader)
-	return cmd
 }
 
 // AddLoadConfigPrerun adds the load config pre run to the command
-func AddLoadConfigPrerun(cmd *cobra.Command, loader Loader) *cobra.Command {
+func AddLoadConfigPrerun(cmd *cobra.Command, loader Loader) PreRun {
 	var configArg string
 	var profileArg string
+	// These flags are command line only
+	flags := cmd.PersistentFlags()
+	flags.StringVarP(&configArg, "config", "c", "", "full path to configuration file")
+	flags.StringVar(&profileArg, "profile", "", "configuration profile name to use")
 
-	configLoadPreRun := func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		if configArg != "" {
 			return loader.LoadConfig(ctx, configArg)
 		}
 		return loader.LoadProfile(ctx, profileArg)
 	}
-
-	cmd = addPrerunToExistingCmd(cmd, configLoadPreRun)
-
-	// These flags are command line only
-	flags := cmd.PersistentFlags()
-	flags.StringVarP(&configArg, "config", "c", "", "full path to configuration file")
-	flags.StringVar(&profileArg, "profile", "", "configuration profile name to use")
-	return cmd
 }

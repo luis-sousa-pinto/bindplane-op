@@ -48,17 +48,17 @@ func main() {
 
 	// Server contains all commands
 	rootCmd.AddCommand(
-		cli.AddValidationPrerun(apply.Command(factory), factory),
-		cli.AddValidationPrerun(get.Command(factory), factory),
-		cli.AddValidationPrerun(label.Command(factory), factory),
-		cli.AddValidationPrerun(delete.Command(factory), factory),
-		cli.AddLoadConfigPrerun(profile.Command(factory), factory),
-		cli.AddLoadConfigPrerun(version.Command(factory), factory),
-		cli.AddLoadConfigPrerun(initialize.Command(factory), factory),
-		cli.AddValidationPrerun(install.Command(factory), factory),
-		cli.AddValidationPrerun(sync.Command(factory), factory),
-		cli.AddValidationPrerun(update.Command(factory), factory),
-		cli.AddValidationPrerun(rollout.Command(factory), factory),
+		cli.AddPrerunsToExistingCmd(apply.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(get.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(label.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(delete.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(profile.Command(factory), factory, cli.AddLoadConfigPrerun),
+		cli.AddPrerunsToExistingCmd(version.Command(factory), factory, cli.AddLoadConfigPrerun),
+		cli.AddPrerunsToExistingCmd(initialize.Command(factory), factory, cli.AddLoadConfigPrerun),
+		cli.AddPrerunsToExistingCmd(install.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(sync.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(update.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		cli.AddPrerunsToExistingCmd(rollout.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
 	)
 
 	cobra.CheckErr(rootCmd.Execute())
