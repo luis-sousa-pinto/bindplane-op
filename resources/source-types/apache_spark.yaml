@@ -1,0 +1,138 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: apache_spark
+  displayName: Apache Spark
+  icon: /icons/sources/apache_spark.svg
+  description: Collect metrics from Apache Spark.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+    - name: endpoint
+      label: Endpoint
+      description: The endpoint of the Apache Spark REST API.
+      type: string
+      default: http://localhost:4040
+      required: true
+
+    - name: collection_interval
+      label: Collection Interval
+      description: How often (seconds) to scrape for metrics.
+      type: int
+      default: 60
+      advancedConfig: true
+
+    - name: application_names
+      label: Allowed Spark Application Names
+      description: |
+        Filters that define which Spark applications are scraped for metrics. If undefined, all applications at the endpoint will be scraped.
+      type: strings
+      default: []
+      advancedConfig: true
+
+    - name: disable_metrics
+      description: Toggle the metrics you wish to collect on and off.
+      type: metrics
+      default: []
+      options:
+        metricCategories:
+          - label: Cluster Metrics
+            metrics:
+              - name: spark.driver.block_manager.disk.usage
+              - name: spark.driver.block_manager.memory.usage
+              - name: spark.driver.hive_external_catalog.file_cache_hits
+              - name: spark.driver.hive_external_catalog.files_discovered
+              - name: spark.driver.hive_external_catalog.hive_client_calls
+              - name: spark.driver.hive_external_catalog.parallel_listing_jobs
+              - name: spark.driver.hive_external_catalog.partitions_fetched
+              - name: spark.driver.code_generator.compilation.count
+              - name: spark.driver.code_generator.compilation.average_time
+              - name: spark.driver.code_generator.generated_class.count
+              - name: spark.driver.code_generator.generated_class.average_size
+              - name: spark.driver.code_generator.generated_method.count
+              - name: spark.driver.code_generator.generated_method.average_size
+              - name: spark.driver.code_generator.source_code.operations
+              - name: spark.driver.code_generator.source_code.average_size
+              - name: spark.driver.dag_scheduler.job.active
+              - name: spark.driver.dag_scheduler.job.count
+              - name: spark.driver.dag_scheduler.stage.failed
+              - name: spark.driver.dag_scheduler.stage.count
+              - name: spark.driver.live_listener_bus.posted
+              - name: spark.driver.live_listener_bus.processing_time.average
+              - name: spark.driver.live_listener_bus.dropped
+              - name: spark.driver.live_listener_bus.queue_size
+              - name: spark.driver.jvm_cpu_time
+              - name: spark.driver.executor.memory.jvm
+              - name: spark.driver.executor.memory.execution
+              - name: spark.driver.executor.memory.storage
+              - name: spark.driver.executor.memory.pool
+              - name: spark.driver.executor.gc.operations
+              - name: spark.driver.executor.gc.time
+          - label: Job Metrics
+            metrics:
+              - name: spark.job.task.active
+              - name: spark.job.task.result
+              - name: spark.job.stage.active
+              - name: spark.job.stage.result
+          - label: Executor Metrics
+            column: 1
+            metrics:
+              - name: spark.executor.memory.usage
+              - name: spark.executor.disk.usage
+              - name: spark.executor.task.limit
+              - name: spark.executor.task.active
+              - name: spark.executor.task.result
+              - name: spark.executor.time
+              - name: spark.executor.gc_time
+              - name: spark.executor.input_size
+              - name: spark.executor.shuffle.io.size
+              - name: spark.executor.storage_memory.usage
+          - label: Stage Metrics
+            column: 1
+            metrics:
+              - name: spark.stage.status
+              - name: spark.stage.task.active
+              - name: spark.stage.task.result
+              - name: spark.stage.executor.run_time
+              - name: spark.stage.executor.cpu_time
+              - name: spark.stage.task.result_size
+              - name: spark.stage.jvm_gc_time
+              - name: spark.stage.memory.spilled
+              - name: spark.stage.disk.spilled
+              - name: spark.stage.memory.peak
+              - name: spark.stage.io.size
+              - name: spark.stage.io.records
+              - name: spark.stage.shuffle.blocks_fetched
+              - name: spark.stage.shuffle.fetch_wait_time
+              - name: spark.stage.shuffle.io.disk
+              - name: spark.stage.shuffle.io.read.size
+              - name: spark.stage.shuffle.io.write.size
+              - name: spark.stage.shuffle.io.records
+              - name: spark.stage.shuffle.write_time
+      advancedConfig: true
+
+  metrics:
+    receivers: |
+      - apachespark:
+          endpoint: {{ .endpoint }}
+          collection_interval: {{ .collection_interval }}s
+          application_names:
+            {{ range $n := .application_names }}
+            - {{ $n }}
+            {{ end }}
+
+          metrics:
+            {{ range $m := .disable_metrics }}
+            {{ $m }}:
+              enabled: false
+            {{ end }}
+
+    processors: |
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
