@@ -246,6 +246,12 @@ func (r *Resolver) UpdateProcessors(ctx context.Context, input model1.UpdateProc
 		return nil, fmt.Errorf("invalid resource type, should be source or destination")
 	}
 
+	// Ensure that the config can still be rendered with the added processors
+	_, err = config.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.OssOtelHeaders)
+	if err != nil {
+		return nil, fmt.Errorf("failed  to render config: %w", err)
+	}
+
 	statuses, err := r.Bindplane.Store().ApplyResources(ctx, []model.Resource{config})
 	if err != nil {
 		return nil, err
