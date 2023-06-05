@@ -28,11 +28,6 @@ import (
 const templateStr = `var __BINDPLANE_VERSION__ = "{{.Version}}";
 `
 
-const fallbackJs = `var globals = {
-	version: "unknown"
-}
-`
-
 type configOptions struct {
 	Version string
 }
@@ -44,31 +39,20 @@ func newConfigOptions() *configOptions {
 }
 
 // generateGlobalJS generates the static javascript file for the UI.
-func generateGlobalJS() (string, error) {
-	tmp, err := template.New("globals").Parse(templateStr)
-	if err != nil {
-		return fallbackJs, err
-	}
+func generateGlobalJS() string {
+	tmp, _ := template.New("globals").Parse(templateStr)
 
 	opts := newConfigOptions()
 
 	w := bytes.NewBufferString("")
-	err = tmp.Execute(w, opts)
-	if err != nil {
-		return fallbackJs, err
-	}
+	_ = tmp.Execute(w, opts)
 
-	return w.String(), nil
+	return w.String()
 }
 
 func globalJS(ctx *gin.Context) {
-	js, err := generateGlobalJS()
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
+	js := generateGlobalJS()
 
 	ctx.Header("Content-Type", "application/javascript")
 	ctx.String(http.StatusOK, js)
-
 }
