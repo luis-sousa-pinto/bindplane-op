@@ -525,6 +525,20 @@ func (c *Configuration) evalComponents(ctx context.Context, store ResourceStore,
 		destination := destination // copy to local variable to securely pass a reference to a loop variable
 		destName, destParts := evalDestination(ctx, i, &destination, fmt.Sprintf("destination%d", i), store, rc, errorHandler)
 		destinations[destName] = destParts
+
+		// If the route receiver is supported, check if any processor needs it
+		if rc.IncludeRouteReceiver {
+			for j, p := range destination.Processors {
+				if processorNeedsRouteReceiver(p) {
+					name := fmt.Sprintf("%s__processor%d", destName, j)
+					routeReceiver, routeParts := createRouteReceiver(ctx, name, errorHandler)
+					if routeReceiver != "" {
+						addMeasureProcessors(routeParts, MeasurementPositionSourceBeforeProcessors, routeReceiver, rc)
+						sources[routeReceiver] = routeParts
+					}
+				}
+			}
+		}
 	}
 
 	return sources, destinations, err
@@ -737,8 +751,9 @@ func findResourceAndType(ctx context.Context, resourceKind Kind, resource *Resou
 
 // processorNeedsRouteReceiver checks if the processor needs the route receiver to be in the configuration
 func processorNeedsRouteReceiver(processor ResourceConfiguration) bool {
-	return processor.Type == "count_logs" ||
-		processor.Type == "extract_metric"
+	return strings.HasPrefix(processor.Type, "count_logs") ||
+		strings.HasPrefix(processor.Type, "extract_metric") ||
+		strings.HasPrefix(processor.Type, "count_telemetry")
 }
 
 // ----------------------------------------------------------------------
