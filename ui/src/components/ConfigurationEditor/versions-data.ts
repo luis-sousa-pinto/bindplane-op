@@ -79,4 +79,18 @@ export class VersionsData
       newVersion: this.findNew()?.metadata.version,
     };
   }
+
+  // firstActiveType returns either the first active type for the current version
+  // if it exists - then the newest version.
+  firstActiveType(): string | undefined {
+    const current = this.findCurrent();
+    if (current && current.activeTypes && current.activeTypes.length > 0) {
+      return current.activeTypes[0];
+    }
+
+    const latest = this.configurationHistory[0];
+    if (latest && latest.activeTypes && latest.activeTypes.length > 0) {
+      return latest.activeTypes[0];
+    }
+  }
 }

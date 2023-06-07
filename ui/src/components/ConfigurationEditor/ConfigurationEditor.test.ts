@@ -1,4 +1,4 @@
-import { VersionsData } from "./util";
+import { VersionsData } from "./versions-data";
 import {
   HISTORY_LATEST_IS_CURRENT,
   HISTORY_LATEST_IS_NEW,
