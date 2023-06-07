@@ -2610,6 +2610,9 @@ const docTemplate = `{
                 "disabled": {
                     "type": "boolean"
                 },
+                "displayName": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2977,6 +2980,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

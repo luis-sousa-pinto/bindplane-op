@@ -680,6 +680,8 @@ definitions:
     properties:
       disabled:
         type: boolean
+      displayName:
+        type: string
       name:
         type: string
       parameters:

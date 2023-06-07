@@ -5,44 +5,46 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  Any: any;
-  Map: any;
-  RolloutStatus: number;
-  Time: any;
-  Version: number;
+  ID: { input: string | number; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  Any: { input: any; output: any; }
+  Map: { input: any; output: any; }
+  RolloutStatus: { input: number; output: number; }
+  Time: { input: any; output: any; }
+  Version: { input: number; output: number; }
 };
 
 export type Agent = {
   __typename?: 'Agent';
-  architecture?: Maybe<Scalars['String']>;
+  architecture?: Maybe<Scalars['String']['output']>;
   configuration?: Maybe<AgentConfiguration>;
   configurationResource?: Maybe<Configuration>;
-  connectedAt?: Maybe<Scalars['Time']>;
-  disconnectedAt?: Maybe<Scalars['Time']>;
-  errorMessage?: Maybe<Scalars['String']>;
-  features: Scalars['Int'];
-  home?: Maybe<Scalars['String']>;
-  hostName?: Maybe<Scalars['String']>;
-  id: Scalars['ID'];
-  labels?: Maybe<Scalars['Map']>;
-  macAddress?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
-  operatingSystem?: Maybe<Scalars['String']>;
-  platform?: Maybe<Scalars['String']>;
-  remoteAddress?: Maybe<Scalars['String']>;
-  status: Scalars['Int'];
-  type?: Maybe<Scalars['String']>;
+  connectedAt?: Maybe<Scalars['Time']['output']>;
+  disconnectedAt?: Maybe<Scalars['Time']['output']>;
+  errorMessage?: Maybe<Scalars['String']['output']>;
+  features: Scalars['Int']['output'];
+  home?: Maybe<Scalars['String']['output']>;
+  hostName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  labels?: Maybe<Scalars['Map']['output']>;
+  macAddress?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  operatingSystem?: Maybe<Scalars['String']['output']>;
+  platform?: Maybe<Scalars['String']['output']>;
+  remoteAddress?: Maybe<Scalars['String']['output']>;
+  status: Scalars['Int']['output'];
+  type?: Maybe<Scalars['String']['output']>;
   upgrade?: Maybe<AgentUpgrade>;
-  upgradeAvailable?: Maybe<Scalars['String']>;
-  version?: Maybe<Scalars['String']>;
+  upgradeAvailable?: Maybe<Scalars['String']['output']>;
+  version?: Maybe<Scalars['String']['output']>;
 };
 
 export type AgentChange = {
@@ -59,44 +61,44 @@ export enum AgentChangeType {
 
 export type AgentConfiguration = {
   __typename?: 'AgentConfiguration';
-  Collector?: Maybe<Scalars['String']>;
-  Logging?: Maybe<Scalars['String']>;
-  Manager?: Maybe<Scalars['Map']>;
+  Collector?: Maybe<Scalars['String']['output']>;
+  Logging?: Maybe<Scalars['String']['output']>;
+  Manager?: Maybe<Scalars['Map']['output']>;
 };
 
 export type AgentSelector = {
   __typename?: 'AgentSelector';
-  matchLabels?: Maybe<Scalars['Map']>;
+  matchLabels?: Maybe<Scalars['Map']['output']>;
 };
 
 export type AgentUpgrade = {
   __typename?: 'AgentUpgrade';
-  error?: Maybe<Scalars['String']>;
-  status: Scalars['Int'];
-  version: Scalars['String'];
+  error?: Maybe<Scalars['String']['output']>;
+  status: Scalars['Int']['output'];
+  version: Scalars['String']['output'];
 };
 
 export type Agents = {
   __typename?: 'Agents';
   agents: Array<Agent>;
-  latestVersion: Scalars['String'];
-  query?: Maybe<Scalars['String']>;
+  latestVersion: Scalars['String']['output'];
+  query?: Maybe<Scalars['String']['output']>;
   suggestions?: Maybe<Array<Suggestion>>;
 };
 
 export type ClearAgentUpgradeErrorInput = {
-  agentId: Scalars['String'];
+  agentId: Scalars['String']['input'];
 };
 
 export type Configuration = {
   __typename?: 'Configuration';
-  activeTypes?: Maybe<Array<Scalars['String']>>;
-  agentCount?: Maybe<Scalars['Int']>;
-  apiVersion: Scalars['String'];
+  activeTypes?: Maybe<Array<Scalars['String']['output']>>;
+  agentCount?: Maybe<Scalars['Int']['output']>;
+  apiVersion: Scalars['String']['output'];
   graph?: Maybe<Graph>;
-  kind: Scalars['String'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
-  rendered?: Maybe<Scalars['String']>;
+  rendered?: Maybe<Scalars['String']['output']>;
   spec: ConfigurationSpec;
   status: ConfigurationStatus;
 };
@@ -109,41 +111,41 @@ export type ConfigurationChange = {
 
 export type ConfigurationSpec = {
   __typename?: 'ConfigurationSpec';
-  contentType?: Maybe<Scalars['String']>;
+  contentType?: Maybe<Scalars['String']['output']>;
   destinations?: Maybe<Array<ResourceConfiguration>>;
-  raw?: Maybe<Scalars['String']>;
+  raw?: Maybe<Scalars['String']['output']>;
   selector?: Maybe<AgentSelector>;
   sources?: Maybe<Array<ResourceConfiguration>>;
 };
 
 export type ConfigurationStatus = {
   __typename?: 'ConfigurationStatus';
-  current: Scalars['Boolean'];
-  currentVersion: Scalars['Version'];
-  latest: Scalars['Boolean'];
-  pending: Scalars['Boolean'];
+  current: Scalars['Boolean']['output'];
+  currentVersion: Scalars['Version']['output'];
+  latest: Scalars['Boolean']['output'];
+  pending: Scalars['Boolean']['output'];
   rollout: Rollout;
 };
 
 export type Configurations = {
   __typename?: 'Configurations';
   configurations: Array<Configuration>;
-  query?: Maybe<Scalars['String']>;
+  query?: Maybe<Scalars['String']['output']>;
   suggestions?: Maybe<Array<Suggestion>>;
 };
 
 export type Destination = {
   __typename?: 'Destination';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ParameterizedSpec;
 };
 
 export type DestinationType = {
   __typename?: 'DestinationType';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ResourceTypeSpec;
 };
@@ -156,20 +158,20 @@ export type DestinationWithType = {
 
 export type DocumentationLink = {
   __typename?: 'DocumentationLink';
-  text: Scalars['String'];
-  url: Scalars['String'];
+  text: Scalars['String']['output'];
+  url: Scalars['String']['output'];
 };
 
 export type Edge = {
   __typename?: 'Edge';
-  id: Scalars['String'];
-  source: Scalars['String'];
-  target: Scalars['String'];
+  id: Scalars['String']['output'];
+  source: Scalars['String']['output'];
+  target: Scalars['String']['output'];
 };
 
 export type EditConfigurationDescriptionInput = {
-  description: Scalars['String'];
-  name: Scalars['String'];
+  description: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
 
 export enum EventType {
@@ -180,7 +182,7 @@ export enum EventType {
 
 export type Graph = {
   __typename?: 'Graph';
-  attributes: Scalars['Map'];
+  attributes: Scalars['Map']['output'];
   edges: Array<Edge>;
   intermediates: Array<Node>;
   sources: Array<Node>;
@@ -189,75 +191,75 @@ export type Graph = {
 
 export type GraphMetric = {
   __typename?: 'GraphMetric';
-  agentID?: Maybe<Scalars['ID']>;
-  name: Scalars['String'];
-  nodeID: Scalars['String'];
-  pipelineType: Scalars['String'];
-  unit: Scalars['String'];
-  value: Scalars['Float'];
+  agentID?: Maybe<Scalars['ID']['output']>;
+  name: Scalars['String']['output'];
+  nodeID: Scalars['String']['output'];
+  pipelineType: Scalars['String']['output'];
+  unit: Scalars['String']['output'];
+  value: Scalars['Float']['output'];
 };
 
 export type GraphMetrics = {
   __typename?: 'GraphMetrics';
-  maxLogValue: Scalars['Float'];
-  maxMetricValue: Scalars['Float'];
-  maxTraceValue: Scalars['Float'];
+  maxLogValue: Scalars['Float']['output'];
+  maxMetricValue: Scalars['Float']['output'];
+  maxTraceValue: Scalars['Float']['output'];
   metrics: Array<GraphMetric>;
 };
 
 export type Log = {
   __typename?: 'Log';
-  attributes?: Maybe<Scalars['Map']>;
-  body?: Maybe<Scalars['Any']>;
-  resource?: Maybe<Scalars['Map']>;
-  severity?: Maybe<Scalars['String']>;
-  timestamp?: Maybe<Scalars['Time']>;
+  attributes?: Maybe<Scalars['Map']['output']>;
+  body?: Maybe<Scalars['Any']['output']>;
+  resource?: Maybe<Scalars['Map']['output']>;
+  severity?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['Time']['output']>;
 };
 
 export type Metadata = {
   __typename?: 'Metadata';
-  dateModified?: Maybe<Scalars['Time']>;
-  description?: Maybe<Scalars['String']>;
-  displayName?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id: Scalars['ID'];
-  labels?: Maybe<Scalars['Map']>;
-  name: Scalars['String'];
-  version: Scalars['Version'];
+  dateModified?: Maybe<Scalars['Time']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  displayName?: Maybe<Scalars['String']['output']>;
+  icon?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  labels?: Maybe<Scalars['Map']['output']>;
+  name: Scalars['String']['output'];
+  version: Scalars['Version']['output'];
 };
 
 export type Metric = {
   __typename?: 'Metric';
-  attributes?: Maybe<Scalars['Map']>;
-  name?: Maybe<Scalars['String']>;
-  resource?: Maybe<Scalars['Map']>;
-  timestamp?: Maybe<Scalars['Time']>;
-  type?: Maybe<Scalars['String']>;
-  unit?: Maybe<Scalars['String']>;
-  value?: Maybe<Scalars['Any']>;
+  attributes?: Maybe<Scalars['Map']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  resource?: Maybe<Scalars['Map']['output']>;
+  timestamp?: Maybe<Scalars['Time']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
+  unit?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['Any']['output']>;
 };
 
 export type MetricCategory = {
   __typename?: 'MetricCategory';
-  column: Scalars['Int'];
-  label: Scalars['String'];
+  column: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
   metrics: Array<MetricOption>;
 };
 
 export type MetricOption = {
   __typename?: 'MetricOption';
-  defaultDisabled?: Maybe<Scalars['Boolean']>;
-  description?: Maybe<Scalars['String']>;
-  kpi?: Maybe<Scalars['Boolean']>;
-  name: Scalars['String'];
+  defaultDisabled?: Maybe<Scalars['Boolean']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  kpi?: Maybe<Scalars['Boolean']['output']>;
+  name: Scalars['String']['output'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  clearAgentUpgradeError?: Maybe<Scalars['Boolean']>;
-  editConfigurationDescription?: Maybe<Scalars['Boolean']>;
+  clearAgentUpgradeError?: Maybe<Scalars['Boolean']['output']>;
+  editConfigurationDescription?: Maybe<Scalars['Boolean']['output']>;
   removeAgentConfiguration?: Maybe<Agent>;
-  updateProcessors?: Maybe<Scalars['Boolean']>;
+  updateProcessors?: Maybe<Scalars['Boolean']['output']>;
 };
 
 
@@ -282,10 +284,10 @@ export type MutationUpdateProcessorsArgs = {
 
 export type Node = {
   __typename?: 'Node';
-  attributes: Scalars['Map'];
-  id: Scalars['String'];
-  label: Scalars['String'];
-  type: Scalars['String'];
+  attributes: Scalars['Map']['output'];
+  id: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  type: Scalars['String']['output'];
 };
 
 export type OverviewPage = {
@@ -295,40 +297,40 @@ export type OverviewPage = {
 
 export type Parameter = {
   __typename?: 'Parameter';
-  name: Scalars['String'];
-  value: Scalars['Any'];
+  name: Scalars['String']['output'];
+  value: Scalars['Any']['output'];
 };
 
 export type ParameterDefinition = {
   __typename?: 'ParameterDefinition';
-  advancedConfig?: Maybe<Scalars['Boolean']>;
-  default?: Maybe<Scalars['Any']>;
-  description: Scalars['String'];
+  advancedConfig?: Maybe<Scalars['Boolean']['output']>;
+  default?: Maybe<Scalars['Any']['output']>;
+  description: Scalars['String']['output'];
   documentation?: Maybe<Array<DocumentationLink>>;
-  label: Scalars['String'];
-  name: Scalars['String'];
+  label: Scalars['String']['output'];
+  name: Scalars['String']['output'];
   options: ParameterOptions;
   relevantIf?: Maybe<Array<RelevantIfCondition>>;
-  required: Scalars['Boolean'];
+  required: Scalars['Boolean']['output'];
   type: ParameterType;
-  validValues?: Maybe<Array<Scalars['String']>>;
+  validValues?: Maybe<Array<Scalars['String']['output']>>;
 };
 
 export type ParameterInput = {
-  name: Scalars['String'];
-  value: Scalars['Any'];
+  name: Scalars['String']['input'];
+  value: Scalars['Any']['input'];
 };
 
 export type ParameterOptions = {
   __typename?: 'ParameterOptions';
-  creatable?: Maybe<Scalars['Boolean']>;
-  gridColumns?: Maybe<Scalars['Int']>;
-  labels?: Maybe<Scalars['Map']>;
+  creatable?: Maybe<Scalars['Boolean']['output']>;
+  gridColumns?: Maybe<Scalars['Int']['output']>;
+  labels?: Maybe<Scalars['Map']['output']>;
   metricCategories?: Maybe<Array<MetricCategory>>;
-  multiline?: Maybe<Scalars['Boolean']>;
-  password?: Maybe<Scalars['Boolean']>;
-  sectionHeader?: Maybe<Scalars['Boolean']>;
-  trackUnchecked?: Maybe<Scalars['Boolean']>;
+  multiline?: Maybe<Scalars['Boolean']['output']>;
+  password?: Maybe<Scalars['Boolean']['output']>;
+  sectionHeader?: Maybe<Scalars['Boolean']['output']>;
+  trackUnchecked?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export enum ParameterType {
@@ -347,17 +349,17 @@ export enum ParameterType {
 
 export type ParameterizedSpec = {
   __typename?: 'ParameterizedSpec';
-  disabled: Scalars['Boolean'];
+  disabled: Scalars['Boolean']['output'];
   parameters?: Maybe<Array<Parameter>>;
   processors?: Maybe<Array<ResourceConfiguration>>;
-  type: Scalars['String'];
+  type: Scalars['String']['output'];
 };
 
 export type PhaseAgentCount = {
   __typename?: 'PhaseAgentCount';
-  initial: Scalars['Int'];
-  maximum: Scalars['Int'];
-  multiplier: Scalars['Float'];
+  initial: Scalars['Int']['output'];
+  maximum: Scalars['Int']['output'];
+  multiplier: Scalars['Float']['output'];
 };
 
 export enum PipelineType {
@@ -368,24 +370,24 @@ export enum PipelineType {
 
 export type Processor = {
   __typename?: 'Processor';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ParameterizedSpec;
 };
 
 export type ProcessorInput = {
-  disabled?: InputMaybe<Scalars['Boolean']>;
-  displayName?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
+  disabled?: InputMaybe<Scalars['Boolean']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
   parameters?: InputMaybe<Array<ParameterInput>>;
-  type?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProcessorType = {
   __typename?: 'ProcessorType';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ResourceTypeSpec;
 };
@@ -420,107 +422,107 @@ export type Query = {
 
 
 export type QueryAgentArgs = {
-  id: Scalars['ID'];
+  id: Scalars['ID']['input'];
 };
 
 
 export type QueryAgentMetricsArgs = {
-  ids?: InputMaybe<Array<Scalars['ID']>>;
-  period: Scalars['String'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  period: Scalars['String']['input'];
 };
 
 
 export type QueryAgentsArgs = {
-  query?: InputMaybe<Scalars['String']>;
-  selector?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']['input']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type QueryConfigurationArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryConfigurationHistoryArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryConfigurationMetricsArgs = {
-  name?: InputMaybe<Scalars['String']>;
-  period: Scalars['String'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  period: Scalars['String']['input'];
 };
 
 
 export type QueryConfigurationsArgs = {
-  onlyDeployedConfigurations?: InputMaybe<Scalars['Boolean']>;
-  query?: InputMaybe<Scalars['String']>;
-  selector?: InputMaybe<Scalars['String']>;
+  onlyDeployedConfigurations?: InputMaybe<Scalars['Boolean']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type QueryDestinationArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryDestinationTypeArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryDestinationWithTypeArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryOverviewMetricsArgs = {
-  configIDs?: InputMaybe<Array<Scalars['ID']>>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']>>;
-  period: Scalars['String'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  period: Scalars['String']['input'];
 };
 
 
 export type QueryOverviewPageArgs = {
-  configIDs?: InputMaybe<Array<Scalars['ID']>>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']>>;
-  period: Scalars['String'];
-  telemetryType: Scalars['String'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  period: Scalars['String']['input'];
+  telemetryType: Scalars['String']['input'];
 };
 
 
 export type QueryProcessorArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QueryProcessorTypeArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QuerySnapshotArgs = {
-  agentID: Scalars['String'];
+  agentID: Scalars['String']['input'];
   pipelineType: PipelineType;
-  position?: InputMaybe<Scalars['String']>;
-  resourceName?: InputMaybe<Scalars['String']>;
+  position?: InputMaybe<Scalars['String']['input']>;
+  resourceName?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type QuerySourceArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 
 export type QuerySourceTypeArgs = {
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 };
 
 export type RelevantIfCondition = {
   __typename?: 'RelevantIfCondition';
-  name: Scalars['String'];
+  name: Scalars['String']['output'];
   operator: RelevantIfOperatorType;
-  value: Scalars['Any'];
+  value: Scalars['Any']['output'];
 };
 
 export enum RelevantIfOperatorType {
@@ -530,17 +532,17 @@ export enum RelevantIfOperatorType {
 }
 
 export type RemoveAgentConfigurationInput = {
-  agentId: Scalars['String'];
+  agentId: Scalars['String']['input'];
 };
 
 export type ResourceConfiguration = {
   __typename?: 'ResourceConfiguration';
-  disabled: Scalars['Boolean'];
-  displayName?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
+  disabled: Scalars['Boolean']['output'];
+  displayName?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
   parameters?: Maybe<Array<Parameter>>;
   processors?: Maybe<Array<ResourceConfiguration>>;
-  type?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']['output']>;
 };
 
 export enum ResourceTypeKind {
@@ -551,28 +553,28 @@ export enum ResourceTypeKind {
 export type ResourceTypeSpec = {
   __typename?: 'ResourceTypeSpec';
   parameters: Array<ParameterDefinition>;
-  supportedPlatforms: Array<Scalars['String']>;
+  supportedPlatforms: Array<Scalars['String']['output']>;
   telemetryTypes: Array<PipelineType>;
-  version: Scalars['String'];
+  version: Scalars['String']['output'];
 };
 
 export type Rollout = {
   __typename?: 'Rollout';
-  completed: Scalars['Int'];
-  errors: Scalars['Int'];
+  completed: Scalars['Int']['output'];
+  errors: Scalars['Int']['output'];
   options?: Maybe<RolloutOptions>;
-  pending: Scalars['Int'];
-  phase: Scalars['Int'];
-  status: Scalars['RolloutStatus'];
-  waiting: Scalars['Int'];
+  pending: Scalars['Int']['output'];
+  phase: Scalars['Int']['output'];
+  status: Scalars['RolloutStatus']['output'];
+  waiting: Scalars['Int']['output'];
 };
 
 export type RolloutOptions = {
   __typename?: 'RolloutOptions';
-  maxErrors: Scalars['Int'];
+  maxErrors: Scalars['Int']['output'];
   phaseAgentCount?: Maybe<PhaseAgentCount>;
-  rollbackOnFailure: Scalars['Boolean'];
-  startAutomatically: Scalars['Boolean'];
+  rollbackOnFailure: Scalars['Boolean']['output'];
+  startAutomatically: Scalars['Boolean']['output'];
 };
 
 export type Snapshot = {
@@ -584,16 +586,16 @@ export type Snapshot = {
 
 export type Source = {
   __typename?: 'Source';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ParameterizedSpec;
 };
 
 export type SourceType = {
   __typename?: 'SourceType';
-  apiVersion: Scalars['String'];
-  kind: Scalars['String'];
+  apiVersion: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
   metadata: Metadata;
   spec: ResourceTypeSpec;
 };
@@ -609,98 +611,98 @@ export type Subscription = {
 
 
 export type SubscriptionAgentChangesArgs = {
-  query?: InputMaybe<Scalars['String']>;
-  selector?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']['input']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type SubscriptionAgentMetricsArgs = {
-  ids?: InputMaybe<Array<Scalars['ID']>>;
-  period: Scalars['String'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  period: Scalars['String']['input'];
 };
 
 
 export type SubscriptionConfigurationChangesArgs = {
-  query?: InputMaybe<Scalars['String']>;
-  selector?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']['input']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type SubscriptionConfigurationMetricsArgs = {
-  agent?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  period: Scalars['String'];
+  agent?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  period: Scalars['String']['input'];
 };
 
 
 export type SubscriptionOverviewMetricsArgs = {
-  configIDs?: InputMaybe<Array<Scalars['ID']>>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']>>;
-  period: Scalars['String'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  period: Scalars['String']['input'];
 };
 
 export type Suggestion = {
   __typename?: 'Suggestion';
-  label: Scalars['String'];
-  query: Scalars['String'];
+  label: Scalars['String']['output'];
+  query: Scalars['String']['output'];
 };
 
 export type Trace = {
   __typename?: 'Trace';
-  attributes?: Maybe<Scalars['Map']>;
-  end?: Maybe<Scalars['Time']>;
-  name?: Maybe<Scalars['String']>;
-  parentSpanID?: Maybe<Scalars['String']>;
-  resource?: Maybe<Scalars['Map']>;
-  spanID?: Maybe<Scalars['String']>;
-  start?: Maybe<Scalars['Time']>;
-  traceID?: Maybe<Scalars['String']>;
+  attributes?: Maybe<Scalars['Map']['output']>;
+  end?: Maybe<Scalars['Time']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  parentSpanID?: Maybe<Scalars['String']['output']>;
+  resource?: Maybe<Scalars['Map']['output']>;
+  spanID?: Maybe<Scalars['String']['output']>;
+  start?: Maybe<Scalars['Time']['output']>;
+  traceID?: Maybe<Scalars['String']['output']>;
 };
 
 export type UpdateProcessorsInput = {
-  configuration: Scalars['String'];
+  configuration: Scalars['String']['input'];
   processors: Array<ProcessorInput>;
-  resourceIndex: Scalars['Int'];
+  resourceIndex: Scalars['Int']['input'];
   resourceType: ResourceTypeKind;
 };
 
 export type GetLatestConfigVersionQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetLatestConfigVersionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null };
 
 export type GetRenderedConfigQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetRenderedConfigQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type SourceTypeQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetDestinationWithTypeQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type GetCurrentConfigVersionQueryVariables = Exact<{
-  configurationName: Scalars['String'];
+  configurationName: Scalars['String']['input'];
 }>;
 
 
 export type GetCurrentConfigVersionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, version: number, labels?: any | null } } | null };
 
 export type GetLatestConfigDescriptionQueryVariables = Exact<{
-  configurationName: Scalars['String'];
+  configurationName: Scalars['String']['input'];
 }>;
 
 
@@ -714,7 +716,7 @@ export type EditConfigDescriptionMutationVariables = Exact<{
 export type EditConfigDescriptionMutation = { __typename?: 'Mutation', editConfigurationDescription?: boolean | null };
 
 export type GetConfigurationVersionsQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
@@ -728,9 +730,9 @@ export type RemoveAgentConfigurationMutationVariables = Exact<{
 export type RemoveAgentConfigurationMutation = { __typename?: 'Mutation', removeAgentConfiguration?: { __typename?: 'Agent', id: string, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null, Logging?: string | null, Manager?: any | null } | null } | null };
 
 export type ConfigurationMetricsSubscriptionVariables = Exact<{
-  period: Scalars['String'];
-  name: Scalars['String'];
-  agent?: InputMaybe<Scalars['String']>;
+  period: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  agent?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -742,21 +744,21 @@ export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetProcessorTypeQueryVariables = Exact<{
-  type: Scalars['String'];
+  type: Scalars['String']['input'];
 }>;
 
 
 export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type ProcessorDialogSourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', name: string, id: string, version: number, displayName?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType> } } | null };
 
 export type ProcessorDialogDestinationTypeQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
@@ -770,86 +772,86 @@ export type UpdateProcessorsMutationVariables = Exact<{
 export type UpdateProcessorsMutation = { __typename?: 'Mutation', updateProcessors?: boolean | null };
 
 export type GetRolloutHistoryQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetRolloutHistoryQuery = { __typename?: 'Query', configurationHistory: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string, id: string, version: number, dateModified?: any | null }, status: { __typename?: 'ConfigurationStatus', rollout: { __typename?: 'Rollout', status: number, errors: number } } }> };
 
 export type GetConfigRolloutStatusQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetConfigRolloutStatusQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', pending: boolean, current: boolean, latest: boolean, rollout: { __typename?: 'Rollout', status: number, phase: number, completed: number, errors: number, pending: number, waiting: number } } } | null };
 
 export type AgentsWithConfigurationQueryVariables = Exact<{
-  selector?: InputMaybe<Scalars['String']>;
-  query?: InputMaybe<Scalars['String']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type AgentsWithConfigurationQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', agents: Array<{ __typename?: 'Agent', id: string, name: string }> } };
 
 export type SnapshotQueryVariables = Exact<{
-  agentID: Scalars['String'];
+  agentID: Scalars['String']['input'];
   pipelineType: PipelineType;
-  position?: InputMaybe<Scalars['String']>;
-  resourceName?: InputMaybe<Scalars['String']>;
+  position?: InputMaybe<Scalars['String']['input']>;
+  resourceName?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type SnapshotQuery = { __typename?: 'Query', snapshot: { __typename?: 'Snapshot', metrics: Array<{ __typename?: 'Metric', name?: string | null, timestamp?: any | null, value?: any | null, unit?: string | null, type?: string | null, attributes?: any | null, resource?: any | null }>, logs: Array<{ __typename?: 'Log', timestamp?: any | null, body?: any | null, severity?: string | null, attributes?: any | null, resource?: any | null }>, traces: Array<{ __typename?: 'Trace', name?: string | null, traceID?: string | null, spanID?: string | null, parentSpanID?: string | null, start?: any | null, end?: any | null, attributes?: any | null, resource?: any | null }> } };
 
 export type AgentsTableQueryVariables = Exact<{
-  selector?: InputMaybe<Scalars['String']>;
-  query?: InputMaybe<Scalars['String']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type AgentsTableQuery = { __typename?: 'Query', agents: { __typename?: 'Agents', query?: string | null, latestVersion: string, agents: Array<{ __typename?: 'Agent', id: string, architecture?: string | null, hostName?: string | null, labels?: any | null, platform?: string | null, version?: string | null, name: string, home?: string | null, operatingSystem?: string | null, macAddress?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type AgentsTableMetricsSubscriptionVariables = Exact<{
-  period: Scalars['String'];
-  ids?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
+  period: Scalars['String']['input'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
 }>;
 
 
 export type AgentsTableMetricsSubscription = { __typename?: 'Subscription', agentMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string, agentID?: string | null }> } };
 
 export type GetConfigurationTableQueryVariables = Exact<{
-  selector?: InputMaybe<Scalars['String']>;
-  query?: InputMaybe<Scalars['String']>;
-  onlyDeployedConfigurations?: InputMaybe<Scalars['Boolean']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
+  onlyDeployedConfigurations?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
 export type GetConfigurationTableQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', query?: string | null, configurations: Array<{ __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, labels?: any | null, description?: string | null } }>, suggestions?: Array<{ __typename?: 'Suggestion', query: string, label: string }> | null } };
 
 export type ConfigurationChangesSubscriptionVariables = Exact<{
-  selector?: InputMaybe<Scalars['String']>;
-  query?: InputMaybe<Scalars['String']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type ConfigurationChangesSubscription = { __typename?: 'Subscription', configurationChanges: Array<{ __typename?: 'ConfigurationChange', eventType: EventType, configuration: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, description?: string | null, labels?: any | null } } }> };
 
 export type ConfigurationTableMetricsSubscriptionVariables = Exact<{
-  period: Scalars['String'];
+  period: Scalars['String']['input'];
 }>;
 
 
 export type ConfigurationTableMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
 
 export type GetDestinationTypeDisplayInfoQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetDestinationTypeDisplayInfoQuery = { __typename?: 'Query', destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null } } | null };
 
 export type GetSourceTypeDisplayInfoQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
@@ -863,15 +865,15 @@ export type ClearAgentUpgradeErrorMutationVariables = Exact<{
 export type ClearAgentUpgradeErrorMutation = { __typename?: 'Mutation', clearAgentUpgradeError?: boolean | null };
 
 export type AgentChangesSubscriptionVariables = Exact<{
-  selector?: InputMaybe<Scalars['String']>;
-  query?: InputMaybe<Scalars['String']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type AgentChangesSubscription = { __typename?: 'Subscription', agentChanges: Array<{ __typename?: 'AgentChange', changeType: AgentChangeType, agent: { __typename?: 'Agent', id: string, name: string, architecture?: string | null, operatingSystem?: string | null, labels?: any | null, hostName?: string | null, platform?: string | null, version?: string | null, macAddress?: string | null, home?: string | null, type?: string | null, status: number, connectedAt?: any | null, disconnectedAt?: any | null, configuration?: { __typename?: 'AgentConfiguration', Collector?: string | null } | null, configurationResource?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null } }> };
 
 export type GetAgentAndConfigurationsQueryVariables = Exact<{
-  agentId: Scalars['ID'];
+  agentId: Scalars['ID']['input'];
 }>;
 
 
@@ -883,21 +885,21 @@ export type GetConfigurationNamesQueryVariables = Exact<{ [key: string]: never; 
 export type GetConfigurationNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, labels?: any | null } }> } };
 
 export type GetConfigRolloutAgentsQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetConfigRolloutAgentsQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type GetRenderedConfigValueQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type GetRenderedConfigValueQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type GetConfigurationQueryVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars['String']['input'];
 }>;
 
 
@@ -924,19 +926,19 @@ export type DestinationsQueryVariables = Exact<{ [key: string]: never; }>;
 export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 export type GetOverviewPageQueryVariables = Exact<{
-  configIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
-  period: Scalars['String'];
-  telemetryType: Scalars['String'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+  period: Scalars['String']['input'];
+  telemetryType: Scalars['String']['input'];
 }>;
 
 
 export type GetOverviewPageQuery = { __typename?: 'Query', overviewPage: { __typename?: 'OverviewPage', graph: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } } };
 
 export type OverviewMetricsSubscriptionVariables = Exact<{
-  period: Scalars['String'];
-  configIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']> | Scalars['ID']>;
+  period: Scalars['String']['input'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
 }>;
 
 
