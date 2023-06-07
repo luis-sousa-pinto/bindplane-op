@@ -19,7 +19,6 @@ import (
 	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -219,7 +218,7 @@ func (r *AnyResource) GetSpec() any {
 
 // Value is used to translate to a JSONB field for postgres storage
 func (r AnyResource) Value() (driver.Value, error) {
-	return json.Marshal(r)
+	return jsoniter.Marshal(r)
 }
 
 // Scan is used to translate from a JSONB field in postgres to AnyResource
@@ -229,7 +228,7 @@ func (r *AnyResource) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &r)
+	return jsoniter.Unmarshal(b, &r)
 }
 
 // ResourceMeta TODO(doc)

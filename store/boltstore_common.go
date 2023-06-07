@@ -17,7 +17,6 @@ package store
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -26,6 +25,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/hashicorp/go-multierror"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/eventbus"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/otlp/record"
@@ -117,7 +117,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			configuration := &model.Configuration{}
-			if err := json.Unmarshal(v, configuration); err != nil {
+			if err := jsoniter.Unmarshal(v, configuration); err != nil {
 				s.ZapLogger().Error("unable to unmarshal configuration, ignoring", zap.Error(err))
 				continue
 			}
@@ -305,7 +305,7 @@ func (s *BoltstoreCore) Agents(ctx context.Context, options ...QueryOption) ([]*
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			agent := &model.Agent{}
-			if err := json.Unmarshal(v, agent); err != nil {
+			if err := jsoniter.Unmarshal(v, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -349,7 +349,7 @@ func (s *BoltstoreCore) agentsByID(ctx context.Context, ids []string, opts Query
 				return nil
 			}
 			agent := &model.Agent{}
-			if err := json.Unmarshal(data, agent); err != nil {
+			if err := jsoniter.Unmarshal(data, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -386,7 +386,7 @@ func (s *BoltstoreCore) Agent(ctx context.Context, id string) (*model.Agent, err
 			return nil
 		}
 		agent = &model.Agent{}
-		return json.Unmarshal(data, agent)
+		return jsoniter.Unmarshal(data, agent)
 	})
 
 	return agent, err
@@ -1181,7 +1181,7 @@ func findEndMetrics(c *bbolt.Cursor, time, objectType, id string) (map[string]*r
 	for k, v = c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 		metrics[removeTimestampFromKey(k)] = m
@@ -1223,7 +1223,7 @@ func findStartMetrics(c *bbolt.Cursor, time string, endTime time.Time, objectTyp
 		}
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 
@@ -1315,7 +1315,7 @@ func (s *BoltstoreCore) storeMeasurements(ctx context.Context, metricName string
 		}
 
 		for _, m := range metrics {
-			data, err := json.Marshal(m)
+			data, err := jsoniter.Marshal(m)
 			if err != nil {
 				errs = multierror.Append(errs, err)
 				continue

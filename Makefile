@@ -3,6 +3,10 @@ ALL_MODULES := $(shell find . -type f -name "go.mod" -exec dirname {} \; | sort 
 TOOLS_MOD_DIR := ./internal/tools
 ADDLICENSE=addlicense
 ALL_SRC := $(shell find . -name '*.go' -o -name '*.sh' -o -name 'Dockerfile' -type f | sort)
+JSON_EXCLUDED_FILES = model/parameter_test.go \
+					  model/parameter.go 
+
+JSON_LINT_FILES=$(shell find . -name '*.go' $(foreach file, $(JSON_EXCLUDED_FILES), -not -path "./$(file)"))
 
 # Use 8 characters in order to match ArgoCD's behavior
 # when using the template variable `head_short_sha`.
@@ -97,6 +101,12 @@ tidy:
 lint:
 	revive -config revive/config.toml -formatter=stylish -exclude "graphql/schema.resolvers.go"  -set_exit_status ./...
 	cd ui && npm run lint && cd ..
+	@for file in $(JSON_LINT_FILES); do \
+        if grep -q "\"encoding/json\"" $$file; then \
+            echo "Error: Standard JSON library used in $$file"; exit 1; \
+        fi \
+    done
+
 
 .PHONY: vet # runs go vet
 vet:

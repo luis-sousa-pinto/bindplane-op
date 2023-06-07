@@ -16,13 +16,13 @@ package model
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -446,12 +446,12 @@ func TestResourceStatusJSON(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// marshal to JSON
-			data, err := json.Marshal(test.resource)
+			data, err := jsoniter.Marshal(test.resource)
 			require.NoError(t, err)
 
 			// unmarshal from JSON
 			var unmarshaled Configuration
-			err = json.Unmarshal(data, &unmarshaled)
+			err = jsoniter.Unmarshal(data, &unmarshaled)
 			require.NoError(t, err)
 
 			require.Equal(t, test.resource, &unmarshaled)

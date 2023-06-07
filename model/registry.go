@@ -15,7 +15,6 @@
 package model
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -261,7 +260,7 @@ func Clone[T Resource](r T) (result T, err error) {
 	if value.Kind() == reflect.Ptr && value.IsNil() {
 		return
 	}
-	bytes, err := json.Marshal(r)
+	bytes, err := jsoniter.Marshal(r)
 	if err != nil {
 		return
 	}
@@ -269,7 +268,7 @@ func Clone[T Resource](r T) (result T, err error) {
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(bytes, &res)
+	err = jsoniter.Unmarshal(bytes, &res)
 	result = res.(T)
 	return
 }

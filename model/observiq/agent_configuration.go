@@ -18,10 +18,10 @@ package observiq
 import (
 	"crypto/sha256"
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
@@ -47,7 +47,7 @@ type AgentConfiguration struct {
 
 // Value is used to translate to a JSONB field for postgres storage
 func (c AgentConfiguration) Value() (driver.Value, error) {
-	return json.Marshal(c)
+	return jsoniter.Marshal(c)
 }
 
 // Scan is used to translate from a JSONB field in postgres to AgentConfiguration
@@ -57,7 +57,7 @@ func (c *AgentConfiguration) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &c)
+	return jsoniter.Unmarshal(b, &c)
 }
 
 // RawAgentConfiguration represents the raw configuration from the agent
@@ -69,7 +69,7 @@ type RawAgentConfiguration struct {
 
 // Value is used to translate to a JSONB field for postgres storage
 func (raw RawAgentConfiguration) Value() (driver.Value, error) {
-	return json.Marshal(raw)
+	return jsoniter.Marshal(raw)
 }
 
 // Scan is used to translate from a JSONB field in postgres to AgentConfiguration
@@ -79,7 +79,7 @@ func (raw *RawAgentConfiguration) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &raw)
+	return jsoniter.Unmarshal(b, &raw)
 }
 
 // ManagerConfig is the unmarshaled contents of manager.yaml
