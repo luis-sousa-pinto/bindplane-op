@@ -118,8 +118,8 @@ const MapParamInputComponent: React.FC<
       </FormHelperText>
       {definition.documentation && (
         <FormHelperText>
-          {definition.documentation.map((d) => (
-            <a href={d.url} rel="noreferrer" target="_blank">
+          {definition.documentation?.map((d) => (
+            <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
               {d.text}
             </a>
           ))}

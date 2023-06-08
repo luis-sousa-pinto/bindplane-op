@@ -81,8 +81,8 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
           )}
           {definition.documentation && (
             <Stack component={"span"}>
-              {definition.documentation.map((d) => (
-                <a href={d.url} rel="noreferrer" target="_blank">
+              {definition.documentation?.map((d) => (
+                <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
                   {d.text}
                 </a>
               ))}

@@ -62,6 +62,7 @@ const BoolParamInputComponent: React.FC<ParamInputProps<boolean>> = ({
               <>
                 {definition.documentation?.map((doc) => (
                   <a
+                    key={doc.url}
                     target="_blank"
                     rel="noreferrer"
                     href={doc.url}
