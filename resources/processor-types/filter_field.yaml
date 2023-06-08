@@ -7,7 +7,7 @@ metadata:
   labels:
     category: Filter-And-Reduce
 spec:
-  version: 0.0.1
+  version: 0.0.2
   parameters:
     - name: telemetry_types
       label: Enable Telemetry
@@ -39,17 +39,17 @@ spec:
         - regexp
       default: strict
 
-    - name: attributes
-      label: Attribute Keys
-      description: Attribute key value pairs to filter on. Telemetry is filtered if all attribute, resource, and body key pairs are matched.
+    - name: resources
+      label: Resource Keys
+      description: Resource key value pairs to filter on. Telemetry is filtered if all resource, attribute, and body key pairs are matched.
       type: map
       default: {}
       options:
         gridColumns: 12
 
-    - name: resources
-      label: Resource Keys
-      description: Resource key value pairs to filter on. Telemetry is filtered if all attribute, resource, and body key pairs are matched.
+    - name: attributes
+      label: Attribute Keys
+      description: Attribute key value pairs to filter on. Telemetry is filtered if all resource, attribute, and body key pairs are matched.
       type: map
       default: {}
       options:
@@ -57,11 +57,15 @@ spec:
 
     - name: bodies
       label: Body Keys
-      description: Log body key value pairs to filter on. Log records filtered if all attribute, resource, and body key pairs are matched.
+      description: Log body key value pairs to filter on. Log records filtered if all resource, attribute, and body key pairs are matched.
       type: map
       default: {}
       options:
         gridColumns: 12
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs"]
 
   metrics:
     processors: |
