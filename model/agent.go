@@ -445,7 +445,7 @@ func (a *Agent) UpgradeTo(version string) {
 	a.Status = Upgrading
 }
 
-// UpgradeStarted it set when the upgrade instructions have actually been sent to the Agent.
+// UpgradeStarted is set when the upgrade instructions have actually been sent to the Agent.
 func (a *Agent) UpgradeStarted(version string, allPackagesHash []byte) {
 	a.Upgrade = &AgentUpgrade{
 		Version:         version,

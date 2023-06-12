@@ -17,9 +17,7 @@ package agent
 
 import (
 	"errors"
-	"io"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/observiq/bindplane-op/model"
 )
 
@@ -45,13 +43,4 @@ type VersionClient interface {
 // NewGitHubVersionClient creates a new VersionClient for github versions
 func NewGitHubVersionClient() VersionClient {
 	return newGithub()
-}
-
-// TODO: Delete, unused
-func reader(client *resty.Client, url string) (io.ReadCloser, error) {
-	response, err := client.R().SetDoNotParseResponse(true).Get(url)
-	if err != nil {
-		return nil, err
-	}
-	return response.RawBody(), nil
 }
