@@ -52,7 +52,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   });
 
   return (
-    <FormControl size="small" sx={{ minWidth: "150px" }}>
+    <FormControl size="small" sx={{ minWidth: "150px", maxWidth: "200px" }}>
       <InputLabel id="agent-label">{label}</InputLabel>
       <Select
         inputProps={{ "data-testid": "agent-select" }}

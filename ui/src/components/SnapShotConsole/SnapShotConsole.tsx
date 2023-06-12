@@ -78,8 +78,8 @@ export const SnapshotConsole: React.FC<Props> = memo(
             >
               <Grid
                 item
-                xs={"auto"}
-                sx={{ minWidth: "25%", textAlign: "left" }}
+                xs={3}
+                sx={{ textAlign: "left" }}
               >
                 {showAgentSelector && (
                   <AgentSelector
