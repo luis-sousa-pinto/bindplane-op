@@ -1,0 +1,207 @@
+apiVersion: bindplane.observiq.com/v1
+kind: ProcessorType
+metadata:
+  name: add_fields
+  displayName: Add Fields
+  description: Add telemetry fields.
+  labels:
+    category: Transform
+spec:
+  version: 0.0.1
+  parameters:
+    - name: telemetry_types
+      label: Enable Telemetry
+      type: enums
+      description: "Select which types of telemetry you'd like to enable this processor for."
+      validValues: ["Metrics", "Logs", "Traces"]
+      default: ["Metrics", "Logs", "Traces"]
+      options:
+        gridColumns: 12
+
+    - name: resource_action
+      label: Resource Action
+      type: enum
+      description: |
+        insert: Add resource attribute if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+
+    - name: resource_attributes
+      label: Resource Attributes
+      description: "List of resource attribute fields to add from telemetry data."
+      type: map
+      options:
+        gridColumns: 12
+
+    - name: attributes_action
+      label: Attribute Action
+      type: enum
+      description: |
+        insert: Add resource attribute if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+
+    - name: attributes
+      label: Attributes
+      type: map
+      options:
+        gridColumns: 12
+
+    - name: body_action
+      label: Body Action
+      type: enum
+      description: |
+        insert: Add resource attribute if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs"]
+
+    - name: body
+      label: Body Fields
+      description: "List of body fields to add to log data."
+      type: map
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs"]
+      options:
+        gridColumns: 12
+
+  logs:
+    processors: |
+      {{ if has "Logs" .telemetry_types }}
+        - transform/logs:
+            error_mode: ignore
+            log_statements:
+            - context: log
+              statements:
+                {{- if index . "attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.attributes_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .attributes }}
+                    {{- if ne $.attributes_action "upsert" }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+                {{- if index . "resource_attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.resource_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .resource_attributes }}
+                    {{- if ne $.resource_action "upsert" }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+                {{- if index . "body" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.body_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .body }}
+                    {{- if ne $.body_action "upsert" }}
+                      - 'set(body["{{ $k }}"], "{{ $v }}") where body["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(body["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+      {{ end }}
+
+  metrics:
+    processors: |
+      {{ if has "Metrics" .telemetry_types }}
+        - transform/metrics:
+            error_mode: ignore
+            metric_statements:
+            - context: datapoint
+              statements:
+                {{- if index . "attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.attributes_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .attributes }}
+                    {{- if ne $.attributes_action "upsert" }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+                {{- if index . "resource_attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.resource_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .resource_attributes }}
+                    {{- if ne $.resource_action "upsert" }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+      {{ end }}
+
+  traces:
+    processors: |
+      {{ if has "Traces" .telemetry_types }}
+        - transform/traces:
+            error_mode: ignore
+            trace_statements:
+            - context: span
+              statements:
+                {{- if index . "attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.attributes_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .attributes }}
+                    {{- if ne $.attributes_action "upsert" }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+                {{- if index . "resource_attributes" }}
+                  {{- $condition := "!=" }}
+                  {{- if eq $.resource_action "insert" }}
+                    {{- $condition = "==" }}
+                  {{- end }}
+                  {{- range $k, $v := .resource_attributes }}
+                    {{- if ne $.resource_action "upsert" }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                    {{- else }}
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+      {{ end }}
