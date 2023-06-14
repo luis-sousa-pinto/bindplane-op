@@ -1,7 +1,6 @@
 import {
   Alert,
   CircularProgress,
-  Grid,
   IconButton,
   Stack,
   ToggleButton,
@@ -69,69 +68,61 @@ export const SnapshotConsole: React.FC<Props> = memo(
 
         {!hideControls && (
           <>
-            <Grid
-              container
+            <Stack
+              direction="row"
+              justifyContent={"space-between"}
               spacing={2}
-              sx={{ width: "100%" }}
-              alignItems={"center"}
               marginY={1}
+              sx={{ width: "100%" }}
             >
-              <Grid
-                item
-                xs={3}
-                sx={{ textAlign: "left" }}
+              {showAgentSelector ? (
+                <AgentSelector
+                  agentID={agentID}
+                  onChange={setAgentID}
+                  onError={setError}
+                />
+              ) : (
+                <div></div>
+              )}
+              <ToggleButtonGroup
+                size={"small"}
+                color="primary"
+                value={pipelineType}
+                exclusive
+                onChange={(_, value) => {
+                  if (value != null) {
+                    setPipelineType(value);
+                  }
+                }}
+                aria-label="Telemetry Type"
               >
-                {showAgentSelector && (
-                  <AgentSelector
-                    agentID={agentID}
-                    onChange={setAgentID}
-                    onError={setError}
-                  />
-                )}
-              </Grid>
-              <Grid item xs={6} sx={{ textAlign: "center" }}>
-                <ToggleButtonGroup
-                  size={"small"}
-                  color="primary"
-                  value={pipelineType}
-                  exclusive
-                  onChange={(_, value) => {
-                    if (value != null) {
-                      setPipelineType(value);
-                    }
-                  }}
-                  aria-label="Telemetry Type"
+                <ToggleButton
+                  sx={{ width: TOGGLE_WIDTH }}
+                  value={PipelineType.Logs}
                 >
-                  <ToggleButton
-                    sx={{ width: TOGGLE_WIDTH }}
-                    value={PipelineType.Logs}
-                  >
-                    Logs
-                  </ToggleButton>
-                  <ToggleButton
-                    sx={{ width: TOGGLE_WIDTH }}
-                    value={PipelineType.Metrics}
-                  >
-                    Metrics
-                  </ToggleButton>
-                  <ToggleButton
-                    sx={{ width: TOGGLE_WIDTH }}
-                    value={PipelineType.Traces}
-                  >
-                    Traces
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Grid>
-              <Grid item xs={3} sx={{ textAlign: "right" }}>
-                <IconButton
-                  color={"primary"}
-                  disabled={loading}
-                  onClick={refresh}
+                  Logs
+                </ToggleButton>
+                <ToggleButton
+                  sx={{ width: TOGGLE_WIDTH }}
+                  value={PipelineType.Metrics}
                 >
-                  <RefreshIcon />
-                </IconButton>
-              </Grid>
-            </Grid>
+                  Metrics
+                </ToggleButton>
+                <ToggleButton
+                  sx={{ width: TOGGLE_WIDTH }}
+                  value={PipelineType.Traces}
+                >
+                  Traces
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <IconButton
+                color={"primary"}
+                disabled={loading}
+                onClick={refresh}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Stack>
 
             {error && (
               <Alert sx={{ marginTop: 2 }} color="error">
