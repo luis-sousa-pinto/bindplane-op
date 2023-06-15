@@ -21,19 +21,8 @@ import (
 	"os"
 
 	"github.com/observiq/bindplane-op/cli"
-	"github.com/observiq/bindplane-op/cli/commands/apply"
-	"github.com/observiq/bindplane-op/cli/commands/delete"
-	"github.com/observiq/bindplane-op/cli/commands/get"
-	"github.com/observiq/bindplane-op/cli/commands/initialize"
-	"github.com/observiq/bindplane-op/cli/commands/install"
-	"github.com/observiq/bindplane-op/cli/commands/label"
-	"github.com/observiq/bindplane-op/cli/commands/profile"
-	"github.com/observiq/bindplane-op/cli/commands/rollout"
 	"github.com/observiq/bindplane-op/cli/commands/root"
 	"github.com/observiq/bindplane-op/cli/commands/serve"
-	"github.com/observiq/bindplane-op/cli/commands/sync"
-	"github.com/observiq/bindplane-op/cli/commands/update"
-	"github.com/observiq/bindplane-op/cli/commands/version"
 	"github.com/observiq/bindplane-op/routes"
 	"github.com/spf13/cobra"
 )
@@ -47,20 +36,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	commands := cli.SharedCommands(factory)
+	commands = append(commands, cli.AddPrerunsToExistingCmd(serve.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun))
 	// Server contains all commands
 	rootCmd.AddCommand(
-		cli.AddPrerunsToExistingCmd(apply.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(get.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(label.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(delete.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(serve.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(profile.Command(factory), factory, cli.AddLoadConfigPrerun),
-		cli.AddPrerunsToExistingCmd(version.Command(factory), factory, cli.AddLoadConfigPrerun),
-		cli.AddPrerunsToExistingCmd(initialize.Command(factory), factory, cli.AddLoadConfigPrerun),
-		cli.AddPrerunsToExistingCmd(install.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(sync.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(update.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
-		cli.AddPrerunsToExistingCmd(rollout.Command(factory), factory, cli.AddLoadConfigPrerun, cli.AddValidationPrerun),
+		commands...,
 	)
 
 	cobra.CheckErr(rootCmd.Execute())
