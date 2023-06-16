@@ -25,7 +25,8 @@ import (
 
 type key int
 
-var updatesContextKey key
+// UpdatesContextKey is the context key for updates
+var UpdatesContextKey key
 
 // UpdatesForContext returns the Updates for this Context. If there is no Updates on the Context, it creates a new
 // Updates and adds it to the Context. It returns either the existing Context or a child Context with new Updates as
@@ -35,10 +36,10 @@ var updatesContextKey key
 // which would result in multiple Updates events. Store implementations should use this function instead of NewUpdates
 // and should only notify if shouldNotify is true.
 func UpdatesForContext(ctx context.Context) (updates BasicEventUpdates, newContext context.Context, shouldNotify bool) {
-	updates, ok := ctx.Value(updatesContextKey).(BasicEventUpdates)
+	updates, ok := ctx.Value(UpdatesContextKey).(BasicEventUpdates)
 	if !ok {
 		updates = NewEventUpdates()
-		ctx = context.WithValue(ctx, updatesContextKey, updates)
+		ctx = context.WithValue(ctx, UpdatesContextKey, updates)
 	}
 	return updates, ctx, !ok
 }

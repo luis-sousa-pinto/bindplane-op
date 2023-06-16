@@ -16,6 +16,7 @@ package broadcast
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/observiq/bindplane-op/eventbus"
@@ -44,7 +45,18 @@ type Options[T any] struct {
 	addAttributes   func(T, MessageAttributes)
 	attributeFilter func(attrs MessageAttributes) bool
 	mergeConfig     *mergeConfig[T]
+	parseFunc       func([]byte) (T, error)
 	unboundedConfig *unboundedConfig[T]
+}
+
+// ParseTo parses bytes to type T
+// Returns and error if no parseFunc is set
+func (b *Options[T]) ParseTo(msg []byte) (T, error) {
+	if b.parseFunc == nil {
+		var zero T
+		return zero, errors.New("no parse func specified")
+	}
+	return b.parseFunc(msg)
 }
 
 // RoutingKey returns the routing key for the message. Returns an empty string if the routingKey is nil.
@@ -118,6 +130,13 @@ func ProducerOpts[T, R any](opts Options[T]) []eventbus.SubscriptionOption[R] {
 
 // Option is used to configure a Broadcast.
 type Option[T any] func(*Options[T])
+
+// WithParseFunc returns a BroadcastOption that adds a parsing function
+func WithParseFunc[T any](parseFunc func([]byte) (T, error)) Option[T] {
+	return func(o *Options[T]) {
+		o.parseFunc = parseFunc
+	}
+}
 
 // WithRouting returns a BroadcastOption that configures the routing key and subscription key for the broadcast.
 func WithRouting[T any](routingKey eventbus.RoutingKey[T, string], subscriptionKey eventbus.SubscriptionKey[string]) Option[T] {

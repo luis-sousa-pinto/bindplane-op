@@ -62,6 +62,7 @@ type BoltstoreCommon interface {
 	ConfigurationsIndex(ctx context.Context) search.Index
 	ZapLogger() *zap.Logger
 	Notify(ctx context.Context, updates BasicEventUpdates)
+	CreateEventUpdate() BasicEventUpdates
 }
 
 // AgentConfiguration returns the configuration that should be applied to an agent.
@@ -161,7 +162,7 @@ func (s *boltstore) DeleteResources(ctx context.Context, resources []model.Resou
 
 // DeleteResourcesCore iterates threw a slice of resources, and removes them from storage by name.
 func (s *BoltstoreCore) DeleteResourcesCore(ctx context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	// track deleteStatuses to return
 	deleteStatuses := make([]model.ResourceStatus, 0)
@@ -208,7 +209,7 @@ func (s *BoltstoreCore) UpsertAgents(ctx context.Context, agentIDs []string, upd
 	defer span.End()
 
 	agents := make([]*model.Agent, 0, len(agentIDs))
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err := s.DB.Update(func(tx *bbolt.Tx) error {
 		bucket, err := s.AgentsBucket(ctx, tx)
@@ -249,7 +250,7 @@ func (s *BoltstoreCore) UpsertAgent(ctx context.Context, id string, updater Agen
 	defer span.End()
 
 	var updatedAgent *model.Agent
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err := s.DB.Update(func(tx *bbolt.Tx) error {
 		bucket, err := s.AgentsBucket(ctx, tx)
@@ -450,7 +451,7 @@ func (s *BoltstoreCore) UpdateConfiguration(ctx context.Context, name string, up
 	ctx, span := tracer.Start(ctx, "store/UpdateConfiguration")
 	defer span.End()
 
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err = s.DB.Update(func(tx *bbolt.Tx) error {
 		config, status, err = UpdateResource(ctx, s, tx, model.KindConfiguration, name, func(config *model.Configuration) error {
@@ -638,7 +639,7 @@ func (s *BoltstoreCore) CleanupDisconnectedAgents(ctx context.Context, since tim
 	}
 
 	var errs error
-	changes := NewEventUpdates()
+	changes := s.CreateEventUpdate()
 
 	for _, agent := range agents {
 		if agent.DisconnectedSince(since) {
@@ -822,7 +823,7 @@ func (s *BoltstoreCore) ResumeRollout(ctx context.Context, configurationName str
 // UpdateRollout updates a rollout in progress. Does nothing if the rollout does not have a RolloutStatusStarted
 // status. Returns the current Configuration with its Rollout status.
 func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string) (updatedConfig *model.Configuration, err error) {
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	// get the configuration
 	err = s.DB.Update(func(tx *bbolt.Tx) error {

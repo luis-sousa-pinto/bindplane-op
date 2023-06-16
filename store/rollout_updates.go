@@ -18,6 +18,7 @@ import (
 	"context"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/eventbus/broadcast"
 	"github.com/observiq/bindplane-op/model"
 	"go.uber.org/zap"
@@ -80,6 +81,11 @@ func BuildRolloutEventBroadcast() BroadCastBuilder[RolloutEventUpdates] {
 	return func(ctx context.Context, options Options, logger *zap.Logger, maxEventsToMerge int) broadcast.Broadcast[RolloutEventUpdates] {
 		return broadcast.NewLocalBroadcast(ctx, logger,
 			broadcast.WithUnboundedChannel[RolloutEventUpdates](100*time.Millisecond),
+			broadcast.WithParseFunc(func(data []byte) (RolloutEventUpdates, error) {
+				var updates RolloutUpdates
+				err := jsoniter.Unmarshal(data, &updates)
+				return &updates, err
+			}),
 			broadcast.WithMerge(func(into, single RolloutEventUpdates) bool {
 				return into.Merge(single)
 			}, 100*time.Millisecond, maxEventsToMerge),
