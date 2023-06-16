@@ -1,4 +1,4 @@
-import { FormHelperText, TextField } from "@mui/material";
+import { FormHelperText, Stack, TextField } from "@mui/material";
 import { isFunction } from "lodash";
 import { ChangeEvent, memo } from "react";
 import { ParamInputProps } from "./ParameterInput";
@@ -44,6 +44,15 @@ const IntParamInputComponent: React.FC<ParamInputProps<number>> = ({
             <FormHelperText sx={{ marginLeft: 0 }} component="span" error>
               {errors[definition.name]}
             </FormHelperText>
+          )}
+          {definition.documentation && (
+            <Stack component={"span"}>
+              {definition.documentation.map((d) => (
+                <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
+                  {d.text}
+                </a>
+              ))}
+            </Stack>
           )}
           <FormHelperText sx={{ marginLeft: 0 }} component="span">
             {definition.description}
