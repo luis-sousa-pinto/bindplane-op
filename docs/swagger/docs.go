@@ -1859,6 +1859,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "download": {
+                    "description": "Map of platform to download URL and hash",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/model.AgentDownload"
@@ -1868,6 +1869,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "installer": {
+                    "description": "Map of platform to installer script URL",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/model.AgentInstaller"
