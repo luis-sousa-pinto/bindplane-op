@@ -9,20 +9,28 @@ metadata:
 spec:
   version: 0.0.1
   parameters:
-    - name: telemetry_types
-      label: Enable Telemetry
-      type: enums
-      description: "Select which types of telemetry you'd like to enable this processor for."
-      validValues: ["Metrics", "Logs", "Traces"]
-      default: ["Metrics", "Logs", "Traces"]
+    # Logs
+    - name: enable_logs
+      label: Enable Logs
+      type: bool
+      default: true
+
+    - name: log_resource_attributes
+      label: Resource Keys
+      description: "List of resource fields to add from telemetry data."
+      type: map
       options:
         gridColumns: 12
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: resource_action
+    - name: log_resource_action
       label: Resource Action
       type: enum
       description: |
-        insert: Add resource attribute if it does not exist.
+        insert: Add resource if it does not exist.
         update: Update existing value.
         upsert: Insert or update.
       default: upsert
@@ -30,19 +38,26 @@ spec:
         - insert
         - update
         - upsert
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: resource_attributes
-      label: Resource Attributes
-      description: "List of resource attribute fields to add from telemetry data."
+    - name: log_attributes
+      label: Attribute Keys
       type: map
       options:
         gridColumns: 12
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: attributes_action
+    - name: log_attributes_action
       label: Attribute Action
       type: enum
       description: |
-        insert: Add resource attribute if it does not exist.
+        insert: Add attribute if it does not exist.
         update: Update existing value.
         upsert: Insert or update.
       default: upsert
@@ -50,18 +65,27 @@ spec:
         - insert
         - update
         - upsert
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: attributes
-      label: Attributes
+    - name: log_body
+      label: Body Keys
+      description: "List of body keys to add to log data."
       type: map
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
       options:
         gridColumns: 12
 
-    - name: body_action
+    - name: log_body_action
       label: Body Action
       type: enum
       description: |
-        insert: Add resource attribute if it does not exist.
+        insert: Add body key if it does not exist.
         update: Update existing value.
         upsert: Insert or update.
       default: upsert
@@ -70,62 +94,173 @@ spec:
         - update
         - upsert
       relevantIf:
-        - name: telemetry_types
-          operator: containsAny
-          value: ["Logs"]
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: body
-      label: Body Fields
-      description: "List of body fields to add to log data."
+    # Metrics
+    - name: enable_metrics
+      label: Enable Metrics
+      type: bool
+      default: true
+
+    - name: metric_resource_attributes
+      label: Resource Keys
+      description: "List of resource fields to add from telemetry data."
       type: map
-      relevantIf:
-        - name: telemetry_types
-          operator: containsAny
-          value: ["Logs"]
       options:
         gridColumns: 12
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: metric_resource_action
+      label: Resource Action
+      type: enum
+      description: |
+        insert: Add resource if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: metric_attributes
+      label: Attribute Keys
+      type: map
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: metric_attributes_action
+      label: Attribute Action
+      type: enum
+      description: |
+        insert: Add attribute if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    # Trace
+    - name: enable_traces
+      label: Enable Traces
+      type: bool
+      default: true
+
+    - name: traces_resource_attributes
+      label: Resource Keys
+      description: "List of resource fields to add from telemetry data."
+      type: map
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
+    - name: traces_resource_action
+      label: Resource Action
+      type: enum
+      description: |
+        insert: Add resource if it does not exist.
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
+    - name: traces_attributes
+      label: Attribute Keys
+      type: map
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
+    - name: traces_attributes_action
+      label: Attribute Action
+      type: enum
+      description: |
+        insert: Add attribute if it does not exist. 
+        update: Update existing value.
+        upsert: Insert or update.
+      default: upsert
+      validValues:
+        - insert
+        - update
+        - upsert
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
 
   logs:
     processors: |
-      {{ if has "Logs" .telemetry_types }}
+      {{ if .enable_logs }}
         - transform/logs:
             error_mode: ignore
             log_statements:
             - context: log
               statements:
-                {{- if index . "attributes" }}
+                {{- if index . "log_attributes" }}
                   {{- $condition := "!=" }}
-                  {{- if eq $.attributes_action "insert" }}
+                  {{- if eq $.log_attributes_action "insert" }}
                     {{- $condition = "==" }}
                   {{- end }}
-                  {{- range $k, $v := .attributes }}
-                    {{- if ne $.attributes_action "upsert" }}
+                  {{- range $k, $v := .log_attributes }}
+                    {{- if ne $.log_attributes_action "upsert" }}
                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
                     {{- else }}
                       - 'set(attributes["{{ $k }}"], "{{ $v }}")'
                     {{- end }}
                   {{- end }}
                 {{- end }}
-                {{- if index . "resource_attributes" }}
+                {{- if index . "log_resource_attributes" }}
                   {{- $condition := "!=" }}
-                  {{- if eq $.resource_action "insert" }}
+                  {{- if eq $.log_resource_action "insert" }}
                     {{- $condition = "==" }}
                   {{- end }}
-                  {{- range $k, $v := .resource_attributes }}
-                    {{- if ne $.resource_action "upsert" }}
+                  {{- range $k, $v := .log_resource_attributes }}
+                    {{- if ne $.log_resource_action "upsert" }}
                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
                     {{- else }}
                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
                     {{- end }}
                   {{- end }}
                 {{- end }}
-                {{- if index . "body" }}
+                {{- if index . "log_body" }}
                   {{- $condition := "!=" }}
-                  {{- if eq $.body_action "insert" }}
+                  {{- if eq $.log_body_action "insert" }}
                     {{- $condition = "==" }}
                   {{- end }}
-                  {{- range $k, $v := .body }}
-                    {{- if ne $.body_action "upsert" }}
+                  {{- range $k, $v := .log_body }}
+                    {{- if ne $.log_body_action "upsert" }}
                       - 'set(body["{{ $k }}"], "{{ $v }}") where body["{{ $k }}"] {{ $condition }} nil'
                     {{- else }}
                       - 'set(body["{{ $k }}"], "{{ $v }}")'
@@ -136,32 +271,32 @@ spec:
 
   metrics:
     processors: |
-      {{ if has "Metrics" .telemetry_types }}
+      {{ if .enable_metrics }}
         - transform/metrics:
             error_mode: ignore
             metric_statements:
             - context: datapoint
               statements:
-                {{- if index . "attributes" }}
+                {{- if index . "metric_attributes" }}
                   {{- $condition := "!=" }}
-                  {{- if eq $.attributes_action "insert" }}
+                  {{- if eq $.metric_attributes_action "insert" }}
                     {{- $condition = "==" }}
                   {{- end }}
-                  {{- range $k, $v := .attributes }}
-                    {{- if ne $.attributes_action "upsert" }}
+                  {{- range $k, $v := .metric_attributes }}
+                    {{- if ne $.metric_attributes_action "upsert" }}
                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
                     {{- else }}
                       - 'set(attributes["{{ $k }}"], "{{ $v }}")'
                     {{- end }}
                   {{- end }}
                 {{- end }}
-                {{- if index . "resource_attributes" }}
+                {{- if index . "metric_resource_attributes" }}
                   {{- $condition := "!=" }}
-                  {{- if eq $.resource_action "insert" }}
+                  {{- if eq $.metric_resource_action "insert" }}
                     {{- $condition = "==" }}
                   {{- end }}
-                  {{- range $k, $v := .resource_attributes }}
-                    {{- if ne $.resource_action "upsert" }}
+                  {{- range $k, $v := .metric_resource_attributes }}
+                    {{- if ne $.metric_resource_action "upsert" }}
                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
                     {{- else }}
                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
@@ -172,36 +307,36 @@ spec:
 
   traces:
     processors: |
-      {{ if has "Traces" .telemetry_types }}
-        - transform/traces:
-            error_mode: ignore
-            trace_statements:
-            - context: span
-              statements:
-                {{- if index . "attributes" }}
-                  {{- $condition := "!=" }}
-                  {{- if eq $.attributes_action "insert" }}
-                    {{- $condition = "==" }}
-                  {{- end }}
-                  {{- range $k, $v := .attributes }}
-                    {{- if ne $.attributes_action "upsert" }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
-                    {{- else }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
-                    {{- end }}
-                  {{- end }}
-                {{- end }}
-                {{- if index . "resource_attributes" }}
-                  {{- $condition := "!=" }}
-                  {{- if eq $.resource_action "insert" }}
-                    {{- $condition = "==" }}
-                  {{- end }}
-                  {{- range $k, $v := .resource_attributes }}
-                    {{- if ne $.resource_action "upsert" }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
-                    {{- else }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
-                    {{- end }}
-                  {{- end }}
-                {{- end }}
-      {{ end }}
+      {{ if .enable_traces }}
+         - transform/traces:
+             error_mode: ignore
+             trace_statements:
+             - context: span
+               statements:
+                 {{- if index . "traces_attributes" }}
+                   {{- $condition := "!=" }}
+                   {{- if eq $.traces_attributes_action "insert" }}
+                     {{- $condition = "==" }}
+                   {{- end }}
+                   {{- range $k, $v := .traces_attributes }}
+                     {{- if ne $.traces_attributes_action "upsert" }}
+                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                     {{- else }}
+                       - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                     {{- end }}
+                   {{- end }}
+                 {{- end }}
+                 {{- if index . "traces_resource_attributes" }}
+                   {{- $condition := "!=" }}
+                   {{- if eq $.traces_resource_action "insert" }}
+                     {{- $condition = "==" }}
+                   {{- end }}
+                   {{- range $k, $v := .traces_resource_attributes }}
+                     {{- if ne $.traces_resource_action "upsert" }}
+                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                     {{- else }}
+                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                     {{- end }}
+                   {{- end }}
+                 {{- end }}
+       {{ end }}
