@@ -38,7 +38,7 @@ type RolloutEventUpdates interface {
 
 // RolloutUpdates is a basic implementation of the RolloutEventUpdates interface
 type RolloutUpdates struct {
-	updates Events[*model.ConfigurationVersions]
+	UpdatesField Events[*model.ConfigurationVersions] `json:"updates"`
 }
 
 // NewRolloutUpdates creates a new RolloutUpdates
@@ -51,28 +51,28 @@ func NewRolloutUpdates(_ context.Context, agentEvents Events[*model.Agent]) Roll
 	}
 
 	return &RolloutUpdates{
-		updates: events,
+		UpdatesField: events,
 	}
 }
 
 // Updates retrieves the agent updates
 func (r *RolloutUpdates) Updates() Events[*model.ConfigurationVersions] {
-	return r.updates
+	return r.UpdatesField
 }
 
 // Empty returns true if the updates are empty.
 func (r *RolloutUpdates) Empty() bool {
-	return r.updates.Empty()
+	return r.UpdatesField.Empty()
 }
 
 // Merge merges another set of updates into this one, returns true
 // if it was able to merge any updates.
 func (r *RolloutUpdates) Merge(other RolloutEventUpdates) bool {
-	if !r.updates.CanSafelyMerge(other.Updates()) {
+	if !r.UpdatesField.CanSafelyMerge(other.Updates()) {
 		return false
 	}
 
-	r.updates.Merge(other.Updates())
+	r.UpdatesField.Merge(other.Updates())
 	return true
 }
 

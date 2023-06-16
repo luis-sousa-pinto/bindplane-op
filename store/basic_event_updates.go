@@ -93,15 +93,15 @@ type BasicEventUpdates interface {
 
 // EventUpdates is a collection of events created by a store operation.
 type EventUpdates struct {
-	agents           Events[*model.Agent]
-	agentVersions    Events[*model.AgentVersion]
-	sources          Events[*model.Source]
-	sourceTypes      Events[*model.SourceType]
-	processors       Events[*model.Processor]
-	processorTypes   Events[*model.ProcessorType]
-	destinations     Events[*model.Destination]
-	destinationTypes Events[*model.DestinationType]
-	configurations   Events[*model.Configuration]
+	AgentsField           Events[*model.Agent]           `json:"agents"`
+	AgentVersionsField    Events[*model.AgentVersion]    `json:"agentVersions"`
+	SourcesField          Events[*model.Source]          `json:"sources"`
+	SourceTypesField      Events[*model.SourceType]      `json:"sourceTypes"`
+	ProcessorsField       Events[*model.Processor]       `json:"processors"`
+	ProcessorTypesField   Events[*model.ProcessorType]   `json:"processorTypes"`
+	DestinationsField     Events[*model.Destination]     `json:"destinations"`
+	DestinationTypesField Events[*model.DestinationType] `json:"destinationTypes"`
+	ConfigurationsField   Events[*model.Configuration]   `json:"configurations"`
 
 	// transitiveUpdates is just used to track which resources need to have their resources updated
 	transitiveUpdates []model.Resource
@@ -114,128 +114,128 @@ func (u *EventUpdates) TransitiveUpdates() []model.Resource {
 
 // Agents returns a collection of agent events.
 func (u *EventUpdates) Agents() Events[*model.Agent] {
-	return u.agents
+	return u.AgentsField
 }
 
 // AgentVersions returns a collection of agent version events.
 func (u *EventUpdates) AgentVersions() Events[*model.AgentVersion] {
-	return u.agentVersions
+	return u.AgentVersionsField
 }
 
 // Sources returns a collection of source events.
 func (u *EventUpdates) Sources() Events[*model.Source] {
-	return u.sources
+	return u.SourcesField
 }
 
 // SourceTypes returns a collection of source type events.
 func (u *EventUpdates) SourceTypes() Events[*model.SourceType] {
-	return u.sourceTypes
+	return u.SourceTypesField
 }
 
 // Processors returns a collection of processor events.
 func (u *EventUpdates) Processors() Events[*model.Processor] {
-	return u.processors
+	return u.ProcessorsField
 }
 
 // ProcessorTypes returns a collection of processor type events.
 func (u *EventUpdates) ProcessorTypes() Events[*model.ProcessorType] {
-	return u.processorTypes
+	return u.ProcessorTypesField
 }
 
 // Destinations returns a collection of destination events.
 func (u *EventUpdates) Destinations() Events[*model.Destination] {
-	return u.destinations
+	return u.DestinationsField
 }
 
 // DestinationTypes returns a collection of destination type events.
 func (u *EventUpdates) DestinationTypes() Events[*model.DestinationType] {
-	return u.destinationTypes
+	return u.DestinationTypesField
 }
 
 // Configurations returns a collection of configuration events.
 func (u *EventUpdates) Configurations() Events[*model.Configuration] {
-	return u.configurations
+	return u.ConfigurationsField
 }
 
 // IncludeAgent will add an agent event to Updates.
 func (u *EventUpdates) IncludeAgent(agent *model.Agent, eventType EventType) {
-	if u.agents == nil {
-		u.agents = NewEvents[*model.Agent]()
+	if u.AgentsField == nil {
+		u.AgentsField = NewEvents[*model.Agent]()
 	}
 
-	u.agents.Include(agent, eventType)
+	u.AgentsField.Include(agent, eventType)
 }
 
 // IncludeAgentVersion will add an agent version event to Updates.
 func (u *EventUpdates) IncludeAgentVersion(agentVersion *model.AgentVersion, eventType EventType) {
-	if u.agentVersions == nil {
-		u.agentVersions = NewEvents[*model.AgentVersion]()
+	if u.AgentVersionsField == nil {
+		u.AgentVersionsField = NewEvents[*model.AgentVersion]()
 	}
 
-	u.agentVersions.Include(agentVersion, eventType)
+	u.AgentVersionsField.Include(agentVersion, eventType)
 }
 
 // IncludeSource will add a source event to Updates.
 func (u *EventUpdates) IncludeSource(source *model.Source, eventType EventType) {
-	if u.sources == nil {
-		u.sources = NewEvents[*model.Source]()
+	if u.SourcesField == nil {
+		u.SourcesField = NewEvents[*model.Source]()
 	}
 
-	u.sources.Include(source, eventType)
+	u.SourcesField.Include(source, eventType)
 }
 
 // IncludeSourceType will add a source type event to Updates.
 func (u *EventUpdates) IncludeSourceType(sourceType *model.SourceType, eventType EventType) {
-	if u.sourceTypes == nil {
-		u.sourceTypes = NewEvents[*model.SourceType]()
+	if u.SourceTypesField == nil {
+		u.SourceTypesField = NewEvents[*model.SourceType]()
 	}
 
-	u.sourceTypes.Include(sourceType, eventType)
+	u.SourceTypesField.Include(sourceType, eventType)
 }
 
 // IncludeProcessor will add a processor event to Updates.
 func (u *EventUpdates) IncludeProcessor(processor *model.Processor, eventType EventType) {
-	if u.processors == nil {
-		u.processors = NewEvents[*model.Processor]()
+	if u.ProcessorsField == nil {
+		u.ProcessorsField = NewEvents[*model.Processor]()
 	}
 
-	u.processors.Include(processor, eventType)
+	u.ProcessorsField.Include(processor, eventType)
 }
 
 // IncludeProcessorType will add a processor type event to Updates.
 func (u *EventUpdates) IncludeProcessorType(processorType *model.ProcessorType, eventType EventType) {
-	if u.processorTypes == nil {
-		u.processorTypes = NewEvents[*model.ProcessorType]()
+	if u.ProcessorTypesField == nil {
+		u.ProcessorTypesField = NewEvents[*model.ProcessorType]()
 	}
 
-	u.processorTypes.Include(processorType, eventType)
+	u.ProcessorTypesField.Include(processorType, eventType)
 }
 
 // IncludeDestination will add a destination event to Updates.
 func (u *EventUpdates) IncludeDestination(destination *model.Destination, eventType EventType) {
-	if u.destinations == nil {
-		u.destinations = NewEvents[*model.Destination]()
+	if u.DestinationsField == nil {
+		u.DestinationsField = NewEvents[*model.Destination]()
 	}
 
-	u.destinations.Include(destination, eventType)
+	u.DestinationsField.Include(destination, eventType)
 }
 
 // IncludeDestinationType will add a destination type event to Updates.
 func (u *EventUpdates) IncludeDestinationType(destinationType *model.DestinationType, eventType EventType) {
-	if u.destinationTypes == nil {
-		u.destinationTypes = NewEvents[*model.DestinationType]()
+	if u.DestinationTypesField == nil {
+		u.DestinationTypesField = NewEvents[*model.DestinationType]()
 	}
 
-	u.destinationTypes.Include(destinationType, eventType)
+	u.DestinationTypesField.Include(destinationType, eventType)
 }
 
 // IncludeConfiguration will add a configuration event to Updates.
 func (u *EventUpdates) IncludeConfiguration(configuration *model.Configuration, eventType EventType) {
-	if u.configurations == nil {
-		u.configurations = NewEvents[*model.Configuration]()
+	if u.ConfigurationsField == nil {
+		u.ConfigurationsField = NewEvents[*model.Configuration]()
 	}
 
-	u.configurations.Include(configuration, eventType)
+	u.ConfigurationsField.Include(configuration, eventType)
 }
 
 // IncludeResource will add a resource event to Updates.
@@ -268,75 +268,75 @@ func (u *EventUpdates) Empty() bool {
 
 // Size returns the sum of all events.
 func (u *EventUpdates) Size() int {
-	return len(u.agents) +
-		len(u.agentVersions) +
-		len(u.sources) +
-		len(u.sourceTypes) +
-		len(u.processors) +
-		len(u.processorTypes) +
-		len(u.destinations) +
-		len(u.destinationTypes) +
-		len(u.configurations)
+	return len(u.AgentsField) +
+		len(u.AgentVersionsField) +
+		len(u.SourcesField) +
+		len(u.SourceTypesField) +
+		len(u.ProcessorsField) +
+		len(u.ProcessorTypesField) +
+		len(u.DestinationsField) +
+		len(u.DestinationTypesField) +
+		len(u.ConfigurationsField)
 }
 
 // Merge merges another set of updates into this one, returns true
 // if it was able to merge any updates.
 func (u *EventUpdates) Merge(other BasicEventUpdates) bool {
 	safe :=
-		u.agents.CanSafelyMerge(other.Agents()) &&
-			u.agentVersions.CanSafelyMerge(other.AgentVersions()) &&
-			u.sources.CanSafelyMerge(other.Sources()) &&
-			u.sourceTypes.CanSafelyMerge(other.SourceTypes()) &&
-			u.processors.CanSafelyMerge(other.Processors()) &&
-			u.processorTypes.CanSafelyMerge(other.ProcessorTypes()) &&
-			u.destinations.CanSafelyMerge(other.Destinations()) &&
-			u.destinationTypes.CanSafelyMerge(other.DestinationTypes()) &&
-			u.configurations.CanSafelyMerge(other.Configurations())
+		u.AgentsField.CanSafelyMerge(other.Agents()) &&
+			u.AgentVersionsField.CanSafelyMerge(other.AgentVersions()) &&
+			u.SourcesField.CanSafelyMerge(other.Sources()) &&
+			u.SourceTypesField.CanSafelyMerge(other.SourceTypes()) &&
+			u.ProcessorsField.CanSafelyMerge(other.Processors()) &&
+			u.ProcessorTypesField.CanSafelyMerge(other.ProcessorTypes()) &&
+			u.DestinationsField.CanSafelyMerge(other.Destinations()) &&
+			u.DestinationTypesField.CanSafelyMerge(other.DestinationTypes()) &&
+			u.ConfigurationsField.CanSafelyMerge(other.Configurations())
 
 	if !safe {
 		return false
 	}
 
-	u.agents.Merge(other.Agents())
-	u.agentVersions.Merge(other.AgentVersions())
-	u.sources.Merge(other.Sources())
-	u.sourceTypes.Merge(other.SourceTypes())
-	u.processors.Merge(other.Processors())
-	u.processorTypes.Merge(other.ProcessorTypes())
-	u.destinations.Merge(other.Destinations())
-	u.destinationTypes.Merge(other.DestinationTypes())
-	u.configurations.Merge(other.Configurations())
+	u.AgentsField.Merge(other.Agents())
+	u.AgentVersionsField.Merge(other.AgentVersions())
+	u.SourcesField.Merge(other.Sources())
+	u.SourceTypesField.Merge(other.SourceTypes())
+	u.ProcessorsField.Merge(other.Processors())
+	u.ProcessorTypesField.Merge(other.ProcessorTypes())
+	u.DestinationsField.Merge(other.Destinations())
+	u.DestinationTypesField.Merge(other.DestinationTypes())
+	u.ConfigurationsField.Merge(other.Configurations())
 	return true
 }
 
 // HasSourceTypeEvents returns true if any source type events exist.
 func (u *EventUpdates) HasSourceTypeEvents() bool {
-	return !u.sourceTypes.Empty()
+	return !u.SourceTypesField.Empty()
 }
 
 // HasProcessorTypeEvents returns true if any processor type events exist.
 func (u *EventUpdates) HasProcessorTypeEvents() bool {
-	return !u.processorTypes.Empty()
+	return !u.ProcessorTypesField.Empty()
 }
 
 // HasDestinationTypeEvents returns true if any destination type events exist.
 func (u *EventUpdates) HasDestinationTypeEvents() bool {
-	return !u.destinationTypes.Empty()
+	return !u.DestinationTypesField.Empty()
 }
 
 // HasSourceEvents returns true if any source events exist.
 func (u *EventUpdates) HasSourceEvents() bool {
-	return !u.sources.Empty()
+	return !u.SourcesField.Empty()
 }
 
 // HasProcessorEvents returns true if any processor events exist.
 func (u *EventUpdates) HasProcessorEvents() bool {
-	return !u.processors.Empty()
+	return !u.ProcessorsField.Empty()
 }
 
 // HasDestinationEvents returns true if any destination events exist.
 func (u *EventUpdates) HasDestinationEvents() bool {
-	return !u.destinations.Empty()
+	return !u.DestinationsField.Empty()
 }
 
 // CouldAffectProcessors returns true if the updates could affect processors.
@@ -368,7 +368,7 @@ func (u *EventUpdates) CouldAffectConfigurations() bool {
 
 // AffectsSource returns true if the updates affect the given source.
 func (u *EventUpdates) AffectsSource(source *model.Source) bool {
-	if u.sourceTypes.Contains(source.Spec.Type, EventTypeUpdate) {
+	if u.SourceTypesField.Contains(source.Spec.Type, EventTypeUpdate) {
 		return true
 	}
 	return u.AffectsResourceProcessors(source.Spec.Processors)
@@ -376,13 +376,13 @@ func (u *EventUpdates) AffectsSource(source *model.Source) bool {
 
 // AffectsProcessor returns true if the updates affect the given processor.
 func (u *EventUpdates) AffectsProcessor(processor *model.Processor) bool {
-	return u.processorTypes.Contains(processor.Spec.Type, EventTypeUpdate)
+	return u.ProcessorTypesField.Contains(processor.Spec.Type, EventTypeUpdate)
 }
 
 // AffectsDestination returns true if the updates affect the given destination.
 func (u *EventUpdates) AffectsDestination(destination *model.Destination) bool {
 	// DestinationType
-	if u.destinationTypes.Contains(destination.Spec.Type, EventTypeUpdate) {
+	if u.DestinationTypesField.Contains(destination.Spec.Type, EventTypeUpdate) {
 		return true
 	}
 	return u.AffectsResourceProcessors(destination.Spec.Processors)
@@ -391,10 +391,10 @@ func (u *EventUpdates) AffectsDestination(destination *model.Destination) bool {
 // AffectsResourceProcessors returns true if the updates affect any of the given resource processors.
 func (u *EventUpdates) AffectsResourceProcessors(processors []model.ResourceConfiguration) bool {
 	for _, processor := range processors {
-		if u.processors.Contains(processor.Name, EventTypeUpdate) {
+		if u.ProcessorsField.Contains(processor.Name, EventTypeUpdate) {
 			return true
 		}
-		if u.processorTypes.Contains(processor.Type, EventTypeUpdate) {
+		if u.ProcessorTypesField.Contains(processor.Type, EventTypeUpdate) {
 			return true
 		}
 	}
@@ -404,19 +404,19 @@ func (u *EventUpdates) AffectsResourceProcessors(processors []model.ResourceConf
 // AffectsConfiguration returns true if the updates affect the given configuration.
 func (u *EventUpdates) AffectsConfiguration(configuration *model.Configuration) bool {
 	for _, source := range configuration.Spec.Sources {
-		if u.sources.ContainsKey(source.Name) {
+		if u.SourcesField.ContainsKey(source.Name) {
 			return true
 		}
-		if u.sourceTypes.ContainsKey(source.Type) {
+		if u.SourceTypesField.ContainsKey(source.Type) {
 			return true
 		}
 	}
 
 	for _, destination := range configuration.Spec.Destinations {
-		if u.destinations.ContainsKey(destination.Name) {
+		if u.DestinationsField.ContainsKey(destination.Name) {
 			return true
 		}
-		if u.destinationTypes.ContainsKey(destination.Type) {
+		if u.DestinationTypesField.ContainsKey(destination.Type) {
 			return true
 		}
 	}
@@ -426,7 +426,7 @@ func (u *EventUpdates) AffectsConfiguration(configuration *model.Configuration) 
 // AddAffectedSources will add updates for Sources that are affected by other resource updates.
 func (u *EventUpdates) AddAffectedSources(sources []*model.Source) {
 	for _, source := range sources {
-		if u.sources.Contains(source.Name(), EventTypeUpdate) {
+		if u.SourcesField.Contains(source.Name(), EventTypeUpdate) {
 			continue
 		}
 
@@ -440,7 +440,7 @@ func (u *EventUpdates) AddAffectedSources(sources []*model.Source) {
 // AddAffectedProcessors will add updates for Processors that are affected by other resource updates.
 func (u *EventUpdates) AddAffectedProcessors(processors []*model.Processor) {
 	for _, processor := range processors {
-		if u.processors.Contains(processor.Name(), EventTypeUpdate) {
+		if u.ProcessorsField.Contains(processor.Name(), EventTypeUpdate) {
 			continue
 		}
 
@@ -454,7 +454,7 @@ func (u *EventUpdates) AddAffectedProcessors(processors []*model.Processor) {
 // AddAffectedDestinations will add updates for Destinations that are affected by other resource updates.
 func (u *EventUpdates) AddAffectedDestinations(destinations []*model.Destination) {
 	for _, destination := range destinations {
-		if u.destinations.Contains(destination.Name(), EventTypeUpdate) {
+		if u.DestinationsField.Contains(destination.Name(), EventTypeUpdate) {
 			continue
 		}
 
@@ -468,7 +468,7 @@ func (u *EventUpdates) AddAffectedDestinations(destinations []*model.Destination
 // AddAffectedConfigurations will add updates for Configurations that are affected by other resource updates.
 func (u *EventUpdates) AddAffectedConfigurations(configurations []*model.Configuration) {
 	for _, configuration := range configurations {
-		if u.configurations.Contains(configuration.Name(), EventTypeUpdate) {
+		if u.ConfigurationsField.Contains(configuration.Name(), EventTypeUpdate) {
 			continue
 		}
 
@@ -512,15 +512,15 @@ func MergeUpdates(into, from BasicEventUpdates) bool {
 func NewEventUpdates() BasicEventUpdates {
 	// TODO: optimize allocate as needed
 	return &EventUpdates{
-		agents:           NewEvents[*model.Agent](),
-		agentVersions:    NewEvents[*model.AgentVersion](),
-		sources:          NewEvents[*model.Source](),
-		sourceTypes:      NewEvents[*model.SourceType](),
-		processors:       NewEvents[*model.Processor](),
-		processorTypes:   NewEvents[*model.ProcessorType](),
-		destinations:     NewEvents[*model.Destination](),
-		destinationTypes: NewEvents[*model.DestinationType](),
-		configurations:   NewEvents[*model.Configuration](),
+		AgentsField:           NewEvents[*model.Agent](),
+		AgentVersionsField:    NewEvents[*model.AgentVersion](),
+		SourcesField:          NewEvents[*model.Source](),
+		SourceTypesField:      NewEvents[*model.SourceType](),
+		ProcessorsField:       NewEvents[*model.Processor](),
+		ProcessorTypesField:   NewEvents[*model.ProcessorType](),
+		DestinationsField:     NewEvents[*model.Destination](),
+		DestinationTypesField: NewEvents[*model.DestinationType](),
+		ConfigurationsField:   NewEvents[*model.Configuration](),
 	}
 }
 
