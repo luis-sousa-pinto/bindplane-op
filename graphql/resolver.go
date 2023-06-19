@@ -527,7 +527,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case logs := <-result:
-			signals.Logs = record.ConvertLogs(logs)
+			signals.Logs = record.ConvertLogs(logs.OTLP())
 		}
 	case otel.Metrics:
 		id, result, cancel := r.Bindplane.Relayers().Metrics().AwaitResult()
@@ -540,7 +540,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case metrics := <-result:
-			signals.Metrics = record.ConvertMetrics(ctx, metrics)
+			signals.Metrics = record.ConvertMetrics(ctx, metrics.OTLP())
 		}
 	case otel.Traces:
 		id, result, cancel := r.Bindplane.Relayers().Traces().AwaitResult()
@@ -553,7 +553,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case traces := <-result:
-			signals.Traces = record.ConvertTraces(traces)
+			signals.Traces = record.ConvertTraces(traces.OTLP())
 		}
 	}
 
@@ -788,10 +788,10 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		if position != string(model.MeasurementPositionDestinationAfterProcessors) {
 			continue
 		}
-		
+
 		splitStrs := strings.Split(resourceName, "-")
 		if len(splitStrs) > 1 {
-			splitStrs = splitStrs[0:len(splitStrs)-1]
+			splitStrs = splitStrs[0 : len(splitStrs)-1]
 		}
 		resourceName = strings.Join(splitStrs, "-")
 
