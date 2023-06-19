@@ -16,10 +16,13 @@
 package model
 
 import (
+	"database/sql/driver"
+	"errors"
 	"sort"
 	"strings"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	modelSearch "github.com/observiq/bindplane-op/model/search"
 	"github.com/observiq/bindplane-op/util/semver"
 )
@@ -89,6 +92,21 @@ type AgentUpgrade struct {
 
 	// Error is set if there were errors upgrading the agent
 	Error string `json:"error,omitempty" yaml:"error,omitempty"`
+}
+
+// Value is used to translate to a JSONB field for postgres storage
+func (s AgentUpgrade) Value() (driver.Value, error) {
+	return jsoniter.Marshal(s)
+}
+
+// Scan is used to translate from a JSONB field in postgres to AgentUpgrade
+func (s *AgentUpgrade) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return jsoniter.Unmarshal(b, &s)
 }
 
 // AgentFeatures is a bitmask of features supported by the Agent, usually based on its version.
