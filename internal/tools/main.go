@@ -21,6 +21,7 @@ import (
 	_ "github.com/google/addlicense"
 	_ "github.com/goreleaser/goreleaser"
 	_ "github.com/mgechev/revive"
+	_ "github.com/nbutton23/zxcvbn-go" // required by gosec
 	_ "github.com/ory/go-acc"
 	_ "github.com/securego/gosec/v2"
 	_ "github.com/securego/gosec/v2/report/sarif" // required by gosec

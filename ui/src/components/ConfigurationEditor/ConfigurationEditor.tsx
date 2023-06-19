@@ -12,7 +12,7 @@ import { useState } from "react";
 import { gql } from "@apollo/client";
 import { useGetConfigurationVersionsQuery } from "../../graphql/generated";
 import { useSnackbar } from "notistack";
-import { VersionsData } from "./util";
+import { VersionsData } from "./versions-data";
 import { RolloutProgress } from "../RolloutProgress";
 import { OtelConfigEditor } from "../OtelConfigEditor/OtelConfigEditor";
 import { nameAndVersion } from "../../utils/version-helpers";

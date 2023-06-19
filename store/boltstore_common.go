@@ -17,7 +17,6 @@ package store
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -26,6 +25,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/hashicorp/go-multierror"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/eventbus"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/otlp/record"
@@ -62,6 +62,7 @@ type BoltstoreCommon interface {
 	ConfigurationsIndex(ctx context.Context) search.Index
 	ZapLogger() *zap.Logger
 	Notify(ctx context.Context, updates BasicEventUpdates)
+	CreateEventUpdate() BasicEventUpdates
 }
 
 // AgentConfiguration returns the configuration that should be applied to an agent.
@@ -117,7 +118,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			configuration := &model.Configuration{}
-			if err := json.Unmarshal(v, configuration); err != nil {
+			if err := jsoniter.Unmarshal(v, configuration); err != nil {
 				s.ZapLogger().Error("unable to unmarshal configuration, ignoring", zap.Error(err))
 				continue
 			}
@@ -161,7 +162,7 @@ func (s *boltstore) DeleteResources(ctx context.Context, resources []model.Resou
 
 // DeleteResourcesCore iterates threw a slice of resources, and removes them from storage by name.
 func (s *BoltstoreCore) DeleteResourcesCore(ctx context.Context, resources []model.Resource) ([]model.ResourceStatus, error) {
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	// track deleteStatuses to return
 	deleteStatuses := make([]model.ResourceStatus, 0)
@@ -208,7 +209,7 @@ func (s *BoltstoreCore) UpsertAgents(ctx context.Context, agentIDs []string, upd
 	defer span.End()
 
 	agents := make([]*model.Agent, 0, len(agentIDs))
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err := s.DB.Update(func(tx *bbolt.Tx) error {
 		bucket, err := s.AgentsBucket(ctx, tx)
@@ -249,7 +250,7 @@ func (s *BoltstoreCore) UpsertAgent(ctx context.Context, id string, updater Agen
 	defer span.End()
 
 	var updatedAgent *model.Agent
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err := s.DB.Update(func(tx *bbolt.Tx) error {
 		bucket, err := s.AgentsBucket(ctx, tx)
@@ -305,7 +306,7 @@ func (s *BoltstoreCore) Agents(ctx context.Context, options ...QueryOption) ([]*
 
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			agent := &model.Agent{}
-			if err := json.Unmarshal(v, agent); err != nil {
+			if err := jsoniter.Unmarshal(v, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -349,7 +350,7 @@ func (s *BoltstoreCore) agentsByID(ctx context.Context, ids []string, opts Query
 				return nil
 			}
 			agent := &model.Agent{}
-			if err := json.Unmarshal(data, agent); err != nil {
+			if err := jsoniter.Unmarshal(data, agent); err != nil {
 				return fmt.Errorf("agents: %w", err)
 			}
 
@@ -386,7 +387,7 @@ func (s *BoltstoreCore) Agent(ctx context.Context, id string) (*model.Agent, err
 			return nil
 		}
 		agent = &model.Agent{}
-		return json.Unmarshal(data, agent)
+		return jsoniter.Unmarshal(data, agent)
 	})
 
 	return agent, err
@@ -450,7 +451,7 @@ func (s *BoltstoreCore) UpdateConfiguration(ctx context.Context, name string, up
 	ctx, span := tracer.Start(ctx, "store/UpdateConfiguration")
 	defer span.End()
 
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	err = s.DB.Update(func(tx *bbolt.Tx) error {
 		config, status, err = UpdateResource(ctx, s, tx, model.KindConfiguration, name, func(config *model.Configuration) error {
@@ -638,7 +639,7 @@ func (s *BoltstoreCore) CleanupDisconnectedAgents(ctx context.Context, since tim
 	}
 
 	var errs error
-	changes := NewEventUpdates()
+	changes := s.CreateEventUpdate()
 
 	for _, agent := range agents {
 		if agent.DisconnectedSince(since) {
@@ -822,7 +823,7 @@ func (s *BoltstoreCore) ResumeRollout(ctx context.Context, configurationName str
 // UpdateRollout updates a rollout in progress. Does nothing if the rollout does not have a RolloutStatusStarted
 // status. Returns the current Configuration with its Rollout status.
 func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string) (updatedConfig *model.Configuration, err error) {
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 
 	// get the configuration
 	err = s.DB.Update(func(tx *bbolt.Tx) error {
@@ -1181,7 +1182,7 @@ func findEndMetrics(c *bbolt.Cursor, time, objectType, id string) (map[string]*r
 	for k, v = c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 		metrics[removeTimestampFromKey(k)] = m
@@ -1223,7 +1224,7 @@ func findStartMetrics(c *bbolt.Cursor, time string, endTime time.Time, objectTyp
 		}
 		var m *record.Metric
 		m = &record.Metric{}
-		if err := json.Unmarshal(v, m); err != nil {
+		if err := jsoniter.Unmarshal(v, m); err != nil {
 			return nil, err
 		}
 
@@ -1315,7 +1316,7 @@ func (s *BoltstoreCore) storeMeasurements(ctx context.Context, metricName string
 		}
 
 		for _, m := range metrics {
-			data, err := json.Marshal(m)
+			data, err := jsoniter.Marshal(m)
 			if err != nil {
 				errs = multierror.Append(errs, err)
 				continue

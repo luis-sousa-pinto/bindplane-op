@@ -25,7 +25,7 @@ import (
 )
 
 type testMessage struct {
-	Value int
+	Value int `json:"value"`
 }
 
 func TestSendReceive(t *testing.T) {

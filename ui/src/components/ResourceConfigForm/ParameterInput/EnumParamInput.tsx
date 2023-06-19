@@ -49,7 +49,7 @@ const SelectParamInput: React.FC<ParamInputProps<string>> = ({
           {definition.documentation && (
             // Block display so that the link doesn't span the whole length of the outer div.
             <Stack component={"span"} style={{ display: "block" }}>
-              {definition.documentation.map((d) => (
+              {definition.documentation?.map((d) => (
                 <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
                   {d.text}
                 </a>

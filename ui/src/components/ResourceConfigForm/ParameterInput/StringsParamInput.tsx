@@ -109,8 +109,8 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
 
                 {definition.documentation && (
                   <Stack component={"span"}>
-                    {definition.documentation.map((d) => (
-                      <a href={d.url}>{d.text}</a>
+                    {definition.documentation?.map((d) => (
+                      <a href={d.url} key={d.url}>{d.text}</a>
                     ))}
                   </Stack>
                 )}

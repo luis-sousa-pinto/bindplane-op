@@ -246,6 +246,12 @@ func (r *Resolver) UpdateProcessors(ctx context.Context, input model1.UpdateProc
 		return nil, fmt.Errorf("invalid resource type, should be source or destination")
 	}
 
+	// Ensure that the config can still be rendered with the added processors
+	_, err = config.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.OssOtelHeaders)
+	if err != nil {
+		return nil, fmt.Errorf("failed  to render config: %w", err)
+	}
+
 	statuses, err := r.Bindplane.Store().ApplyResources(ctx, []model.Resource{config})
 	if err != nil {
 		return nil, err
@@ -521,7 +527,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case logs := <-result:
-			signals.Logs = record.ConvertLogs(logs)
+			signals.Logs = record.ConvertLogs(logs.OTLP())
 		}
 	case otel.Metrics:
 		id, result, cancel := r.Bindplane.Relayers().Metrics().AwaitResult()
@@ -534,7 +540,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case metrics := <-result:
-			signals.Metrics = record.ConvertMetrics(ctx, metrics)
+			signals.Metrics = record.ConvertMetrics(ctx, metrics.OTLP())
 		}
 	case otel.Traces:
 		id, result, cancel := r.Bindplane.Relayers().Traces().AwaitResult()
@@ -547,7 +553,7 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 		select {
 		case <-ctx.Done():
 		case traces := <-result:
-			signals.Traces = record.ConvertTraces(traces)
+			signals.Traces = record.ConvertTraces(traces.OTLP())
 		}
 	}
 
@@ -782,10 +788,10 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		if position != string(model.MeasurementPositionDestinationAfterProcessors) {
 			continue
 		}
-		
+
 		splitStrs := strings.Split(resourceName, "-")
 		if len(splitStrs) > 1 {
-			splitStrs = splitStrs[0:len(splitStrs)-1]
+			splitStrs = splitStrs[0 : len(splitStrs)-1]
 		}
 		resourceName = strings.Join(splitStrs, "-")
 

@@ -18,8 +18,9 @@ import (
 	"context"
 	"database/sql/driver"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/mitchellh/mapstructure"
@@ -49,7 +50,7 @@ type SerializedAgentState struct {
 
 // Value is used to translate to a JSONB field for postgres storage
 func (s SerializedAgentState) Value() (driver.Value, error) {
-	return json.Marshal(s)
+	return jsoniter.Marshal(s)
 }
 
 // Scan is used to translate from a JSONB field in postgres to serializedAgentState
@@ -59,7 +60,7 @@ func (s *SerializedAgentState) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &s)
+	return jsoniter.Unmarshal(b, &s)
 }
 
 // AgentState stores OpAMP state for the agent

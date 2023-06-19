@@ -163,12 +163,14 @@ definitions:
       download:
         additionalProperties:
           $ref: '#/definitions/model.AgentDownload'
+        description: Map of platform to download URL and hash
         type: object
       draft:
         type: boolean
       installer:
         additionalProperties:
           $ref: '#/definitions/model.AgentInstaller'
+        description: Map of platform to installer script URL
         type: object
       prerelease:
         type: boolean
@@ -680,6 +682,8 @@ definitions:
     properties:
       disabled:
         type: boolean
+      displayName:
+        type: string
       name:
         type: string
       parameters:

@@ -8,6 +8,7 @@ require (
 	github.com/google/addlicense v1.1.0
 	github.com/goreleaser/goreleaser v1.18.2
 	github.com/mgechev/revive v1.3.1
+	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354
 	github.com/ory/go-acc v0.2.8
 	github.com/securego/gosec/v2 v2.16.0
 	github.com/swaggo/swag v1.16.1

@@ -21,18 +21,7 @@ import (
 	"os"
 
 	"github.com/observiq/bindplane-op/cli"
-	"github.com/observiq/bindplane-op/cli/commands/apply"
-	"github.com/observiq/bindplane-op/cli/commands/delete"
-	"github.com/observiq/bindplane-op/cli/commands/get"
-	"github.com/observiq/bindplane-op/cli/commands/initialize"
-	"github.com/observiq/bindplane-op/cli/commands/install"
-	"github.com/observiq/bindplane-op/cli/commands/label"
-	"github.com/observiq/bindplane-op/cli/commands/profile"
-	"github.com/observiq/bindplane-op/cli/commands/rollout"
 	"github.com/observiq/bindplane-op/cli/commands/root"
-	"github.com/observiq/bindplane-op/cli/commands/sync"
-	"github.com/observiq/bindplane-op/cli/commands/update"
-	"github.com/observiq/bindplane-op/cli/commands/version"
 	"github.com/observiq/bindplane-op/routes"
 	"github.com/spf13/cobra"
 )
@@ -48,17 +37,7 @@ func main() {
 
 	// Server contains all commands
 	rootCmd.AddCommand(
-		cli.AddValidationPrerun(apply.Command(factory), factory),
-		cli.AddValidationPrerun(get.Command(factory), factory),
-		cli.AddValidationPrerun(label.Command(factory), factory),
-		cli.AddValidationPrerun(delete.Command(factory), factory),
-		cli.AddLoadConfigPrerun(profile.Command(factory), factory),
-		cli.AddLoadConfigPrerun(version.Command(factory), factory),
-		cli.AddLoadConfigPrerun(initialize.Command(factory), factory),
-		cli.AddValidationPrerun(install.Command(factory), factory),
-		cli.AddValidationPrerun(sync.Command(factory), factory),
-		cli.AddValidationPrerun(update.Command(factory), factory),
-		cli.AddValidationPrerun(rollout.Command(factory), factory),
+		cli.SharedCommands(factory)...,
 	)
 
 	cobra.CheckErr(rootCmd.Execute())

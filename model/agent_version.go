@@ -43,13 +43,15 @@ type AgentVersion struct {
 
 // AgentVersionSpec is the spec for an AgentVersion
 type AgentVersionSpec struct {
-	Type            string                    `yaml:"type" json:"type" mapstructure:"type"`
-	Version         string                    `yaml:"version" json:"version" mapstructure:"version"`
-	ReleaseNotesURL string                    `yaml:"releaseNotesURL" json:"releaseNotesURL" mapstructure:"releaseNotesURL"`
-	Draft           bool                      `yaml:"draft" json:"draft" mapstructure:"draft"`
-	Prerelease      bool                      `yaml:"prerelease" json:"prerelease" mapstructure:"prerelease"`
-	Installer       map[string]AgentInstaller `yaml:"installer" json:"installer" mapstructure:"installer"`
-	Download        map[string]AgentDownload  `yaml:"download" json:"download" mapstructure:"download"`
+	Type            string `yaml:"type" json:"type" mapstructure:"type"`
+	Version         string `yaml:"version" json:"version" mapstructure:"version"`
+	ReleaseNotesURL string `yaml:"releaseNotesURL" json:"releaseNotesURL" mapstructure:"releaseNotesURL"`
+	Draft           bool   `yaml:"draft" json:"draft" mapstructure:"draft"`
+	Prerelease      bool   `yaml:"prerelease" json:"prerelease" mapstructure:"prerelease"`
+	// Map of platform to installer script URL
+	Installer map[string]AgentInstaller `yaml:"installer" json:"installer" mapstructure:"installer"`
+	// Map of platform to download URL and hash
+	Download map[string]AgentDownload `yaml:"download" json:"download" mapstructure:"download"`
 
 	// ReleaseDate is an RFC3339 encoded date in a string
 	ReleaseDate string `yaml:"releaseDate" json:"releaseDate" mapstructure:"releaseDate"`

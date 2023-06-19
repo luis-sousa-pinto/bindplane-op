@@ -433,7 +433,15 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
         resourceName={resourceName}
         showAgentSelector={true}
       >
-        <Dialog {...dialogProps} maxWidth={"xl"} fullWidth onClose={handleClose}>
+        <Dialog
+          {...dialogProps}
+          maxWidth={"xl"}
+          fullWidth
+          onClose={handleClose}
+          sx={{
+            minWidth: "1250px",
+          }}
+        >
           <DialogContainer
             title={title}
             description={description}
@@ -462,12 +470,7 @@ function convertTelemetryType(telemetryType: string): PipelineType {
 }
 
 export const ProcessorsBody: React.FC<{}> = ({ children }) => {
-  const {
-    logs,
-    metrics,
-    traces,
-    pipelineType,
-  } = useSnapshot();
+  const { logs, metrics, traces, pipelineType } = useSnapshot();
 
   const footer = `Showing recent ${pipelineType}`;
   return (

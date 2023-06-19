@@ -18,24 +18,28 @@ import (
 	"context"
 
 	"github.com/observiq/bindplane-op/eventbus"
-	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
-
-var tracer = otel.Tracer("broadcast")
 
 type localBroadcast[T any] struct {
 	producerBuffer eventbus.Source[T]
 	consumer       eventbus.Source[T]
+	opts           Options[T]
 	logger         *zap.Logger
 }
 
-// NewLocalBroadcast returns a new local broadcast with no routing or filtering.
+var _ Broadcast[any] = (*localBroadcast[any])(nil)
+var _ eventbus.Receiver[any] = (*localBroadcast[any])(nil)
+
+// NewLocalBroadcast returns a new broadcast interface. This broadcast interface is used when pub/sub is not enabled. It
+// does not require a message type because it does not use pub/sub.
 func NewLocalBroadcast[T any](ctx context.Context, logger *zap.Logger, options ...Option[T]) Broadcast[T] {
 	opts := MakeBroadcastOptions(options)
+
 	b := &localBroadcast[T]{
 		logger:         logger,
-		consumer:       eventbus.NewSource[T](),
+		opts:           opts,
+		consumer:       InitConsumer(opts),
 		producerBuffer: eventbus.NewSource[T](),
 	}
 
@@ -45,28 +49,46 @@ func NewLocalBroadcast[T any](ctx context.Context, logger *zap.Logger, options .
 	return b
 }
 
-// Producer returns the producer for this broadcast
+// Producer returns the producer which can be used to send messages to pub/sub.
 func (b *localBroadcast[T]) Producer() eventbus.Receiver[T] {
 	return b
 }
 
-// Consumer returns the consumer for this broadcast
+// Consumer returns the source which can be subscribed to to receive messages from other nodes in the cluster.
 func (b *localBroadcast[T]) Consumer() eventbus.Source[T] {
 	return b.consumer
 }
 
-// Send sends a message to the broadcast's producer
+// Send sends a message to pub/sub to be received by all nodes in the cluster. It implements Receiver[*T] for use with
+// RelayWithMerge.
 func (b *localBroadcast[T]) Send(ctx context.Context, msg T) {
-	ctx, span := tracer.Start(ctx, "localBroadcast/Send")
-	defer span.End()
+	// for local broadcasts, we can just send immediately, but we still need to use filtering if configured
 	b.producerBuffer.Send(ctx, msg)
 }
 
-func (b *localBroadcast[T]) consumerFilter(_ context.Context) eventbus.SubscriptionFilter[T, T] {
+// ----------------------------------------------------------------------
+// filter for processing messages
+
+func (b *localBroadcast[T]) consumerFilter(ctx context.Context) eventbus.SubscriptionFilter[T, T] {
 	return func(msg T) (T, bool) {
 		// we can ignore the messageType because local broadcasts are sent directly
-		// we can ignore the ordering `key because local broadcasts are sent immediately
-		// we can ignore any routing or filtering because local broadcasts don't route or filter
+		//
+		// we can ignore the ordering key because local broadcasts are sent immediately
+
+		// build message attributes for filtering
+		attrs := MessageAttributes{}
+		b.opts.AddAttributes(ctx, msg, attrs)
+
+		// if routing is configured, only process messages that have a route
+		if !b.opts.HasRoute(attrs) {
+			return msg, false
+		}
+
+		// if attribute filtering is configured, only process messages that pass the filter
+		if !b.opts.AcceptMessage(attrs) {
+			return msg, false
+		}
+
 		return msg, true
 	}
 }

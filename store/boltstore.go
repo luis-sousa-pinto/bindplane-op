@@ -246,6 +246,10 @@ func (s *boltstore) Notify(ctx context.Context, updates BasicEventUpdates) {
 	}
 }
 
+func (s *boltstore) CreateEventUpdate() BasicEventUpdates {
+	return NewEventUpdates()
+}
+
 // ----------------------------------------------------------------------
 
 // Clear clears the db store of resources, agents, and tasks.  Mostly used for testing.
@@ -275,7 +279,7 @@ func (s *boltstore) Clear() {
 }
 
 func (s *boltstore) DeleteAgents(ctx context.Context, agentIDs []string) ([]*model.Agent, error) {
-	updates := NewEventUpdates()
+	updates := s.CreateEventUpdate()
 	deleted := make([]*model.Agent, 0, len(agentIDs))
 
 	err := s.DB.Update(func(tx *bbolt.Tx) error {
@@ -752,7 +756,7 @@ func DeleteResourceAndNotify[R model.Resource](ctx context.Context, s BoltstoreC
 	deleted, exists, err := DeleteResource(ctx, s, kind, uniqueKey, emptyResource)
 
 	if err == nil && exists {
-		updates := NewEventUpdates()
+		updates := s.CreateEventUpdate()
 		updates.IncludeResource(deleted, EventTypeRemove)
 		s.Notify(ctx, updates)
 	}

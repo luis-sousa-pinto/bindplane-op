@@ -28,8 +28,8 @@ func TestUpdatesIncludeAgent(t *testing.T) {
 	}
 
 	updates.IncludeAgent(agent, EventTypeInsert)
-	require.Equal(t, 1, len(updates.agents))
-	require.Equal(t, agent, updates.agents[agent.UniqueKey()].Item)
+	require.Equal(t, 1, len(updates.AgentsField))
+	require.Equal(t, agent, updates.AgentsField[agent.UniqueKey()].Item)
 }
 
 func TestUpdatesIncludeResource(t *testing.T) {
@@ -54,14 +54,14 @@ func TestUpdatesIncludeResource(t *testing.T) {
 	updates.IncludeResource(nil, EventTypeInsert)
 
 	require.Equal(t, 8, updates.Size())
-	require.Equal(t, agentVersion, updates.agentVersions[agentVersion.UniqueKey()].Item)
-	require.Equal(t, source, updates.sources[source.UniqueKey()].Item)
-	require.Equal(t, sourceType, updates.sourceTypes[sourceType.UniqueKey()].Item)
-	require.Equal(t, processor, updates.processors[processor.UniqueKey()].Item)
-	require.Equal(t, processorType, updates.processorTypes[processorType.UniqueKey()].Item)
-	require.Equal(t, destination, updates.destinations[destination.UniqueKey()].Item)
-	require.Equal(t, destinationType, updates.destinationTypes[destinationType.UniqueKey()].Item)
-	require.Equal(t, configuration, updates.configurations[configuration.UniqueKey()].Item)
+	require.Equal(t, agentVersion, updates.AgentVersionsField[agentVersion.UniqueKey()].Item)
+	require.Equal(t, source, updates.SourcesField[source.UniqueKey()].Item)
+	require.Equal(t, sourceType, updates.SourceTypesField[sourceType.UniqueKey()].Item)
+	require.Equal(t, processor, updates.ProcessorsField[processor.UniqueKey()].Item)
+	require.Equal(t, processorType, updates.ProcessorTypesField[processorType.UniqueKey()].Item)
+	require.Equal(t, destination, updates.DestinationsField[destination.UniqueKey()].Item)
+	require.Equal(t, destinationType, updates.DestinationTypesField[destinationType.UniqueKey()].Item)
+	require.Equal(t, configuration, updates.ConfigurationsField[configuration.UniqueKey()].Item)
 }
 
 func TestUpdatesEmpty(t *testing.T) {
@@ -78,7 +78,7 @@ func TestUpdatesEmpty(t *testing.T) {
 		{
 			name: "not empty",
 			updates: &EventUpdates{
-				agents: Events[*model.Agent]{
+				AgentsField: Events[*model.Agent]{
 					"test": Event[*model.Agent]{},
 				},
 			},
@@ -107,28 +107,28 @@ func TestUpdatesSize(t *testing.T) {
 		{
 			name: "with resources",
 			updates: &EventUpdates{
-				agents: Events[*model.Agent]{
+				AgentsField: Events[*model.Agent]{
 					"test": Event[*model.Agent]{},
 				},
-				agentVersions: Events[*model.AgentVersion]{
+				AgentVersionsField: Events[*model.AgentVersion]{
 					"test": Event[*model.AgentVersion]{},
 				},
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test": Event[*model.Source]{},
 				},
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test": Event[*model.SourceType]{},
 				},
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test": Event[*model.Processor]{},
 				},
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test": Event[*model.ProcessorType]{},
 				},
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test": Event[*model.Destination]{},
 				},
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test": Event[*model.DestinationType]{},
 				},
 			},
@@ -157,7 +157,7 @@ func TestUpdatesCouldAffectProcessors(t *testing.T) {
 		{
 			name: "with processors",
 			updates: &EventUpdates{
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test": Event[*model.Processor]{},
 				},
 			},
@@ -166,7 +166,7 @@ func TestUpdatesCouldAffectProcessors(t *testing.T) {
 		{
 			name: "with processor types",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test": Event[*model.ProcessorType]{},
 				},
 			},
@@ -195,7 +195,7 @@ func TestUpdatesCouldAffectSources(t *testing.T) {
 		{
 			name: "with sources",
 			updates: &EventUpdates{
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test": Event[*model.Source]{},
 				},
 			},
@@ -204,7 +204,7 @@ func TestUpdatesCouldAffectSources(t *testing.T) {
 		{
 			name: "with source types",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test": Event[*model.SourceType]{},
 				},
 			},
@@ -213,7 +213,7 @@ func TestUpdatesCouldAffectSources(t *testing.T) {
 		{
 			name: "with processors",
 			updates: &EventUpdates{
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test": Event[*model.Processor]{},
 				},
 			},
@@ -222,7 +222,7 @@ func TestUpdatesCouldAffectSources(t *testing.T) {
 		{
 			name: "with processor types",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test": Event[*model.ProcessorType]{},
 				},
 			},
@@ -251,7 +251,7 @@ func TestUpdatesCouldAffectDestinations(t *testing.T) {
 		{
 			name: "with destinations",
 			updates: &EventUpdates{
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test": Event[*model.Destination]{},
 				},
 			},
@@ -260,7 +260,7 @@ func TestUpdatesCouldAffectDestinations(t *testing.T) {
 		{
 			name: "with destination types",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test": Event[*model.DestinationType]{},
 				},
 			},
@@ -289,7 +289,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with sources",
 			updates: &EventUpdates{
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test": Event[*model.Source]{},
 				},
 			},
@@ -298,7 +298,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with source types",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test": Event[*model.SourceType]{},
 				},
 			},
@@ -307,7 +307,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with destinations",
 			updates: &EventUpdates{
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test": Event[*model.Destination]{},
 				},
 			},
@@ -316,7 +316,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with destination types",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test": Event[*model.DestinationType]{},
 				},
 			},
@@ -325,7 +325,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with processors",
 			updates: &EventUpdates{
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test": Event[*model.Processor]{},
 				},
 			},
@@ -334,7 +334,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with processor types",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test": Event[*model.ProcessorType]{},
 				},
 			},
@@ -343,7 +343,7 @@ func TestUpdatesCouldAffectConfigurations(t *testing.T) {
 		{
 			name: "with configurations",
 			updates: &EventUpdates{
-				configurations: Events[*model.Configuration]{
+				ConfigurationsField: Events[*model.Configuration]{
 					"test": Event[*model.Configuration]{},
 				},
 			},
@@ -374,7 +374,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with source type update",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -387,7 +387,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with source type insert",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeInsert,
@@ -400,7 +400,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with processor update",
 			updates: &EventUpdates{
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test-processor": Event[*model.Processor]{
 						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -413,7 +413,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with processor insert",
 			updates: &EventUpdates{
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test-processor": Event[*model.Processor]{
 						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
 						Type: EventTypeInsert,
@@ -426,7 +426,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with processor type update",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -439,7 +439,7 @@ func TestUpdatesAffectsSource(t *testing.T) {
 		{
 			name: "with processor type insert",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeInsert,
@@ -474,7 +474,7 @@ func TestUpdatesAffectsProcessor(t *testing.T) {
 		{
 			name: "with processor type update",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -487,7 +487,7 @@ func TestUpdatesAffectsProcessor(t *testing.T) {
 		{
 			name: "with processor type insert",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeInsert,
@@ -522,7 +522,7 @@ func TestUpdatesAffectsDestination(t *testing.T) {
 		{
 			name: "with destination type update",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -535,7 +535,7 @@ func TestUpdatesAffectsDestination(t *testing.T) {
 		{
 			name: "with destination type insert",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeInsert,
@@ -570,7 +570,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with source update",
 			updates: &EventUpdates{
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test-source": Event[*model.Source]{
 						Item: model.NewSource("test-source", "test-source-type", nil),
 						Type: EventTypeUpdate,
@@ -583,7 +583,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with unrelated source update",
 			updates: &EventUpdates{
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"unrelated-source": Event[*model.Source]{
 						Item: model.NewSource("unrelated-source", "unrelated-source-type", nil),
 						Type: EventTypeUpdate,
@@ -596,7 +596,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with source type update",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -609,7 +609,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with unrelated source type update",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"unrelated-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("unrelated-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -622,7 +622,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with destination update",
 			updates: &EventUpdates{
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test-destination": Event[*model.Destination]{
 						Item: model.NewDestination("test-destination", "test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -635,7 +635,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with unrelated destination update",
 			updates: &EventUpdates{
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"unrelated-destination": Event[*model.Destination]{
 						Item: model.NewDestination("unrelated-destination", "unrelated-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -648,7 +648,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with destination type update",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -661,7 +661,7 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 		{
 			name: "with unrelated destination type update",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"unrelated-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("unrelated-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -696,7 +696,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 		{
 			name: "with affected source",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -705,13 +705,13 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			},
 			sources: []*model.Source{model.NewSource("test-source", "test-source-type", nil)},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test-source": Event[*model.Source]{
 						Item: model.NewSource("test-source", "test-source-type", nil),
 						Type: EventTypeUpdate,
@@ -722,7 +722,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 		{
 			name: "with unrelated source",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -731,7 +731,7 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			},
 			sources: []*model.Source{model.NewSource("unrelated-source", "unrelated-source-type", nil)},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -742,13 +742,13 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 		{
 			name: "with existing source update",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test-source": Event[*model.Source]{
 						Item: model.NewSource("test-source", "test-source-type", nil),
 						Type: EventTypeUpdate,
@@ -757,13 +757,13 @@ func TestUpdatesAddAffectedSources(t *testing.T) {
 			},
 			sources: []*model.Source{model.NewSource("test-source", "test-source-type", nil)},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				sources: Events[*model.Source]{
+				SourcesField: Events[*model.Source]{
 					"test-source": Event[*model.Source]{
 						Item: model.NewSource("test-source", "test-source-type", nil),
 						Type: EventTypeUpdate,
@@ -799,7 +799,7 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 		{
 			name: "with affected processor",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -808,13 +808,13 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 			},
 			processors: []*model.Processor{model.NewProcessor("test-processor", "test-processor-type", nil)},
 			expected: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test-processor": Event[*model.Processor]{
 						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -825,7 +825,7 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 		{
 			name: "with unrelated processor",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -834,7 +834,7 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 			},
 			processors: []*model.Processor{model.NewProcessor("unrelated-processor", "unrelated-processor-type", nil)},
 			expected: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -845,13 +845,13 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 		{
 			name: "with existing processor update",
 			updates: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test-processor": Event[*model.Processor]{
 						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -860,13 +860,13 @@ func TestUpdatesAddAffectedProcessors(t *testing.T) {
 			},
 			processors: []*model.Processor{model.NewProcessor("test-processor", "test-processor-type", nil)},
 			expected: &EventUpdates{
-				processorTypes: Events[*model.ProcessorType]{
+				ProcessorTypesField: Events[*model.ProcessorType]{
 					"test-processor-type": Event[*model.ProcessorType]{
 						Item: model.NewProcessorType("test-processor-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				processors: Events[*model.Processor]{
+				ProcessorsField: Events[*model.Processor]{
 					"test-processor": Event[*model.Processor]{
 						Item: model.NewProcessor("test-processor", "test-processor-type", nil),
 						Type: EventTypeUpdate,
@@ -901,7 +901,7 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 		{
 			name: "with affected destination",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -910,13 +910,13 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 			},
 			destinations: []*model.Destination{model.NewDestination("test-destination", "test-destination-type", nil)},
 			expected: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test-destination": Event[*model.Destination]{
 						Item: model.NewDestination("test-destination", "test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -927,7 +927,7 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 		{
 			name: "with unrelated destination",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -936,7 +936,7 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 			},
 			destinations: []*model.Destination{model.NewDestination("unrelated-destination", "unrelated-destination-type", nil)},
 			expected: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -947,13 +947,13 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 		{
 			name: "with existing destination update",
 			updates: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test-destination": Event[*model.Destination]{
 						Item: model.NewDestination("test-destination", "test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -962,13 +962,13 @@ func TestUpdatesAddAffectedDestinations(t *testing.T) {
 			},
 			destinations: []*model.Destination{model.NewDestination("test-destination", "test-destination-type", nil)},
 			expected: &EventUpdates{
-				destinationTypes: Events[*model.DestinationType]{
+				DestinationTypesField: Events[*model.DestinationType]{
 					"test-destination-type": Event[*model.DestinationType]{
 						Item: model.NewDestinationType("test-destination-type", nil),
 						Type: EventTypeUpdate,
 					},
 				},
-				destinations: Events[*model.Destination]{
+				DestinationsField: Events[*model.Destination]{
 					"test-destination": Event[*model.Destination]{
 						Item: model.NewDestination("test-destination", "test-destination-type", nil),
 						Type: EventTypeUpdate,
@@ -1003,7 +1003,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 		{
 			name: "with affected configuration",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -1014,13 +1014,13 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 				createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
 			},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				configurations: Events[*model.Configuration]{
+				ConfigurationsField: Events[*model.Configuration]{
 					"test-configuration": Event[*model.Configuration]{
 						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
 						Type: EventTypeUpdate,
@@ -1031,7 +1031,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 		{
 			name: "with unrelated configuration",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -1042,7 +1042,7 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 				createConfigurationWithSource("unrelated-configuration", "unrelated-source-type", "unrelated-source-name"),
 			},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -1053,13 +1053,13 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 		{
 			name: "with existing configuration update",
 			updates: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				configurations: Events[*model.Configuration]{
+				ConfigurationsField: Events[*model.Configuration]{
 					"test-configuration": Event[*model.Configuration]{
 						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
 						Type: EventTypeUpdate,
@@ -1070,13 +1070,13 @@ func TestUpdatesAddAffectedConfigurations(t *testing.T) {
 				createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
 			},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				configurations: Events[*model.Configuration]{
+				ConfigurationsField: Events[*model.Configuration]{
 					"test-configuration": Event[*model.Configuration]{
 						Item: createConfigurationWithSource("test-configuration", "test-source-type", "test-source-name"),
 						Type: EventTypeUpdate,
@@ -1114,7 +1114,7 @@ func TestMergeUpdates(t *testing.T) {
 			name: "with no conflicts",
 			into: NewEventUpdates(),
 			from: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -1122,27 +1122,27 @@ func TestMergeUpdates(t *testing.T) {
 				},
 			},
 			expected: &EventUpdates{
-				agents:        Events[*model.Agent]{},
-				agentVersions: Events[*model.AgentVersion]{},
-				sourceTypes: Events[*model.SourceType]{
+				AgentsField:        Events[*model.Agent]{},
+				AgentVersionsField: Events[*model.AgentVersion]{},
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
 					},
 				},
-				sources:          Events[*model.Source]{},
-				processorTypes:   Events[*model.ProcessorType]{},
-				processors:       Events[*model.Processor]{},
-				destinationTypes: Events[*model.DestinationType]{},
-				destinations:     Events[*model.Destination]{},
-				configurations:   Events[*model.Configuration]{},
+				SourcesField:          Events[*model.Source]{},
+				ProcessorTypesField:   Events[*model.ProcessorType]{},
+				ProcessorsField:       Events[*model.Processor]{},
+				DestinationTypesField: Events[*model.DestinationType]{},
+				DestinationsField:     Events[*model.Destination]{},
+				ConfigurationsField:   Events[*model.Configuration]{},
 			},
 			successful: true,
 		},
 		{
 			name: "with conflicts",
 			into: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,
@@ -1150,7 +1150,7 @@ func TestMergeUpdates(t *testing.T) {
 				},
 			},
 			from: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeInsert,
@@ -1158,7 +1158,7 @@ func TestMergeUpdates(t *testing.T) {
 				},
 			},
 			expected: &EventUpdates{
-				sourceTypes: Events[*model.SourceType]{
+				SourceTypesField: Events[*model.SourceType]{
 					"test-source-type": Event[*model.SourceType]{
 						Item: model.NewSourceType("test-source-type", nil, []string{"macos", "linux", "windows"}),
 						Type: EventTypeUpdate,

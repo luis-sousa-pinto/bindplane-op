@@ -138,7 +138,7 @@ export const DestinationsPageContent: React.FC<
       refetch();
     } catch (err) {
       console.error(err);
-      enqueueSnackbar("Failed to delete components.", { variant: "error" });
+      enqueueSnackbar("Failed to delete destinations.", { variant: "error" });
     }
   }
   const queryData = data ?? { destinations: [] };
@@ -160,7 +160,7 @@ export const DestinationsPageContent: React.FC<
               color="error"
               onClick={() => setOpen(true)}
             >
-              Delete {selected.length} Component
+              Delete {selected.length} Destination
               {selected.length > 1 && "s"}
             </Button>
           </FormControl>
@@ -190,7 +190,7 @@ export const DestinationsPageContent: React.FC<
         action={"delete"}
       >
         <Typography>
-          Are you sure you want to delete {selected.length} component
+          Are you sure you want to delete {selected.length} destination
           {selected.length > 1 && "s"}?
         </Typography>
       </ConfirmDeleteResourceDialog>

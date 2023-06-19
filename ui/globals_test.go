@@ -15,8 +15,10 @@
 package ui
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
+	"text/template"
 
 	"github.com/observiq/bindplane-op/version"
 	"github.com/stretchr/testify/require"
@@ -24,26 +26,35 @@ import (
 
 func TestGenerateGlobalJS(t *testing.T) {
 	tests := []struct {
-		name    string
-		wantErr bool
-		want    string
+		name string
+		want string
 	}{
 		{
 			"renders template",
-			false,
 			fmt.Sprintf("var __BINDPLANE_VERSION__ = \"%s\";\n", version.NewVersion().String()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := generateGlobalJS()
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
+			got := generateGlobalJS()
 
 			require.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func Test_templateStringParses(t *testing.T) {
+	_, err := template.New("globals").Parse(templateStr)
+	require.NoError(t, err)
+}
+
+func Test_templateExecute(t *testing.T) {
+	tmp, err := template.New("globals").Parse(templateStr)
+	require.NoError(t, err)
+
+	opts := newConfigOptions()
+
+	w := bytes.NewBufferString("")
+	err = tmp.Execute(w, opts)
+	require.NoError(t, err)
 }

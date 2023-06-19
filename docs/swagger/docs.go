@@ -1859,6 +1859,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "download": {
+                    "description": "Map of platform to download URL and hash",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/model.AgentDownload"
@@ -1868,6 +1869,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "installer": {
+                    "description": "Map of platform to installer script URL",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/model.AgentInstaller"
@@ -2610,6 +2612,9 @@ const docTemplate = `{
                 "disabled": {
                     "type": "boolean"
                 },
+                "displayName": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2977,6 +2982,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

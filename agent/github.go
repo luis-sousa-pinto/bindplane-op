@@ -184,6 +184,10 @@ var PlatformArtifacts = map[string]struct {
 		DownloadPackageFormat: "observiq-otel-collector-%s-windows-amd64.zip",
 		InstallerName:         "observiq-otel-collector.msi",
 	},
+	"windows/386": {
+		DownloadPackageFormat: "observiq-otel-collector-%s-windows-386.zip",
+		InstallerName:         "observiq-otel-collector-x86.msi",
+	},
 }
 
 func convertRelease(r *githubRelease, hashes Sha256sums) *model.AgentVersion {

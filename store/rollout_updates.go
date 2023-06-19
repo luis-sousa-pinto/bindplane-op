@@ -18,6 +18,7 @@ import (
 	"context"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/eventbus/broadcast"
 	"github.com/observiq/bindplane-op/model"
 	"go.uber.org/zap"
@@ -37,7 +38,7 @@ type RolloutEventUpdates interface {
 
 // RolloutUpdates is a basic implementation of the RolloutEventUpdates interface
 type RolloutUpdates struct {
-	updates Events[*model.ConfigurationVersions]
+	UpdatesField Events[*model.ConfigurationVersions] `json:"updates"`
 }
 
 // NewRolloutUpdates creates a new RolloutUpdates
@@ -50,28 +51,28 @@ func NewRolloutUpdates(_ context.Context, agentEvents Events[*model.Agent]) Roll
 	}
 
 	return &RolloutUpdates{
-		updates: events,
+		UpdatesField: events,
 	}
 }
 
 // Updates retrieves the agent updates
 func (r *RolloutUpdates) Updates() Events[*model.ConfigurationVersions] {
-	return r.updates
+	return r.UpdatesField
 }
 
 // Empty returns true if the updates are empty.
 func (r *RolloutUpdates) Empty() bool {
-	return r.updates.Empty()
+	return r.UpdatesField.Empty()
 }
 
 // Merge merges another set of updates into this one, returns true
 // if it was able to merge any updates.
 func (r *RolloutUpdates) Merge(other RolloutEventUpdates) bool {
-	if !r.updates.CanSafelyMerge(other.Updates()) {
+	if !r.UpdatesField.CanSafelyMerge(other.Updates()) {
 		return false
 	}
 
-	r.updates.Merge(other.Updates())
+	r.UpdatesField.Merge(other.Updates())
 	return true
 }
 
@@ -80,6 +81,11 @@ func BuildRolloutEventBroadcast() BroadCastBuilder[RolloutEventUpdates] {
 	return func(ctx context.Context, options Options, logger *zap.Logger, maxEventsToMerge int) broadcast.Broadcast[RolloutEventUpdates] {
 		return broadcast.NewLocalBroadcast(ctx, logger,
 			broadcast.WithUnboundedChannel[RolloutEventUpdates](100*time.Millisecond),
+			broadcast.WithParseFunc(func(data []byte) (RolloutEventUpdates, error) {
+				var updates RolloutUpdates
+				err := jsoniter.Unmarshal(data, &updates)
+				return &updates, err
+			}),
 			broadcast.WithMerge(func(into, single RolloutEventUpdates) bool {
 				return into.Merge(single)
 			}, 100*time.Millisecond, maxEventsToMerge),
