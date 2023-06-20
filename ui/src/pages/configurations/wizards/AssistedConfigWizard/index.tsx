@@ -26,6 +26,7 @@ export interface AssistedWizardFormValues {
   name: string;
   description: string;
   platform: string;
+  secondaryPlatform: string;
   sources: ResourceConfiguration[];
   destination: ResourceConfigurationAction | null;
 }
@@ -41,6 +42,7 @@ const initialFormValues: AssistedWizardFormValues = {
   name: "",
   description: "",
   platform: "",
+  secondaryPlatform: "",
   sources: [],
   destination: null,
 };

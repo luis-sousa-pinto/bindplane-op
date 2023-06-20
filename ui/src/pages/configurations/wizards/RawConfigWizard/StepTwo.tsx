@@ -30,8 +30,9 @@ interface StepTwoProps {
 
 export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
   const { formValues, setValues, goToStep } = useWizard<RawConfigFormValues>();
-  const [invalidConfigError, setInvalidConfigError] =
-    useState<null | string>(null);
+  const [invalidConfigError, setInvalidConfigError] = useState<null | string>(
+    null
+  );
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,9 +67,12 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
   }
 
   async function handleSave() {
-    const { name, description, platform, rawConfig } = formValues;
+    const { name, description, platform, secondaryPlatform, rawConfig } =
+      formValues;
 
-    const labels = { platform };
+    const labels = {
+      platform: isEmpty(secondaryPlatform) ? platform : secondaryPlatform,
+    };
     const matchLabels = { configuration: name };
     const selector = { matchLabels };
 

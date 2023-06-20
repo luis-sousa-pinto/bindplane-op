@@ -18,6 +18,7 @@ describe("validateFields", () => {
         name,
         description: "",
         platform: "linux",
+        secondaryPlatform: "",
         rawConfig: "raw-config",
         fileName: "",
       });
@@ -31,6 +32,7 @@ describe("validateFields", () => {
         name,
         description: "",
         platform: "linux",
+        secondaryPlatform: "",
         rawConfig: "raw-config",
         fileName: "",
       });
@@ -47,6 +49,7 @@ describe("validateFields", () => {
       name: good,
       description: "",
       platform: "linux",
+      secondaryPlatform: "",
       rawConfig: "raw-config",
       fileName: "",
     });
@@ -62,6 +65,7 @@ describe("validateFields", () => {
       name: bad,
       description: "",
       platform: "linux",
+      secondaryPlatform: "",
       rawConfig: "raw-config",
       fileName: "",
     });
@@ -74,11 +78,30 @@ describe("validateFields", () => {
       name: "test",
       description: "",
       platform: "",
+      secondaryPlatform: "",
       rawConfig: "# raw-config",
       fileName: "",
     });
 
     expect(errors.platform).not.toBeNull();
+  });
+
+  it("secondary platform must be non empty", () => {
+    const errors = validateFields(
+      {
+        name: "test",
+        description: "",
+        platform: "kubernetes",
+
+        secondaryPlatform: "",
+        rawConfig: "# raw-config",
+        fileName: "",
+      },
+      undefined,
+      true
+    );
+
+    expect(errors.secondaryPlatform).not.toBeNull();
   });
 
   it("sets error if configuration name is taken", () => {
@@ -93,6 +116,7 @@ describe("validateFields", () => {
         name: "test",
         description: "",
         platform: "",
+        secondaryPlatform: "",
         rawConfig: "# raw-config",
         fileName: "",
       },
@@ -114,6 +138,7 @@ describe("validateFields", () => {
         name: "blah",
         description: "",
         platform: "",
+        secondaryPlatform: "",
         rawConfig: "# raw-config",
         fileName: "",
       },

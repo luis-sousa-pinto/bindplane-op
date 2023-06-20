@@ -15,7 +15,7 @@ interface WizardContextValue<T extends {}> {
 
   // Object mapping form names to their error
   formErrors: FormErrors<T>;
-  setErrors: (formValue: Partial<FormErrors<T>>) => void;
+  setFormErrors: React.Dispatch<React.SetStateAction<FormErrors<T>>>;
 
   // Object mapping form names to their touched state
   formTouched: FormTouched<T>;
@@ -29,7 +29,7 @@ const defaultValue: WizardContextValue<any> = {
   formErrors: {},
   formTouched: {},
   setValues: () => {},
-  setErrors: () => {},
+  setFormErrors: () => {},
   setTouched: () => {},
 };
 
@@ -57,10 +57,6 @@ export const WizardContextProvider = <T extends object>({
     setFormValues((prev) => ({ ...prev, ...v }));
   }
 
-  function setErrors(e: Partial<FormErrors<T>>) {
-    setFormErrors((prev) => ({ ...prev, ...e }));
-  }
-
   function setTouched(t: Partial<FormTouched<T>>) {
     setFormTouched((prev) => ({ ...prev, ...t }));
   }
@@ -77,7 +73,7 @@ export const WizardContextProvider = <T extends object>({
         formValues,
         setValues,
         formErrors,
-        setErrors,
+        setFormErrors,
         formTouched,
         setTouched,
       }}

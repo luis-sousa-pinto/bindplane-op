@@ -32,6 +32,7 @@ const NEW_FORM_VALUES: RawConfigFormValues = {
   name: "",
   description: "",
   platform: "",
+  secondaryPlatform: "",
   rawConfig: DEFAULT_RAW_CONFIG,
   fileName: "",
 };

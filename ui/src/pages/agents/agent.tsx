@@ -435,6 +435,9 @@ export const AgentPageContent: React.FC = () => {
                 fileName: "",
                 rawConfig: data.agent.configuration?.Collector ?? "",
                 platform: configPlatformFromAgentPlatform(data.agent.platform),
+                secondaryPlatform: configSecondaryPlatformFromAgentPlatform(
+                  data.agent.platform
+                ),
               }}
               onSuccess={onImportSuccess}
               fromImport
@@ -461,7 +464,18 @@ const EmptyComponent: React.FC = ({ children }) => {
 function configPlatformFromAgentPlatform(platform: string | null | undefined) {
   if (platform == null) return "linux";
   if (platform === "darwin") return "macos";
+  if (platform.startsWith("kubernetes")) return "kubernetes";
+  if (platform.startsWith("openshift")) return "openshift";
   return platform;
+}
+
+function configSecondaryPlatformFromAgentPlatform(
+  platform: string | null | undefined
+) {
+  if (platform == null) return "";
+  if (platform.startsWith("kubernetes")) return platform;
+  if (platform.startsWith("openshift")) return platform;
+  return "";
 }
 
 export const AgentPage = withRequireLogin(

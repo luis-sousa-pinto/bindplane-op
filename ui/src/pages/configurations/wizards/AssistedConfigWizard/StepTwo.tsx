@@ -30,6 +30,7 @@ import { BPResourceConfiguration } from "../../../../utils/classes/resource-conf
 
 import styles from "./assisted-config-wizard.module.scss";
 import mixins from "../../../../styles/mixins.module.scss";
+import { isEmpty } from "lodash";
 
 type ResourceType = SourceType | DestinationType;
 
@@ -274,7 +275,11 @@ export const StepTwo: React.FC = (props) => {
           </Button>
 
           <NewResourceDialog
-            platform={formValues.platform}
+            platform={
+              isEmpty(formValues.secondaryPlatform)
+                ? formValues.platform
+                : formValues.secondaryPlatform
+            }
             title="Choose a Source"
             kind="source"
             open={open}

@@ -1,11 +1,14 @@
 import { gql } from "@apollo/client";
 import {
   Box,
+  Divider,
   FormControl,
   InputLabel,
+  Link,
   MenuItem,
   Select,
   SelectChangeEvent,
+  Stack,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -21,6 +24,7 @@ import { withNavBar } from "../../components/NavBar";
 import { PlatformSelect } from "../../components/PlatformSelect";
 
 import mixins from "../../styles/mixins.module.scss";
+import { isEmpty } from "lodash";
 
 gql`
   query GetConfigurationNames {
@@ -52,6 +56,9 @@ export enum Platform {
 
 export const InstallPageContent: React.FC = () => {
   const [platform, setPlatform] = useState<string>(Platform.Linux);
+  const [secondaryPlatform, setSecondaryPlatform] = useState<string>("");
+  const [secondaryPlatformRequired, setSecondaryPlatformRequired] =
+    useState(false);
   const [installCommand, setCommand] = useState("");
   const [configs, setConfigs] = useState<string[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<string>("");
@@ -60,33 +67,65 @@ export const InstallPageContent: React.FC = () => {
   });
 
   // Don't show the command if the platform is k8s and no config is selected
-  const shouldShowCommand =
-    !platformIsContainer(platform) || selectedConfig !== "";
+
+  function shouldShowCommand() {
+    // If the platform has a secondary platform, don't show the command until both are selected
+    if (secondaryPlatformRequired && isEmpty(secondaryPlatform)) {
+      return false;
+    }
+
+    // If the platform is containerized, don't show the command until a config is selected
+    if (
+      platformIsContainer(
+        isEmpty(secondaryPlatform) ? platform : secondaryPlatform
+      ) &&
+      isEmpty(selectedConfig)
+    ) {
+      return false;
+    }
+    return true;
+  }
 
   useEffect(() => {
     if (data) {
+      if (secondaryPlatformRequired && isEmpty(secondaryPlatform)) {
+        setConfigs([]);
+        return;
+      }
       // First filter the configs to match the platform
       const filtered = filterConfigurationsByPlatform(
         data.configurations.configurations,
-        platform
+        isEmpty(secondaryPlatform) ? platform : secondaryPlatform
       );
 
       const configNames = filtered.map((c) => c.metadata.name);
 
       setConfigs(configNames);
     }
-  }, [data, platform, setConfigs]);
+  }, [
+    data,
+    platform,
+    secondaryPlatform,
+    secondaryPlatformRequired,
+    setConfigs,
+  ]);
 
   useEffect(() => {
     async function fetchInstallText() {
+      const actualPlatform = isEmpty(secondaryPlatform)
+        ? platform
+        : secondaryPlatform;
       // If the platform is k8s, don't show the command until a config is selected
-      if (platformIsContainer(platform) && selectedConfig === "") {
+      if (
+        (secondaryPlatformRequired && isEmpty(secondaryPlatform)) ||
+        (platformIsContainer(actualPlatform) && isEmpty(selectedConfig))
+      ) {
         setCommand("");
         return;
       }
 
       const url = installCommandUrl({
-        platform,
+        platform: actualPlatform,
         configuration: selectedConfig,
       });
       const resp = await fetch(url);
@@ -97,7 +136,7 @@ export const InstallPageContent: React.FC = () => {
     }
 
     fetchInstallText();
-  }, [platform, selectedConfig]);
+  }, [platform, secondaryPlatform, secondaryPlatformRequired, selectedConfig]);
 
   return (
     <CardContainer>
@@ -110,22 +149,29 @@ export const InstallPageContent: React.FC = () => {
         className={`${mixins["form-width"]} ${mixins["mb-3"]}`}
       >
         <PlatformSelect
-          value={platform}
+          platformValue={platform}
+          secondaryPlatformValue={secondaryPlatform}
           helperText="Select the platform the agent will run on."
           onPlatformSelected={(v) => {
             setPlatform(v);
+            setSecondaryPlatform("");
             setSelectedConfig("");
           }}
+          onSecondaryPlatformSelected={(v) => {
+            setSecondaryPlatform(v);
+            setSelectedConfig("");
+          }}
+          setSecondaryPlatformRequired={setSecondaryPlatformRequired}
         />
         <ConfigurationSelect
           configs={configs}
-          platform={platform}
+          platform={!isEmpty(secondaryPlatform) ? secondaryPlatform : platform}
           selectedConfig={selectedConfig}
           setSelectedConfig={setSelectedConfig}
         />
       </Box>
 
-      {platformIsKubernetes(platform) && shouldShowCommand && (
+      {platformIsKubernetes(secondaryPlatform) && shouldShowCommand() && (
         <Typography fontSize="18px" fontWeight="bold">
           To deploy the agent to Kubernetes:<br></br>
           <Typography fontSize="16px">
@@ -137,7 +183,7 @@ export const InstallPageContent: React.FC = () => {
         </Typography>
       )}
 
-      {platformIsOpenShift(platform) && shouldShowCommand && (
+      {platformIsOpenShift(secondaryPlatform) && shouldShowCommand() && (
         <Typography fontSize="18px" fontWeight="bold">
           To deploy the agent to OpenShift:<br></br>
           <Typography fontSize="16px">
@@ -147,7 +193,7 @@ export const InstallPageContent: React.FC = () => {
           <br></br>
         </Typography>
       )}
-      {shouldShowCommand && <CodeBlock value={installCommand} />}
+      {shouldShowCommand() && <CodeBlock value={installCommand} />}
     </CardContainer>
   );
 };
@@ -180,37 +226,45 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
     : "Select Configuration (optional)";
 
   return (
-    <>
-      {(configs.length > 0 || configRequired) && (
-        <>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="config-label">{label}</InputLabel>
+    <Stack spacing={2}>
+      {configs.length > 0 && (
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="config-label">{label}</InputLabel>
 
-            <Select
-              inputProps={{ "data-testid": "config-select" }}
-              labelId="config-label"
-              id="configuration"
-              label={label}
-              onChange={(e: SelectChangeEvent<string>) => {
-                setSelectedConfig(e.target.value);
-              }}
-              value={selectedConfig}
-            >
-              {!configRequired && (
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-              )}
-              {configs.map((c) => (
-                <MenuItem key={c} value={c} data-testid={`config-${c}`}>
-                  {c}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Select
+            inputProps={{ "data-testid": "config-select" }}
+            labelId="config-label"
+            id="configuration"
+            label={label}
+            onChange={(e: SelectChangeEvent<string>) => {
+              setSelectedConfig(e.target.value);
+            }}
+            value={selectedConfig}
+          >
+            {!configRequired && (
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+            )}
+            {configs.map((c) => (
+              <MenuItem key={c} value={c} data-testid={`config-${c}`}>
+                {c}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+      {configs.length === 0 && configRequired && (
+        <>
+          <Divider />
+          <Typography>
+            No configurations found for this platform. Please create a{" "}
+            <Link href="/configurations/new">configuration</Link> before
+            deploying the agent.
+          </Typography>
         </>
       )}
-    </>
+    </Stack>
   );
 };
 

@@ -43,6 +43,7 @@ import { trimVersion } from "../../../../utils/version-helpers";
 
 import styles from "./assisted-config-wizard.module.scss";
 import mixins from "../../../../styles/mixins.module.scss";
+import { isEmpty } from "lodash";
 
 type ResourceType = SourceType | DestinationType;
 
@@ -168,7 +169,9 @@ export const StepThree: React.FC = () => {
         name: formValues.name,
         description: formValues.description,
         labels: {
-          platform: formValues.platform,
+          platform: isEmpty(formValues.secondaryPlatform)
+            ? formValues.platform
+            : formValues.secondaryPlatform,
         },
         version: 0,
       },
@@ -450,7 +453,11 @@ export const StepThree: React.FC = () => {
       </ConfirmDeleteResourceDialog>
 
       <NewResourceDialog
-        platform={formValues.platform}
+        platform={
+          isEmpty(formValues.secondaryPlatform)
+            ? formValues.platform
+            : formValues.secondaryPlatform
+        }
         title="Choose a Destination"
         kind="destination"
         open={addDestinationOpen}
