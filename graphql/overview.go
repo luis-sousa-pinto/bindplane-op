@@ -99,10 +99,13 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 
 		configNodeID, isEverything := everythingOrSelected(c.Name(), model.KindConfiguration)
 		configKey := ""
+		configLabel := ""
 		if isEverything {
 			configKey = configNodeID
+			configLabel = "Other Configurations"
 		} else {
 			configKey = c.Name()
+			configLabel = c.Name()
 		}
 
 		configUsage := c.Usage(ctx, store)
@@ -114,7 +117,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 
 			configNode := &graph.Node{
 				ID:         configNodeID,
-				Label:      configKey,
+				Label:      configLabel,
 				Type:       "configurationNode",
 				Attributes: configAttrs,
 			}
@@ -138,10 +141,13 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 			destNodeID, isEverything := everythingOrSelected(trimmedName, model.KindDestination)
 
 			destinationKey := ""
+			destinationLabel := ""
 			if isEverything {
 				destinationKey = destNodeID
+				destinationLabel = "Other Destinations"
 			} else {
 				destinationKey = trimmedName
+				destinationLabel = trimmedName
 			}
 
 			if destNode, ok := destNodes[destinationKey]; !ok {
@@ -151,7 +157,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 
 				destinationNode := &graph.Node{
 					ID:         destNodeID,
-					Label:      destinationKey,
+					Label:      destinationLabel,
 					Type:       "destinationNode",
 					Attributes: destAttrs,
 				}
@@ -234,6 +240,14 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 		return mi.Value > mj.Value
 	})
 
+	// relabel everything nodes if they're the only nodes
+	if len(configNodesSlice) == 1 && configNodesSlice[0].ID == "everything/configuration" {
+		configNodesSlice[0].Label = "All Configurations"
+	}
+
+	if len(destNodesSlice) == 1 && destNodesSlice[0].ID == "everything/destination" {
+		destNodesSlice[0].Label = "All Destinations"
+	}
 	g.Sources = configNodesSlice
 	g.Targets = destNodesSlice
 	g.Edges = edges
