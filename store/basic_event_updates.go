@@ -368,10 +368,8 @@ func (u *EventUpdates) CouldAffectConfigurations() bool {
 
 // AffectsSource returns true if the updates affect the given source.
 func (u *EventUpdates) AffectsSource(source *model.Source) bool {
-	if u.SourceTypesField.Contains(source.Spec.Type, EventTypeUpdate) {
-		return true
-	}
-	return u.AffectsResourceProcessors(source.Spec.Processors)
+	return u.SourceTypesField.Contains(source.Spec.Type, EventTypeUpdate) ||
+		u.AffectsResourceProcessors(source.Spec.Processors)
 }
 
 // AffectsProcessor returns true if the updates affect the given processor.
@@ -382,19 +380,15 @@ func (u *EventUpdates) AffectsProcessor(processor *model.Processor) bool {
 // AffectsDestination returns true if the updates affect the given destination.
 func (u *EventUpdates) AffectsDestination(destination *model.Destination) bool {
 	// DestinationType
-	if u.DestinationTypesField.Contains(destination.Spec.Type, EventTypeUpdate) {
-		return true
-	}
-	return u.AffectsResourceProcessors(destination.Spec.Processors)
+	return u.DestinationTypesField.Contains(destination.Spec.Type, EventTypeUpdate) ||
+		u.AffectsResourceProcessors(destination.Spec.Processors)
 }
 
 // AffectsResourceProcessors returns true if the updates affect any of the given resource processors.
 func (u *EventUpdates) AffectsResourceProcessors(processors []model.ResourceConfiguration) bool {
 	for _, processor := range processors {
-		if u.ProcessorsField.Contains(processor.Name, EventTypeUpdate) {
-			return true
-		}
-		if u.ProcessorTypesField.Contains(processor.Type, EventTypeUpdate) {
+		if u.ProcessorsField.Contains(processor.Name, EventTypeUpdate) ||
+			u.ProcessorTypesField.Contains(processor.Type, EventTypeUpdate) {
 			return true
 		}
 	}
@@ -404,19 +398,17 @@ func (u *EventUpdates) AffectsResourceProcessors(processors []model.ResourceConf
 // AffectsConfiguration returns true if the updates affect the given configuration.
 func (u *EventUpdates) AffectsConfiguration(configuration *model.Configuration) bool {
 	for _, source := range configuration.Spec.Sources {
-		if u.SourcesField.ContainsKey(source.Name) {
-			return true
-		}
-		if u.SourceTypesField.ContainsKey(source.Type) {
+		if u.SourcesField.ContainsKey(source.Name) ||
+			u.SourceTypesField.ContainsKey(source.Type) ||
+			u.AffectsResourceProcessors(source.Processors) {
 			return true
 		}
 	}
 
 	for _, destination := range configuration.Spec.Destinations {
-		if u.DestinationsField.ContainsKey(destination.Name) {
-			return true
-		}
-		if u.DestinationTypesField.ContainsKey(destination.Type) {
+		if u.DestinationsField.ContainsKey(destination.Name) ||
+			u.DestinationTypesField.ContainsKey(destination.Type) ||
+			u.AffectsResourceProcessors(destination.Processors) {
 			return true
 		}
 	}

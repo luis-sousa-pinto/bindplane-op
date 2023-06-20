@@ -671,6 +671,58 @@ func TestUpdatesAffectsConfiguration(t *testing.T) {
 			configuration: createConfigurationWithDestination("test-config", "test-destination-type", "test-destination"),
 			expected:      false,
 		},
+		{
+			name: "with destination processor type update",
+			updates: &EventUpdates{
+				ProcessorTypesField: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestinationProcessors("test-config", "test-destination-type", "test-processor-type"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated destination processor type update",
+			updates: &EventUpdates{
+				ProcessorTypesField: Events[*model.ProcessorType]{
+					"unrelated-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("unrelated-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithDestinationProcessors("test-config", "test-destination-type", "test-processor-type"),
+			expected:      false,
+		},
+		{
+			name: "with source processor type update",
+			updates: &EventUpdates{
+				ProcessorTypesField: Events[*model.ProcessorType]{
+					"test-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("test-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSourceProcessors("test-config", "test-source-type", "test-processor-type"),
+			expected:      true,
+		},
+		{
+			name: "with unrelated source processor type update",
+			updates: &EventUpdates{
+				ProcessorTypesField: Events[*model.ProcessorType]{
+					"unrelated-processor-type": Event[*model.ProcessorType]{
+						Item: model.NewProcessorType("unrelated-processor-type", nil),
+						Type: EventTypeUpdate,
+					},
+				},
+			},
+			configuration: createConfigurationWithSourceProcessors("test-config", "test-source-type", "test-processor-type"),
+			expected:      false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1207,6 +1259,26 @@ func createConfigurationWithSource(configName, sourceType, sourceName string) *m
 	})
 }
 
+// createConfigurationWithSource creates a configuration with a source for testing.
+func createConfigurationWithSourceProcessors(configName, sourceType, processorType string) *model.Configuration {
+	return model.NewConfigurationWithSpec(configName, model.ConfigurationSpec{
+		Sources: []model.ResourceConfiguration{
+			{
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: sourceType,
+					Processors: []model.ResourceConfiguration{
+						{
+							ParameterizedSpec: model.ParameterizedSpec{
+								Type: processorType,
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+}
+
 // createConfigurationWithDestination creates a configuration with a destination for testing.
 func createConfigurationWithDestination(configName, destinationType, destinationName string) *model.Configuration {
 	return model.NewConfigurationWithSpec(configName, model.ConfigurationSpec{
@@ -1215,6 +1287,26 @@ func createConfigurationWithDestination(configName, destinationType, destination
 				Name: destinationName,
 				ParameterizedSpec: model.ParameterizedSpec{
 					Type: destinationType,
+				},
+			},
+		},
+	})
+}
+
+// createConfigurationWithDestination creates a configuration with a destination for testing.
+func createConfigurationWithDestinationProcessors(configName, destinationType, processorType string) *model.Configuration {
+	return model.NewConfigurationWithSpec(configName, model.ConfigurationSpec{
+		Destinations: []model.ResourceConfiguration{
+			{
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: destinationType,
+					Processors: []model.ResourceConfiguration{
+						{
+							ParameterizedSpec: model.ParameterizedSpec{
+								Type: processorType,
+							},
+						},
+					},
 				},
 			},
 		},
