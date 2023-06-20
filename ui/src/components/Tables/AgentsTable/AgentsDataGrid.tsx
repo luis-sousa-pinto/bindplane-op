@@ -148,7 +148,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
             return params.row.name;
           },
           renderCell: renderNameDataCell,
-          width: 325,
+          width: 240,
         };
     }
   });
