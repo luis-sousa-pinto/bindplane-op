@@ -18,7 +18,7 @@ import {
 import { gql } from "@apollo/client";
 import { DestinationsTableField } from "../../components/Tables/DestinationsTable/DestinationsDataGrid";
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
-import { DestinationsPageContent } from "../destinations/DestinationsPage";
+import { DestinationsPageSubContent } from "../destinations/DestinationsPage";
 import { useCallback, useEffect } from "react";
 import colors from "../../styles/colors";
 
@@ -40,7 +40,7 @@ gql`
   }
 `;
 
-const OverviewPageContent: React.FC = () => {
+const OverviewPageSubContent: React.FC = () => {
   const {
     selectedTelemetry,
     selectedConfigs,
@@ -195,7 +195,8 @@ const OverviewPageContent: React.FC = () => {
             </Button>
           </Tooltip>
 
-          <DestinationsPageContent
+          <DestinationsPageSubContent
+            allowSelection
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
             destinationsPage={false}
@@ -211,12 +212,14 @@ const OverviewPageContent: React.FC = () => {
   );
 };
 
+export const OverviewPageContent: React.FC = () => {
+  return (
+    <OverviewPageProvider>
+      <OverviewPageSubContent />
+    </OverviewPageProvider>
+  );
+};
+
 export const OverviewPage: React.FC = withRequireLogin(
-  withNavBar(() => {
-    return (
-      <OverviewPageProvider>
-        <OverviewPageContent />
-      </OverviewPageProvider>
-    );
-  })
+  withNavBar(OverviewPageContent)
 );

@@ -5,6 +5,7 @@ import {
   split,
   from,
   FieldMergeFunction,
+  InMemoryCacheConfig,
 } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
@@ -27,7 +28,7 @@ const wsLink = new GraphQLWsLink(
 );
 
 // Use the httpLink for queries and wsLink for subscriptions
-const requestLink = split(
+export const requestLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -41,7 +42,7 @@ const requestLink = split(
 
 // authErrorLink will log a user out if a graphql query or
 // subscription returns with a 401 unauthorized.
-const authErrorLink = onError(({ operation }) => {
+export const authErrorLink = onError(({ operation }) => {
   const context = operation.getContext();
 
   if (context.response.status === 401) {
@@ -57,7 +58,6 @@ const authErrorLink = onError(({ operation }) => {
 const link = from([authErrorLink, requestLink]);
 
 /**
- *
  * merge is used to merge fields that do not have a unique identifier.
  * This is discussed in apollo documentation here:
  * https://www.apollographql.com/docs/react/caching/cache-field-behavior
@@ -66,36 +66,38 @@ const merge: FieldMergeFunction = (existing, incoming, { mergeObjects }) => {
   return mergeObjects(existing, incoming);
 };
 
+export const typePolicies: InMemoryCacheConfig["typePolicies"] = {
+  Agent: {
+    keyFields: ["id"],
+  },
+  Configuration: {
+    keyFields: ["metadata"],
+  },
+  SourceType: {
+    keyFields: ["metadata"],
+    fields: {
+      spec: {
+        merge,
+      },
+    },
+  },
+  DestinationType: {
+    keyFields: ["metadata"],
+    fields: {
+      spec: {
+        merge,
+      },
+    },
+  },
+  Metadata: {
+    keyFields: ["id", "name", "version"],
+  },
+};
+
 const APOLLO_CLIENT = new ApolloClient({
   link: link,
   cache: new InMemoryCache({
-    typePolicies: {
-      Agent: {
-        keyFields: ["id"],
-      },
-      Configuration: {
-        keyFields: ["metadata"],
-      },
-      SourceType: {
-        keyFields: ["metadata"],
-        fields: {
-          spec: {
-            merge,
-          },
-        },
-      },
-      DestinationType: {
-        keyFields: ["metadata"],
-        fields: {
-          spec: {
-            merge,
-          },
-        },
-      },
-      Metadata: {
-        keyFields: ["id", "name", "version"],
-      },
-    },
+    typePolicies,
   }),
 });
 

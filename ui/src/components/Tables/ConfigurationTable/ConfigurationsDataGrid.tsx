@@ -46,99 +46,101 @@ interface ConfigurationsDataGridProps
   columnFields?: ConfigurationsTableField[];
   minHeight?: string;
   selectionModel?: GridRowSelectionModel;
+  allowSelection: boolean;
 }
 
-const ConfigurationsDataGridComponent: React.FC<ConfigurationsDataGridProps> =
-  ({
-    setSelectionModel,
-    loading,
-    configurations,
-    configurationMetrics,
-    columnFields,
-    density = "standard",
-    minHeight,
-    selectionModel,
-    ...dataGridProps
-  }) => {
-    const columns: GridColDef[] = (columnFields || []).map((field) => {
-      switch (field) {
-        case ConfigurationsTableField.AGENT_COUNT:
-          return {
-            field: ConfigurationsTableField.AGENT_COUNT,
-            width: 100,
-            headerName: "Agents",
-            valueGetter: (params: GridValueGetterParams) =>
-              params.row.agentCount,
-            renderCell: renderAgentCountCell,
-          };
+const ConfigurationsDataGridComponent: React.FC<
+  ConfigurationsDataGridProps
+> = ({
+  setSelectionModel,
+  loading,
+  configurations,
+  configurationMetrics,
+  columnFields,
+  density = "standard",
+  minHeight,
+  selectionModel,
+  allowSelection,
+  ...dataGridProps
+}) => {
+  const columns: GridColDef[] = (columnFields || []).map((field) => {
+    switch (field) {
+      case ConfigurationsTableField.AGENT_COUNT:
+        return {
+          field: ConfigurationsTableField.AGENT_COUNT,
+          width: 100,
+          headerName: "Agents",
+          valueGetter: (params: GridValueGetterParams) => params.row.agentCount,
+          renderCell: renderAgentCountCell,
+        };
 
-        case ConfigurationsTableField.DESCRIPTION:
-          return {
-            field: ConfigurationsTableField.DESCRIPTION,
-            flex: 1,
-            headerName: "Description",
-            valueGetter: (params: GridValueGetterParams) =>
-              params.row.metadata.description,
-          };
-        case ConfigurationsTableField.LABELS:
-          return {
-            field: ConfigurationsTableField.LABELS,
-            width: 300,
-            headerName: "Labels",
-            valueGetter: (params: GridValueGetterParams) => {
-              const labels = params.row.metadata.labels;
-              return { labels };
-            },
-            renderCell: renderLabels,
-            sortComparator: (v1, v2) => {
-              return ensureSortValue(v1).localeCompare(
-                ensureSortValue(v2),
-                "en",
-                {
-                  sensitivity: "base",
-                }
-              );
-            },
-          };
-        case ConfigurationsTableField.LOGS:
-          return createMetricRateColumn(field, "logs", configurationMetrics);
-        case ConfigurationsTableField.METRICS:
-          return createMetricRateColumn(field, "metrics", configurationMetrics);
-        case ConfigurationsTableField.TRACES:
-          return createMetricRateColumn(field, "traces", configurationMetrics);
-        default:
-          return {
-            field: ConfigurationsTableField.NAME,
-            headerName: "Name",
-            width: 300,
-            valueGetter: (params: GridValueGetterParams) =>
-              params.row.metadata.name,
-            renderCell: renderNameDataCell,
-          };
-      }
-    });
+      case ConfigurationsTableField.DESCRIPTION:
+        return {
+          field: ConfigurationsTableField.DESCRIPTION,
+          flex: 1,
+          headerName: "Description",
+          valueGetter: (params: GridValueGetterParams) =>
+            params.row.metadata.description,
+        };
+      case ConfigurationsTableField.LABELS:
+        return {
+          field: ConfigurationsTableField.LABELS,
+          width: 300,
+          headerName: "Labels",
+          valueGetter: (params: GridValueGetterParams) => {
+            const labels = params.row.metadata.labels;
+            return { labels };
+          },
+          renderCell: renderLabels,
+          sortComparator: (v1, v2) => {
+            return ensureSortValue(v1).localeCompare(
+              ensureSortValue(v2),
+              "en",
+              {
+                sensitivity: "base",
+              }
+            );
+          },
+        };
+      case ConfigurationsTableField.LOGS:
+        return createMetricRateColumn(field, "logs", configurationMetrics);
+      case ConfigurationsTableField.METRICS:
+        return createMetricRateColumn(field, "metrics", configurationMetrics);
+      case ConfigurationsTableField.TRACES:
+        return createMetricRateColumn(field, "traces", configurationMetrics);
+      default:
+        return {
+          field: ConfigurationsTableField.NAME,
+          headerName: "Name",
+          width: 300,
+          valueGetter: (params: GridValueGetterParams) =>
+            params.row.metadata.name,
+          renderCell: renderNameDataCell,
+        };
+    }
+  });
 
-    return (
-      <DataGrid
-        {...dataGridProps}
-        checkboxSelection={isFunction(setSelectionModel)}
-        onRowSelectionModelChange={setSelectionModel}
-        components={{
-          NoRowsOverlay: () => (
-            <Stack height="100%" alignItems="center" justifyContent="center">
-              No Configurations
-            </Stack>
-          ),
-        }}
-        style={{ minHeight }}
-        disableRowSelectionOnClick
-        getRowId={(row) => row.metadata.name}
-        columns={columns}
-        rows={configurations}
-        rowSelectionModel={selectionModel}
-      />
-    );
-  };
+  return (
+    <DataGrid
+      {...dataGridProps}
+      checkboxSelection={isFunction(setSelectionModel)}
+      onRowSelectionModelChange={setSelectionModel}
+      components={{
+        NoRowsOverlay: () => (
+          <Stack height="100%" alignItems="center" justifyContent="center">
+            No Configurations
+          </Stack>
+        ),
+      }}
+      style={{ minHeight }}
+      disableRowSelectionOnClick
+      getRowId={(row) => row.metadata.name}
+      columns={columns}
+      rows={configurations}
+      rowSelectionModel={selectionModel}
+    />
+  );
+};
 
 function ensureSortValue(labelsCellValue: {
   labels: { [key: string]: string };
@@ -173,7 +175,9 @@ function abbreviateName(limit: number, name?: string): string {
   return name.length > limit ? name.substring(0, limit) + "..." : name;
 }
 
-function renderNameDataCell(cellParams: GridCellParams<any, string>): JSX.Element {
+function renderNameDataCell(
+  cellParams: GridCellParams<any, string>
+): JSX.Element {
   return (
     <NoMaxWidthTooltip
       title={`${cellParams.value} (Click to view configuration)`}

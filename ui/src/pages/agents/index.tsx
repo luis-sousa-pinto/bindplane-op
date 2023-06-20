@@ -15,6 +15,10 @@ import { isFunction } from "lodash";
 import { upgradeAgents } from "../../utils/rest/upgrade-agent";
 
 import mixins from "../../styles/mixins.module.scss";
+import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
+import { Role } from "../../graphql/generated";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 export const AgentsPageContent: React.FC = () => {
   const [updatable, setUpdatable] = useState<GridRowSelectionModel>([]);
@@ -24,6 +28,7 @@ export const AgentsPageContent: React.FC = () => {
   const clearSelectionModelFnRef = useRef<(() => void) | null>(null);
 
   const { enqueueSnackbar } = useSnackbar();
+  const role = useRole();
 
   function handleSelectUpdatable(agentIds: GridRowSelectionModel) {
     setUpdatable(agentIds);
@@ -83,15 +88,17 @@ export const AgentsPageContent: React.FC = () => {
         </>
       </ConfirmDeleteResourceDialog>
       <CardContainer>
-        <Button
-          component={Link}
-          variant={"contained"}
-          classes={{ root: mixins["float-right"] }}
-          to="/agents/install"
-          startIcon={<PlusCircleIcon />}
-        >
-          Install Agents
-        </Button>
+        <RBACWrapper requiredRole={Role.User}>
+          <Button
+            component={Link}
+            variant={"contained"}
+            classes={{ root: mixins["float-right"] }}
+            to="/agents/install"
+            startIcon={<PlusCircleIcon />}
+          >
+            Install Agents
+          </Button>
+        </RBACWrapper>
 
         {deletable.length > 0 && (
           <Button
@@ -124,6 +131,7 @@ export const AgentsPageContent: React.FC = () => {
         </Typography>
 
         <AgentsTable
+          allowSelection={hasPermission(Role.User, role)}
           onDeletableAgentsSelected={handleSelectDeletable}
           onUpdatableAgentsSelected={handleSelectUpdatable}
           clearSelectionModelFnRef={clearSelectionModelFnRef}

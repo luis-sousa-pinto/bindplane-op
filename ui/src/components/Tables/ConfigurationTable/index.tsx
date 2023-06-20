@@ -222,6 +222,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 
         <ConfigurationsDataGrid
           {...dataGridProps}
+          allowSelection={allowSelection}
           setSelectionModel={setSelected}
           loading={loading}
           configurations={data?.configurations.configurations ?? []}

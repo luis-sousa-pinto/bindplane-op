@@ -8,6 +8,7 @@ import {
   PipelineType,
   ResourceConfiguration,
   ResourceTypeKind,
+  Role,
   useProcessorDialogDestinationTypeLazyQuery,
   useProcessorDialogSourceTypeLazyQuery,
   useUpdateProcessorsMutation,
@@ -29,6 +30,8 @@ import {
   SnapshotContextProvider,
   useSnapshot,
 } from "../../SnapShotConsole/SnapshotContext";
+import { hasPermission } from "../../../utils/has-permission";
+import { useRole } from "../../../hooks/useRole";
 
 interface ProcessorDialogProps extends DialogProps {
   processors: ResourceConfiguration[];
@@ -83,6 +86,7 @@ enum Page {
 export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 
 export const ProcessorDialog: React.FC = () => {
+  const role = useRole();
   const {
     editProcessorsInfo,
     configuration,
@@ -116,7 +120,7 @@ export const ProcessorDialog: React.FC = () => {
       open={editProcessorsOpen}
       onClose={closeProcessorDialog}
       processors={processors}
-      readOnly={readOnlyGraph}
+      readOnly={readOnlyGraph || !hasPermission(Role.User, role)}
     />
   );
 };

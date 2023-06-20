@@ -26,6 +26,7 @@ interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
   minHeight?: string;
   selectionModel?: GridRowSelectionModel;
   destinationsPage?: boolean;
+  allowSelection: boolean;
 }
 
 export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
@@ -36,9 +37,12 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
     minHeight,
     selectionModel,
     destinationsPage,
+    allowSelection,
     ...dataGridProps
   }) => {
-    function renderNameCell(cellParams: GridCellParams<any, string>): JSX.Element {
+    function renderNameCell(
+      cellParams: GridCellParams<any, string>
+    ): JSX.Element {
       if (cellParams.row.kind === "Destination") {
         return (
           <button
@@ -82,7 +86,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
     return (
       <DataGrid
         {...dataGridProps}
-        checkboxSelection={isFunction(setSelectionModel)}
+        checkboxSelection={isFunction(setSelectionModel) && allowSelection}
         onRowSelectionModelChange={setSelectionModel}
         components={{
           NoRowsOverlay: () => (
@@ -105,7 +109,9 @@ function renderTypeCell(cellParams: GridCellParams<any, string>): JSX.Element {
   return <DestinationTypeCell type={cellParams.value ?? ""} />;
 }
 
-function renderStringCell(cellParams: GridCellParams<any, string>): JSX.Element {
+function renderStringCell(
+  cellParams: GridCellParams<any, string>
+): JSX.Element {
   return <>{cellParams.value}</>;
 }
 

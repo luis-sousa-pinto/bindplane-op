@@ -19,6 +19,7 @@ import {
   DestinationsQuery,
   DestinationsQueryVariables,
   Exact,
+  Role,
   useDestinationsQuery,
 } from "../../graphql/generated";
 import { ResourceStatus, ResourceKind } from "../../types/resources";
@@ -26,8 +27,11 @@ import {
   deleteResources,
   MinimumDeleteResource,
 } from "../../utils/rest/delete-resources";
+import { useRole } from "../../hooks/useRole";
+import { hasPermission } from "../../utils/has-permission";
 
 import mixins from "../../styles/mixins.module.scss";
+import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
 
 gql`
   query Destinations {
@@ -56,6 +60,8 @@ export interface DestinationsPageContentProps {
   editingDestination: string | null;
   setEditingDestination: (dest: string | null) => void;
 
+  allowSelection: boolean;
+
   // as function for the graphql query
   destinationsQuery:
     | ((
@@ -79,7 +85,7 @@ export interface DestinationsPageContentProps {
         Exact<{ [key: string]: never }>
       >);
 }
-export const DestinationsPageContent: React.FC<
+export const DestinationsPageSubContent: React.FC<
   DestinationsPageContentProps
 > = ({
   destinationsPage,
@@ -90,6 +96,7 @@ export const DestinationsPageContent: React.FC<
   minHeight,
   editingDestination,
   setEditingDestination,
+  allowSelection,
 }) => {
   // Used to control the delete confirmation modal.
   const [open, setOpen] = useState<boolean>(false);
@@ -155,14 +162,16 @@ export const DestinationsPageContent: React.FC<
         </Typography>
         {destinationsPage && selected.length > 0 && (
           <FormControl classes={{ root: mixins["ml-5"] }}>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setOpen(true)}
-            >
-              Delete {selected.length} Destination
-              {selected.length > 1 && "s"}
-            </Button>
+            <RBACWrapper requiredRole={Role.User}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setOpen(true)}
+              >
+                Delete {selected.length} Destination
+                {selected.length > 1 && "s"}
+              </Button>
+            </RBACWrapper>
           </FormControl>
         )}
       </div>
@@ -176,6 +185,7 @@ export const DestinationsPageContent: React.FC<
         columnFields={columnFields}
         minHeight={minHeight}
         rows={rows}
+        allowSelection={allowSelection}
         classes={
           !destinationsPage && rows.length < 100
             ? { footerContainer: mixins["hidden"] }
@@ -213,6 +223,34 @@ export const DestinationsPageContent: React.FC<
   );
 };
 
+export const DestinationsPageContent: React.FC = () => {
+  const [selected, setSelected] = useState<GridRowSelectionModel>([]);
+  const [editingDestination, setEditingDestination] = useState<string | null>(
+    null
+  );
+
+  const role = useRole();
+
+  return (
+    <CardContainer>
+      <DestinationsPageSubContent
+        allowSelection={hasPermission(Role.Admin, role)}
+        destinationsPage={false}
+        selected={selected}
+        setSelected={setSelected}
+        editingDestination={editingDestination}
+        setEditingDestination={setEditingDestination}
+        destinationsQuery={useDestinationsQuery}
+        minHeight="300px"
+      />
+    </CardContainer>
+  );
+};
+
+export const DestinationsPage = withRequireLogin(
+  withNavBar(DestinationsPageContent)
+);
+
 export function resourcesFromSelected(
   selected: GridRowSelectionModel
 ): MinimumDeleteResource[] {
@@ -232,27 +270,3 @@ export function resourcesFromSelected(
     return prev;
   }, []);
 }
-
-export const DestinationsPage = withRequireLogin(
-  withNavBar((props) => {
-    // Selected is an array of names of destinations in the form
-    // <Kind>|<Name>
-    const [selected, setSelected] = useState<GridRowSelectionModel>([]);
-    const [editingDestination, setEditingDestination] = useState<string | null>(
-      null
-    );
-
-    return (
-      <CardContainer>
-        <DestinationsPageContent
-          destinationsPage
-          selected={selected}
-          setSelected={setSelected}
-          editingDestination={editingDestination}
-          setEditingDestination={setEditingDestination}
-          destinationsQuery={useDestinationsQuery}
-        />
-      </CardContainer>
-    );
-  })
-);

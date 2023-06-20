@@ -5,12 +5,14 @@ import { useSnackbar } from "notistack";
 import { useState } from "react";
 import { ConfirmDeleteResourceDialog } from "../ConfirmDeleteResourceDialog";
 import { EditResourceDialog } from "../ResourceDialog/EditResourceDialog";
-import { useSourceTypeQuery } from "../../graphql/generated";
+import { Role, useSourceTypeQuery } from "../../graphql/generated";
 import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPResourceConfiguration } from "../../utils/classes";
 import { MinimumRequiredConfig } from "../PipelineGraph/PipelineGraph";
 import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
 import { ResourceCard } from "./ResourceCard";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 gql`
   query SourceType($name: String!) {
@@ -75,6 +77,7 @@ export const InlineSourceCard: React.FC<{
 }> = ({ id, disabled, configuration, refetchConfiguration }) => {
   const sourceIndex = getSourceIndex(id);
   const { readOnlyGraph } = usePipelineGraph();
+  const role = useRole();
 
   const source = configuration?.spec?.sources![sourceIndex];
   const name = source?.type || "";
@@ -210,7 +213,7 @@ export const InlineSourceCard: React.FC<{
         onSave={onSave}
         paused={source?.disabled}
         onTogglePause={onTogglePause}
-        readOnly={readOnlyGraph}
+        readOnly={readOnlyGraph || !hasPermission(Role.User, role)}
       />
 
       <ConfirmDeleteResourceDialog

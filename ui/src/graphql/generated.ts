@@ -558,6 +558,12 @@ export type ResourceTypeSpec = {
   version: Scalars['String']['output'];
 };
 
+export enum Role {
+  Admin = 'admin',
+  User = 'user',
+  Viewer = 'viewer'
+}
+
 export type Rollout = {
   __typename?: 'Rollout';
   completed: Scalars['Int']['output'];

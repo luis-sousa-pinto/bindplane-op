@@ -91,6 +91,7 @@ interface Props {
   columnFields?: AgentsTableField[];
   density?: GridDensity;
   initQuery?: string;
+  allowSelection: boolean;
 }
 
 const AGENTS_TABLE_FILTER_OPTIONS: Suggestion[] = [
@@ -100,6 +101,7 @@ const AGENTS_TABLE_FILTER_OPTIONS: Suggestion[] = [
 ];
 
 const AgentsTableComponent: React.FC<Props> = ({
+  allowSelection,
   onAgentsSelected,
   onDeletableAgentsSelected,
   onUpdatableAgentsSelected,
@@ -198,10 +200,10 @@ const AgentsTableComponent: React.FC<Props> = ({
     [debouncedRefetch, selector]
   );
 
-  const allowSelection =
-    isFunction(onAgentsSelected) ||
-    isFunction(onDeletableAgentsSelected) ||
-    isFunction(onUpdatableAgentsSelected);
+  const allowDataGridSelection =
+    (isFunction(onAgentsSelected) && allowSelection) ||
+    (isFunction(onDeletableAgentsSelected) && allowSelection) ||
+    (isFunction(onUpdatableAgentsSelected) && allowSelection);
 
   return (
     <>
@@ -214,9 +216,10 @@ const AgentsTableComponent: React.FC<Props> = ({
       />
 
       <AgentsDataGrid
+        allowSelection={allowDataGridSelection}
         clearSelectionModelFnRef={clearSelectionModelFnRef}
         isRowSelectable={isRowSelectable}
-        onAgentsSelected={allowSelection ? handleSelect : undefined}
+        onAgentsSelected={handleSelect}
         density={density}
         minHeight={minHeight}
         loading={loading}

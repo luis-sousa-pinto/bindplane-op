@@ -46,6 +46,7 @@ interface AgentsDataGridProps {
   agents?: AgentsTableAgent[];
   agentMetrics?: AgentsTableMetricsSubscription;
   columnFields?: AgentsTableField[];
+  allowSelection: boolean;
 }
 
 const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
@@ -58,6 +59,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
   agentMetrics,
   columnFields,
   density,
+  allowSelection,
 }) => {
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(
     []
@@ -161,7 +163,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
 
   return (
     <DataGrid
-      checkboxSelection={isFunction(onAgentsSelected)}
+      checkboxSelection={isFunction(onAgentsSelected) && allowSelection}
       isRowSelectable={isRowSelectable}
       onRowSelectionModelChange={handleSelect}
       rowSelectionModel={selectionModel}

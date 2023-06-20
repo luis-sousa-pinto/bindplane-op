@@ -78,6 +78,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <MockedProvider mocks={MOCKS}>
         <DestinationsDataGrid
+          allowSelection
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}
@@ -93,6 +94,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <MockedProvider mocks={MOCKS}>
         <DestinationsDataGrid
+          allowSelection
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}
@@ -117,6 +119,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <MockedProvider mocks={MOCKS}>
         <DestinationsDataGrid
+          allowSelection
           loading={false}
           rows={destinationData}
           setSelectionModel={onDestinationsSelected}
@@ -138,6 +141,7 @@ describe("DestinationsDataGrid", () => {
     render(
       <MockedProvider mocks={MOCKS}>
         <DestinationsDataGrid
+          allowSelection
           loading={false}
           rows={destinationData}
           setSelectionModel={() => {}}

@@ -2,13 +2,20 @@ import { gql } from "@apollo/client";
 import { Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { Link } from "react-router-dom";
-import { GetAgentAndConfigurationsQuery, useRemoveAgentConfigurationMutation } from "../../graphql/generated";
+import {
+  GetAgentAndConfigurationsQuery,
+  Role,
+  useRemoveAgentConfigurationMutation,
+} from "../../graphql/generated";
 import { platformIsContainer } from "../../pages/agents/install";
 import mixins from "../../styles/mixins.module.scss";
 import { patchConfigLabel } from "../../utils/patch-config-label";
 import { classes } from "../../utils/styles";
 import styles from "./apply-config-form.module.scss";
 import { Config } from "./types";
+import { RBACWrapper } from "../RBACWrapper/RBACWrapper";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 gql`
   mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
@@ -21,7 +28,7 @@ gql`
       }
     }
   }
-`
+`;
 
 interface ManageConfigFormProps {
   agent: NonNullable<GetAgentAndConfigurationsQuery["agent"]>;
@@ -43,14 +50,14 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
   setSelectedConfig,
 }) => {
   const snackbar = useSnackbar();
-  const [removeAgentConfiguration] =
-    useRemoveAgentConfigurationMutation({
-      variables: {
-        input: {
-          agentId: agent.id,
-        },
+  const role = useRole();
+  const [removeAgentConfiguration] = useRemoveAgentConfigurationMutation({
+    variables: {
+      input: {
+        agentId: agent.id,
       },
-    });
+    },
+  });
 
   const configResourceName = agent?.configurationResource?.metadata.name;
   const isRawConfig = configResourceName == null;
@@ -98,11 +105,10 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
           <>
             <Typography variant={"body2"} classes={{ root: mixins["mb-2"] }}>
               This agent configuration is not currently managed by BindPlane.
-              Click import to pull this agent&apos;s configuration in as a new
-              managed configuration.
+              {hasPermission(Role.User, role) &&
+                " Click import to pull this agent's configuration in as a new managed configuration."}
             </Typography>
           </>
-
         ) : (
           <>
             <Link to={`/configurations/${configResourceName}`}>
@@ -154,22 +160,28 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
           ) : (
             <>
               {isRawConfig && (
-                <>
+                <RBACWrapper requiredRole={Role.User}>
                   <Button variant="contained" onClick={onImport}>
                     Import
                   </Button>
-                </>
+                </RBACWrapper>
               )}
               {/* k8s agents cannot change their configuration */}
-              {(!platformIsContainer(agent.platform ?? "") && configurations.length > 0) && (
-                <Button
-                  className={classes([mixins["ml-2"], styles["choose-button"]])}
-                  variant="text"
-                  onClick={() => setEditing(true)}
-                >
-                  Choose Another Configuration
-                </Button>
-              )}
+              {!platformIsContainer(agent.platform ?? "") &&
+                configurations.length > 0 && (
+                  <RBACWrapper requiredRole={Role.User}>
+                    <Button
+                      className={classes([
+                        mixins["ml-2"],
+                        styles["choose-button"],
+                      ])}
+                      variant="text"
+                      onClick={() => setEditing(true)}
+                    >
+                      Choose Another Configuration
+                    </Button>
+                  </RBACWrapper>
+                )}
             </>
           )}
         </div>
