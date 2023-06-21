@@ -7,7 +7,7 @@ describe("SearchBar", () => {
   const filterOptions: Suggestion[] = [
     { label: "Disconnected agents", query: "status:disconnected" },
     { label: "Outdated agents", query: "-version:latest" },
-    { label: "No managed configuration", query: "-configuration:" },
+    { label: "No managed config", query: "-configuration:" },
   ];
   it("when filterOptions are passed shows a filter dropdown that changes the input", () => {
     render(
@@ -25,7 +25,7 @@ describe("SearchBar", () => {
     expect(input).toHaveValue("-version:latest");
 
     screen.getByText("Filters").click();
-    screen.getByText("No managed configuration").click();
+    screen.getByText("No managed config").click();
     expect(input).toHaveValue("-configuration:");
   });
   it("calls onQueryChange when search input changes suggestions", () => {

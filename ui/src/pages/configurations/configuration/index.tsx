@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { IconButton, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -143,7 +143,7 @@ export const ConfigPageContent: React.FC = () => {
   }
 
   if (data.configuration == null) {
-    enqueueSnackbar(`No configuration with name ${name} found.`, {
+    enqueueSnackbar(`No config with name ${name} found.`, {
       variant: "error",
     });
 
@@ -163,7 +163,7 @@ export const ConfigPageContent: React.FC = () => {
   }
 
   function onApplySuccess() {
-    toast("Saved configuration!", "success");
+    toast("Saved config!", "success");
     closeApplyDialog();
   }
 
@@ -189,9 +189,13 @@ export const ConfigPageContent: React.FC = () => {
               data.configuration?.metadata?.labels?.platform
             ) && (
               <RBACWrapper requiredRole={Role.User}>
-                <IconButton onClick={openApplyDialog} color="primary">
-                  <PlusCircleIcon />
-                </IconButton>
+                <Button
+                  onClick={openApplyDialog}
+                  variant={"contained"}
+                  startIcon={<PlusCircleIcon />}
+                >
+                  Apply config
+                </Button>
               </RBACWrapper>
             )}
           </div>
@@ -217,7 +221,7 @@ export const ConfigPageContent: React.FC = () => {
           maxWidth="lg"
           fullWidth
           open={showApplyDialog}
-          onError={() => toast("Failed to apply configuration.", "error")}
+          onError={() => toast("Failed to apply config.", "error")}
           onSuccess={onApplySuccess}
           onClose={closeApplyDialog}
           onCancel={closeApplyDialog}

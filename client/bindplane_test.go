@@ -173,13 +173,13 @@ func TestCopyConfig(t *testing.T) {
 		{
 			"409 Conflict, error",
 			true,
-			"a configuration with name 'my-config-copy' already exists",
+			"a config with name 'my-config-copy' already exists",
 			409,
 		},
 		{
 			"409 Conflict, error",
 			true,
-			"failed to copy configuration, got status 400",
+			"failed to copy config, got status 400",
 			400,
 		},
 	}

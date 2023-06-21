@@ -255,8 +255,8 @@ export const StepTwo: React.FC = (props) => {
           A source is a combination of OpenTelemetry receivers and processors
           that allows you to collect metrics and logs from a specific
           technology. Ensuring the right combination of these components is one
-          of the most challenging aspects of building an OTel configuration
-          file. With BindPlane, we handle that all for you.
+          of the most challenging aspects of building an OpenTelemetry
+          configuration file. With BindPlane, we handle that all for you.
         </Typography>
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
           Start adding sources now:

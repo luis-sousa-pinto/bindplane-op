@@ -97,7 +97,7 @@ interface Props {
 const AGENTS_TABLE_FILTER_OPTIONS: Suggestion[] = [
   { label: "Disconnected agents", query: "status:disconnected" },
   { label: "Outdated agents", query: "-version:latest" },
-  { label: "No managed configuration", query: "-configuration:" },
+  { label: "No managed config", query: "-configuration:" },
 ];
 
 const AgentsTableComponent: React.FC<Props> = ({

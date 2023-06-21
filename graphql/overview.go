@@ -102,7 +102,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 		configLabel := ""
 		if isEverything {
 			configKey = configNodeID
-			configLabel = "Other Configurations"
+			configLabel = "Other Configs"
 		} else {
 			configKey = c.Name()
 			configLabel = c.Name()
@@ -242,7 +242,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 
 	// relabel everything nodes if they're the only nodes
 	if len(configNodesSlice) == 1 && configNodesSlice[0].ID == "everything/configuration" {
-		configNodesSlice[0].Label = "All Configurations"
+		configNodesSlice[0].Label = "All Configs"
 	}
 
 	if len(destNodesSlice) == 1 && destNodesSlice[0].ID == "everything/destination" {

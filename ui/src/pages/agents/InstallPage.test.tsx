@@ -62,7 +62,7 @@ describe("InstallPageContent", () => {
     );
     expect(await screen.findByTestId("config-select")).toBeInTheDocument();
     expect(await screen.findByText("the install command")).toBeInTheDocument();
-    await screen.findByLabelText("Select Configuration (optional)");
+    await screen.findByLabelText("Select Config (optional)");
     fireEvent.change(screen.getByTestId("config-select"), {
       target: { value: "config-1" },
     });

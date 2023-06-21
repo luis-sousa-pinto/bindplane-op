@@ -63,7 +63,7 @@ export class BPDestination implements Destination {
     );
     if (update == null) {
       throw new Error(
-        `failed to apply configuration, no update with name ${this.name()}`
+        `failed to apply config, no update with name ${this.name()}`
       );
     }
     return update;

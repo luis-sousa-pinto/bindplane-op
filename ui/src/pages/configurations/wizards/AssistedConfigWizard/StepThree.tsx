@@ -201,22 +201,20 @@ export const StepThree: React.FC = () => {
 
       if (update == null) {
         throw new Error(
-          `failed to create configuration, no configuration returned with name ${formValues.name}`
+          `failed to create config, no config returned with name ${formValues.name}`
         );
       }
 
       // Configuration was returned but not created, likely if it was valid.
       if (update.status !== UpdateStatus.CREATED) {
-        throw new Error(
-          `failed to create configuration, got status ${update.status}`
-        );
+        throw new Error(`failed to create config, got status ${update.status}`);
       }
 
       const configPagePath = `/configurations/${update.resource.metadata.name}`;
       // Redirect to configuration page
       navigate(configPagePath);
     } catch (err) {
-      snackbar.enqueueSnackbar("Failed to create configuration.", {
+      snackbar.enqueueSnackbar("Failed to create config.", {
         variant: "error",
       });
       console.error(err);
@@ -362,7 +360,7 @@ export const StepThree: React.FC = () => {
               </TableBody>
             </Table>
           ) : (
-            <Typography>No configuration.</Typography>
+            <Typography>No config.</Typography>
           )}
 
           {/* ------------------------- Edit and Remove Buttons ------------------------ */}
@@ -400,8 +398,8 @@ export const StepThree: React.FC = () => {
         <Typography variant="body2" marginBottom={"1rem"}>
           A destination simply represents where you'd like to send your
           telemetry data. You can configure that here. Depending on the
-          destination you choose, we'll configure specific OTel processors for
-          you, ensuring your data shows up in a useful state.
+          destination you choose, we'll configure specific OpenTelemetry
+          processors for you, ensuring your data shows up in a useful state.
         </Typography>
 
         {/* ------------------- Add Destination button or Accordion ------------------ */}

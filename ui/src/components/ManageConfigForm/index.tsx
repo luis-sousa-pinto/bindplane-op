@@ -68,8 +68,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
 
       setEditing(false);
     } catch (err) {
-      console.error("Failed to apply new configuration", err);
-      snackbar.enqueueSnackbar("Failed to change configuration.", {
+      console.error("Failed to apply new config", err);
+      snackbar.enqueueSnackbar("Failed to change config.", {
         variant: "error",
         autoHideDuration: 5000,
       });
@@ -90,8 +90,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
       setEditing(false);
     } catch (err) {
       setEditing(false);
-      console.error("Failed to remove configuration", err);
-      snackbar.enqueueSnackbar("Failed to change configuration.", {
+      console.error("Failed to remove config", err);
+      snackbar.enqueueSnackbar("Failed to change config.", {
         variant: "error",
         autoHideDuration: 5000,
       });
@@ -104,9 +104,9 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
         {isRawConfig ? (
           <>
             <Typography variant={"body2"} classes={{ root: mixins["mb-2"] }}>
-              This agent configuration is not currently managed by BindPlane.
+              This agent config is not currently managed by BindPlane.
               {hasPermission(Role.User, role) &&
-                " Click import to pull this agent's configuration in as a new managed configuration."}
+                " Click import to pull this agent's config in as a new managed config."}
             </Typography>
           </>
         ) : (
@@ -130,7 +130,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
         ])}
       >
         <Typography variant="h6">
-          Configuration - {editing ? <></> : <ShowConfiguration />}
+          Config - {editing ? <></> : <ShowConfiguration />}
         </Typography>
 
         <div className={styles["title-button-group"]}>
@@ -178,7 +178,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
                       variant="text"
                       onClick={() => setEditing(true)}
                     >
-                      Choose Another Configuration
+                      Choose Another Config
                     </Button>
                   </RBACWrapper>
                 )}

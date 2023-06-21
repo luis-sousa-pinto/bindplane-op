@@ -493,7 +493,7 @@ func (mapstore *mapStore) ApplyResources(ctx context.Context, resources []model.
 		case *model.Configuration:
 			resourceStatus = mapstore.configurations.add(r)
 			if err := mapstore.configurationIndex.Upsert(resourceStatus.Resource); err != nil {
-				mapstore.logger.Error("error updating configuration in the search index", zap.Error(err))
+				mapstore.logger.Error("error updating config in the search index", zap.Error(err))
 			}
 		case *model.Source:
 			resourceStatus = mapstore.sources.add(r)
@@ -562,7 +562,7 @@ func (mapstore *mapStore) DeleteResources(ctx context.Context, resources []model
 		case *model.Configuration:
 			c, e := mapstore.configurations.remove(r.Name())
 			if err := mapstore.configurationIndex.Remove(c); err != nil {
-				mapstore.logger.Error("error removing configuration from the search index", zap.Error(err))
+				mapstore.logger.Error("error removing config from the search index", zap.Error(err))
 			}
 			exists = e
 
@@ -602,7 +602,7 @@ func (mapstore *mapStore) AgentConfiguration(_ context.Context, agent *model.Age
 	mapstore.RLock()
 	defer mapstore.RUnlock()
 	if agent == nil {
-		return nil, fmt.Errorf("cannot return configuration for unknown agent")
+		return nil, fmt.Errorf("cannot return config for unknown agent")
 	}
 
 	labels := agent.Labels
@@ -740,7 +740,7 @@ func (mapstore *mapStore) addTransitiveUpdates(ctx context.Context, updates Basi
 	if updates.CouldAffectConfigurations() {
 		configurations, err := mapstore.Configurations(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to get configurations: %w", err)
+			return fmt.Errorf("failed to get configs: %w", err)
 		}
 
 		updates.AddAffectedConfigurations(configurations)

@@ -200,12 +200,12 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
     <>
       <div className={mixins.flex}>
         <Typography variant="h5" className={mixins["mb-5"]}>
-          Configurations
+          Configs
         </Typography>
         {selected.length > 0 && enableDelete && (
           <FormControl classes={{ root: mixins["ml-5"] }}>
             <Button variant="contained" color="error" onClick={openModal}>
-              Delete {selected.length} Configuration
+              Delete {selected.length} Config
               {selected.length > 1 && "s"}
             </Button>
           </FormControl>

@@ -29,7 +29,7 @@ export const ConfigurationsPageContent: React.FC = () => {
           classes={{ root: mixins["float-right"] }}
           startIcon={<PlusCircleIcon />}
         >
-          New Configuration
+          Create Config
         </Button>
       </RBACWrapper>
 

@@ -62,7 +62,7 @@ export const RawConfigWizard: React.FC<RawConfigWizardProps> = ({
         "Specify some basic settings for the platform you'll be shipping logs from.",
     },
     {
-      label: "Import Config",
+      label: "Import Configuration",
       description:
         "Import a raw OpenTelemetry configuration for use within BindPlane.",
     },

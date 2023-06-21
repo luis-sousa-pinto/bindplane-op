@@ -96,7 +96,7 @@ export const AgentsPageContent: React.FC = () => {
             to="/agents/install"
             startIcon={<PlusCircleIcon />}
           >
-            Install Agents
+            Install Agent
           </Button>
         </RBACWrapper>
 

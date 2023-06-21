@@ -29,13 +29,13 @@ export const OtelConfigEditor: React.FC<OtelConfigProps> = ({
     },
     onError(error) {
       console.error(error);
-      enqueueSnackbar(`Failed to fetch configuration ${configurationName}.`, {
+      enqueueSnackbar(`Failed to fetch config ${configurationName}.`, {
         variant: "error",
       });
     },
     onCompleted(data) {
       if (data.configuration == null) {
-        enqueueSnackbar(`No configuration with name ${configurationName}.`, {
+        enqueueSnackbar(`No config with name ${configurationName}.`, {
           variant: "error",
         });
         return;
@@ -47,7 +47,7 @@ export const OtelConfigEditor: React.FC<OtelConfigProps> = ({
   async function handleSave() {
     try {
       if (data?.configuration == null) {
-        throw new Error("No configuration data to apply.");
+        throw new Error("No config data to apply.");
       }
 
       const newConfig = new BPConfiguration(data.configuration);
@@ -62,7 +62,7 @@ export const OtelConfigEditor: React.FC<OtelConfigProps> = ({
           await refetch();
           return;
         case UpdateStatus.INVALID:
-          setInvalidReason(resourceStatus.reason ?? "Invalid configuration.");
+          setInvalidReason(resourceStatus.reason ?? "Invalid config.");
           return;
         default:
           throw new Error(
@@ -71,7 +71,7 @@ export const OtelConfigEditor: React.FC<OtelConfigProps> = ({
       }
     } catch (err) {
       console.error(err);
-      enqueueSnackbar("Failed to save configuration.", {
+      enqueueSnackbar("Failed to save config.", {
         variant: "error",
       });
       return;

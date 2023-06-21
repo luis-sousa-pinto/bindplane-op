@@ -68,7 +68,7 @@ func (f *Factory) LoadConfig(_ context.Context, path string) error {
 
 	viper.SetConfigFile(path)
 	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("error reading in configuration file: %s, %w", path, err)
+		return fmt.Errorf("error reading in config file: %s, %w", path, err)
 	}
 
 	cfg := config.NewConfig()

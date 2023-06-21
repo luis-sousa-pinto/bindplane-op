@@ -11,17 +11,17 @@ export const StepOne: React.FC = () => {
     return (
       <>
         <Typography variant="h6" classes={{ root: mixins["mb-5"] }}>
-          Let's get started building your configuration
+          Let's get started building your config
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
-          The BindPlane configuration builder makes it easy to assemble a valid
-          OpenTelemetry config.
+          The BindPlane config builder makes it easy to assemble a valid
+          OpenTelemetry configuration.
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
-          Already have a configuration? Use our{" "}
-          <Link to="/configurations/new-raw">raw configuration wizard</Link>.
+          Already have an OpenTelemetry configuration? Use our{" "}
+          <Link to="/configurations/new-raw">raw config wizard</Link>.
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
@@ -38,7 +38,7 @@ export const StepOne: React.FC = () => {
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
           {" "}
-          Let&apos;s get started importing your config.
+          Let&apos;s get started building your config.
         </Typography>
       </>
     );

@@ -131,7 +131,7 @@ export class BPConfiguration
 
     if (update == null) {
       throw new Error(
-        `failed to apply updated configuration, no update with name ${this.name()} returned.`
+        `failed to apply updated config, no update with name ${this.name()} returned.`
       );
     }
 

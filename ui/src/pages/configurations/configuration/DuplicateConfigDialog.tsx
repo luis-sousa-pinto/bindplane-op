@@ -30,7 +30,7 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
   const configNames = data?.configurations.configurations.map(
     (c) => c.metadata.name
   );
-  const formError = validateNameField(newName, "configuration", configNames);
+  const formError = validateNameField(newName, "config", configNames);
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
 
   useEffect(() => {
     if (error != null) {
-      const message = "Error retrieving configuration names.";
+      const message = "Error retrieving config names.";
       enqueueSnackbar(message, { key: message, variant: "error" });
     }
   }, [enqueueSnackbar, error]);
@@ -60,7 +60,7 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
     let message: string;
     switch (status) {
       case "conflict":
-        message = "Looks like a configuration with that name already exists.";
+        message = "Looks like a config with that name already exists.";
         enqueueSnackbar(message, { key: message, variant: "warning" });
         break;
       case "error":
@@ -88,10 +88,10 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
     <Dialog {...dialogProps}>
       <DialogContent>
         <Typography variant="h6" marginBottom={2}>
-          Duplicate Configuration
+          Duplicate Config
         </Typography>
         <Typography variant="body2">
-          Clicking save will create a new Configuration with identical sources
+          Clicking save will create a new Config with identical sources
           and destinations.
         </Typography>
         <form onSubmit={handleSave}>

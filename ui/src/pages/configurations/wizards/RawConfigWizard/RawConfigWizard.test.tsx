@@ -73,7 +73,7 @@ describe("RawConfigForm", () => {
     // Step one copy
     expect(
       screen.getByText(
-        "We've provided some basic details for this configuration, just verify everything looks correct."
+        "We've provided some basic details for this config, just verify everything looks correct."
       )
     ).toBeInTheDocument();
 
@@ -82,7 +82,7 @@ describe("RawConfigForm", () => {
     // Step two copy
     expect(
       screen.getByText(
-        "This is the configuration of the connected agent. If everything looks good, click Save to complete your import."
+        "This is the OpenTelemetry configuration of the connected agent. If everything looks good, click Save to complete your import."
       )
     ).toBeInTheDocument();
 

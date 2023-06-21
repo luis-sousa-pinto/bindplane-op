@@ -231,7 +231,7 @@ export const AgentPageContent: React.FC = () => {
 
     if (disableReason == null && data?.agent?.configurationResource == null) {
       disableReason =
-        "Cannot view recent telemetry for an agent with an unmanaged configuration.";
+        "Cannot view recent telemetry for an agent with an unmanaged config.";
     }
 
     if (disableReason != null) {

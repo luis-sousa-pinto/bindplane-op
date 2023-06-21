@@ -117,7 +117,7 @@ export const InlineSourceCard: React.FC<{
       const update = await updatedConfig.apply();
       if (update.status === UpdateStatus.INVALID) {
         console.error(update);
-        throw new Error("failed to save source on configuration");
+        throw new Error("failed to save source on config");
       }
 
       enqueueSnackbar("Successfully saved source!", {
@@ -149,7 +149,7 @@ export const InlineSourceCard: React.FC<{
       const { status, reason } = await updatedConfig.apply();
       if (status === UpdateStatus.INVALID) {
         throw new Error(
-          `failed to ${action} source, configuration invalid, ${reason}`
+          `failed to ${action} source, config invalid, ${reason}`
         );
       }
 
@@ -160,7 +160,7 @@ export const InlineSourceCard: React.FC<{
       closeEditDialog();
       refetchConfiguration();
     } catch (err) {
-      enqueueSnackbar(`Failed to ${action} configuration.`, {
+      enqueueSnackbar(`Failed to ${action} config.`, {
         variant: "error",
       });
       console.error(err);
@@ -175,7 +175,7 @@ export const InlineSourceCard: React.FC<{
       const { status, reason } = await updatedConfig.apply();
       if (status === UpdateStatus.INVALID) {
         throw new Error(
-          `failed to update configuration, configuration invalid, ${reason}`
+          `failed to update config, config invalid, ${reason}`
         );
       }
 
@@ -183,7 +183,7 @@ export const InlineSourceCard: React.FC<{
       closeEditDialog();
       refetchConfiguration();
     } catch (err) {
-      enqueueSnackbar("Failed to update configuration.", { variant: "error" });
+      enqueueSnackbar("Failed to update config.", { variant: "error" });
       console.error(err);
     }
   }

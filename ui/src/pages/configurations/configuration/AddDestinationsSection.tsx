@@ -33,7 +33,7 @@ const AddDestinationsComponent: React.FC<{
   ) {
     if (configuration == null) {
       console.error(
-        "cannot save destination, current configuration is null or undefined."
+        "cannot save destination, current config is null or undefined."
       );
       return;
     }
@@ -87,13 +87,13 @@ const AddDestinationsComponent: React.FC<{
 
       if (configurationUpdate == null) {
         throw new Error(
-          `failed to update configuration, no update returned with name ${values.name}`
+          `failed to update config, no update returned with name ${values.name}`
         );
       }
 
       if (configurationUpdate.status !== UpdateStatus.CONFIGURED) {
         throw new Error(
-          `failed to update configuration, got update status ${configurationUpdate.status}`
+          `failed to update config, got update status ${configurationUpdate.status}`
         );
       }
 

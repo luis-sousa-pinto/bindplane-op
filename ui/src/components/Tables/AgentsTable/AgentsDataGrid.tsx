@@ -92,7 +92,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
       case AgentsTableField.CONFIGURATION:
         return {
           field: AgentsTableField.CONFIGURATION,
-          headerName: "Configuration",
+          headerName: "Config",
           width: 200,
           renderCell: renderConfigurationCell,
           valueGetter: (params: GridValueGetterParams<AgentsTableAgent>) => {
@@ -127,7 +127,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
         return {
           sortable: true,
           field: AgentsTableField.CONFIGURATION_VERSION,
-          headerName: "Configuration Version",
+          headerName: "Config Version",
           width: 200,
           valueGetter: (params: GridValueGetterParams<AgentsTableAgent>) => {
             if (!params.row.configurationResource) {
