@@ -1,0 +1,542 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: cockroachdb
+  displayName: CockroachDB
+  icon: /icons/sources/cockroachdb.svg
+  description: Collect metrics and logs from CockroachDB.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - macos
+    - linux
+    - windows
+  parameters:
+  # Metrics
+  - name: enable_metrics
+    label: Enable Metrics
+    description: Enable to send metrics.
+    type: bool
+    default: true
+
+  - name: hostname
+    label: Hostname
+    description: The hostname or IP address of the CockroachDB system.
+    type: string
+    default: "localhost"
+    required: true
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+
+  - name: port
+    label: Port
+    description: The port to listen on for DB Console HTTP requests.
+    type: int
+    required: false
+    default: 8080
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/cockroach-start#networking
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+
+  - name: username
+    label: Username
+    description: The username to use when connecting to CockroachDB.
+    type: string
+    required: false
+    default: ""
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/create-user#create-a-user
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+
+  - name: password
+    label: Password
+    description: The password to use when connecting to CockroachDB. TLS must be configured in the Advanced section if this field is set.
+    type: string
+    default: ""
+    required: false
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/create-user#create-a-user-with-a-password
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+    options:
+      password: true
+
+  # Metrics TLS Settings #
+  - name: enable_tls
+    label: Enable TLS
+    description: Whether or not to use TLS.
+    type: bool
+    default: false
+    options:
+      sectionHeader: true
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+    advancedConfig: true
+
+  - name: ca_file_path
+    label: CA File Path
+    description: File path for CA certification file for CockroachDB (only needed if you have a secure cluster).
+    options:
+        gridColumns: 12
+    type: string
+    required: false
+    default: ""
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v23.1/cockroach-cert#client-key-and-certificates
+    relevantIf:
+      - name: enable_tls
+        operator: equals
+        value: true
+    advancedConfig: true
+
+  - name: cert_file_path
+    label: Cert File Path
+    description: A TLS certificate used for client authentication, if mutual TLS is enabled.
+    options:
+        gridColumns: 12
+    type: string
+    required: false
+    default: ""
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v23.1/cockroach-cert#client-key-and-certificates
+    relevantIf:
+      - name: enable_tls
+        operator: equals
+        value: true
+    advancedConfig: true
+
+  - name: key_file_path
+    label: Key File Path
+    description: A TLS private key used for client authentication, if mutual TLS is enabled.
+    options:
+        gridColumns: 12
+    type: string
+    required: false
+    default: ""
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v23.1/cockroach-cert#client-key-and-certificates
+    relevantIf:
+      - name: enable_tls
+        operator: equals
+        value: true 
+    advancedConfig: true
+
+  - name: server_name
+    label: Server Name
+    description: The name of the server.
+    type: string
+    required: false
+    default: ""
+    documentation:
+      - text: Read more
+        url: https://datatracker.ietf.org/doc/html/rfc4366#section-3.1
+    relevantIf:
+      - name: enable_tls
+        operator: equals
+        value: true
+    advancedConfig: true
+
+  - name: insecure_skip_verify
+    label: Skip Verification
+    description: Disable validation of the server certificate.
+    type: bool
+    required: false
+    default: false
+    options:
+      sectionHeader: true
+    relevantIf:
+      - name: enable_tls
+        operator: equals
+        value: true
+    advancedConfig: true
+
+  - name: collection_interval
+    label: Collection Interval
+    description: How often (seconds) to scrape for metrics.
+    type: int
+    default: 60
+    relevantIf:
+      - name: enable_metrics
+        operator: equals
+        value: true
+    advancedConfig: true
+  
+  # Logging
+  #
+  - name: enable_logs
+    label: Enable_Logs
+    description: Enable to collect logs.
+    type: bool
+    default: true
+  
+  - name: enable_health_log
+    label: Enable Health Logs
+    description: Enable to collect health logs.
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#health 
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: health_log_path
+    label: Health Log Path
+    description: The absolute path to the CockroachDB health logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-health.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_health_log
+          operator: equals
+          value: true
+
+  - name: enable_dev_log
+    label: Enable Dev Logs
+    description: Enable to collect general developer logs.
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#dev
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: dev_log_path
+    label: Dev Log Path
+    description: The absolute path to the CockroachDB Dev Logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_dev_log
+          operator: equals
+          value: true
+
+  - name: enable_error_log
+    label: Enable Error Logs
+    description: Enable to collect stderr logs.
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: error_log_path
+    label: Error Log Path
+    description: The absolute path to the CockroachDB stderr logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-stderr.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_error_log
+          operator: equals
+          value: true
+
+  - name: enable_sql_schema_log
+    label: Enable SQL Schema Logs
+    description: Enable to collect sql schema logs.
+    documentation:
+    - text: Read more
+      url: https://www.cockroachlabs.com/docs/v22.2/logging#sql_schema 
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: sql_schema_log_path
+    label: SQL Schema Log Path
+    description: The absolute path to the CockroachDB sql schema logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-sql-schema.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_sql_schema_log
+          operator: equals
+          value: true
+
+  - name: enable_telemetry_log
+    label: Enable Telemetry Logs
+    description: Enable to collect telemetry logs.
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#telemetry
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: telemetry_log_path
+    label: Telemetry Log Path
+    description: The absolute path to the CockroachDB telemetry logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-telemetry.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_telemetry_log
+          operator: equals
+          value: true
+
+  - name: enable_kv_distribution_log
+    label: Enable KV Distribution Logs
+    description: Enable to collect kv distribution logs.
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#kv_distribution
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+  
+  - name: kv_distribution_log_path
+    label: KV Distribution Log Path
+    description: The absolute path to the CockroachDB kv distribution logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-kv-distribution.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_kv_distribution_log
+          operator: equals
+          value: true
+
+  - name: enable_pebble_log
+    label: Enable Pebble Logs
+    description: Enable to collect cockroachdb pebble logs.
+    documentation:
+      - text: Read more
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#storage
+    type: bool
+    default: true
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+ 
+  - name: pebble_log_path
+    label: Pebble Log Path
+    description: The absolute path to the CockroachDB pebble logs.
+    options:
+        gridColumns: 12
+    type: "strings"
+    default:
+      - "/var/log/cockroach-data/logs/cockroach-pebble.log"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+        - name: enable_pebble_log
+          operator: equals
+          value: true
+  
+  - name: offset_storage_dir
+    label: Offset Storage Directory
+    description: The directory the offset storage file will be created in.
+    type: string
+    default: "$OIQ_OTEL_COLLECTOR_HOME/storage"
+    required: false
+    options:
+        gridColumns: 12
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+    advancedConfig: true
+
+  - name: timezone
+    label: Timezone
+    description: The timezone to use when parsing timestamps.
+    type: timezone
+    default: "UTC"
+    relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+    advancedConfig: true
+
+  - name: start_at
+    label: Start At
+    description: Start reading logs from 'beginning' or 'end'.
+    type: enum
+    validValues:
+      - beginning
+      - end
+    default: end
+    advancedConfig: true
+    relevantIf:
+      - name: enable_logs
+        operator: equals
+        value: true
+
+  - name: parse_to
+    label: Parse to
+    description: Parse structured log parts to either body or attributes.
+    type: enum
+    validValues: 
+      - body
+      - attributes
+    default: body
+    advancedConfig: true
+    relevantIf:
+      - name: enable_logs
+        operator: equals
+        value: true
+
+  - name: retain_raw_logs
+    label: Retain Raw Logs
+    description: preserve the original log message in a raw_log key.
+    type: bool
+    default: false
+    required: false
+    advancedConfig: true
+    options:
+      sectionHeader: true
+    relevantIf:
+      - name: enable_logs
+        operator: equals
+        value: true 
+
+  metrics:
+    receivers: |
+      {{ if .enable_metrics }}
+      - plugin/metrics:
+          path: $OIQ_OTEL_COLLECTOR_HOME/plugins/cockroachdb_metrics.yaml
+          parameters:
+            endpoint: {{ .hostname }}:{{ .port }}
+            username: {{ .username | quote}}
+            password: {{ .password | quote}}
+            {{ if .enable_tls }}
+            ca_file_path: {{ .ca_file_path | quote}}
+            cert_file_path: {{ .cert_file_path | quote}}
+            key_file_path: {{ .key_file_path | quote}}
+            insecure_skip_verify: {{ .insecure_skip_verify }}
+            server_name: {{ .server_name | quote}}
+            {{ end }}
+            scrape_interval: {{ .collection_interval }}s
+      {{ end }}
+
+    processors: |
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
+
+  logs:
+    receivers: |
+      {{ if .enable_logs }}
+      - plugin/logs:
+          path: $OIQ_OTEL_COLLECTOR_HOME/plugins/cockroachdb_logs.yaml
+          parameters:
+            start_at: {{ .start_at }}
+            parse_to: {{ .parse_to }}
+            timezone: {{ .timezone }}
+            retain_raw_logs: {{ .retain_raw_logs }}
+            offset_storage_dir: {{ .offset_storage_dir }}
+            
+            enable_error_log: {{ .enable_error_log }}
+            error_log_path:
+              {{ range $fp := .error_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_dev_log: {{ .enable_dev_log }}
+            dev_log_path:
+              {{ range $fp := .dev_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_telemetry_log: {{ .enable_telemetry_log }}
+            telemetry_log_path:
+              {{ range $fp := .telemetry_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_pebble_log: {{ .enable_pebble_log }}
+            pebble_log_path:
+              {{ range $fp := .pebble_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_sql_schema_log: {{ .enable_sql_schema_log }}
+            sql_schema_log_path:
+              {{ range $fp := .sql_schema_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_kv_distribution_log: {{ .enable_kv_distribution_log }}
+            kv_distribution_log_path:
+              {{ range $fp := .kv_distribution_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+
+            enable_health_log: {{ .enable_health_log }}
+            health_log_path:
+              {{ range $fp := .health_log_path }}
+              - '{{ $fp }}'
+              {{ end }}
+      {{ end }}
+
+    processors: |
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
+
