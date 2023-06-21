@@ -1,5 +1,5 @@
 import { gql, QueryHookOptions, QueryResult } from "@apollo/client";
-import { Typography, FormControl, Button } from "@mui/material";
+import { Typography, Button, Stack } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
@@ -29,9 +29,10 @@ import {
 } from "../../utils/rest/delete-resources";
 import { useRole } from "../../hooks/useRole";
 import { hasPermission } from "../../utils/has-permission";
+import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
+import { useLocation } from "react-router-dom";
 
 import mixins from "../../styles/mixins.module.scss";
-import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
 
 gql`
   query Destinations {
@@ -156,25 +157,27 @@ export const DestinationsPageSubContent: React.FC<
 
   return (
     <>
-      <div className={mixins.flex}>
-        <Typography variant="h5" className={mixins["mb-5"]}>
-          Destinations
-        </Typography>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        height="48px"
+        marginBottom={2}
+      >
+        <Typography variant="h5">Destinations</Typography>
         {destinationsPage && selected.length > 0 && (
-          <FormControl classes={{ root: mixins["ml-5"] }}>
-            <RBACWrapper requiredRole={Role.User}>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => setOpen(true)}
-              >
-                Delete {selected.length} Destination
-                {selected.length > 1 && "s"}
-              </Button>
-            </RBACWrapper>
-          </FormControl>
+          <RBACWrapper requiredRole={Role.User}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setOpen(true)}
+            >
+              Delete {selected.length} Destination
+              {selected.length > 1 && "s"}
+            </Button>
+          </RBACWrapper>
         )}
-      </div>
+      </Stack>
       <DestinationsDataGrid
         loading={loading}
         setSelectionModel={setSelected}
@@ -228,14 +231,16 @@ export const DestinationsPageContent: React.FC = () => {
   const [editingDestination, setEditingDestination] = useState<string | null>(
     null
   );
-
+  const location = useLocation();
   const role = useRole();
+
+  const isDestinationsPage = location.pathname.includes("destinations");
 
   return (
     <CardContainer>
       <DestinationsPageSubContent
         allowSelection={hasPermission(Role.Admin, role)}
-        destinationsPage={false}
+        destinationsPage={isDestinationsPage}
         selected={selected}
         setSelected={setSelected}
         editingDestination={editingDestination}

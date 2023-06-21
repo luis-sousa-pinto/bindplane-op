@@ -13,12 +13,11 @@ import { withRequireLogin } from "../../contexts/RequireLogin";
 import { withNavBar } from "../../components/NavBar";
 import { isFunction } from "lodash";
 import { upgradeAgents } from "../../utils/rest/upgrade-agent";
-
-import mixins from "../../styles/mixins.module.scss";
-import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
 import { Role } from "../../graphql/generated";
 import { hasPermission } from "../../utils/has-permission";
 import { useRole } from "../../hooks/useRole";
+
+import mixins from "../../styles/mixins.module.scss";
 
 export const AgentsPageContent: React.FC = () => {
   const [updatable, setUpdatable] = useState<GridRowSelectionModel>([]);
@@ -88,7 +87,17 @@ export const AgentsPageContent: React.FC = () => {
         </>
       </ConfirmDeleteResourceDialog>
       <CardContainer>
-        <RBACWrapper requiredRole={Role.User}>
+        {deletable.length > 0 ? (
+          <Button
+            variant="contained"
+            color="error"
+            classes={{ root: mixins["float-right"] }}
+            onClick={() => setDeleteConfirmOpen(true)}
+          >
+            Delete {deletable.length} Disconnected Agent
+            {deletable.length > 1 && "s"}
+          </Button>
+        ) : (
           <Button
             component={Link}
             variant={"contained"}
@@ -97,18 +106,6 @@ export const AgentsPageContent: React.FC = () => {
             startIcon={<PlusCircleIcon />}
           >
             Install Agent
-          </Button>
-        </RBACWrapper>
-
-        {deletable.length > 0 && (
-          <Button
-            variant="contained"
-            color="error"
-            classes={{ root: classes([mixins["float-right"], mixins["mr-3"]]) }}
-            onClick={() => setDeleteConfirmOpen(true)}
-          >
-            Delete {deletable.length} Disconnected Agent
-            {deletable.length > 1 && "s"}
           </Button>
         )}
 

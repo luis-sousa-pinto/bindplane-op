@@ -5,7 +5,6 @@ import {
   AgentsTableDocument,
   AgentsTableQuery,
 } from "../../../graphql/generated";
-import { AgentTable } from "../AgentTable";
 import { AgentsTableField } from "./AgentsDataGrid";
 import { generateAgents } from "./__testutil__/generate-agents";
 

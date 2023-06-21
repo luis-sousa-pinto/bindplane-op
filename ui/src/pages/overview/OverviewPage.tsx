@@ -150,6 +150,7 @@ const OverviewPageSubContent: React.FC = () => {
             selected={selectedConfigs}
             setSelected={setSelectedConfigs}
             enableDelete={false}
+            enableNew={false}
             minHeight="calc(100vh - 231px)"
             columns={[ConfigurationsTableField.NAME]}
             overviewPage
