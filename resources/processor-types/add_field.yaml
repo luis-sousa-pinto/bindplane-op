@@ -7,13 +7,31 @@ metadata:
   labels:
     category: Transform
 spec:
-  version: 0.0.1
+  version: 0.1.0
   parameters:
     # Logs
     - name: enable_logs
       label: Enable Logs
       type: bool
       default: true
+
+    - name: log_condition
+      label: Log Condition
+      description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all logs."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Log Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/contexts/ottllog/README.md
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
     - name: log_resource_attributes
       label: Resource Keys
@@ -104,6 +122,24 @@ spec:
       type: bool
       default: true
 
+    - name: datapoint_condition
+      label: Datapoint Condition
+      description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all datapoints."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Datapoint Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/contexts/ottldatapoint/README.md
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
     - name: metric_resource_attributes
       label: Resource Keys
       description: "List of resource fields to add from telemetry data."
@@ -164,6 +200,24 @@ spec:
       label: Enable Traces
       type: bool
       default: true
+
+    - name: span_condition
+      label: Spans Condition
+      description: "An OTTL boolean expression that must evaluate to true to apply this processor. By default, the processor applies to all spans."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Span Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/ottl/contexts/ottlspan
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
 
     - name: traces_resource_attributes
       label: Resource Keys
@@ -235,9 +289,9 @@ spec:
                   {{- end }}
                   {{- range $k, $v := .log_attributes }}
                     {{- if ne $.log_attributes_action "upsert" }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where (attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.log_condition }})'
                     {{- else }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where {{ $.log_condition }}'
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -248,9 +302,9 @@ spec:
                   {{- end }}
                   {{- range $k, $v := .log_resource_attributes }}
                     {{- if ne $.log_resource_action "upsert" }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where (resource.attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.log_condition }})'
                     {{- else }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where {{ $.log_condition }}'
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -261,9 +315,9 @@ spec:
                   {{- end }}
                   {{- range $k, $v := .log_body }}
                     {{- if ne $.log_body_action "upsert" }}
-                      - 'set(body["{{ $k }}"], "{{ $v }}") where body["{{ $k }}"] {{ $condition }} nil'
+                      - 'set(body["{{ $k }}"], "{{ $v }}") where (body["{{ $k }}"] {{ $condition }} nil) and ({{ $.log_condition }})'
                     {{- else }}
-                      - 'set(body["{{ $k }}"], "{{ $v }}")'
+                      - 'set(body["{{ $k }}"], "{{ $v }}") where {{ $.log_condition }}'
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -284,9 +338,9 @@ spec:
                   {{- end }}
                   {{- range $k, $v := .metric_attributes }}
                     {{- if ne $.metric_attributes_action "upsert" }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where (attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.datapoint_condition }})'
                     {{- else }}
-                      - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                      - 'set(attributes["{{ $k }}"], "{{ $v }}") where {{ $.datapoint_condition }}'
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -297,9 +351,9 @@ spec:
                   {{- end }}
                   {{- range $k, $v := .metric_resource_attributes }}
                     {{- if ne $.metric_resource_action "upsert" }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where (resource.attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.datapoint_condition }})'
                     {{- else }}
-                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                      - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where {{ $.datapoint_condition }}'
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -320,9 +374,9 @@ spec:
                    {{- end }}
                    {{- range $k, $v := .traces_attributes }}
                      {{- if ne $.traces_attributes_action "upsert" }}
-                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where attributes["{{ $k }}"] {{ $condition }} nil'
+                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where (attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.span_condition }})'
                      {{- else }}
-                       - 'set(attributes["{{ $k }}"], "{{ $v }}")'
+                       - 'set(attributes["{{ $k }}"], "{{ $v }}") where {{ $.span_condition }}'
                      {{- end }}
                    {{- end }}
                  {{- end }}
@@ -333,9 +387,9 @@ spec:
                    {{- end }}
                    {{- range $k, $v := .traces_resource_attributes }}
                      {{- if ne $.traces_resource_action "upsert" }}
-                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where resource.attributes["{{ $k }}"] {{ $condition }} nil'
+                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where (resource.attributes["{{ $k }}"] {{ $condition }} nil) and ({{ $.span_condition }})'
                      {{- else }}
-                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}")'
+                       - 'set(resource.attributes["{{ $k }}"], "{{ $v }}") where {{ $.span_condition }}'
                      {{- end }}
                    {{- end }}
                  {{- end }}
