@@ -16,6 +16,7 @@ package sessions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
+	gorillaSessions "github.com/gorilla/sessions"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -33,6 +35,7 @@ import (
 	"github.com/observiq/bindplane-op/internal/server"
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/store"
+	storeMocks "github.com/observiq/bindplane-op/store/mocks"
 )
 
 func TestAddRoutes(t *testing.T) {
@@ -199,6 +202,48 @@ func TestLogin(t *testing.T) {
 		require.Equal(t, "user", session.Values[authenticator.LoginKey])
 		require.Equal(t, "secret", session.Values[authenticator.PasswordKey])
 	})
+
+	t.Run("will continue with login when the session store Get returns an error", func(t *testing.T) {
+		mockStore := storeMocks.NewMockStore(t)
+		mockStore.On("UserSessions").Return(&mockCookieStore{})
+
+		mockServer := server.NewBindPlane(cfg, zap.NewNop(), mockStore, nil)
+
+		req := httptest.NewRequest("POST", "/login", nil)
+		req.PostForm = url.Values{
+			"u": []string{"user"},
+			"p": []string{"secret"},
+		}
+
+		w := httptest.NewRecorder()
+
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = req
+
+		// Login
+		Login(ctx, mockServer)
+		require.Equal(t, w.Result().StatusCode, http.StatusOK)
+	})
+}
+
+type mockCookieStore struct{}
+
+var _ gorillaSessions.Store = (*mockCookieStore)(nil)
+
+// Get returns a session and an error for testing
+func (m *mockCookieStore) Get(_ *http.Request, _ string) (*gorillaSessions.Session, error) {
+	return gorillaSessions.NewSession(m, authenticator.CookieName), errors.New("error")
+
+}
+
+// New returns an invalid session for testing
+func (m *mockCookieStore) New(_ *http.Request, _ string) (*gorillaSessions.Session, error) {
+	return nil, nil
+}
+
+// Save returns nil for testing
+func (m *mockCookieStore) Save(_ *http.Request, _ http.ResponseWriter, _ *gorillaSessions.Session) error {
+	return nil
 }
 
 func TestLogout(t *testing.T) {
