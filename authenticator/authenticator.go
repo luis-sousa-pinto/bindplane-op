@@ -128,7 +128,7 @@ func AbortWithError(c *gin.Context, err error) error {
 func HandleSessionError(c *gin.Context, session sessions.Session, err error) {
 	// Clear the cookie, this can happen when sessions-secrets change
 	// and we see a cookie with the previous secret is read.
-	session.Options.MaxAge = 0
+	session.Options.MaxAge = -1
 
 	saveErr := session.Save(c.Request, c.Writer)
 	if saveErr != nil {

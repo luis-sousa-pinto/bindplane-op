@@ -28,11 +28,11 @@ import (
 
 // Login is the handler for the login page
 func Login(ctx *gin.Context, bindplane exposedserver.BindPlane) {
+	// Ignore this error because we're gauranteed to get a session here, if
+	// the cookie was invalid for any reason we'll overwrite it.
 	session, err := bindplane.Store().UserSessions().Get(ctx.Request, authenticator.CookieName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, errors.New("failed to retrieve session"))
-		bindplane.Logger().Error("failed to retrieve session at login", zap.Error(err))
-		return
+		bindplane.Logger().Error("unexpected error when retrieving session at login", zap.Error(err))
 	}
 
 	loginInfo, err := bindplane.Authenticator().Login(ctx, session)
