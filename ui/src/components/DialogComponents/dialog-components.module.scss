@@ -1,9 +1,5 @@
-@use '../../styles/colors';
+@use "../../styles/colors";
 
 .close {
   float: right;
-}
-
-.actions {
-  border-top: 1px solid colors.$gray;
 }

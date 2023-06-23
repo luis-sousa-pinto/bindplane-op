@@ -1,21 +1,26 @@
 import { gql } from "@apollo/client";
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useEffect, useMemo, useState } from "react";
 import { useGetProcessorTypesQuery } from "../../../graphql/generated";
 import { metadataSatisfiesSubstring } from "../../../utils/metadata-satisfies-substring";
-import {
-  ActionsSection
-} from "../../DialogComponents";
+import { ActionsSection } from "../../DialogComponents";
 import { ProcessorType } from "../../ResourceConfigForm";
 import {
   ResourceTypeButton,
   ResourceTypeButtonContainer,
 } from "../../ResourceTypeButton";
+import { ViewHeading } from "./ViewHeading";
+import { usePipelineGraph } from "../../PipelineGraph/PipelineGraphContext";
 
 import styles from "./create-processor-select-view.module.scss";
-import { ViewHeading } from './ViewHeading';
-import { usePipelineGraph } from '../../PipelineGraph/PipelineGraphContext';
+import mixins from "../../../styles/mixins.module.scss";
 
 gql`
   query getProcessorTypes {
@@ -103,9 +108,12 @@ export const CreateProcessorSelectView: React.FC<
   }, [enqueueSnackbar, error]);
 
   const { editProcessorsInfo } = usePipelineGraph();
-  const resourceType = useMemo(() => editProcessorsInfo?.resourceType, [editProcessorsInfo?.resourceType]);
+  const resourceType = useMemo(
+    () => editProcessorsInfo?.resourceType,
+    [editProcessorsInfo?.resourceType]
+  );
 
-  const title = 'Add a processor';
+  const title = "Add a processor";
   const description = `Choose a processor you'd like to configure for this ${resourceType}.`;
 
   // Filter the list of supported processor types down
@@ -139,7 +147,7 @@ export const CreateProcessorSelectView: React.FC<
   );
 
   return (
-    <>
+    <Stack className={mixins["flex-grow"]} spacing={2}>
       <ViewHeading heading={title} subHeading={description} />
       <ResourceTypeButtonContainer
         onSearchChange={(v: string) => setSearch(v)}
@@ -177,7 +185,7 @@ export const CreateProcessorSelectView: React.FC<
           </Button>
         </ActionsSection>
       )}
-    </>
+    </Stack>
   );
 };
 

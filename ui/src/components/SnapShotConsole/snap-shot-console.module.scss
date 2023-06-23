@@ -1,5 +1,5 @@
-@use '../../styles/colors';
-@use '../../styles/typography';
+@use "../../styles/colors";
+@use "../../styles/typography";
 
 .header {
   position: sticky;
@@ -42,10 +42,6 @@
   p {
     padding: 6px 8px;
   }
-}
-
-.container {
-  height: calc(100vh - 500px);
 }
 
 .stack {

@@ -1,9 +1,11 @@
-import { Button } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import { ResourceConfiguration, Role } from "../../../graphql/generated";
 import { ActionsSection } from "../../DialogComponents";
 import { InlineProcessorContainer } from "./InlineProcessorContainer";
 import { ViewHeading } from "./ViewHeading";
 import { RBACWrapper } from "../../RBACWrapper/RBACWrapper";
+
+import mixins from "../../../styles/mixins.module.scss";
 
 interface AllProcessorsProps {
   processors: ResourceConfiguration[];
@@ -27,7 +29,7 @@ export const AllProcessorsView: React.FC<AllProcessorsProps> = ({
   onProcessorsChange,
 }) => {
   return (
-    <>
+    <Stack className={mixins["flex-grow"]}>
       <ViewHeading heading="Processors" />
       <InlineProcessorContainer
         processors={processors}
@@ -45,6 +47,6 @@ export const AllProcessorsView: React.FC<AllProcessorsProps> = ({
           </RBACWrapper>
         </ActionsSection>
       )}
-    </>
+    </Stack>
   );
 };

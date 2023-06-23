@@ -1,4 +1,4 @@
-@use '../../styles/colors';
+@use "../../styles/colors";
 
 .pointer {
   cursor: pointer;
@@ -32,7 +32,7 @@
 }
 
 .box {
-  min-height: 510px;
+  min-height: 400px;
   overflow-y: auto;
   margin-top: 20px;
   padding: 5px;
