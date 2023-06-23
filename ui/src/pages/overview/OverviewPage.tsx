@@ -4,8 +4,9 @@ import { withNavBar } from "../../components/NavBar";
 import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable";
 import { withRequireLogin } from "../../contexts/RequireLogin";
 import {
-  useConfigurationTableMetricsSubscription,
+  useOverviewPageMetricsSubscription,
   useDestinationsInConfigsQuery,
+  useDeployedConfigsQuery,
 } from "../../graphql/generated";
 import { OverviewGraph } from "./OverviewGraph";
 import { OverviewPageProvider, useOverviewPage } from "./OverviewPageContext";
@@ -38,6 +39,37 @@ gql`
       }
     }
   }
+  query DeployedConfigs {
+    configurations(onlyDeployedConfigurations: true) {
+      configurations {
+        metadata {
+          id
+          name
+          version
+        }
+      }
+    }
+  }
+
+  subscription OverviewPageMetrics(
+    $period: String!
+    $configIDs: [ID!]
+    $destinationIDs: [ID!]
+  ) {
+    overviewMetrics(
+      period: $period
+      configIDs: $configIDs
+      destinationIDs: $destinationIDs
+    ) {
+      metrics {
+        name
+        nodeID
+        pipelineType
+        value
+        unit
+      }
+    }
+  }
 `;
 
 const OverviewPageSubContent: React.FC = () => {
@@ -56,16 +88,25 @@ const OverviewPageSubContent: React.FC = () => {
     setLoadTop,
   } = useOverviewPage();
 
+  const { data: deployedConfigs } = useDeployedConfigsQuery();
+  const { data: destinationsInConfigs } = useDestinationsInConfigsQuery();
   // we need these metrics to select the top three configs on load
-  const { data: configurationMetrics } =
-    useConfigurationTableMetricsSubscription({
-      variables: { period: "1h" }, // TODO: selectedPeriod?
-    });
+  const { data: metrics } = useOverviewPageMetricsSubscription({
+    variables: {
+      period: selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
+      configIDs: deployedConfigs?.configurations?.configurations.map(
+        (c) => c.metadata.name
+      ),
+      destinationIDs: destinationsInConfigs?.destinationsInConfigs.map(
+        (d) => d.metadata.name
+      ),
+    },
+  });
 
   const selectTopResources = useCallback(
     (count: number, resourceType: "configuration" | "destination") => {
       const filteredMetrics =
-        configurationMetrics?.overviewMetrics.metrics
+        metrics?.overviewMetrics.metrics
           .filter((metric) => metric.nodeID.startsWith(resourceType))
           .filter(
             (metric) =>
@@ -83,7 +124,7 @@ const OverviewPageSubContent: React.FC = () => {
       });
       return topResources;
     },
-    [configurationMetrics, selectedTelemetry]
+    [metrics, selectedTelemetry]
   );
 
   const selectTopConfigs = useCallback(
@@ -111,13 +152,13 @@ const OverviewPageSubContent: React.FC = () => {
 
   useEffect(() => {
     // select top three configs on load
-    if (loadTop && configurationMetrics && selectedTelemetry) {
+    if (loadTop && metrics && selectedTelemetry) {
       selectTopConfigs(3);
       selectTopDestinations(3);
       setLoadTop(false);
     }
   }, [
-    configurationMetrics,
+    metrics,
     loadTop,
     setLoadTop,
     selectTopConfigs,

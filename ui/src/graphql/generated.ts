@@ -955,6 +955,20 @@ export type DestinationsInConfigsQueryVariables = Exact<{ [key: string]: never; 
 
 export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
+export type DeployedConfigsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DeployedConfigsQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } }> } };
+
+export type OverviewPageMetricsSubscriptionVariables = Exact<{
+  period: Scalars['String']['input'];
+  configIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+}>;
+
+
+export type OverviewPageMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
+
 
 export const GetLatestConfigVersionDocument = gql`
     query getLatestConfigVersion($name: String!) {
@@ -3086,3 +3100,83 @@ export function useDestinationsInConfigsLazyQuery(baseOptions?: Apollo.LazyQuery
 export type DestinationsInConfigsQueryHookResult = ReturnType<typeof useDestinationsInConfigsQuery>;
 export type DestinationsInConfigsLazyQueryHookResult = ReturnType<typeof useDestinationsInConfigsLazyQuery>;
 export type DestinationsInConfigsQueryResult = Apollo.QueryResult<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>;
+export const DeployedConfigsDocument = gql`
+    query DeployedConfigs {
+  configurations(onlyDeployedConfigurations: true) {
+    configurations {
+      metadata {
+        name
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useDeployedConfigsQuery__
+ *
+ * To run a query within a React component, call `useDeployedConfigsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDeployedConfigsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDeployedConfigsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useDeployedConfigsQuery(baseOptions?: Apollo.QueryHookOptions<DeployedConfigsQuery, DeployedConfigsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DeployedConfigsQuery, DeployedConfigsQueryVariables>(DeployedConfigsDocument, options);
+      }
+export function useDeployedConfigsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DeployedConfigsQuery, DeployedConfigsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DeployedConfigsQuery, DeployedConfigsQueryVariables>(DeployedConfigsDocument, options);
+        }
+export type DeployedConfigsQueryHookResult = ReturnType<typeof useDeployedConfigsQuery>;
+export type DeployedConfigsLazyQueryHookResult = ReturnType<typeof useDeployedConfigsLazyQuery>;
+export type DeployedConfigsQueryResult = Apollo.QueryResult<DeployedConfigsQuery, DeployedConfigsQueryVariables>;
+export const OverviewPageMetricsDocument = gql`
+    subscription OverviewPageMetrics($period: String!, $configIDs: [ID!], $destinationIDs: [ID!]) {
+  overviewMetrics(
+    period: $period
+    configIDs: $configIDs
+    destinationIDs: $destinationIDs
+  ) {
+    metrics {
+      name
+      nodeID
+      pipelineType
+      value
+      unit
+    }
+  }
+}
+    `;
+
+/**
+ * __useOverviewPageMetricsSubscription__
+ *
+ * To run a query within a React component, call `useOverviewPageMetricsSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useOverviewPageMetricsSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useOverviewPageMetricsSubscription({
+ *   variables: {
+ *      period: // value for 'period'
+ *      configIDs: // value for 'configIDs'
+ *      destinationIDs: // value for 'destinationIDs'
+ *   },
+ * });
+ */
+export function useOverviewPageMetricsSubscription(baseOptions: Apollo.SubscriptionHookOptions<OverviewPageMetricsSubscription, OverviewPageMetricsSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<OverviewPageMetricsSubscription, OverviewPageMetricsSubscriptionVariables>(OverviewPageMetricsDocument, options);
+      }
+export type OverviewPageMetricsSubscriptionHookResult = ReturnType<typeof useOverviewPageMetricsSubscription>;
+export type OverviewPageMetricsSubscriptionResult = Apollo.SubscriptionResult<OverviewPageMetricsSubscription>;
