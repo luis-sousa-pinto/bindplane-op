@@ -17,7 +17,7 @@ import { Log, Metric, Trace, useSnapshot } from "./SnapshotContext";
 import styles from "./snap-shot-console.module.scss";
 import mixins from "../../styles/mixins.module.scss";
 
-const TOGGLE_WIDTH = 150;
+const TOGGLE_WIDTH = 100;
 
 interface Props {
   hideControls?: boolean;

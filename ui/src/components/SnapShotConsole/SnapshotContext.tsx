@@ -64,6 +64,14 @@ export interface SnapshotContextValue {
   setMetrics(metrics: Metric[]): void;
   setTraces(traces: Trace[]): void;
 
+  processedLogs: Log[];
+  processedMetrics: Metric[];
+  processedTraces: Trace[];
+
+  setProcessedLogs(logs: Log[]): void;
+  setProcessedMetrics(metrics: Metric[]): void;
+  setProcessedTraces(traces: Trace[]): void;
+
   // true during initial loading and refetching
   loading: boolean;
 
@@ -87,9 +95,17 @@ const defaultValue: SnapshotContextValue = {
   metrics: [],
   traces: [],
 
+  processedLogs: [],
+  processedMetrics: [],
+  processedTraces: [],
+
   setLogs: () => {},
   setMetrics: () => {},
   setTraces: () => {},
+
+  setProcessedLogs: () => {},
+  setProcessedMetrics: () => {},
+  setProcessedTraces: () => {},
 
   loading: false,
   showAgentSelector: false,
@@ -179,6 +195,14 @@ export const SnapshotContextProvider: React.FC<SnapshotProviderProps> = ({
         setLogs,
         setMetrics,
         setTraces,
+
+        processedLogs: [],
+        processedMetrics: [],
+        processedTraces: [],
+
+        setProcessedLogs: () => {},
+        setProcessedMetrics: () => {},
+        setProcessedTraces: () => {},
 
         loading: anyLoading,
         showAgentSelector: showAgentSelector ?? false,
