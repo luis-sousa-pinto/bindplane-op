@@ -389,6 +389,12 @@ display_results() {
     info "To initialize the server, run: $(fg_cyan "sudo /usr/local/bin/bindplane init server --config /etc/bindplane/config.yaml")$(reset)"
     decrease_indent
 
+    banner 'EULA'
+    increase_indent
+    info "By using this install script, you are consenting to the End-User License Agreement (EULA) of the software.$(reset)"
+    info "The EULA can be accessed at: $(fg_cyan https://observiq.com/legal/eula/)$(reset)"
+    decrease_indent
+
     banner 'Support'
     increase_indent
     info "For more information on configuring BindPlane, see the docs: $(fg_cyan "https://github.com/observIQ/bindplane")$(reset)"
