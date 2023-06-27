@@ -189,6 +189,29 @@ spec:
         sectionHeader: true
         gridColumns: 12
       advancedConfig: true
+    
+    - name: enable_wal
+      label: Metric Write-Ahead-Log
+      description: Write metrics to a write-ahead-log before sending to help ensure metrics are not lost in case of network outages or collector restarts.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+        gridColumns: 12
+      advancedConfig: true
+    
+    - name: wal_max_backoff
+      label: WAL Max Retry Duration
+      description: The maximum amount of time (minutes) to retry sending metrics from the write-ahead-log when a network error occurs.
+      type: int
+      default: 60
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: enable_wal
+          operator: equals
+          value: true
+
 
   logs+metrics+traces:
     extensions: |
@@ -219,4 +242,9 @@ spec:
           metric:
             {{ if .enable_compression }}
             compression: gzip
+            {{ end }}
+            {{ if .enable_wal }}
+            experimental_wal_config:
+              directory: $OIQ_OTEL_COLLECTOR_HOME/storage
+              max_backoff: {{ .wal_max_backoff }}m
             {{ end }}
