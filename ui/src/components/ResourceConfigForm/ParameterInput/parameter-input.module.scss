@@ -1,10 +1,12 @@
-@use '../../../styles/typography';
-@use '../../../styles/colors';
+@use "../../../styles/typography";
+@use "../../../styles/colors";
 
 .chip {
   font-family: typography.$font-family-monospace;
+  white-space: pre-wrap;
   max-width: 400px;
 }
+
 // in wide 12 column boxes, allow larger chips
 :global .MuiGrid-grid-xs-12 {
   :local .chip {
