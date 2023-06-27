@@ -164,7 +164,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -179,6 +179,16 @@ spec:
         - name: persistent_queue_enabled
           operator: equals
           value: true
+
+    - name: enable_compression
+      label: Enable Compression
+      description: Compress telemetry data using gzip before sending.
+      type: bool
+      default: true
+      options:
+        sectionHeader: true
+        gridColumns: 12
+      advancedConfig: true
 
   logs+metrics+traces:
     extensions: |
@@ -201,5 +211,12 @@ spec:
           log:
             resource_filters:
               - regex: .*
+            {{ if .enable_compression }}
+            compression: gzip
+            {{ end }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
+          metric:
+            {{ if .enable_compression }}
+            compression: gzip
+            {{ end }}

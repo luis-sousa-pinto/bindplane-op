@@ -958,7 +958,7 @@ export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInC
 export type DeployedConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DeployedConfigsQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string } }> } };
+export type DeployedConfigsQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } }> } };
 
 export type OverviewPageMetricsSubscriptionVariables = Exact<{
   period: Scalars['String']['input'];
@@ -3105,7 +3105,9 @@ export const DeployedConfigsDocument = gql`
   configurations(onlyDeployedConfigurations: true) {
     configurations {
       metadata {
+        id
         name
+        version
       }
     }
   }
