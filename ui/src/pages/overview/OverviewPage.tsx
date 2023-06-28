@@ -4,8 +4,9 @@ import { withNavBar } from "../../components/NavBar";
 import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable";
 import { withRequireLogin } from "../../contexts/RequireLogin";
 import {
-  useConfigurationTableMetricsSubscription,
+  useOverviewPageMetricsSubscription,
   useDestinationsInConfigsQuery,
+  useDeployedConfigsQuery,
 } from "../../graphql/generated";
 import { OverviewGraph } from "./OverviewGraph";
 import { OverviewPageProvider, useOverviewPage } from "./OverviewPageContext";
@@ -18,7 +19,7 @@ import {
 import { gql } from "@apollo/client";
 import { DestinationsTableField } from "../../components/Tables/DestinationsTable/DestinationsDataGrid";
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
-import { DestinationsPageContent } from "../destinations/DestinationsPage";
+import { DestinationsPageSubContent } from "../destinations/DestinationsPage";
 import { useCallback, useEffect } from "react";
 import colors from "../../styles/colors";
 
@@ -38,9 +39,40 @@ gql`
       }
     }
   }
+  query DeployedConfigs {
+    configurations(onlyDeployedConfigurations: true) {
+      configurations {
+        metadata {
+          id
+          name
+          version
+        }
+      }
+    }
+  }
+
+  subscription OverviewPageMetrics(
+    $period: String!
+    $configIDs: [ID!]
+    $destinationIDs: [ID!]
+  ) {
+    overviewMetrics(
+      period: $period
+      configIDs: $configIDs
+      destinationIDs: $destinationIDs
+    ) {
+      metrics {
+        name
+        nodeID
+        pipelineType
+        value
+        unit
+      }
+    }
+  }
 `;
 
-const OverviewPageContent: React.FC = () => {
+const OverviewPageSubContent: React.FC = () => {
   const {
     selectedTelemetry,
     selectedConfigs,
@@ -56,16 +88,25 @@ const OverviewPageContent: React.FC = () => {
     setLoadTop,
   } = useOverviewPage();
 
+  const { data: deployedConfigs } = useDeployedConfigsQuery();
+  const { data: destinationsInConfigs } = useDestinationsInConfigsQuery();
   // we need these metrics to select the top three configs on load
-  const { data: configurationMetrics } =
-    useConfigurationTableMetricsSubscription({
-      variables: { period: "1h" }, // TODO: selectedPeriod?
-    });
+  const { data: metrics } = useOverviewPageMetricsSubscription({
+    variables: {
+      period: selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
+      configIDs: deployedConfigs?.configurations?.configurations.map(
+        (c) => c.metadata.name
+      ),
+      destinationIDs: destinationsInConfigs?.destinationsInConfigs.map(
+        (d) => d.metadata.name
+      ),
+    },
+  });
 
   const selectTopResources = useCallback(
     (count: number, resourceType: "configuration" | "destination") => {
       const filteredMetrics =
-        configurationMetrics?.overviewMetrics.metrics
+        metrics?.overviewMetrics.metrics
           .filter((metric) => metric.nodeID.startsWith(resourceType))
           .filter(
             (metric) =>
@@ -83,7 +124,7 @@ const OverviewPageContent: React.FC = () => {
       });
       return topResources;
     },
-    [configurationMetrics, selectedTelemetry]
+    [metrics, selectedTelemetry]
   );
 
   const selectTopConfigs = useCallback(
@@ -111,13 +152,13 @@ const OverviewPageContent: React.FC = () => {
 
   useEffect(() => {
     // select top three configs on load
-    if (loadTop && configurationMetrics && selectedTelemetry) {
+    if (loadTop && metrics && selectedTelemetry) {
       selectTopConfigs(3);
       selectTopDestinations(3);
       setLoadTop(false);
     }
   }, [
-    configurationMetrics,
+    metrics,
     loadTop,
     setLoadTop,
     selectTopConfigs,
@@ -150,6 +191,7 @@ const OverviewPageContent: React.FC = () => {
             selected={selectedConfigs}
             setSelected={setSelectedConfigs}
             enableDelete={false}
+            enableNew={false}
             minHeight="calc(100vh - 231px)"
             columns={[ConfigurationsTableField.NAME]}
             overviewPage
@@ -195,7 +237,8 @@ const OverviewPageContent: React.FC = () => {
             </Button>
           </Tooltip>
 
-          <DestinationsPageContent
+          <DestinationsPageSubContent
+            allowSelection
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
             destinationsPage={false}
@@ -211,12 +254,14 @@ const OverviewPageContent: React.FC = () => {
   );
 };
 
+export const OverviewPageContent: React.FC = () => {
+  return (
+    <OverviewPageProvider>
+      <OverviewPageSubContent />
+    </OverviewPageProvider>
+  );
+};
+
 export const OverviewPage: React.FC = withRequireLogin(
-  withNavBar(() => {
-    return (
-      <OverviewPageProvider>
-        <OverviewPageContent />
-      </OverviewPageProvider>
-    );
-  })
+  withNavBar(OverviewPageContent)
 );

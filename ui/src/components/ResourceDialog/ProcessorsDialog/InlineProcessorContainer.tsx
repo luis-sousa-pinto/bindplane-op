@@ -52,7 +52,7 @@ export const InlineProcessorContainer: React.FC<Props> = ({
   );
 
   return (
-    <>
+    <Stack className={mixins["flex-grow"]}>
       <DndProvider backend={HTML5Backend}>
         {disableEdit && processors.length === 0 && (
           <Stack
@@ -84,18 +84,16 @@ export const InlineProcessorContainer: React.FC<Props> = ({
           );
         })}
         {!disableEdit && (
-          <Stack alignItems="center">
-            <Button
-              variant="text"
-              startIcon={<PlusCircleIcon />}
-              classes={{ root: mixins["mb-2"] }}
-              onClick={onAddProcessor}
-            >
-              Add processor
-            </Button>
-          </Stack>
+          <Button
+            variant="text"
+            startIcon={<PlusCircleIcon />}
+            classes={{ root: mixins["mb-2"] }}
+            onClick={onAddProcessor}
+          >
+            Add processor
+          </Button>
         )}
       </DndProvider>
-    </>
+    </Stack>
   );
 };

@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import { memo, useMemo, useState } from "react";
 import { ConfirmDeleteResourceDialog } from "../ConfirmDeleteResourceDialog";
 import { EditResourceDialog } from "../ResourceDialog/EditResourceDialog";
-import { useGetDestinationWithTypeQuery } from "../../graphql/generated";
+import { Role, useGetDestinationWithTypeQuery } from "../../graphql/generated";
 import { UpdateStatus } from "../../types/resources";
 import { BPConfiguration, BPDestination } from "../../utils/classes";
 import { FormValues } from "../ResourceConfigForm";
@@ -12,6 +12,8 @@ import { classes } from "../../utils/styles";
 import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
 import { trimVersion } from "../../utils/version-helpers";
 import { ResourceCard } from "./ResourceCard";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 import styles from "./cards.module.scss";
 
@@ -104,6 +106,7 @@ const ResourceDestinationCardComponent: React.FC<
   const { enqueueSnackbar } = useSnackbar();
   const [editing, setEditing] = useState(false);
   const [confirmDeleteOpen, setDeleteOpen] = useState(false);
+  const role = useRole();
 
   // Use the version name of the destination specified in the configuration
   const versionedName = useMemo(() => {
@@ -344,7 +347,7 @@ const ResourceDestinationCardComponent: React.FC<
         onSave={onSave}
         paused={data.destinationWithType.destination?.spec.disabled ?? false}
         onTogglePause={onTogglePause}
-        readOnly={readOnlyGraph}
+        readOnly={readOnlyGraph || !hasPermission(Role.User, role)}
       />
 
       {onDelete && (

@@ -1,7 +1,5 @@
-import { Button } from "@mui/material";
-import {
-  ActionsSection
-} from "../../DialogComponents";
+import { Button, Stack } from "@mui/material";
+import { ActionsSection } from "../../DialogComponents";
 import {
   FormValues,
   initFormValues,
@@ -16,6 +14,8 @@ import {
   useResourceFormValues,
 } from "../../ResourceConfigForm/ResourceFormContext";
 import { ProcessorForm } from "./ProcessorForm";
+
+import mixins from "../../../styles/mixins.module.scss";
 
 interface CreateProcessorConfigureViewProps {
   processorType: ProcessorType;
@@ -47,7 +47,7 @@ const CreateProcessorConfigureViewComponent: React.FC<
   }
 
   return (
-    <>
+    <Stack className={mixins["flex-grow"]}>
       <ProcessorForm
         title={processorType.metadata.displayName ?? ""}
         description={processorType.metadata.description ?? ""}
@@ -55,7 +55,7 @@ const CreateProcessorConfigureViewComponent: React.FC<
       />
 
       <ActionsSection>
-        <Button variant="contained" color="secondary" onClick={onBack}>
+        <Button variant="outlined" color="secondary" onClick={onBack}>
           Cancel
         </Button>
 
@@ -63,7 +63,7 @@ const CreateProcessorConfigureViewComponent: React.FC<
           Done
         </Button>
       </ActionsSection>
-    </>
+    </Stack>
   );
 };
 

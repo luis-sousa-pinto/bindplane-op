@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { Dialog, DialogProps, Grid } from "@mui/material";
+import { Dialog, DialogProps, Grid, Stack } from "@mui/material";
 import { isEqual } from "lodash";
 import { useSnackbar } from "notistack";
 import { useEffect, useMemo, useState } from "react";
@@ -8,13 +8,13 @@ import {
   PipelineType,
   ResourceConfiguration,
   ResourceTypeKind,
+  Role,
   useProcessorDialogDestinationTypeLazyQuery,
   useProcessorDialogSourceTypeLazyQuery,
   useUpdateProcessorsMutation,
 } from "../../../graphql/generated";
 import { BPResourceConfiguration } from "../../../utils/classes";
 import { trimVersion } from "../../../utils/version-helpers";
-import { DialogContainer } from "../../DialogComponents/DialogContainer";
 import { usePipelineGraph } from "../../PipelineGraph/PipelineGraphContext";
 import {
   CreateProcessorConfigureView,
@@ -29,6 +29,12 @@ import {
   SnapshotContextProvider,
   useSnapshot,
 } from "../../SnapShotConsole/SnapshotContext";
+import { hasPermission } from "../../../utils/has-permission";
+import { useRole } from "../../../hooks/useRole";
+import { TitleSection } from "../../DialogComponents";
+
+import styles from "./processor-dialog.module.scss";
+import mixins from "../../../styles/mixins.module.scss";
 
 interface ProcessorDialogProps extends DialogProps {
   processors: ResourceConfiguration[];
@@ -83,6 +89,7 @@ enum Page {
 export type ProcessorType = GetProcessorTypesQuery["processorTypes"][0];
 
 export const ProcessorDialog: React.FC = () => {
+  const role = useRole();
   const {
     editProcessorsInfo,
     configuration,
@@ -116,7 +123,7 @@ export const ProcessorDialog: React.FC = () => {
       open={editProcessorsOpen}
       onClose={closeProcessorDialog}
       processors={processors}
-      readOnly={readOnlyGraph}
+      readOnly={readOnlyGraph || !hasPermission(Role.User, role)}
     />
   );
 };
@@ -357,7 +364,6 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   ]);
 
   let current: JSX.Element;
-  let buttons: JSX.Element | undefined;
   switch (view) {
     case Page.MAIN:
       current = (
@@ -438,18 +444,34 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
           maxWidth={"xl"}
           fullWidth
           onClose={handleClose}
-          sx={{
-            minWidth: "1250px",
+          classes={{
+            root: styles.dialog,
+            paper: styles.paper,
           }}
         >
-          <DialogContainer
-            title={title}
-            description={description}
-            onClose={handleClose}
-            buttons={buttons}
-          >
-            <ProcessorsBody>{current}</ProcessorsBody>
-          </DialogContainer>
+          <Stack height="calc(100vh - 100px)" minHeight="800px">
+            <TitleSection
+              title={title}
+              description={description}
+              onClose={handleClose}
+            />
+            <Stack
+              direction="row"
+              width="100%"
+              height="calc(100vh - 175px)"
+              minHeight={"700px"}
+              spacing={2}
+              padding={2}
+            >
+              <div
+                className={(mixins["flex-grow"], styles["snapshot-container"])}
+              >
+                <SnapshotSection />
+              </div>
+
+              <div className={styles["form-container"]}>{current}</div>
+            </Stack>
+          </Stack>
         </Dialog>
       </SnapshotContextProvider>
     </ResourceDialogContextProvider>
@@ -468,6 +490,18 @@ function convertTelemetryType(telemetryType: string): PipelineType {
       return PipelineType.Logs;
   }
 }
+
+export const SnapshotSection: React.FC = () => {
+  const { logs, metrics, traces, pipelineType } = useSnapshot();
+  return (
+    <SnapshotConsole
+      logs={logs}
+      metrics={metrics}
+      traces={traces}
+      footer={`Showing recent ${pipelineType}`}
+    />
+  );
+};
 
 export const ProcessorsBody: React.FC<{}> = ({ children }) => {
   const { logs, metrics, traces, pipelineType } = useSnapshot();

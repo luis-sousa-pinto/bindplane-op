@@ -1,6 +1,6 @@
 import mixins from "../../../styles/mixins.module.scss";
 import { gql } from "@apollo/client";
-import { Button, FormControl, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { debounce } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
@@ -9,6 +9,7 @@ import {
   ConfigurationChangesSubscription,
   EventType,
   GetConfigurationTableQuery,
+  Role,
   useConfigurationTableMetricsSubscription,
   useGetConfigurationTableQuery,
 } from "../../../graphql/generated";
@@ -18,6 +19,9 @@ import {
   ConfigurationsTableField,
 } from "./ConfigurationsDataGrid";
 import { DeleteDialog } from "./DeleteDialog";
+import { Link } from "react-router-dom";
+import { PlusCircleIcon } from "../../Icons";
+import { RBACWrapper } from "../../RBACWrapper/RBACWrapper";
 
 gql`
   query GetConfigurationTable(
@@ -114,6 +118,7 @@ interface ConfigurationTableProps {
   setSelected: (selected: GridRowSelectionModel) => void;
   selected: GridRowSelectionModel;
   enableDelete?: boolean;
+  enableNew?: boolean;
   allowSelection: boolean;
   minHeight?: string;
   overviewPage?: boolean;
@@ -126,6 +131,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
   selected,
   columns,
   enableDelete = true,
+  enableNew = true,
   allowSelection,
   minHeight,
   overviewPage = false,
@@ -198,19 +204,36 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 
   return (
     <>
-      <div className={mixins.flex}>
-        <Typography variant="h5" className={mixins["mb-5"]}>
-          Configurations
-        </Typography>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        marginBottom={3}
+      >
+        <Typography variant="h5">Configurations</Typography>
         {selected.length > 0 && enableDelete && (
-          <FormControl classes={{ root: mixins["ml-5"] }}>
+          <RBACWrapper requiredRole={Role.User}>
             <Button variant="contained" color="error" onClick={openModal}>
               Delete {selected.length} Configuration
               {selected.length > 1 && "s"}
             </Button>
-          </FormControl>
+          </RBACWrapper>
         )}
-      </div>
+
+        {selected.length === 0 && enableNew && (
+          <RBACWrapper requiredRole={Role.User}>
+            <Button
+              component={Link}
+              to="/configurations/new"
+              variant="contained"
+              classes={{ root: mixins["float-right"] }}
+              startIcon={<PlusCircleIcon />}
+            >
+              Create Configuration
+            </Button>
+          </RBACWrapper>
+        )}
+      </Stack>
 
       <Stack spacing={1}>
         <SearchBar
@@ -222,6 +245,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 
         <ConfigurationsDataGrid
           {...dataGridProps}
+          allowSelection={allowSelection}
           setSelectionModel={setSelected}
           loading={loading}
           configurations={data?.configurations.configurations ?? []}

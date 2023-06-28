@@ -11,12 +11,13 @@ import { memo } from "react";
 import { PipelineType } from "../../graphql/generated";
 import { RefreshIcon } from "../Icons";
 import { SnapshotRow } from "./SnapShotRow";
-
 import { AgentSelector } from "./AgentSelector";
-import styles from "./snap-shot-console.module.scss";
 import { Log, Metric, Trace, useSnapshot } from "./SnapshotContext";
 
-const TOGGLE_WIDTH = 150;
+import styles from "./snap-shot-console.module.scss";
+import mixins from "../../styles/mixins.module.scss";
+
+const TOGGLE_WIDTH = 100;
 
 interface Props {
   hideControls?: boolean;
@@ -41,7 +42,7 @@ export const SnapshotConsole: React.FC<Props> = memo(
     } = useSnapshot();
 
     return (
-      <>
+      <Stack className={mixins["flex-grow"]}>
         <MessagesContainer
           type={PipelineType.Logs}
           display={pipelineType === PipelineType.Logs}
@@ -82,7 +83,7 @@ export const SnapshotConsole: React.FC<Props> = memo(
                   onError={setError}
                 />
               ) : (
-                <div></div>
+                <div />
               )}
               <ToggleButtonGroup
                 size={"small"}
@@ -131,7 +132,7 @@ export const SnapshotConsole: React.FC<Props> = memo(
             )}
           </>
         )}
-      </>
+      </Stack>
     );
   }
 );
@@ -143,45 +144,46 @@ const MessagesContainerComponent: React.FC<{
   loading?: boolean;
   footer: string;
 }> = ({ messages, type, display, loading, footer }) => {
+  if (!display) {
+    return null;
+  }
   return (
-    <div style={{ display: display ? "inline" : "none" }}>
-      <div className={styles.container}>
-        <div className={styles.console}>
-          <div className={styles.stack}>
-            {loading ? (
-              <Stack
-                height="90%"
-                width={"100%"}
-                justifyContent="center"
-                alignItems="center"
-              >
-                <CircularProgress disableShrink />
-              </Stack>
-            ) : (
-              <>
-                {!messages?.length && (
-                  <Stack
-                    height="100%"
-                    width={"100%"}
-                    justifyContent="center"
-                    alignItems="center"
-                    bgcolor={"#fcfcfc"}
-                  >
-                    <Typography color="secondary">No recent {type}</Typography>
-                  </Stack>
-                )}
-                {messages?.map((m, ix) => (
-                  <SnapshotRow key={`${type}-${ix}`} message={m} type={type} />
-                ))}
-              </>
-            )}
-          </div>
+    <div className={styles.stack}>
+      <div className={styles.console}>
+        <div className={styles.stack}>
+          {loading ? (
+            <Stack
+              height="90%"
+              width={"100%"}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <CircularProgress disableShrink />
+            </Stack>
+          ) : (
+            <>
+              {!messages?.length && (
+                <Stack
+                  height="100%"
+                  width={"100%"}
+                  justifyContent="center"
+                  alignItems="center"
+                  bgcolor={"#fcfcfc"}
+                >
+                  <Typography color="secondary">No recent {type}</Typography>
+                </Stack>
+              )}
+              {messages?.map((m, ix) => (
+                <SnapshotRow key={`${type}-${ix}`} message={m} type={type} />
+              ))}
+            </>
+          )}
+        </div>
 
-          <div className={styles.footer}>
-            <Typography color="secondary" fontSize={12}>
-              {footer}
-            </Typography>
-          </div>
+        <div className={styles.footer}>
+          <Typography color="secondary" fontSize={12}>
+            {footer}
+          </Typography>
         </div>
       </div>
     </div>

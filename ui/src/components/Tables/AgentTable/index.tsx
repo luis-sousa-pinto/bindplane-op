@@ -1,6 +1,9 @@
 import { Box, Button, Collapse, Grid, Stack, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { GetAgentAndConfigurationsQuery } from "../../../graphql/generated";
+import {
+  GetAgentAndConfigurationsQuery,
+  Role,
+} from "../../../graphql/generated";
 import { AgentStatus } from "../../../types/agents";
 import { renderAgentDate, renderAgentLabels } from "../utils";
 import { ArrowUpIcon } from "../../Icons";
@@ -10,6 +13,7 @@ import { ExpandButton } from "../../ExpandButton";
 
 import styles from "./agent-table.module.scss";
 import mixins from "../../../styles/mixins.module.scss";
+import { RBACWrapper } from "../../RBACWrapper/RBACWrapper";
 
 type AgentTableAgent = NonNullable<GetAgentAndConfigurationsQuery["agent"]>;
 interface AgentTableProps {
@@ -118,16 +122,18 @@ function renderVersionRow(key: string, agent: AgentTableAgent): JSX.Element {
             </Typography>
             {agent.upgradeAvailable &&
               agent.status !== AgentStatus.DISCONNECTED && (
-                <Button
-                  endIcon={<ArrowUpIcon />}
-                  size="small"
-                  classes={{ root: mixins["ml-2"] }}
-                  variant="outlined"
-                  disabled={agent.status === AgentStatus.UPGRADING}
-                  onClick={() => handleUpgrade()}
-                >
-                  Upgrade to {agent.upgradeAvailable}
-                </Button>
+                <RBACWrapper requiredRole={Role.User}>
+                  <Button
+                    endIcon={<ArrowUpIcon />}
+                    size="small"
+                    classes={{ root: mixins["ml-2"] }}
+                    variant="outlined"
+                    disabled={agent.status === AgentStatus.UPGRADING}
+                    onClick={() => handleUpgrade()}
+                  >
+                    Upgrade to {agent.upgradeAvailable}
+                  </Button>
+                </RBACWrapper>
               )}
           </Stack>
         </Stack>

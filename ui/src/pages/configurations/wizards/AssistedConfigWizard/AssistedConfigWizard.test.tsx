@@ -187,6 +187,34 @@ describe("AssistedConfigWizard", () => {
     expect(requiredErrors.length).toEqual(2);
   });
 
+  it("requires name, platform, and secondaryPlatform to go to step 2", async () => {
+    render(
+      <MockedProvider mocks={mocks}>
+        <MemoryRouter>
+          <AssistedConfigWizard />
+        </MemoryRouter>
+      </MockedProvider>
+    );
+
+    const platformSelect = screen.getByTestId("platform-select-input");
+    fireEvent.change(platformSelect, { target: { value: "kubernetes" } });
+
+    // secondary platform is required for kubernetes
+    const secondaryPlatformSelect = screen.getByTestId(
+      "platform-secondary-select-input"
+    );
+    fireEvent.change(secondaryPlatformSelect, {
+      target: { value: "kubernetes-deployment" },
+    });
+
+    screen.getByText("Next").click();
+    expect(screen.getByTestId("step-one")).toBeInTheDocument();
+
+    // Expect to see Required for Name and Platform fields.
+    const requiredErrors = screen.getAllByText("Required.");
+    expect(requiredErrors.length).toEqual(1);
+  });
+
   it("can navigate to step two", () => {
     render(
       <MockedProvider mocks={mocks}>

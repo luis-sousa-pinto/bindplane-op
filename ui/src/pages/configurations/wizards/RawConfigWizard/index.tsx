@@ -32,6 +32,7 @@ const NEW_FORM_VALUES: RawConfigFormValues = {
   name: "",
   description: "",
   platform: "",
+  secondaryPlatform: "",
   rawConfig: DEFAULT_RAW_CONFIG,
   fileName: "",
 };
@@ -61,7 +62,7 @@ export const RawConfigWizard: React.FC<RawConfigWizardProps> = ({
         "Specify some basic settings for the platform you'll be shipping logs from.",
     },
     {
-      label: "Import Config",
+      label: "Import Configuration",
       description:
         "Import a raw OpenTelemetry configuration for use within BindPlane.",
     },

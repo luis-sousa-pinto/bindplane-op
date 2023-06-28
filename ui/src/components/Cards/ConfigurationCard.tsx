@@ -37,8 +37,6 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
     : `/configurations/${id.split("/").pop()}`;
   const agentCount = attributes["agentCount"] ?? 0;
 
-  const cardLabel = isEverything ? "Other Configurations" : label;
-
   return (
     <div className={disabled ? styles.disabled : undefined}>
       <Card className={styles["resource-card"]}>
@@ -48,7 +46,7 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
             navigate({ pathname: configurationURL, search: location.search })
           }
         >
-          <NoMaxWidthTooltip title={cardLabel.length > 20 ? cardLabel : ""}>
+          <NoMaxWidthTooltip title={label.length > 20 ? label : ""}>
             <CardContent>
               <Stack justifyContent="center" alignItems="center" spacing={2}>
                 {isEverything ? (
@@ -63,9 +61,9 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
                 <Typography
                   align="center"
                   fontWeight={600}
-                  fontSize={cardLabel.length > 15 ? 11 : 16}
+                  fontSize={label.length > 15 ? 11 : 16}
                 >
-                  {truncateLabel(cardLabel, 20)}
+                  {truncateLabel(label, 20)}
                 </Typography>
               </Stack>
             </CardContent>

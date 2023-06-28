@@ -639,7 +639,7 @@ func (c *BindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 		// check for errors field in response
 		errResponse := &model.ErrorResponse{}
 		if err := jsoniter.Unmarshal(resp.Body(), errResponse); err != nil {
-			c.Logger.Error("failed to unmarshal error response when copying config", zap.Error(err))
+			c.Logger.Error("failed to unmarshal error response when copying configuration", zap.Error(err))
 		}
 
 		if len(errResponse.Errors) > 0 {

@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { IconButton, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -11,6 +11,7 @@ import { AgentsTableField } from "../../../components/Tables/AgentsTable/AgentsD
 import { withRequireLogin } from "../../../contexts/RequireLogin";
 import {
   GetConfigurationQuery,
+  Role,
   useGetConfigurationLazyQuery,
 } from "../../../graphql/generated";
 import { selectorString } from "../../../types/configuration";
@@ -19,6 +20,9 @@ import { ApplyConfigDialog } from "./ApplyConfigDialog";
 import { isEmpty } from "lodash";
 import { ConfigurationDetails } from "../../../components/ConfigurationDetails";
 import { EditorSection } from "./EditorSection";
+import { RBACWrapper } from "../../../components/RBACWrapper/RBACWrapper";
+import { hasPermission } from "../../../utils/has-permission";
+import { useRole } from "../../../hooks/useRole";
 
 import styles from "./configuration-page.module.scss";
 
@@ -112,6 +116,7 @@ export type ShowPageConfig = GetConfigurationQuery["configuration"];
 export const ConfigPageContent: React.FC = () => {
   const { name } = useParams();
   const { enqueueSnackbar } = useSnackbar();
+  const role = useRole();
 
   const [fetchConfig, { data }] = useGetConfigurationLazyQuery({
     fetchPolicy: "cache-and-network",
@@ -172,6 +177,7 @@ export const ConfigPageContent: React.FC = () => {
         <EditorSection
           configurationName={name}
           isOtel={!isEmpty(data.configuration.spec.raw)}
+          hideRolloutActions={!hasPermission(Role.Admin, role)}
         />
       </section>
 
@@ -182,13 +188,20 @@ export const ConfigPageContent: React.FC = () => {
             {!platformIsContainer(
               data.configuration?.metadata?.labels?.platform
             ) && (
-              <IconButton onClick={openApplyDialog} color="primary">
-                <PlusCircleIcon />
-              </IconButton>
+              <RBACWrapper requiredRole={Role.User}>
+                <Button
+                  onClick={openApplyDialog}
+                  variant={"contained"}
+                  startIcon={<PlusCircleIcon />}
+                >
+                  Apply configuration
+                </Button>
+              </RBACWrapper>
             )}
           </div>
 
           <AgentsTable
+            allowSelection={false}
             selector={selectorString(data.configuration.spec.selector)}
             columnFields={[
               AgentsTableField.NAME,

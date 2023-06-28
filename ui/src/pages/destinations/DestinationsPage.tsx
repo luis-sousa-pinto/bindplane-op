@@ -1,5 +1,5 @@
 import { gql, QueryHookOptions, QueryResult } from "@apollo/client";
-import { Typography, FormControl, Button } from "@mui/material";
+import { Typography, Button, Stack } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
@@ -19,6 +19,7 @@ import {
   DestinationsQuery,
   DestinationsQueryVariables,
   Exact,
+  Role,
   useDestinationsQuery,
 } from "../../graphql/generated";
 import { ResourceStatus, ResourceKind } from "../../types/resources";
@@ -26,6 +27,10 @@ import {
   deleteResources,
   MinimumDeleteResource,
 } from "../../utils/rest/delete-resources";
+import { useRole } from "../../hooks/useRole";
+import { hasPermission } from "../../utils/has-permission";
+import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
+import { useLocation } from "react-router-dom";
 
 import mixins from "../../styles/mixins.module.scss";
 
@@ -56,6 +61,8 @@ export interface DestinationsPageContentProps {
   editingDestination: string | null;
   setEditingDestination: (dest: string | null) => void;
 
+  allowSelection: boolean;
+
   // as function for the graphql query
   destinationsQuery:
     | ((
@@ -79,7 +86,7 @@ export interface DestinationsPageContentProps {
         Exact<{ [key: string]: never }>
       >);
 }
-export const DestinationsPageContent: React.FC<
+export const DestinationsPageSubContent: React.FC<
   DestinationsPageContentProps
 > = ({
   destinationsPage,
@@ -90,6 +97,7 @@ export const DestinationsPageContent: React.FC<
   minHeight,
   editingDestination,
   setEditingDestination,
+  allowSelection,
 }) => {
   // Used to control the delete confirmation modal.
   const [open, setOpen] = useState<boolean>(false);
@@ -149,12 +157,16 @@ export const DestinationsPageContent: React.FC<
 
   return (
     <>
-      <div className={mixins.flex}>
-        <Typography variant="h5" className={mixins["mb-5"]}>
-          Destinations
-        </Typography>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        height="48px"
+        marginBottom={2}
+      >
+        <Typography variant="h5">Destinations</Typography>
         {destinationsPage && selected.length > 0 && (
-          <FormControl classes={{ root: mixins["ml-5"] }}>
+          <RBACWrapper requiredRole={Role.User}>
             <Button
               variant="contained"
               color="error"
@@ -163,9 +175,9 @@ export const DestinationsPageContent: React.FC<
               Delete {selected.length} Destination
               {selected.length > 1 && "s"}
             </Button>
-          </FormControl>
+          </RBACWrapper>
         )}
-      </div>
+      </Stack>
       <DestinationsDataGrid
         loading={loading}
         setSelectionModel={setSelected}
@@ -176,6 +188,7 @@ export const DestinationsPageContent: React.FC<
         columnFields={columnFields}
         minHeight={minHeight}
         rows={rows}
+        allowSelection={allowSelection}
         classes={
           !destinationsPage && rows.length < 100
             ? { footerContainer: mixins["hidden"] }
@@ -213,6 +226,36 @@ export const DestinationsPageContent: React.FC<
   );
 };
 
+export const DestinationsPageContent: React.FC = () => {
+  const [selected, setSelected] = useState<GridRowSelectionModel>([]);
+  const [editingDestination, setEditingDestination] = useState<string | null>(
+    null
+  );
+  const location = useLocation();
+  const role = useRole();
+
+  const isDestinationsPage = location.pathname.includes("destinations");
+
+  return (
+    <CardContainer>
+      <DestinationsPageSubContent
+        allowSelection={hasPermission(Role.Admin, role)}
+        destinationsPage={isDestinationsPage}
+        selected={selected}
+        setSelected={setSelected}
+        editingDestination={editingDestination}
+        setEditingDestination={setEditingDestination}
+        destinationsQuery={useDestinationsQuery}
+        minHeight="300px"
+      />
+    </CardContainer>
+  );
+};
+
+export const DestinationsPage = withRequireLogin(
+  withNavBar(DestinationsPageContent)
+);
+
 export function resourcesFromSelected(
   selected: GridRowSelectionModel
 ): MinimumDeleteResource[] {
@@ -232,27 +275,3 @@ export function resourcesFromSelected(
     return prev;
   }, []);
 }
-
-export const DestinationsPage = withRequireLogin(
-  withNavBar((props) => {
-    // Selected is an array of names of destinations in the form
-    // <Kind>|<Name>
-    const [selected, setSelected] = useState<GridRowSelectionModel>([]);
-    const [editingDestination, setEditingDestination] = useState<string | null>(
-      null
-    );
-
-    return (
-      <CardContainer>
-        <DestinationsPageContent
-          destinationsPage
-          selected={selected}
-          setSelected={setSelected}
-          editingDestination={editingDestination}
-          setEditingDestination={setEditingDestination}
-          destinationsQuery={useDestinationsQuery}
-        />
-      </CardContainer>
-    );
-  })
-);

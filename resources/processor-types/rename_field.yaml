@@ -7,16 +7,33 @@ metadata:
   labels:
     category: Transform
 spec:
-  version: 0.0.1
+  version: 1.0.0
   parameters:
-    - name: telemetry_types
-      label: Enable Telemetry
-      type: enums
-      description: "Select which types of telemetry you'd like to enable this processor for."
-      validValues: ["Metrics", "Logs", "Traces"]
-      default: ["Metrics", "Logs", "Traces"]
+    # Logs
+    - name: enable_logs
+      label: Enable Logs
+      type: bool
+      default: true
 
-    - name: resource_keys
+    - name: log_condition
+      label: Log Condition
+      description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all logs."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Log Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/contexts/ottllog/README.md
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: log_resource_keys
       label: Resource Keys
       type: map
       default: {}
@@ -26,8 +43,12 @@ spec:
         labels:
           key: Old Name
           value: New Name
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: attribute_keys
+    - name: log_attribute_keys
       label: Attribute Keys
       type: map
       default: {}
@@ -37,8 +58,12 @@ spec:
         labels:
           key: Old Name
           value: New Name
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
 
-    - name: body_keys
+    - name: log_body_keys
       label: Body Keys
       type: map
       default: {}
@@ -49,79 +74,190 @@ spec:
           key: Old Name
           value: New Name
       relevantIf:
-        - name: telemetry_types
-          operator: containsAny
-          value: ["Logs"]
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    # Metrics
+    - name: enable_metrics
+      label: Enable Metrics
+      type: bool
+      default: true
+
+    - name: datapoint_condition
+      label: Datapoint Condition
+      description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all datapoints."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Datapoint Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/contexts/ottldatapoint/README.md
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: metric_resource_keys
+      label: Resource Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: metric_attribute_keys
+      label: Attribute Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    # Trace
+    - name: enable_traces
+      label: Enable Traces
+      type: bool
+      default: true
+
+    - name: span_condition
+      label: Spans Condition
+      description: "An OTTL boolean expression that must evaluate to true to apply this processor. By default, the processor applies to all spans."
+      type: string
+      default: "true"
+      required: true
+      options:
+        gridColumns: 12
+      documentation:
+        - text: OTTL Span Context
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/ottl/contexts/ottlspan
+        - text: OTTL Booleans
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md#booleans
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
+    - name: trace_resource_keys
+      label: Resource Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
+    - name: trace_attribute_keys
+      label: Attribute Keys
+      type: map
+      default: {}
+      required: false
+      options:
+        gridColumns: 12
+        labels:
+          key: Old Name
+          value: New Name
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
 
   metrics:
     processors: |
-      {{ if has "Metrics" .telemetry_types }}
-      {{ if or .resource_keys .attribute_keys }}
+      {{ if .enable_metrics }}
+      {{ if or .metric_resource_keys .metric_attribute_keys }}
       - transform/metrics:
+          error_mode: ignore
           metric_statements:
-            {{ if .resource_keys }}
-            - context: resource
-              statements:
-              {{ range $k, $v := .resource_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
-              {{ end }}
-            {{ end }}
-            {{ if .attribute_keys }}
+            {{ if .metric_resource_keys }}
             - context: datapoint
               statements:
-              {{ range $k, $v := .attribute_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ range $k, $v := .metric_resource_keys }}
+              - replace_all_patterns(resource.attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.datapoint_condition }}
+              {{ end }}
+            {{ end }}
+            {{ if .metric_attribute_keys }}
+            - context: datapoint
+              statements:
+              {{ range $k, $v := .metric_attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.datapoint_condition }}
               {{ end }}
             {{ end }}
       {{ end }}
       {{ end }}
   logs:
     processors: |
-      {{ if has "Logs" .telemetry_types }}
-      {{ if or .resource_keys .attribute_keys .body_keys }}
+      {{ if .enable_logs }}
+      {{ if or .log_resource_keys .log_attribute_keys .log_body_keys }}
       - transform/logs:
+          error_mode: ignore
           log_statements:
-            {{ if .resource_keys }}
-            - context: resource
-              statements:
-              {{ range $k, $v := .resource_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
-              {{ end }}
-            {{ end }}
-            {{ if .attribute_keys }}
+            {{ if .log_resource_keys }}
             - context: log
               statements:
-              {{ range $k, $v := .attribute_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ range $k, $v := .log_resource_keys }}
+              - replace_all_patterns(resource.attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.log_condition }}
               {{ end }}
             {{ end }}
-            {{ if .body_keys }}
+            {{ if .log_attribute_keys }}
             - context: log
               statements:
-              {{ range $k, $v := .body_keys }}
-              - replace_all_patterns(body, "key", "{{ $k }}", "{{ $v }}")
+              {{ range $k, $v := .log_attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.log_condition }}
+              {{ end }}
+            {{ end }}
+            {{ if .log_body_keys }}
+            - context: log
+              statements:
+              {{ range $k, $v := .log_body_keys }}
+              - replace_all_patterns(body, "key", "{{ $k }}", "{{ $v }}") where {{ $.log_condition }}
               {{ end }}
             {{ end }}
       {{ end }}
       {{ end }}
   traces:
     processors: |
-      {{ if has "Traces" .telemetry_types }}
-      {{ if or .resource_keys .attribute_keys }}
+      {{ if .enable_traces }}
+      {{ if or .trace_resource_keys .trace_attribute_keys }}
       - transform/traces:
-          log_statements:
-            {{ if .resource_keys }}
-            - context: resource
-              statements:
-              {{ range $k, $v := .resource_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
-              {{ end }}
-            {{ end }}
-            {{ if .attribute_keys }}
+          error_mode: ignore
+          trace_statements:
+            {{ if .trace_resource_keys }}
             - context: span
               statements:
-              {{ range $k, $v := .attribute_keys }}
-              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}")
+              {{ range $k, $v := .trace_resource_keys }}
+              - replace_all_patterns(resource.attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.span_condition }}
+              {{ end }}
+            {{ end }}
+            {{ if .trace_attribute_keys }}
+            - context: span
+              statements:
+              {{ range $k, $v := .trace_attribute_keys }}
+              - replace_all_patterns(attributes, "key", "{{ $k }}", "{{ $v }}") where {{ $.span_condition }}
               {{ end }}
             {{ end }}
       {{ end }}

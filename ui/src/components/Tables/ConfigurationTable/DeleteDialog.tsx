@@ -50,8 +50,8 @@ export const DeleteDialog: React.FC<DeleteModalProps> = ({
 
       <DialogContent>
         <Typography>
-          Deleting this configuration will remove it from BindPlane, however any
-          agents currently using this configuration will continue to do so.
+          Deleting a configuration will remove it from bindplane, however any
+          agents currently using it will continue to do so.
         </Typography>
       </DialogContent>
       <DialogActions>

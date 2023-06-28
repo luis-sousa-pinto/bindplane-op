@@ -45,6 +45,25 @@ export const ArrowUpIcon: React.FC<IconProps> = (props) => {
   );
 };
 
+export const CheckIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  );
+};
+
 export const ChevronDown: React.FC<IconProps> = (props) => {
   return (
     <svg
@@ -117,6 +136,26 @@ export const ChevronLeft: React.FC<IconProps> = (props) => {
       {...props}
     >
       <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  );
+};
+
+export const CopyIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
     </svg>
   );
 };
@@ -321,6 +360,26 @@ export const MenuIcon: React.FC<IconProps> = (props) => {
   );
 };
 
+export const MoreVertical: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="1"></circle>
+      <circle cx="12" cy="5" r="1"></circle>
+      <circle cx="12" cy="19" r="1"></circle>
+    </svg>
+  );
+};
+
 export const OtherDestinationsIcon: React.FC<IconProps> = (props) => {
   return (
     <svg
@@ -464,6 +523,28 @@ export const UploadCloudIcon: React.FC<IconProps> = (props) => {
       <line x1="12" y1="12" x2="12" y2="21"></line>
       <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
       <polyline points="16 16 12 12 8 16"></polyline>
+    </svg>
+  );
+};
+
+export const UsersIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
     </svg>
   );
 };
@@ -646,6 +727,28 @@ export const TrashIcon: React.FC<IconProps> = (props) => {
   );
 };
 
+export const UserXIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="8.5" cy="7" r="4"></circle>
+      <line x1="18" y1="8" x2="23" y2="13"></line>
+      <line x1="23" y1="8" x2="18" y2="13"></line>
+    </svg>
+  );
+};
+
 export const XIcon: React.FC<IconProps> = (props) => {
   return (
     <svg
@@ -662,6 +765,92 @@ export const XIcon: React.FC<IconProps> = (props) => {
     >
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  );
+};
+
+/**
+ * Miscellaneous (non-feather) icons.
+ */
+
+export const BusinessIcon: React.FC<IconProps> = (props) => {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" {...props}>
+      <g clipPath="url(#clip0_150_2266)">
+        <path
+          d="M23.3333 15.15L38.0167 18.0667C39.2 18.3167 40 19.3167 40 20.5V37.5C40 38.8833 38.8833 40 37.5 40H22.5C22.9667 40 23.3333 39.6333 23.3333 39.1667V38.3333H37.5C37.95 38.3333 38.3333 37.9667 38.3333 37.5V20.5C38.3333 20.1167 38.0667 19.7667 37.6833 19.6833L23.3333 16.85V15.15Z"
+          fill="black"
+        />
+        <path
+          d="M32.5 23.3333C32.9667 23.3333 33.3334 23.7 33.3334 24.1666C33.3334 24.6333 32.9667 25 32.5 25H29.1667C28.7 25 28.3334 24.6333 28.3334 24.1666C28.3334 23.7 28.7 23.3333 29.1667 23.3333H32.5Z"
+          fill="black"
+        />
+        <path
+          d="M32.5 28.3333C32.9667 28.3333 33.3334 28.7 33.3334 29.1666C33.3334 29.6333 32.9667 30 32.5 30H29.1667C28.7 30 28.3334 29.6333 28.3334 29.1666C28.3334 28.7 28.7 28.3333 29.1667 28.3333H32.5Z"
+          fill="black"
+        />
+        <path
+          d="M32.5 33.3333C32.9667 33.3333 33.3334 33.7 33.3334 34.1666C33.3334 34.6333 32.9667 35 32.5 35H29.1667C28.7 35 28.3334 34.6333 28.3334 34.1666C28.3334 33.7 28.7 33.3333 29.1667 33.3333H32.5Z"
+          fill="black"
+        />
+        <path
+          d="M23.3333 39.1667C23.3333 39.6333 22.9666 40 22.5 40C22.0333 40 21.6666 39.6333 21.6666 39.1667V38.3333V15.8333C21.6666 15.5833 21.7833 15.35 21.9666 15.1833C22.1666 15.0333 22.4166 14.9667 22.6666 15.0167L23.3333 15.15V16.85V38.3333V39.1667Z"
+          fill="black"
+        />
+        <path
+          d="M21.6667 38.3333V39.1666C21.6667 39.6333 22.0334 40 22.5 40H15.8334C16.3 40 16.6667 39.6333 16.6667 39.1666V38.3333H21.6667Z"
+          fill="black"
+        />
+        <path
+          d="M17.5 8.33331C17.9667 8.33331 18.3334 8.69998 18.3334 9.16665C18.3334 9.63331 17.9667 9.99998 17.5 9.99998H14.1667C13.7 9.99998 13.3334 9.63331 13.3334 9.16665C13.3334 8.69998 13.7 8.33331 14.1667 8.33331H17.5Z"
+          fill="black"
+        />
+        <path
+          d="M18.3334 14.1666C18.3334 14.6333 17.9667 15 17.5 15H14.1667C13.7 15 13.3334 14.6333 13.3334 14.1666C13.3334 13.7 13.7 13.3333 14.1667 13.3333H17.5C17.9667 13.3333 18.3334 13.7 18.3334 14.1666Z"
+          fill="black"
+        />
+        <path
+          d="M17.5 18.3333C17.9667 18.3333 18.3334 18.7 18.3334 19.1666C18.3334 19.6333 17.9667 20 17.5 20H14.1667C13.7 20 13.3334 19.6333 13.3334 19.1666C13.3334 18.7 13.7 18.3333 14.1667 18.3333H17.5Z"
+          fill="black"
+        />
+        <path
+          d="M17.5 23.3333C17.9667 23.3333 18.3334 23.7 18.3334 24.1666C18.3334 24.6333 17.9667 25 17.5 25H14.1667C13.7 25 13.3334 24.6333 13.3334 24.1666C13.3334 23.7 13.7 23.3333 14.1667 23.3333H17.5Z"
+          fill="black"
+        />
+        <path
+          d="M10 24.1666C10 24.6333 9.63333 25 9.16667 25H5.83333C5.36667 25 5 24.6333 5 24.1666C5 23.7 5.36667 23.3333 5.83333 23.3333H9.16667C9.63333 23.3333 10 23.7 10 24.1666Z"
+          fill="black"
+        />
+        <path
+          d="M9.16667 8.33331C9.63333 8.33331 10 8.69998 10 9.16665C10 9.63331 9.63333 9.99998 9.16667 9.99998H5.83333C5.36667 9.99998 5 9.63331 5 9.16665C5 8.69998 5.36667 8.33331 5.83333 8.33331H9.16667Z"
+          fill="black"
+        />
+        <path
+          d="M9.16667 13.3333C9.63333 13.3333 10 13.7 10 14.1666C10 14.6333 9.63333 15 9.16667 15H5.83333C5.36667 15 5 14.6333 5 14.1666C5 13.7 5.36667 13.3333 5.83333 13.3333H9.16667Z"
+          fill="black"
+        />
+        <path
+          d="M9.16667 18.3333C9.63333 18.3333 10 18.7 10 19.1666C10 19.6333 9.63333 20 9.16667 20H5.83333C5.36667 20 5 19.6333 5 19.1666C5 18.7 5.36667 18.3333 5.83333 18.3333H9.16667Z"
+          fill="black"
+        />
+        <path
+          d="M15 30.8333C15 30.3666 14.6166 30 14.1666 30H9.16663C8.69996 30 8.33329 30.3666 8.33329 30.8333V38.3333H6.66663V30.8333C6.66663 29.45 7.78329 28.3333 9.16663 28.3333H14.1666C15.55 28.3333 16.6666 29.45 16.6666 30.8333V38.3333H15V30.8333Z"
+          fill="black"
+        />
+        <path
+          d="M8.33329 38.3333H15H16.6666V39.1666C16.6666 39.6333 16.3 40 15.8333 40H7.49996C7.03329 40 6.66663 39.6333 6.66663 39.1666V38.3333H8.33329Z"
+          fill="black"
+        />
+        <path
+          d="M2.91667 0.333321L21.2333 3.11665C22.45 3.31665 23.3333 4.34999 23.3333 5.58332V15.15L22.6667 15.0167C22.4167 14.9667 22.1667 15.0333 21.9667 15.1833C21.7833 15.35 21.6667 15.5833 21.6667 15.8333V5.58332C21.6667 5.16665 21.3667 4.81665 20.9667 4.74999L2.65 1.98332C2.6 1.96665 2.55 1.96665 2.5 1.96665C2.3 1.96665 2.11667 2.03332 1.96667 2.16665C1.76667 2.33332 1.66667 2.54999 1.66667 2.79999V37.5C1.66667 37.9667 2.05 38.3333 2.5 38.3333H6.66667V39.1667C6.66667 39.6333 7.03333 40 7.5 40H2.5C1.11667 40 0 38.8833 0 37.5V2.79999C0 2.06665 0.316667 1.36665 0.883333 0.899988C1.45 0.416654 2.18333 0.216654 2.91667 0.333321V0.333321Z"
+          fill="black"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_150_2266">
+          <rect width="40" height="40" fill="white" />
+        </clipPath>
+      </defs>
     </svg>
   );
 };

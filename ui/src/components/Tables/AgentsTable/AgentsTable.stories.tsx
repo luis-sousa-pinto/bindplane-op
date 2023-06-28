@@ -5,7 +5,6 @@ import {
   AgentsTableDocument,
   AgentsTableQuery,
 } from "../../../graphql/generated";
-import { AgentTable } from "../AgentTable";
 import { AgentsTableField } from "./AgentsDataGrid";
 import { generateAgents } from "./__testutil__/generate-agents";
 
@@ -33,7 +32,7 @@ export default {
       control: "multi-select",
     },
   },
-} as Meta<typeof AgentTable>;
+} as Meta<typeof AgentsTable>;
 
 const Template: StoryFn<typeof AgentsTable> = (args) => (
   <div style={{ width: "80vw", height: "500px" }}>
@@ -84,7 +83,9 @@ const mockParams = {
   },
 };
 
-Default.args = {};
+Default.args = {
+  allowSelection: true,
+};
 Default.parameters = mockParams;
 
 Selectable.args = {

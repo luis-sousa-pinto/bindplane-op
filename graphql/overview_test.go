@@ -637,11 +637,31 @@ func Test_overviewGraph(t *testing.T) {
 				false,
 				&graph.Graph{
 					Sources: []*graph.Node{
-						testNode("configuration", "everythingNode", 3),
+						{
+							ID:    "everything/configuration",
+							Label: "All Configurations",
+							Type:  "configurationNode",
+							Attributes: map[string]any{
+								"kind":            string(model.KindConfiguration),
+								"resourceId":      "everything/configuration",
+								"agentCount":      3,
+								"activeTypeFlags": otel.PipelineTypeFlags(0),
+							},
+						},
 					},
 					Intermediates: make([]*graph.Node, 0),
 					Targets: []*graph.Node{
-						testNode("destination", "everythingNode", 4),
+						{
+							ID:    "everything/destination",
+							Label: "All Destinations",
+							Type:  "destinationNode",
+							Attributes: map[string]any{
+								"kind":            string(model.KindDestination),
+								"resourceId":      "everything/destination",
+								"agentCount":      4,
+								"activeTypeFlags": otel.PipelineTypeFlags(0),
+							},
+						},
 					},
 					Edges: []*graph.Edge{
 						graph.NewEdge("everything/configuration", "everything/destination"),
@@ -679,7 +699,17 @@ func Test_overviewGraph(t *testing.T) {
 				false,
 				&graph.Graph{
 					Sources: []*graph.Node{
-						testNode("configuration", "everythingNode", 3),
+						{
+							ID:    "everything/configuration",
+							Label: "All Configurations",
+							Type:  "configurationNode",
+							Attributes: map[string]any{
+								"kind":            string(model.KindConfiguration),
+								"resourceId":      "everything/configuration",
+								"agentCount":      3,
+								"activeTypeFlags": otel.PipelineTypeFlags(0),
+							},
+						},
 					},
 					Intermediates: make([]*graph.Node, 0),
 					Targets: []*graph.Node{
@@ -731,7 +761,17 @@ func Test_overviewGraph(t *testing.T) {
 					},
 					Intermediates: make([]*graph.Node, 0),
 					Targets: []*graph.Node{
-						testNode("destination", "everythingNode", 4),
+						{
+							ID:    "everything/destination",
+							Label: "All Destinations",
+							Type:  "destinationNode",
+							Attributes: map[string]any{
+								"kind":            string(model.KindDestination),
+								"resourceId":      "everything/destination",
+								"agentCount":      4,
+								"activeTypeFlags": otel.PipelineTypeFlags(0),
+							},
+						},
 					},
 					Edges: []*graph.Edge{
 						graph.NewEdge("configuration/c-1", "everything/destination"),
@@ -933,15 +973,17 @@ func destinationResourceConfigurations(names []string) []model.ResourceConfigura
 func testNode(name, nodeType string, agentCount int) *graph.Node {
 	var id string
 	var kind string
-
+	label := name
 	if nodeType == "everythingNode" {
 		id = fmt.Sprintf("everything/%s", name)
 		if name == "configuration" {
 			kind = string(model.KindConfiguration)
 			nodeType = "configurationNode"
+			label = "Other Configurations"
 		} else {
 			kind = string(model.KindDestination)
 			nodeType = "destinationNode"
+			label = "Other Destinations"
 		}
 		name = id
 	} else if nodeType == "configurationNode" {
@@ -955,7 +997,7 @@ func testNode(name, nodeType string, agentCount int) *graph.Node {
 	var activeFlags otel.PipelineTypeFlags
 	return &graph.Node{
 		ID:    id,
-		Label: name,
+		Label: label,
 		Type:  nodeType,
 		Attributes: map[string]any{
 			"kind":            kind,

@@ -217,7 +217,7 @@ exports[`NavBar renders correctly 1`] = `
             y2="16"
           />
         </svg>
-        Configs
+        Configurations
       </a>
       <a
         className="nav-link"

@@ -19,7 +19,7 @@ describe("NavBar", () => {
     expect(agentsButton).toBeInTheDocument();
     expect(agentsButton).toHaveAttribute("href", "/agents");
 
-    const configurationsButton = screen.getByText("Configs");
+    const configurationsButton = screen.getByText("Configurations");
     expect(configurationsButton).toBeInTheDocument();
     expect(configurationsButton).toHaveAttribute("href", "/configurations");
   });

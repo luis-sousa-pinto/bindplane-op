@@ -13,6 +13,9 @@ import { withRequireLogin } from "../../contexts/RequireLogin";
 import { withNavBar } from "../../components/NavBar";
 import { isFunction } from "lodash";
 import { upgradeAgents } from "../../utils/rest/upgrade-agent";
+import { Role } from "../../graphql/generated";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 import mixins from "../../styles/mixins.module.scss";
 
@@ -24,6 +27,7 @@ export const AgentsPageContent: React.FC = () => {
   const clearSelectionModelFnRef = useRef<(() => void) | null>(null);
 
   const { enqueueSnackbar } = useSnackbar();
+  const role = useRole();
 
   function handleSelectUpdatable(agentIds: GridRowSelectionModel) {
     setUpdatable(agentIds);
@@ -83,25 +87,25 @@ export const AgentsPageContent: React.FC = () => {
         </>
       </ConfirmDeleteResourceDialog>
       <CardContainer>
-        <Button
-          component={Link}
-          variant={"contained"}
-          classes={{ root: mixins["float-right"] }}
-          to="/agents/install"
-          startIcon={<PlusCircleIcon />}
-        >
-          Install Agents
-        </Button>
-
-        {deletable.length > 0 && (
+        {deletable.length > 0 ? (
           <Button
             variant="contained"
             color="error"
-            classes={{ root: classes([mixins["float-right"], mixins["mr-3"]]) }}
+            classes={{ root: mixins["float-right"] }}
             onClick={() => setDeleteConfirmOpen(true)}
           >
             Delete {deletable.length} Disconnected Agent
             {deletable.length > 1 && "s"}
+          </Button>
+        ) : (
+          <Button
+            component={Link}
+            variant={"contained"}
+            classes={{ root: mixins["float-right"] }}
+            to="/agents/install"
+            startIcon={<PlusCircleIcon />}
+          >
+            Install Agent
           </Button>
         )}
 
@@ -124,6 +128,7 @@ export const AgentsPageContent: React.FC = () => {
         </Typography>
 
         <AgentsTable
+          allowSelection={hasPermission(Role.User, role)}
           onDeletableAgentsSelected={handleSelectDeletable}
           onUpdatableAgentsSelected={handleSelectUpdatable}
           clearSelectionModelFnRef={clearSelectionModelFnRef}

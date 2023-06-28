@@ -1,9 +1,6 @@
-import { AgentsTableAgent } from '.';
-import { AgentChange } from '../../../contexts/AgentChanges';
-import {
-  AgentChangeType,
-  AgentsTableQuery,
-} from "../../../graphql/generated";
+import { AgentsTableAgent } from ".";
+import { AgentChange } from "../../../contexts/AgentChanges";
+import { AgentChangeType, AgentsTableQuery } from "../../../graphql/generated";
 
 // mergeAgents updates applies the updates to the list of current agents, replacing existing agents that are updated,
 // adding new agents that are added, and removing agents that are removed.

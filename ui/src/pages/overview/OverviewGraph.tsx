@@ -11,6 +11,7 @@ import {
 } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { firstActiveTelemetry } from "../../components/PipelineGraph/Nodes/nodeUtils";
 import {
+  Role,
   useGetOverviewPageQuery,
   useOverviewMetricsSubscription,
 } from "../../graphql/generated";
@@ -24,6 +25,8 @@ import OverviewEdge from "./OverviewEdge";
 import { useOverviewPage } from "./OverviewPageContext";
 import colors from "../../styles/colors";
 import { GraphGradient } from "../../components/GraphComponents";
+import { hasPermission } from "../../utils/has-permission";
+import { useRole } from "../../hooks/useRole";
 
 gql`
   query getOverviewPage(
@@ -256,6 +259,8 @@ export const OverviewGraph: React.FC = () => {
 const NoDeployedConfigurationsMessage: React.FC<{
   navigate: (to: string) => void;
 }> = ({ navigate }) => {
+  const role = useRole();
+
   return (
     <Stack
       width="100%"
@@ -269,12 +274,17 @@ const NoDeployedConfigurationsMessage: React.FC<{
         You haven&apos;t deployed any configurations.
       </Typography>
       <Typography textAlign={"center"}>
-        Once you&apos;ve created a configuration and applied it to an agent,
+        Once you&apos;ve created a configuration and rolled it out to an agent,
         you&apos;ll see your data topology here.
       </Typography>
       <Button
+        disabled={role === Role.Viewer}
         variant="contained"
-        onClick={() => navigate("/configurations/new")}
+        onClick={
+          !hasPermission(Role.User, role)
+            ? undefined
+            : () => navigate("/configurations/new")
+        }
       >
         Create Configuration Now
       </Button>

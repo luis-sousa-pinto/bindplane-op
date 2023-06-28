@@ -43,6 +43,7 @@ import { trimVersion } from "../../../../utils/version-helpers";
 
 import styles from "./assisted-config-wizard.module.scss";
 import mixins from "../../../../styles/mixins.module.scss";
+import { isEmpty } from "lodash";
 
 type ResourceType = SourceType | DestinationType;
 
@@ -168,7 +169,9 @@ export const StepThree: React.FC = () => {
         name: formValues.name,
         description: formValues.description,
         labels: {
-          platform: formValues.platform,
+          platform: isEmpty(formValues.secondaryPlatform)
+            ? formValues.platform
+            : formValues.secondaryPlatform,
         },
         version: 0,
       },
@@ -397,8 +400,8 @@ export const StepThree: React.FC = () => {
         <Typography variant="body2" marginBottom={"1rem"}>
           A destination simply represents where you'd like to send your
           telemetry data. You can configure that here. Depending on the
-          destination you choose, we'll configure specific OTel processors for
-          you, ensuring your data shows up in a useful state.
+          destination you choose, we'll configure specific OpenTelemetry
+          processors for you, ensuring your data shows up in a useful state.
         </Typography>
 
         {/* ------------------- Add Destination button or Accordion ------------------ */}
@@ -450,7 +453,11 @@ export const StepThree: React.FC = () => {
       </ConfirmDeleteResourceDialog>
 
       <NewResourceDialog
-        platform={formValues.platform}
+        platform={
+          isEmpty(formValues.secondaryPlatform)
+            ? formValues.platform
+            : formValues.secondaryPlatform
+        }
         title="Choose a Destination"
         kind="destination"
         open={addDestinationOpen}

@@ -9,6 +9,9 @@ import React from "react";
 import { PlusCircleIcon } from "../Icons";
 import { classes } from "../../utils/styles";
 import { usePipelineGraph } from "../PipelineGraph/PipelineGraphContext";
+import { useRole } from "../../hooks/useRole";
+import { hasPermission } from "../../utils/has-permission";
+import { Role } from "../../graphql/generated";
 
 import styles from "./cards.module.scss";
 
@@ -22,8 +25,9 @@ export const AddResourceCard: React.FC<AddResourceCardProps> = ({
   buttonText,
 }) => {
   const { readOnlyGraph } = usePipelineGraph();
+  const role = useRole();
 
-  const canEdit = !readOnlyGraph;
+  const canEdit = hasPermission(Role.User, role) && !readOnlyGraph;
 
   const classNames = classes([
     styles["ui-control-card"],

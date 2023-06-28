@@ -11,6 +11,7 @@ interface ConfigValues {
   description: string;
   rawConfig: string;
   platform: string;
+  secondaryPlatform: string;
   fileName: string;
 }
 

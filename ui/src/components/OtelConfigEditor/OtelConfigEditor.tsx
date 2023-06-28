@@ -1,11 +1,12 @@
 import { useSnackbar } from "notistack";
 import { YamlEditor } from "../YamlEditor";
-import { useGetConfigurationQuery } from "../../graphql/generated";
+import { Role, useGetConfigurationQuery } from "../../graphql/generated";
 import { useState } from "react";
 import { BPConfiguration } from "../../utils/classes";
 import { Alert, Button, IconButton, Stack } from "@mui/material";
 import { EditIcon } from "../Icons";
 import { UpdateStatus } from "../../types/resources";
+import { RBACWrapper } from "../RBACWrapper/RBACWrapper";
 
 interface OtelConfigProps {
   configurationName: string;
@@ -88,14 +89,16 @@ export const OtelConfigEditor: React.FC<OtelConfigProps> = ({
   }
 
   const EditAction = readOnly ? null : (
-    <IconButton
-      size="small"
-      onClick={() => setEditing(true)}
-      data-testid="edit-configuration-button"
-      sx={{ float: "right" }}
-    >
-      <EditIcon />
-    </IconButton>
+    <RBACWrapper requiredRole={Role.User}>
+      <IconButton
+        size="small"
+        onClick={() => setEditing(true)}
+        data-testid="edit-configuration-button"
+        sx={{ float: "right" }}
+      >
+        <EditIcon />
+      </IconButton>
+    </RBACWrapper>
   );
 
   const SaveCancelActions = (

@@ -1,0 +1,218 @@
+apiVersion: bindplane.observiq.com/v1
+kind: SourceType
+metadata:
+  name: m365
+  displayName: Microsoft 365
+  icon: /icons/sources/microsoft_iis.svg
+  description: Collect metrics and logs from Microsoft 365.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+  - macos
+  - linux
+  - windows
+  parameters:
+
+    - name: tenant_id
+      label: Tenant ID
+      description: Identifies the instance of Microsoft 365 to be monitored.
+      options:
+        sectionHeader: true
+      type: string 
+      default: "" 
+      required: true
+
+    - name: client_id
+      label: Client ID
+      description: Identifier this receiver will use when monitoring.
+      type: string
+      default: "" 
+      required: true
+
+    - name: client_secret
+      label: Client secret
+      description: Private key this receiver will use when monitoring, must belong to the given Client ID.
+      default: "" 
+      type: string
+      required: true
+      options:
+        password: true
+
+    # Metrics
+    - name: enable_metrics
+      label: Metrics
+      type: bool
+      default: true
+
+    - name: disable_metrics
+      type: metrics
+      default: []
+      options:
+        metricCategories:
+          - label: OneDrive
+            column: 0
+            metrics:
+              - name: m365.onedrive.files.active.count
+              - name: m365.onedrive.files.count
+              - name: m365.onedrive.user_activity.count
+          - label: Outlook
+            column: 1
+            metrics:
+              - name: m365.outlook.app.user.count
+              - name: m365.outlook.email_activity.count
+              - name: m365.outlook.mailboxes.active.count
+              - name: m365.outlook.quota_status.count
+              - name: m365.outlook.storage.used
+          - label: SharePoint
+            column: 0
+            metrics:
+              - name: m365.sharepoint.files.active.count
+              - name: m365.sharepoint.files.count
+              - name: m365.sharepoint.pages.unique.count
+              - name: m365.sharepoint.pages.viewed.count
+              - name: m365.sharepoint.site.storage.used
+              - name: m365.sharepoint.sites.active.count
+          - label: Teams
+            column: 1
+            metrics:
+              - name: m365.teams.calls.count
+              - name: m365.teams.device_usage.users
+              - name: m365.teams.meetings.count
+              - name: m365.teams.messages.private.count
+              - name: m365.teams.messages.team.count      
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: collection_interval
+      label: Collection Interval
+      description: How often (hours) to scrape for metrics. This receiver only scrapes once every 24 hours.
+      type: int
+      default: 24
+      advancedConfig: true
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    # Logs
+    - name: enable_logs
+      label: Logs
+      type: bool
+      default: true
+
+    - name: poll_interval
+      label: Poll Interval
+      description: How often (minutes) to collect logs.
+      options:
+        sectionHeader: true
+      type: int
+      default: 5
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_general_logs
+      label: General Logs
+      type: bool
+      default: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_exchange_logs
+      label: Exchange Logs
+      type: bool
+      default: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_sharepoint_logs
+      label: SharePoint Logs
+      type: bool
+      default: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_azuread_logs
+      label: Azure Active Directory Logs
+      type: bool
+      default: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_dlp_logs
+      label: Data Loss Prevention Logs
+      type: bool
+      default: true
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+  metrics:
+    receivers: |
+      {{ if .enable_metrics }}
+      - m365/metrics:
+          tenant_id: {{ .tenant_id }}
+          client_id: {{ .client_id }}
+          client_secret: {{ .client_secret }}
+          collection_interval: {{ .collection_interval }}h
+          metrics:
+            {{ range $m := .disable_metrics }}
+            {{ $m }}:
+              enabled: false
+            {{ end }}
+      {{ end }}
+
+    processors: |
+      {{ if .enable_metrics }}
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
+      {{ end }}
+
+  logs:
+    extensions: |
+     {{ if .enable_logs }}
+      - file_storage:
+          directory: $OIQ_OTEL_COLLECTOR_HOME/storage
+          compaction:
+            on_rebound: true
+            directory: $OIQ_OTEL_COLLECTOR_HOME/storage
+     {{ end }}
+
+    receivers: | 
+     {{ if .enable_logs }}
+      - m365/logs: 
+          tenant_id: {{ .tenant_id }}
+          client_id: {{ .client_id }}
+          client_secret: {{ .client_secret }}
+          logs:
+            poll_interval: {{  .poll_interval  }}m
+            general: {{ .enable_general_logs }}
+            exchange: {{ .enable_exchange_logs }}
+            sharepoint: {{ .enable_sharepoint_logs }}
+            azureAD: {{ .enable_azuread_logs }}
+            dlp: {{ .enable_dlp_logs }}
+          storage: {{ bpComponentID "file_storage" }}
+     {{ end }}
+
+    processors: |
+      {{ if .enable_logs }}
+      - resourcedetection:
+          detectors: ["system"]
+          system:
+            hostname_sources: ["os"]
+      {{ end }}
+

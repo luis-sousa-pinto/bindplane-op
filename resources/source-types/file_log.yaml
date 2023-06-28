@@ -165,7 +165,7 @@ spec:
       description: The strptime layout of the timestamp.
       type: string
       required: true
-      default: '%Y-%m-%dT%H:%M:%S.%f%z'
+      default: "%Y-%m-%dT%H:%M:%S.%f%z"
       relevantIf:
         - name: parse_timestamp
           operator: equals
@@ -248,13 +248,6 @@ spec:
         - big5
       advancedConfig: true
 
-    - name: offset_storage_dir
-      label: Offset Storage Directory
-      description: The directory that the offset storage file will be created.
-      type: string
-      default: $OIQ_OTEL_COLLECTOR_HOME/storage
-      advancedConfig: true
-
     - name: poll_interval
       label: Filesystem Poll Interval
       description: The duration of time in milliseconds between filesystem polls.
@@ -289,13 +282,95 @@ spec:
       default: end
       advancedConfig: true
 
+    - name: fingerprint_size
+      label: Fingerprint size
+      description: The size of the file fingerprint used to distinguish unique files.
+      type: string
+      default: 1MiB
+      advancedConfig: true
+
+    - name: enable_offset_storage
+      label: Enable File Offset Storage
+      description: When enabled, the current position into a file will be saved to disk, and reading will resume from where it left off after a collector restart.
+      type: bool
+      default: true
+      advancedConfig: true
+      required: false
+      options:
+        sectionHeader: true
+
+    - name: offset_storage_dir
+      label: Offset Storage Directory
+      description: The directory that the offset storage file will be created.
+      type: string
+      default: $OIQ_OTEL_COLLECTOR_HOME/storage
+      advancedConfig: true
+      relevantIf:
+        - name: enable_offset_storage
+          operator: equals
+          value: true
+
+    # Retry on failure
+    - name: retry_on_failure_enabled
+      label: Enable Retry on Failure
+      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+      # For the filelog receiver, the default is false. Enabling this enables backpressure, but the batch processor is still
+      # an issue: https://github.com/open-telemetry/opentelemetry-collector/issues/7460
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: retry_on_failure_initial_interval
+      label: Initial interval
+      description: Time (in seconds) to wait after the first failure before retrying.
+      type: int
+      default: 1
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_interval
+      label: Max interval
+      description: The upper bound (in seconds) on backoff.
+      type: int
+      default: 30
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
+    - name: retry_on_failure_max_elapsed_time
+      label: Max elapsed time
+      description: The maximum amount of time (in seconds) spent trying to send a batch, used to avoid a never-ending retry loop.
+      type: int
+      default: 300
+      advancedConfig: true
+      required: false
+      relevantIf:
+        - name: retry_on_failure_enabled
+          operator: equals
+          value: true
+
   logs:
     extensions: |
+      {{ if .enable_offset_storage }}
       - file_storage:
           directory: {{ .offset_storage_dir }}
           compaction:
             on_rebound: true
             directory: {{ .offset_storage_dir }}
+      {{ end }}
 
     receivers: |
       - filelog:
@@ -312,12 +387,13 @@ spec:
           {{ if ne .multiline_parsing "none"}}
           multiline:
             {{ if eq .multiline_parsing "specify line start" }}
-            line_start_pattern: '{{ .multiline_line_start_pattern }}'
+            line_start_pattern: {{ .multiline_line_start_pattern | quote }}
             {{ end }}
             {{ if eq .multiline_parsing "specify line end" }}
-            line_end_pattern: '{{ .multiline_line_end_pattern }}'
+            line_end_pattern: {{ .multiline_line_end_pattern | quote }}
             {{ end }}
           {{ end }}
+          fingerprint_size: {{ .fingerprint_size }}
           encoding: {{ .encoding }}
           include_file_name: {{ .include_file_name_attribute }}
           include_file_name_resolved: {{ .include_file_name_resolved_attribute }}
@@ -325,8 +401,11 @@ spec:
           include_file_path_resolved: {{ .include_file_path_resolved_attribute }}
           start_at: {{ .start_at }}
           poll_interval: {{ .poll_interval }}ms
+          {{ if .enable_offset_storage }}
           storage: {{ bpComponentID "file_storage" }}
+          {{ end }}
           max_concurrent_files: {{ .max_concurrent_files }}
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           operators:
             {{ if eq .parse_format "json" }}
             - type: json_parser
@@ -349,7 +428,7 @@ spec:
             {{ end }}
             {{ if eq .parse_format "regex" }}
             - type: regex_parser
-              regex: '{{ .regex_pattern }}'
+              regex: {{ .regex_pattern | quote }}
               parse_to: {{ .parse_to }}
             {{ if .parse_timestamp }}
               timestamp:

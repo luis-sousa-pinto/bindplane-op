@@ -115,7 +115,7 @@ export const NavBar: React.FC = () => {
                 return (
                   <>
                     <SlidersIcon className={className} />
-                    Configs
+                    Configurations
                   </>
                 );
               }}

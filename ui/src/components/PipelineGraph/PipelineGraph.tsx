@@ -4,7 +4,6 @@ import { ShowPageConfig } from "../../pages/configurations/configuration";
 import { DEFAULT_PERIOD } from "../MeasurementControlBar/MeasurementControlBar";
 import { ConfigurationFlow } from "./ConfigurationFlow";
 import { PipelineGraphProvider } from "./PipelineGraphContext";
-import { ProcessorDialog } from "../ResourceDialog/ProcessorsDialog";
 import {
   useConfigurationMetricsSubscription,
   useGetConfigurationQuery,
@@ -17,6 +16,7 @@ import { ApolloError, gql } from "@apollo/client";
 import { useSnackbar } from "notistack";
 import { Page } from "../../utils/graph/utils";
 import { GraphGradient, MaxValueMap } from "../GraphComponents";
+import { useComponents } from "../../hooks/useComponents";
 
 import styles from "./pipeline-graph.module.scss";
 
@@ -66,6 +66,7 @@ export const PipelineGraph: React.FC<PipelineGraphProps> = ({
   skipMeasurements,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { ProcessorDialog } = useComponents();
 
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [addDestinationOpen, setAddDestinationOpen] = useState(false);

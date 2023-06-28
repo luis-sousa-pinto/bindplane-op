@@ -16,7 +16,7 @@ export function OverviewDestinationNode(params: {
     connectedNodesAndEdges: string[];
   };
 }): JSX.Element {
-  const { id, attributes, metric, connectedNodesAndEdges } = params.data;
+  const { id, label, attributes, metric, connectedNodesAndEdges } = params.data;
   const { setHoveredNodeAndEdgeSet, hoveredSet, selectedTelemetry } =
     useOverviewPage();
 
@@ -33,7 +33,8 @@ export function OverviewDestinationNode(params: {
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
     >
       <OverviewDestinationCard
-        name={attributes.resourceId}
+        id={attributes.resourceId}
+        label={label}
         disabled={isDisabled || isNotInHoverSet}
         key={id}
       />

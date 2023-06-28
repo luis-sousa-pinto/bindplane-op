@@ -23,12 +23,12 @@ Resource types can be deleted with the `delete` command.
 bindplanectl delete source-type <source type name>
 ```
 
-> **_NOTE:_**  Build in resource types can be deleted, however, they will be recreated when BindPlane is restarted.
+> **_NOTE:_** Build in resource types can be deleted, however, they will be recreated when BindPlane is restarted.
 
 ## Describe Resources
 
 Individual resource types can be described by passing their name as
-an argument along with the `yaml` output option. 
+an argument along with the `yaml` output option.
 
 For example, you can describe the `host` source type like this:
 
@@ -44,9 +44,10 @@ If you wish to make a copy of the source type, output it to a file:
 bindplanectl get source-type host -o yaml > host.custom.yaml
 ```
 
-> **_NOTE:_**  Build in resource types can be modified, but will be replaced by BindPlane on restart. It is best to create a new resource type based on a built in resource type.
+> **_NOTE:_** Build in resource types can be modified, but will be replaced by BindPlane on restart. It is best to create a new resource type based on a built in resource type.
 
 Make the following changes:
+
 - Remove `metadata.id` field
 - Change `metadata.name` to something other than `host`
 - Modify `metadata.displayName` and `metadata.description`
@@ -68,10 +69,10 @@ If using the web interface, be sure to refresh your browser before searching for
 
 ## FAQ
 
-- [Do modified resoures cause config updates?](./usage.md#do-modified-resoures-cause-config-updates)
+- [Do modified resoures cause configuration updates?](./usage.md#do-modified-resoures-cause-config-updates)
 - [Can built in resources be modified?](./usage.md#can-built-in-resources-be-modified)
 
-### Do modified resoures cause config updates?
+### Do modified resoures cause configuration updates?
 
 Yes. Anytime a resource type is changed, configurations which use the underlying resource type will be updated
 automatically.

@@ -63,7 +63,7 @@ type Factory struct {
 // LoadConfig loads the configuration from the given path.
 func (f *Factory) LoadConfig(_ context.Context, path string) error {
 	if err := legacy.ConvertFile(path); err != nil {
-		return fmt.Errorf("failed to convert legacy config file: %w", err)
+		return fmt.Errorf("failed to convert legacy configuration file: %w", err)
 	}
 
 	viper.SetConfigFile(path)
@@ -84,7 +84,7 @@ func (f *Factory) LoadConfig(_ context.Context, path string) error {
 // ValidateConfig validates the configuration.
 func (f *Factory) ValidateConfig(_ context.Context) error {
 	if err := f.cfg.Validate(); err != nil {
-		return fmt.Errorf("invalid config file: %w", err)
+		return fmt.Errorf("invalid configuration file: %w", err)
 	}
 	return nil
 }

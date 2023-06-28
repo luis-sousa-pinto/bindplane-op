@@ -81,6 +81,7 @@ export const ApplyConfigDialog: React.FC<ApplyConfigDialogProps> = ({
         <DialogTitle>Apply Configuration to Agents</DialogTitle>
         <DialogContent>
           <AgentsTable
+            allowSelection
             onAgentsSelected={handleAgentsSelected}
             initQuery={initQuery(
               configuration.spec.selector?.matchLabels,

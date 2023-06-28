@@ -30,8 +30,9 @@ interface StepTwoProps {
 
 export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
   const { formValues, setValues, goToStep } = useWizard<RawConfigFormValues>();
-  const [invalidConfigError, setInvalidConfigError] =
-    useState<null | string>(null);
+  const [invalidConfigError, setInvalidConfigError] = useState<null | string>(
+    null
+  );
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -66,9 +67,12 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
   }
 
   async function handleSave() {
-    const { name, description, platform, rawConfig } = formValues;
+    const { name, description, platform, secondaryPlatform, rawConfig } =
+      formValues;
 
-    const labels = { platform };
+    const labels = {
+      platform: isEmpty(secondaryPlatform) ? platform : secondaryPlatform,
+    };
     const matchLabels = { configuration: name };
     const selector = { matchLabels };
 
@@ -123,8 +127,8 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
           Import your raw OpenTelemetry configuration
         </Typography>
         <Typography variant="body1" className={mixins["mb-5"]}>
-          This is the configuration of the connected agent. If everything looks
-          good, click Save to complete your import.
+          This is the OpenTelemetry configuration of the connected agent. If
+          everything looks good, click Save to complete your import.
         </Typography>
       </>
     );
@@ -137,8 +141,8 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
           Import your raw OpenTelemetry configuration
         </Typography>
         <Typography variant="body1" className={mixins["mb-5"]}>
-          Please upload a configuration YAML file, or copy and paste the
-          contents of one into the editor below:
+          Please upload an OpenTelemetry configuration YAML file, or copy and
+          paste the contents of one into the editor below:
         </Typography>
       </>
     );

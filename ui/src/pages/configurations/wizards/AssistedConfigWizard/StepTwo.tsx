@@ -30,6 +30,7 @@ import { BPResourceConfiguration } from "../../../../utils/classes/resource-conf
 
 import styles from "./assisted-config-wizard.module.scss";
 import mixins from "../../../../styles/mixins.module.scss";
+import { isEmpty } from "lodash";
 
 type ResourceType = SourceType | DestinationType;
 
@@ -254,8 +255,8 @@ export const StepTwo: React.FC = (props) => {
           A source is a combination of OpenTelemetry receivers and processors
           that allows you to collect metrics and logs from a specific
           technology. Ensuring the right combination of these components is one
-          of the most challenging aspects of building an OTel configuration
-          file. With BindPlane, we handle that all for you.
+          of the most challenging aspects of building an OpenTelemetry
+          configuration file. With BindPlane, we handle that all for you.
         </Typography>
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
           Start adding sources now:
@@ -274,7 +275,11 @@ export const StepTwo: React.FC = (props) => {
           </Button>
 
           <NewResourceDialog
-            platform={formValues.platform}
+            platform={
+              isEmpty(formValues.secondaryPlatform)
+                ? formValues.platform
+                : formValues.secondaryPlatform
+            }
             title="Choose a Source"
             kind="source"
             open={open}

@@ -207,7 +207,10 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
         )}
         <Grid item xs={12}>
           {embedded ? (
-            <ViewHeading heading={resourceTypeDisplayName} subHeading={description} />
+            <ViewHeading
+              heading={resourceTypeDisplayName}
+              subHeading={description}
+            />
           ) : (
             <Typography fontWeight={600} fontSize={24}>
               Configure
@@ -246,7 +249,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   );
 
   return (
-    <>
+    <Stack className={mixins["flex-grow"]}>
       {!embedded && (
         <TitleSection
           title={title}
@@ -255,7 +258,13 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
         />
       )}
 
-      {embedded ? form : <ContentSection dividers>{form}</ContentSection>}
+      {embedded ? (
+        <Stack className={mixins["flex-grow"]} overflow="auto">
+          {form}
+        </Stack>
+      ) : (
+        <ContentSection dividers>{form}</ContentSection>
+      )}
 
       {playPauseButtons ? (
         <Stack direction="row">
@@ -265,7 +274,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
       ) : (
         actionButtons
       )}
-    </>
+    </Stack>
   );
 };
 

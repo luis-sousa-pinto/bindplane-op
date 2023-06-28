@@ -426,40 +426,7 @@ func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model
 
 // DestinationsInConfigs is the resolver for the destinationsInConfigs field.
 func (r *Resolver) DestinationsInConfigs(ctx context.Context) ([]*model.Destination, error) {
-	// returns only destinations that are in non-raw (managed?) configs and deployed to agents
-	configs, err := r.Bindplane.Store().Configurations(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// create a map from destination name to destination
-	destinationsMap := make(map[string]string)
-	destinations := make([]*model.Destination, 0, len(destinationsMap))
-
-	// loop through configs, collect all destinations from configs that aren't raw
-	for _, config := range configs {
-		if config.Spec.Raw != "" {
-			continue
-		}
-		ids, err := r.Bindplane.Store().AgentsIDsMatchingConfiguration(ctx, config)
-		if err != nil {
-			return nil, err
-		}
-		if len(ids) > 0 {
-			for _, destination := range config.Spec.Destinations {
-				_, ok := destinationsMap[destination.Name]
-				if !ok {
-					dest, err := r.Bindplane.Store().Destination(ctx, destination.Name)
-					if err != nil {
-						return destinations, err
-					}
-					destinationsMap[destination.Name] = "Remember that we've already seen this destination!"
-					destinations = append(destinations, dest)
-				}
-			}
-		}
-	}
-	return destinations, nil
+	return destinationsInConfigs(ctx, r.Bindplane.Store())
 }
 
 // Snapshot returns a snapshot of the agent with the specified id and pipeline type
@@ -700,6 +667,60 @@ func ConfigurationNodeIDResolver(_ *record.Metric, position model.MeasurementPos
 	return resourceName
 }
 
+func configIsDeployed(ctx context.Context, bindplane exposedserver.BindPlane, configurationName string) bool {
+	config, err := bindplane.Store().Configuration(ctx, configurationName)
+	if err != nil || config == nil {
+		bindplane.Logger().Debug("unable to get configuration", zap.String("configuration", configurationName), zap.Error(err))
+		return false
+	}
+	agentIDs, err := bindplane.Store().AgentsIDsMatchingConfiguration(ctx, config)
+	if err != nil {
+		bindplane.Logger().Debug("unable to get agent IDs matching configuration", zap.String("configuration", configurationName), zap.Error(err))
+		return false
+	}
+	if len(agentIDs) == 0 {
+		return false
+	}
+	return true
+}
+
+func destinationsInConfigs(ctx context.Context, store store.Store) ([]*model.Destination, error) {
+	// returns only destinations that are in non-raw (managed?) configs and deployed to agents
+	configs, err := store.Configurations(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// create a map from destination name to destination
+	destinationsMap := make(map[string]string)
+	destinations := make([]*model.Destination, 0, len(destinationsMap))
+
+	// loop through configs, collect all destinations from configs that aren't raw
+	for _, config := range configs {
+		if config.Spec.Raw != "" {
+			continue
+		}
+		ids, err := store.AgentsIDsMatchingConfiguration(ctx, config)
+		if err != nil {
+			return nil, err
+		}
+		if len(ids) > 0 {
+			for _, destination := range config.Spec.Destinations {
+				_, ok := destinationsMap[destination.Name]
+				if !ok {
+					dest, err := store.Destination(ctx, destination.Name)
+					if err != nil {
+						return destinations, err
+					}
+					destinationsMap[destination.Name] = "Remember that we've already seen this destination!"
+					destinations = append(destinations, dest)
+				}
+			}
+		}
+	}
+	return destinations, nil
+}
+
 // OverviewMetrics returns a list of metrics for the overview page
 func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period string, configIDs []string, destinationIDs []string) (*model1.GraphMetrics, error) {
 	if period == "" {
@@ -768,9 +789,28 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		}
 	}
 
+	destinations, err := destinationsInConfigs(ctx, bindplane.Store())
+	if err != nil {
+		return nil, errors.Join(errors.New("Failed to get destinations in OverviewMetrics"), err)
+	}
 	// map of processor (includes type and name) => metric
 	destinationMetrics := map[string]*model1.GraphMetric{}
 	includeDestination := func(metric *record.Metric, pipelineType, destinationName string) {
+		destinationFound := false
+		for _, destination := range destinations {
+			if destination.Name() == destinationName {
+				destinationFound = true
+				break
+			}
+		}
+		if !destinationFound {
+			return
+		}
+		// need to eliminate destination metrics that are from undeployed configs
+
+		if !configIsDeployed(ctx, bindplane, stats.Configuration(metric)) {
+			return
+		}
 		nodeID := everythingOrSelected(destinationName, "destination")
 		includeMetric(destinationMetrics, pipelineType, nodeID, metric)
 	}
@@ -779,6 +819,9 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 	configurationMetrics := map[string]*model1.GraphMetric{}
 	includeConfiguration := func(metric *record.Metric, pipelineType string) {
 		configurationName := stats.Configuration(metric)
+		if !configIsDeployed(ctx, bindplane, configurationName) {
+			return
+		}
 		nodeID := everythingOrSelected(configurationName, "configuration")
 		includeMetric(configurationMetrics, pipelineType, nodeID, metric)
 	}

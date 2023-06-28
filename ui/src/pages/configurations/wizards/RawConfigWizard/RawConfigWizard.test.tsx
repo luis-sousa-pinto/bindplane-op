@@ -15,6 +15,7 @@ describe("RawConfigForm", () => {
     description: "test-description",
     rawConfig: "raw:",
     platform: "macos",
+    secondaryPlatform: "",
     fileName: "",
   };
 
@@ -24,6 +25,7 @@ describe("RawConfigForm", () => {
       description: "test-description",
       rawConfig: "raw:",
       platform: "macos",
+      secondaryPlatform: "",
       fileName: "",
     };
 
@@ -80,7 +82,7 @@ describe("RawConfigForm", () => {
     // Step two copy
     expect(
       screen.getByText(
-        "This is the configuration of the connected agent. If everything looks good, click Save to complete your import."
+        "This is the OpenTelemetry configuration of the connected agent. If everything looks good, click Save to complete your import."
       )
     ).toBeInTheDocument();
 
@@ -120,6 +122,36 @@ describe("RawConfigForm", () => {
 
     fireEvent.mouseDown(screen.getByLabelText("Platform"));
     screen.getByText("Windows").click();
+
+    screen.getByText("Next").click();
+
+    expect(screen.getByTestId("step-two")).toBeInTheDocument();
+  });
+  it("can navigate to step two with valid form values if the platform has a secondary selection", () => {
+    render(
+      <MockedProvider mocks={[]}>
+        <SnackbarProvider>
+          <MemoryRouter>
+            <RawConfigWizard onSuccess={() => {}} />
+          </MemoryRouter>
+        </SnackbarProvider>
+      </MockedProvider>
+    );
+
+    fireEvent.change(screen.getByLabelText("Name"), {
+      target: { value: "test" },
+    });
+
+    fireEvent.mouseDown(screen.getByLabelText("Platform"));
+    screen.getByText("Kubernetes").click();
+
+    const secondaryPlatformSelect = screen.getByTestId(
+      "platform-secondary-select-input"
+    );
+
+    fireEvent.change(secondaryPlatformSelect, {
+      target: { value: "kubernetes-deployment" },
+    });
 
     screen.getByText("Next").click();
 
@@ -182,7 +214,7 @@ describe("RawConfigForm", () => {
     expect(screen.getByText("Linux")).toBeInTheDocument();
   });
 
-  it("displays the expected default config", () => {
+  it("displays the expected default configuration", () => {
     render(
       <MockedProvider mocks={[]}>
         <MemoryRouter>
