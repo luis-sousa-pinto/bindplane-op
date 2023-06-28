@@ -210,11 +210,11 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
         justifyContent="space-between"
         marginBottom={3}
       >
-        <Typography variant="h5">Configs</Typography>
+        <Typography variant="h5">Configurations</Typography>
         {selected.length > 0 && enableDelete && (
           <RBACWrapper requiredRole={Role.User}>
             <Button variant="contained" color="error" onClick={openModal}>
-              Delete {selected.length} Config
+              Delete {selected.length} Configuration
               {selected.length > 1 && "s"}
             </Button>
           </RBACWrapper>
@@ -229,7 +229,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
               classes={{ root: mixins["float-right"] }}
               startIcon={<PlusCircleIcon />}
             >
-              Create Config
+              Create Configuration
             </Button>
           </RBACWrapper>
         )}

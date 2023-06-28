@@ -639,7 +639,7 @@ func Test_overviewGraph(t *testing.T) {
 					Sources: []*graph.Node{
 						{
 							ID:    "everything/configuration",
-							Label: "All Configs",
+							Label: "All Configurations",
 							Type:  "configurationNode",
 							Attributes: map[string]any{
 								"kind":            string(model.KindConfiguration),
@@ -701,7 +701,7 @@ func Test_overviewGraph(t *testing.T) {
 					Sources: []*graph.Node{
 						{
 							ID:    "everything/configuration",
-							Label: "All Configs",
+							Label: "All Configurations",
 							Type:  "configurationNode",
 							Attributes: map[string]any{
 								"kind":            string(model.KindConfiguration),
@@ -979,7 +979,7 @@ func testNode(name, nodeType string, agentCount int) *graph.Node {
 		if name == "configuration" {
 			kind = string(model.KindConfiguration)
 			nodeType = "configurationNode"
-			label = "Other Configs"
+			label = "Other Configurations"
 		} else {
 			kind = string(model.KindDestination)
 			nodeType = "destinationNode"

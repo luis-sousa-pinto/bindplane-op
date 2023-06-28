@@ -106,7 +106,7 @@ export const BuildRolloutDialog: React.FC<BuildRolloutDialogProps> = ({
               <strong>Rollout Type:</strong> Immediate
             </Typography>
             <Typography marginBottom={5}>
-              Starting this rollout will begin deploying the new config
+              Starting this rollout will begin deploying the new configuration
               to connected agents immediately. It will first configure a batch
               of 3 agents and increase the batch size by a multiple of 5 on each
               successful deployment. A maximum of 100 agents will be configured

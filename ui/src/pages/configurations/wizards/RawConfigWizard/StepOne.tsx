@@ -14,12 +14,12 @@ export const StepOne: React.FC<StepOneProps> = ({ fromImport }) => {
     return (
       <>
         <Typography variant="h6" classes={{ root: mixins["mb-5"] }}>
-          Let's get started importing your config to Bindplane
+          Let's get started importing your configuration to Bindplane
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
-          We&apos;ve provided some basic details for this config, just verify
-          everything looks correct.
+          We&apos;ve provided some basic details for this configuration, just
+          verify everything looks correct.
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>
@@ -34,7 +34,7 @@ export const StepOne: React.FC<StepOneProps> = ({ fromImport }) => {
     return (
       <>
         <Typography variant="h6" classes={{ root: mixins["mb-5"] }}>
-          Let's get started adding your config to Bindplane
+          Let's get started adding your configuration to Bindplane
         </Typography>
 
         <Typography variant="body2" classes={{ root: mixins["mb-3"] }}>

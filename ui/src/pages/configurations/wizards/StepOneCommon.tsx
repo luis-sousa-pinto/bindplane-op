@@ -101,7 +101,7 @@ export const StepOneCommon: React.FC<StepOneProps> = ({ renderCopy }) => {
           variant="subtitle1"
           classes={{ root: mixins["mb-3"] }}
         >
-          Config Details
+          Configuration Details
         </Typography>
 
         <Stack spacing={2} component="form" className={styles.form}>

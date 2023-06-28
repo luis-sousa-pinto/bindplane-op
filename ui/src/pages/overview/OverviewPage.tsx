@@ -175,7 +175,7 @@ const OverviewPageSubContent: React.FC = () => {
         >
           <Tooltip
             enterDelay={1000}
-            title="Limit the displayed configs to the three receiving the most data of the selected telemetry type over the selected period."
+            title="Limit the displayed configurations to the three receiving the most data of the selected telemetry type over the selected period."
           >
             <Button
               variant="contained"

@@ -201,20 +201,22 @@ export const StepThree: React.FC = () => {
 
       if (update == null) {
         throw new Error(
-          `failed to create config, no config returned with name ${formValues.name}`
+          `failed to create configuration, no configuration returned with name ${formValues.name}`
         );
       }
 
       // Configuration was returned but not created, likely if it was valid.
       if (update.status !== UpdateStatus.CREATED) {
-        throw new Error(`failed to create config, got status ${update.status}`);
+        throw new Error(
+          `failed to create configuration, got status ${update.status}`
+        );
       }
 
       const configPagePath = `/configurations/${update.resource.metadata.name}`;
       // Redirect to configuration page
       navigate(configPagePath);
     } catch (err) {
-      snackbar.enqueueSnackbar("Failed to create config.", {
+      snackbar.enqueueSnackbar("Failed to create configuration.", {
         variant: "error",
       });
       console.error(err);
@@ -360,7 +362,7 @@ export const StepThree: React.FC = () => {
               </TableBody>
             </Table>
           ) : (
-            <Typography>No config.</Typography>
+            <Typography>No configuration.</Typography>
           )}
 
           {/* ------------------------- Edit and Remove Buttons ------------------------ */}

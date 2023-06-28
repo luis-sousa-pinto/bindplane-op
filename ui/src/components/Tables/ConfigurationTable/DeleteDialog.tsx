@@ -45,13 +45,13 @@ export const DeleteDialog: React.FC<DeleteModalProps> = ({
   return (
     <Dialog open={open} onClose={onClose} data-testid="delete-dialog">
       <DialogTitle>
-        Delete {selected.length} Config{selected.length > 1 && "s"}?
+        Delete {selected.length} Configuration{selected.length > 1 && "s"}?
       </DialogTitle>
 
       <DialogContent>
         <Typography>
-          Deleting a config will remove it from bindplane, however any agents
-          currently using it will continue to do so.
+          Deleting a configuration will remove it from bindplane, however any
+          agents currently using it will continue to do so.
         </Typography>
       </DialogContent>
       <DialogActions>

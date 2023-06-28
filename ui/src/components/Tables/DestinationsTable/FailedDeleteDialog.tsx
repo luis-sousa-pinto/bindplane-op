@@ -35,8 +35,8 @@ export const FailedDeleteDialog: React.FC<FailedDeleteDialogProps> = ({
 
         <Typography marginBottom={3}>
           These components are currently being referenced by at least one
-          Config. To delete these components first remove them from the
-          Config on the Config Page.
+          Configuration. To delete these components first remove them from the
+          Configuration on the Configuration Page.
         </Typography>
 
         <Divider />

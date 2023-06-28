@@ -231,7 +231,7 @@ export const AgentPageContent: React.FC = () => {
 
     if (disableReason == null && data?.agent?.configurationResource == null) {
       disableReason =
-        "Cannot view recent telemetry for an agent with an unmanaged config.";
+        "Cannot view recent telemetry for an agent with an unmanaged configuration.";
     }
 
     if (disableReason != null) {
@@ -431,7 +431,7 @@ export const AgentPageContent: React.FC = () => {
               onClose={() => setImportOpen(false)}
               initialValues={{
                 name: data.agent.name,
-                description: `Imported config from agent ${data.agent.name}.`,
+                description: `Imported configuration from agent ${data.agent.name}.`,
                 fileName: "",
                 rawConfig: data.agent.configuration?.Collector ?? "",
                 platform: configPlatformFromAgentPlatform(data.agent.platform),

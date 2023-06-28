@@ -271,10 +271,10 @@ const NoDeployedConfigurationsMessage: React.FC<{
       padding={4}
     >
       <Typography variant="h4" textAlign={"center"}>
-        You haven&apos;t deployed any configs.
+        You haven&apos;t deployed any configurations.
       </Typography>
       <Typography textAlign={"center"}>
-        Once you&apos;ve created a config and rolled it out to an agent,
+        Once you&apos;ve created a configuration and rolled it out to an agent,
         you&apos;ll see your data topology here.
       </Typography>
       <Button
@@ -286,7 +286,7 @@ const NoDeployedConfigurationsMessage: React.FC<{
             : () => navigate("/configurations/new")
         }
       >
-        Create Config Now
+        Create Configuration Now
       </Button>
     </Stack>
   );

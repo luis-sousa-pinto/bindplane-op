@@ -81,7 +81,7 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
     },
     onError(error) {
       console.error(error);
-      enqueueSnackbar("Failed to fetch config versions.", {
+      enqueueSnackbar("Failed to fetch configuration versions.", {
         variant: "error",
       });
     },

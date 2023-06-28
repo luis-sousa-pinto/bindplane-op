@@ -128,7 +128,7 @@ const ConfigurationsDataGridComponent: React.FC<
       components={{
         NoRowsOverlay: () => (
           <Stack height="100%" alignItems="center" justifyContent="center">
-            No Configs
+            No Configurations
           </Stack>
         ),
       }}
@@ -180,7 +180,7 @@ function renderNameDataCell(
 ): JSX.Element {
   return (
     <NoMaxWidthTooltip
-      title={`${cellParams.value} (Click to view config)`}
+      title={`${cellParams.value} (Click to view configuration)`}
       enterDelay={1000}
       placement="top-start"
     >

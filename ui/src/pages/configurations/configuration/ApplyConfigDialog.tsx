@@ -45,7 +45,7 @@ export const ApplyConfigDialog: React.FC<ApplyConfigDialogProps> = ({
       const matchLabels = configuration.spec.selector?.matchLabels;
       if (matchLabels == null) {
         throw new Error(
-          "Cannot apply labels, config matchLabels are undefined."
+          "Cannot apply labels, configuration matchLabels are undefined."
         );
       }
 
@@ -78,7 +78,7 @@ export const ApplyConfigDialog: React.FC<ApplyConfigDialogProps> = ({
   return (
     <Dialog {...dialogProps}>
       <DialogContent>
-        <DialogTitle>Apply Config to Agents</DialogTitle>
+        <DialogTitle>Apply Configuration to Agents</DialogTitle>
         <DialogContent>
           <AgentsTable
             allowSelection

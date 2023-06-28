@@ -301,7 +301,7 @@ func (c *BindplaneClient) Configurations(_ context.Context) ([]*model.Configurat
 
 	pr := &model.ConfigurationsResponse{}
 	resp, err := c.Client.R().SetResult(pr).Get("/configurations")
-	return pr.Configurations, c.StatusError(resp, err, "unable to get configs")
+	return pr.Configurations, c.StatusError(resp, err, "unable to get configurations")
 }
 
 // Configuration retrieves configuration with name
@@ -632,14 +632,14 @@ func (c *BindplaneClient) CopyConfig(_ context.Context, name, copyName string) e
 	case http.StatusCreated:
 		return nil
 	case http.StatusConflict:
-		return fmt.Errorf("a config with name '%s' already exists", copyName)
+		return fmt.Errorf("a configuration with name '%s' already exists", copyName)
 	default:
-		errs := fmt.Errorf("failed to copy config, got status %v", resp.StatusCode())
+		errs := fmt.Errorf("failed to copy configuration, got status %v", resp.StatusCode())
 
 		// check for errors field in response
 		errResponse := &model.ErrorResponse{}
 		if err := jsoniter.Unmarshal(resp.Body(), errResponse); err != nil {
-			c.Logger.Error("failed to unmarshal error response when copying config", zap.Error(err))
+			c.Logger.Error("failed to unmarshal error response when copying configuration", zap.Error(err))
 		}
 
 		if len(errResponse.Errors) > 0 {

@@ -99,7 +99,7 @@ export const EditorSection: React.FC<EditorSectionProps> = ({
   return (
     <Card className={styles["section-card"]}>
       <CardHeader
-        title={isOtel ? "Config" : "Topology"}
+        title={isOtel ? "Configuration" : "Topology"}
         titleTypographyProps={{ fontWeight: 600 }}
         classes={{
           root: styles.padding,

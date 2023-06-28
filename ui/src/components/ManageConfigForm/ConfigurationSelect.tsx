@@ -42,13 +42,13 @@ export const ConfigurationSelect: React.FC<SelectProps> = ({
       size="small"
     >
       <InputLabel id="configuration-select-label">
-        Select Config
+        Select Configuration
       </InputLabel>
 
       <Select
         labelId="configuration-select-label"
         id="configuration"
-        label="Select Config"
+        label="Select Configuration"
         onChange={onSelectChange}
         value={selectedConfig?.metadata.name ?? ""}
       >

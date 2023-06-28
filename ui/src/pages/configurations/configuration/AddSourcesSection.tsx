@@ -38,7 +38,7 @@ const AddSourcesComponent: React.FC<{
       const update = await updatedConfig.apply();
       if (update.status === UpdateStatus.INVALID) {
         console.error(update);
-        throw new Error("failed to add source to config.");
+        throw new Error("failed to add source to configuration.");
       }
 
       setAddDialogOpen(false);

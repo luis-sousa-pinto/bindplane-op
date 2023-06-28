@@ -104,7 +104,7 @@ describe("validateFields", () => {
     expect(errors.secondaryPlatform).not.toBeNull();
   });
 
-  it("sets error if config name is taken", () => {
+  it("sets error if configuration name is taken", () => {
     const testConfig = newConfiguration({
       name: "test",
       description: "",
@@ -126,7 +126,7 @@ describe("validateFields", () => {
     expect(errors.name).not.toBeNull();
   });
 
-  it("no error if config name is not taken", () => {
+  it("no error if configuration name is not taken", () => {
     const testConfig = newConfiguration({
       name: "test",
       description: "",

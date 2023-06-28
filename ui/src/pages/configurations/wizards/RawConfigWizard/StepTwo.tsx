@@ -93,7 +93,9 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
       // verify that the updates includes created for this configuration
       const resourceStatus = getResourceStatusFromUpdates(updates, name);
       if (resourceStatus == null) {
-        throw new Error(`No config with name ${name} returned in response.`);
+        throw new Error(
+          `No configuration with name ${name} returned in response.`
+        );
       }
 
       switch (resourceStatus.status) {
@@ -103,7 +105,7 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
 
         case UpdateStatus.INVALID:
           setInvalidConfigError(
-            resourceStatus.reason ?? "Invalid config yaml."
+            resourceStatus.reason ?? "Invalid configuration yaml."
           );
           return;
 
@@ -114,7 +116,7 @@ export const StepTwo: React.FC<StepTwoProps> = ({ fromImport, onSuccess }) => {
       }
     } catch (err) {
       console.error(err);
-      enqueueSnackbar("Failed to create config.", { variant: "error" });
+      enqueueSnackbar("Failed to create configuration.", { variant: "error" });
     }
   }
 

@@ -73,7 +73,7 @@ describe("RawConfigForm", () => {
     // Step one copy
     expect(
       screen.getByText(
-        "We've provided some basic details for this config, just verify everything looks correct."
+        "We've provided some basic details for this configuration, just verify everything looks correct."
       )
     ).toBeInTheDocument();
 
@@ -214,7 +214,7 @@ describe("RawConfigForm", () => {
     expect(screen.getByText("Linux")).toBeInTheDocument();
   });
 
-  it("displays the expected default config", () => {
+  it("displays the expected default configuration", () => {
     render(
       <MockedProvider mocks={[]}>
         <MemoryRouter>

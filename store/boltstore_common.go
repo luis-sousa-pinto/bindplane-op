@@ -68,7 +68,7 @@ type BoltstoreCommon interface {
 // AgentConfiguration returns the configuration that should be applied to an agent.
 func (s *BoltstoreCore) AgentConfiguration(ctx context.Context, agent *model.Agent) (*model.Configuration, error) {
 	if agent == nil {
-		return nil, fmt.Errorf("cannot return config for nil agent")
+		return nil, fmt.Errorf("cannot return configuration for nil agent")
 	}
 
 	// if Pending is specified, this is the new configuration we expect to have
@@ -96,7 +96,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 			configuration, err = s.Configuration(ctx, configurationName)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("unable to retrieve agent config: %w", err)
+			return nil, fmt.Errorf("unable to retrieve agent configuration: %w", err)
 		}
 		agent.SetFutureConfiguration(configuration)
 		if configuration != nil && configuration.Status.Rollout.Status == model.RolloutStatusStable {
@@ -119,7 +119,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
 			configuration := &model.Configuration{}
 			if err := jsoniter.Unmarshal(v, configuration); err != nil {
-				s.ZapLogger().Error("unable to unmarshal config, ignoring", zap.Error(err))
+				s.ZapLogger().Error("unable to unmarshal configuration, ignoring", zap.Error(err))
 				continue
 			}
 			if configuration.IsForAgent(agent) {
@@ -131,7 +131,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve agent config: %w", err)
+		return nil, fmt.Errorf("unable to retrieve agent configuration: %w", err)
 	}
 	agent.SetFutureConfiguration(result)
 	return result, nil

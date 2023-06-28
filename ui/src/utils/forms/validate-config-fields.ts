@@ -21,7 +21,7 @@ export function validateFields(
   // Validate the Name field
   errors.name = validateNameField(
     name,
-    "config",
+    "configuration",
     configurations?.map((c) => c.metadata.name)
   );
 

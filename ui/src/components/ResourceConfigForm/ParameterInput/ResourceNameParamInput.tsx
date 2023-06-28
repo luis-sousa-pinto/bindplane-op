@@ -8,7 +8,7 @@ import { ParamInputProps } from "./ParameterInput";
 interface ResourceNameInputProps
   extends Omit<ParamInputProps<string>, "definition"> {
   existingNames?: string[];
-  kind: "source" | "destination" | "config" | "processor";
+  kind: "source" | "destination" | "configuration" | "processor";
 }
 
 const ResourceNameInputComponent: React.FC<ResourceNameInputProps> = ({

@@ -222,8 +222,8 @@ const ConfigurationSelect: React.FC<configurationSelectProps> = ({
 }: configurationSelectProps) => {
   const configRequired = platformIsContainer(platform);
   const label = configRequired
-    ? "Select Config"
-    : "Select Config (optional)";
+    ? "Select Configuration"
+    : "Select Configuration (optional)";
 
   return (
     <Stack spacing={2}>

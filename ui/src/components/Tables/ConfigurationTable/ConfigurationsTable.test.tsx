@@ -105,7 +105,7 @@ describe("OverviewConfigurationsTable", () => {
       </MemoryRouter>
     );
   };
-  it("renders rows of configs", async () => {
+  it("renders rows of configurations", async () => {
     render(<Wrapper />);
 
     const rowOne = await screen.findByText("config-1");
@@ -120,7 +120,7 @@ describe("OverviewConfigurationsTable", () => {
     expect(row1).toBeInTheDocument();
     const checkbox = await screen.findByLabelText("Select all rows");
     checkbox.click();
-    expect(() => screen.getByText("Delete 2 Configs")).toThrow();
+    expect(() => screen.getByText("Delete 2 Configurations")).toThrow();
   });
 });
 
@@ -140,7 +140,7 @@ describe("ConfigurationsTable", () => {
       </MemoryRouter>
     );
   };
-  it("renders rows of configs", async () => {
+  it("renders rows of configurations", async () => {
     render(<Wrapper />);
 
     const rowOne = await screen.findByText("config-1");
@@ -155,7 +155,7 @@ describe("ConfigurationsTable", () => {
     expect(row1).toBeInTheDocument();
     const checkbox = await screen.findByLabelText("Select all rows");
     checkbox.click();
-    const deleteButton = await screen.findByText("Delete 2 Configs");
+    const deleteButton = await screen.findByText("Delete 2 Configurations");
     expect(deleteButton).toBeInTheDocument();
   });
   it("opens the delete dialog after clicking delete", async () => {
@@ -164,7 +164,7 @@ describe("ConfigurationsTable", () => {
     expect(row1).toBeInTheDocument();
     const checkbox = await screen.findByLabelText("Select all rows");
     checkbox.click();
-    const deleteButton = await screen.findByText("Delete 2 Configs");
+    const deleteButton = await screen.findByText("Delete 2 Configurations");
     deleteButton.click();
     const dialog = await screen.findByTestId("delete-dialog");
     expect(dialog).toBeInTheDocument();

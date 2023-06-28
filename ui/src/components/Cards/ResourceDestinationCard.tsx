@@ -200,7 +200,7 @@ const ResourceDestinationCardComponent: React.FC<
         if (update.status === UpdateStatus.INVALID) {
           console.error("Update: ", update);
           throw new Error(
-            `failed to remove destination from config, config invalid`
+            `failed to remove destination from configuration, configuration invalid`
           );
         }
 
@@ -256,7 +256,7 @@ const ResourceDestinationCardComponent: React.FC<
         }
       } catch (err) {
         console.error(err);
-        enqueueSnackbar("Failed to update config.", {
+        enqueueSnackbar("Failed to update configuration.", {
           variant: "error",
         });
       }
@@ -266,7 +266,7 @@ const ResourceDestinationCardComponent: React.FC<
       const { status, reason } = await updatedDestination.apply();
       if (status === UpdateStatus.INVALID) {
         throw new Error(
-          `failed to update config, config invalid, ${reason}`
+          `failed to update configuration, configuration invalid, ${reason}`
         );
       }
 

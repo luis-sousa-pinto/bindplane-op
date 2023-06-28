@@ -143,7 +143,7 @@ export const ConfigPageContent: React.FC = () => {
   }
 
   if (data.configuration == null) {
-    enqueueSnackbar(`No config with name ${name} found.`, {
+    enqueueSnackbar(`No configuration with name ${name} found.`, {
       variant: "error",
     });
 
@@ -163,7 +163,7 @@ export const ConfigPageContent: React.FC = () => {
   }
 
   function onApplySuccess() {
-    toast("Saved config!", "success");
+    toast("Saved configuration!", "success");
     closeApplyDialog();
   }
 
@@ -194,7 +194,7 @@ export const ConfigPageContent: React.FC = () => {
                   variant={"contained"}
                   startIcon={<PlusCircleIcon />}
                 >
-                  Apply config
+                  Apply configuration
                 </Button>
               </RBACWrapper>
             )}
@@ -221,7 +221,7 @@ export const ConfigPageContent: React.FC = () => {
           maxWidth="lg"
           fullWidth
           open={showApplyDialog}
-          onError={() => toast("Failed to apply config.", "error")}
+          onError={() => toast("Failed to apply configuration.", "error")}
           onSuccess={onApplySuccess}
           onClose={closeApplyDialog}
           onCancel={closeApplyDialog}
