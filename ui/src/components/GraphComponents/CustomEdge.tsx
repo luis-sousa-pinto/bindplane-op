@@ -57,7 +57,6 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
 
   const inactive = isNodeDisabled(telemetryType || "", data?.attributes || {});
   const dimmed = hoveredSet.length > 0 && !hoveredSet.includes(id);
-  const highlight = hoveredSet.includes(id);
 
   const metrics: JSX.Element[] = [];
   if (data?.metrics) {
@@ -88,7 +87,6 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
 
   const pathClasses = [styles.edge];
   dimmed && pathClasses.push(styles.dimmed);
-  highlight && pathClasses.push(styles.highlight);
   inactive && pathClasses.push(styles.inactive);
   !inactive && pathClasses.push(styles.gradient);
   !inactive &&
