@@ -56,7 +56,7 @@ export const RolloutProgressBar: React.FC<RolloutProgressProps> = ({
         return (
           <Button
             classes={{ root: styles.button }}
-            color="secondary"
+            color="primary"
             variant="contained"
             onClick={onStart}
           >

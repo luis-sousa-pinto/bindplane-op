@@ -142,8 +142,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
               {!isRawConfig && (
                 <Button
                   className={mixins["ml-2"]}
-                  variant="contained"
-                  color="secondary"
+                  variant="outlined"
+                  color="error"
                   onClick={onRemoveConfiguration}
                 >
                   Detach

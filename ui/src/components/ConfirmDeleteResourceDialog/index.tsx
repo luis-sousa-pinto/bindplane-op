@@ -28,10 +28,11 @@ export const ConfirmDeleteResourceDialog: React.FC<ConfirmDeleteProps> = ({
       {title && <DialogTitle>{title}</DialogTitle>}
       <DialogContent>{children}</DialogContent>
       <DialogActions>
-        <Button color="secondary" onClick={onCancel}>
+        <Button variant="outlined" color="secondary" onClick={onCancel}>
           Cancel
         </Button>
         <Button
+          variant="contained"
           color="error"
           onClick={onDelete}
           data-testid="confirm-delete-dialog-delete-button"
