@@ -286,7 +286,7 @@ spec:
       label: Fingerprint size
       description: The size of the file fingerprint used to distinguish unique files.
       type: string
-      default: 1MiB
+      default: 1kb
       advancedConfig: true
 
     - name: enable_offset_storage
