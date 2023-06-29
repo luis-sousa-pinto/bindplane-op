@@ -2910,7 +2910,12 @@ type Query {
   destinationTypes: [DestinationType!]!
   destinationType(name: String!): DestinationType
 
-  snapshot(agentID: String!, pipelineType: PipelineType!, position: String, resourceName: String): Snapshot!
+  snapshot(
+    agentID: String!
+    pipelineType: PipelineType!
+    position: String
+    resourceName: String
+  ): Snapshot!
 
   agentMetrics(period: String!, ids: [ID!]): GraphMetrics!
   configurationMetrics(period: String!, name: String): GraphMetrics!
@@ -2919,6 +2924,15 @@ type Query {
     configIDs: [ID!]
     destinationIDs: [ID!]
   ): GraphMetrics!
+}
+
+# ----------------------------------------------------------------------
+# user roles
+
+enum Role {
+  admin
+  user
+  viewer
 }
 
 # ----------------------------------------------------------------------
