@@ -83,14 +83,17 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
       onError,
       fetchPolicy: "cache-and-network",
     });
-  const { data: latestVersionData, refetch: refetchLatest } =
-    useGetLatestConfigDescriptionQuery({
-      variables: {
-        configurationName: asLatestVersion(configurationName),
-      },
-      onError,
-      fetchPolicy: "cache-and-network",
-    });
+  const {
+    data: latestVersionData,
+    refetch: refetchLatest,
+    loading: loadingLatest,
+  } = useGetLatestConfigDescriptionQuery({
+    variables: {
+      configurationName: asLatestVersion(configurationName),
+    },
+    onError,
+    fetchPolicy: "cache-and-network",
+  });
 
   useRefetchOnConfigurationChange(configurationName, () => {
     refetchCurrent();
@@ -109,6 +112,8 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
         },
       },
     });
+
+    await refetchLatest();
   }
 
   const details: DetailProps[] = [
@@ -117,7 +122,6 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
       value: currentVersionData?.configuration?.metadata.version,
       loading: !currentVersionData,
     },
-    { label: "Name", value: configurationName },
     {
       label: "Platform",
       value: currentVersionData?.configuration?.metadata.labels.platform,
@@ -132,20 +136,21 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
       label: "Description",
       value: latestVersionData?.configuration?.metadata.description ?? "",
       onChange: disableDescriptionEdit ? undefined : handleEditDescriptionSave,
-      loading: !latestVersionData || editLoading,
+      loading: !latestVersionData || editLoading || loadingLatest,
+      flexGrow: 4,
     },
   ];
 
   return (
     <Card classes={{ root: styles.card }}>
       <CardHeader
-        title="Details"
+        title={configurationName}
         titleTypographyProps={{ fontWeight: 600 }}
         classes={{ root: styles.padding }}
       />
       <Divider />
       <CardContent className={styles.padding}>
-        <Stack direction="row" width="100%" justifyContent={"space-between"}>
+        <Stack direction="row" width="100%">
           {details.map((detail) => (
             <Detail key={`config-detail-${detail.label}`} {...detail} />
           ))}
@@ -162,9 +167,16 @@ interface DetailProps {
   // Only intended for use with the description field.
   onChange?: (value: string) => Promise<void>;
   loading?: boolean;
+  flexGrow?: number;
 }
 
-const Detail: React.FC<DetailProps> = ({ label, value, loading, onChange }) => {
+const Detail: React.FC<DetailProps> = ({
+  label,
+  value,
+  loading,
+  onChange,
+  flexGrow = 1,
+}) => {
   const [editing, setEditing] = useState(false);
   const textboxRef = useRef<HTMLInputElement | null>(null);
 
@@ -181,7 +193,7 @@ const Detail: React.FC<DetailProps> = ({ label, value, loading, onChange }) => {
   }
 
   return (
-    <Stack width={200}>
+    <Stack flexGrow={flexGrow} maxWidth={500} minWidth={200}>
       <Stack direction="row" alignItems="center" height="24px" spacing={1}>
         <Typography fontWeight={600}>{label}</Typography>{" "}
         {onChange && !editing && (
