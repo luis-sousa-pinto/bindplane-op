@@ -339,7 +339,7 @@ export function getNodesAndEdges(
           handleType: "source",
           isButton: true,
         },
-        position: { x: 8, y: bottomY },
+        position: { x: 42, y: bottomY },
         type: "uiControlNode",
       });
     }
@@ -356,7 +356,7 @@ export function getNodesAndEdges(
           handleType: "target",
           isButton: true,
         },
-        position: { x: max * targetOffsetMultiplier, y: bottomY },
+        position: { x: max * targetOffsetMultiplier + 28, y: bottomY },
         type: "uiControlNode",
       });
     }
