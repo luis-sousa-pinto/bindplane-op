@@ -24,6 +24,7 @@ gql`
 interface AgentSelectorProps {
   label?: string;
   agentID?: string;
+  query?: string;
   onChange: (agentID: string) => void;
   onError: (error: ApolloError) => void;
 }
@@ -31,6 +32,7 @@ interface AgentSelectorProps {
 export const AgentSelector: React.FC<AgentSelectorProps> = ({
   label,
   agentID,
+  query,
   onChange,
   onError,
 }) => {
@@ -40,6 +42,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   const { data, loading } = useAgentsWithConfigurationQuery({
     variables: {
       selector: selectorString(configuration?.spec?.selector),
+      query,
     },
     onCompleted(data) {
       if (!agentID && data?.agents?.agents?.length) {

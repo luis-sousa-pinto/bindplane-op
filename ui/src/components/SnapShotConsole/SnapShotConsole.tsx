@@ -79,6 +79,7 @@ export const SnapshotConsole: React.FC<Props> = memo(
               {showAgentSelector ? (
                 <AgentSelector
                   agentID={agentID}
+                  query={"-status:disconnected"}
                   onChange={setAgentID}
                   onError={setError}
                 />
