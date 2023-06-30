@@ -43,6 +43,20 @@ spec:
         - grpc
         - http
 
+        # Advanced Options
+    - name: headers
+      label: Additional gRPC Headers
+      description: Additional headers to attach to each gRPC request.
+      type: map
+      default: {}
+      advancedConfig: true
+      options:
+        gridColumns: 12
+      relevantIf:
+        - name: protocol
+          operator: equals
+          value: "grpc"
+
     # TLS
     - name: enable_tls
       label: Enable TLS
@@ -256,6 +270,12 @@ spec:
       {{ if eq .protocol "grpc" }}
       - otlp:
           endpoint: {{ .hostname }}:{{ .grpc_port }}
+          {{ $length := len .headers }} {{ if ne $length 0 }}
+          headers:
+            {{ range $k, $v := .headers }}
+            {{ $k }}: {{ $v }}
+            {{ end }}
+          {{ end }}
           tls:
             {{ if .enable_tls }}
             insecure: false
