@@ -72,7 +72,7 @@ spec:
         operator: equals
         value: true
     options:
-      password: true
+      sensitive: true
 
   # Metrics TLS Settings #
   - name: enable_tls
@@ -136,7 +136,7 @@ spec:
     relevantIf:
       - name: enable_tls
         operator: equals
-        value: true 
+        value: true
     advancedConfig: true
 
   - name: server_name
@@ -178,7 +178,7 @@ spec:
         operator: equals
         value: true
     advancedConfig: true
-  
+
   # Logging
   #
   - name: enable_logs
@@ -186,20 +186,20 @@ spec:
     description: Enable to collect logs.
     type: bool
     default: true
-  
+
   - name: enable_health_log
     label: Enable Health Logs
     description: Enable to collect health logs.
     documentation:
       - text: Read more
-        url: https://www.cockroachlabs.com/docs/v22.2/logging#health 
+        url: https://www.cockroachlabs.com/docs/v22.2/logging#health
     type: bool
     default: true
     relevantIf:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: health_log_path
     label: Health Log Path
     description: The absolute path to the CockroachDB health logs.
@@ -228,7 +228,7 @@ spec:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: dev_log_path
     label: Dev Log Path
     description: The absolute path to the CockroachDB Dev Logs.
@@ -254,7 +254,7 @@ spec:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: error_log_path
     label: Error Log Path
     description: The absolute path to the CockroachDB stderr logs.
@@ -276,14 +276,14 @@ spec:
     description: Enable to collect sql schema logs.
     documentation:
     - text: Read more
-      url: https://www.cockroachlabs.com/docs/v22.2/logging#sql_schema 
+      url: https://www.cockroachlabs.com/docs/v22.2/logging#sql_schema
     type: bool
     default: true
     relevantIf:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: sql_schema_log_path
     label: SQL Schema Log Path
     description: The absolute path to the CockroachDB sql schema logs.
@@ -312,7 +312,7 @@ spec:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: telemetry_log_path
     label: Telemetry Log Path
     description: The absolute path to the CockroachDB telemetry logs.
@@ -341,7 +341,7 @@ spec:
         - name: enable_logs
           operator: equals
           value: true
-  
+
   - name: kv_distribution_log_path
     label: KV Distribution Log Path
     description: The absolute path to the CockroachDB kv distribution logs.
@@ -370,7 +370,7 @@ spec:
         - name: enable_logs
           operator: equals
           value: true
- 
+
   - name: pebble_log_path
     label: Pebble Log Path
     description: The absolute path to the CockroachDB pebble logs.
@@ -386,7 +386,7 @@ spec:
         - name: enable_pebble_log
           operator: equals
           value: true
-  
+
   - name: offset_storage_dir
     label: Offset Storage Directory
     description: The directory the offset storage file will be created in.
@@ -430,7 +430,7 @@ spec:
     label: Parse to
     description: Parse structured log parts to either body or attributes.
     type: enum
-    validValues: 
+    validValues:
       - body
       - attributes
     default: body
@@ -452,7 +452,7 @@ spec:
     relevantIf:
       - name: enable_logs
         operator: equals
-        value: true 
+        value: true
 
   metrics:
     receivers: |
@@ -490,7 +490,7 @@ spec:
             timezone: {{ .timezone }}
             retain_raw_logs: {{ .retain_raw_logs }}
             offset_storage_dir: {{ .offset_storage_dir }}
-            
+
             enable_error_log: {{ .enable_error_log }}
             error_log_path:
               {{ range $fp := .error_log_path }}

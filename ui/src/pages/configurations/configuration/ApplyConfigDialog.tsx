@@ -92,7 +92,9 @@ export const ApplyConfigDialog: React.FC<ApplyConfigDialogProps> = ({
       </DialogContent>
       <DialogActions>
         {applyingLabels && <CircularProgress size={20} />}
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button variant="outlined" color="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
         <Button
           variant="contained"
           disabled={agentsToApply.length === 0}

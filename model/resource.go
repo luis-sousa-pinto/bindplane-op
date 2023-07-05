@@ -206,6 +206,10 @@ type AnyResource struct {
 	StatusType[map[string]any] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
 
+// treat AnyResource as having sensitive parameters because it is possible the parsed spec will contain sensitive
+// parameters
+var _ HasSensitiveParameters = (*AnyResource)(nil)
+
 // GetResourceMeta returns the ResourceMeta for this resource.
 func (r *AnyResource) GetResourceMeta() ResourceMeta {
 	return r.ResourceMeta
@@ -229,6 +233,57 @@ func (r *AnyResource) Scan(value interface{}) error {
 	}
 
 	return jsoniter.Unmarshal(b, &r)
+}
+
+// MaskSensitiveParameters masks sensitive parameter values based on the ParameterDefinitions in the ResourceType
+func (r *AnyResource) MaskSensitiveParameters(ctx context.Context) {
+	// get the underlying resource, mask, and then make it an AnyResource again
+	parsed, err := ParseResource(r)
+	if err != nil {
+		// if we can't parse the resource, we can't mask it
+		return
+	}
+	resourceWithSensitiveParameters, ok := parsed.(HasSensitiveParameters)
+	if !ok {
+		// the underlying resource doesn't have sensitive parameters, so there's nothing to mask
+		return
+	}
+
+	// mask the sensitive parameters in the parsed resource
+	resourceWithSensitiveParameters.MaskSensitiveParameters(ctx)
+
+	// make the parsed resource an AnyResource again
+	if anyResource, err := AsAny(parsed); err == nil {
+		// replace the spec with the masked spec
+		r.Spec = anyResource.Spec
+	}
+}
+
+// PreserveSensitiveParameters will replace parameters with the SensitiveParameterPlaceholder value with the value of
+// the parameter from the existing resource. This does nothing if existing is nil because there is no existing
+// resource.
+func (r *AnyResource) PreserveSensitiveParameters(ctx context.Context, existing *AnyResource) error {
+	// get the underlying resource, preserve, and then make it an AnyResource again
+	parsed, err := ParseResource(r)
+	if err != nil {
+		// if we can't parse the resource, we can't mask it
+		return nil
+	}
+	resourceWithSensitiveParameters, ok := parsed.(HasSensitiveParameters)
+	if !ok {
+		// the underlying resource doesn't have sensitive parameters, so there's nothing to preserve
+		return nil
+	}
+	err = resourceWithSensitiveParameters.PreserveSensitiveParameters(ctx, existing)
+	if err != nil {
+		return err
+	}
+	// make the parsed resource an AnyResource again
+	if anyResource, err := AsAny(parsed); err == nil {
+		// replace the spec with the masked spec
+		r.Spec = anyResource.Spec
+	}
+	return nil
 }
 
 // ResourceMeta TODO(doc)
@@ -266,9 +321,14 @@ type NoStatus struct {
 
 // Parameter TODO(doc)
 type Parameter struct {
+	// Name is the name of the parameter
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
-	// This could be any of the following: string, bool, int, enum (string), float, []string
+
+	// Value could be any of the following: string, bool, int, enum (string), float, []string, map
 	Value interface{} `json:"value" yaml:"value" mapstructure:"value"`
+
+	// Sensitive will be true if the value is sensitive and should be masked when printed.
+	Sensitive bool `json:"sensitive,omitempty" yaml:"sensitive,omitempty" mapstructure:"sensitive"`
 }
 
 var _ Printable = (*ResourceMeta)(nil)

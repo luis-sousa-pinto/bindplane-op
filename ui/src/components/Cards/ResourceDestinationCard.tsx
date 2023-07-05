@@ -83,6 +83,7 @@ gql`
                 }
               }
               password
+              sensitive
             }
           }
         }

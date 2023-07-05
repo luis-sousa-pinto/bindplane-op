@@ -575,9 +575,6 @@ func (s *boltstore) ZapLogger() *zap.Logger {
 // ----------------------------------------------------------------------
 // generic resource accessors
 
-// ----------------------------------------------------------------------
-// generic resource accessors
-
 // FindResource finds a resource by kind and unique key. If the resource is versioned, the latest version is returned.
 func FindResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *bbolt.Tx, kind model.Kind, uniqueKey string) (resource R, key []byte, bucket *bbolt.Bucket, exists bool, err error) {
 	uniqueKey, version := model.SplitVersion(uniqueKey)
@@ -597,6 +594,8 @@ func FindResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 	if err != nil {
 		return
 	}
+
+	MaskSensitiveParameters(ctx, resource)
 
 	// if the resource isn't versioned, we're done
 	if !model.HasVersionKind(kind) {
@@ -671,6 +670,7 @@ func FindResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 	}
 	resource = archiveResource
 	resource.SetLatest(false)
+	MaskSensitiveParameters(ctx, resource)
 
 	return
 }
@@ -721,6 +721,7 @@ func resourcesWithFilter[R model.Resource](ctx context.Context, s BoltstoreCommo
 			// these are all the latest versions
 			resource.SetLatest(true)
 			setCurrentAndPending(resource)
+			MaskSensitiveParameters(ctx, resource)
 
 			if include == nil || include(resource) {
 				resources = append(resources, resource)
@@ -789,6 +790,7 @@ func DeleteResource[R model.Resource](ctx context.Context, s BoltstoreCommon, ki
 			}
 
 			exists = true
+			MaskSensitiveParameters(ctx, emptyResource)
 
 			// Check if the resource is referenced by another
 			dependencies, err = FindDependentResources(ctx, s.ConfigurationsIndex(ctx), emptyResource.Name(), emptyResource.GetKind())
@@ -852,6 +854,8 @@ func editResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 			bucket *bbolt.Bucket
 			exists bool
 		)
+		// don't mask sensitive parameters when updating a resource
+		ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
 		resource, key, bucket, exists, err = FindResource[R](ctx, s, tx, kind, uniqueKey)
 		if err != nil {
 			return fmt.Errorf("error finding resource: %w", err)
@@ -923,6 +927,11 @@ func editResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 // storeResource handles storing a resource and archiving the existing resource if it is versioned.
 func storeResource(ctx context.Context, s BoltstoreCommon, bucket *bbolt.Bucket, tx *bbolt.Tx, curBytes []byte, curResource *model.AnyResource, newResource model.Resource) (model.UpdateStatus, error) {
 	if curResource != nil {
+		// preserve sensitive parameter values
+		if err := PreserveSensitiveParameters(ctx, newResource, curResource); err != nil {
+			return model.StatusUnchanged, fmt.Errorf("store resource: %w", err)
+		}
+
 		// check to see if the resource has changed
 		compare, err := jsoniter.Marshal(newResource)
 		if err != nil {
@@ -1043,6 +1052,7 @@ func resourceHistory[R model.Resource](ctx context.Context, s BoltstoreCommon, k
 			}
 		}
 		setCurrentAndPending(resource)
+		MaskSensitiveParameters(ctx, resource)
 
 		// check the archive bucket for older Versions
 		bucket, err = s.ArchiveBucket(ctx, tx)
@@ -1059,6 +1069,7 @@ func resourceHistory[R model.Resource](ctx context.Context, s BoltstoreCommon, k
 			}
 			archiveResource.SetLatest(false)
 			setCurrentAndPending(archiveResource)
+			MaskSensitiveParameters(ctx, archiveResource)
 			history = append(history, archiveResource)
 		}
 

@@ -5,6 +5,7 @@ import {
 } from "../../graphql/generated";
 
 export class BPResourceConfiguration implements ResourceConfiguration {
+  id?: Maybe<string> | undefined;
   name?: Maybe<string> | undefined;
   displayName: Maybe<string> | undefined;
   type?: Maybe<string> | undefined;
@@ -12,6 +13,7 @@ export class BPResourceConfiguration implements ResourceConfiguration {
   processors?: Maybe<ResourceConfiguration[]> | undefined;
   disabled: boolean;
   constructor(rc?: ResourceConfiguration) {
+    this.id = rc?.id;
     this.name = rc?.name;
     this.displayName = rc?.displayName;
     this.type = rc?.type;
@@ -38,7 +40,7 @@ export class BPResourceConfiguration implements ResourceConfiguration {
       this.name = map.name;
       delete map.name;
     }
-    
+
     // Set displayName field if present
     if (map.displayName != null) {
       this.displayName = map.displayName;

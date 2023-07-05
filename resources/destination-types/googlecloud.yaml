@@ -36,7 +36,7 @@ spec:
       default: ""
       options:
         gridColumns: 12
-        multiline: true
+        sensitive: true
       relevantIf:
         - name: auth_type
           operator: equals
@@ -189,7 +189,7 @@ spec:
         sectionHeader: true
         gridColumns: 12
       advancedConfig: true
-    
+
     - name: enable_wal
       label: Metric Write-Ahead-Log
       description: Write metrics to a write-ahead-log before sending to help ensure metrics are not lost in case of network outages or collector restarts.
@@ -199,7 +199,7 @@ spec:
         sectionHeader: true
         gridColumns: 12
       advancedConfig: true
-    
+
     - name: wal_max_backoff
       label: WAL Max Retry Duration
       description: The maximum amount of time (minutes) to retry sending metrics from the write-ahead-log when a network error occurs.
@@ -237,7 +237,7 @@ spec:
             {{ if .enable_compression }}
             compression: gzip
             {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
           metric:
             {{ if .enable_compression }}

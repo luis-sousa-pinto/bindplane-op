@@ -57,7 +57,7 @@ export const ChooseView: React.FC<ChooseViewProps> = ({
 
       <ActionsSection>
         <Button
-          variant="contained"
+          variant="outlined"
           color="secondary"
           onClick={() => clearResource()}
         >

@@ -15,9 +15,9 @@
 
 set -e
 
-# install installs the 1.12.2 official release of BindPlane OP.
+# install installs the 1.17.0 official release of BindPlane OP.
 install() {
-    curl -fsSlL https://github.com/observiq/bindplane-op/releases/latest/download/install-linux.sh | bash -s -- --version 1.12.2
+    curl -fsSlL https://github.com/observiq/bindplane-op/releases/latest/download/install-linux.sh | bash -s -- --version 1.17.0
     systemctl enable --now bindplane
 }
 

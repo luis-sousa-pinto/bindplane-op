@@ -8,8 +8,8 @@ import {
 import { isEmpty, isFunction } from "lodash";
 import { ChangeEvent, memo, useState } from "react";
 import { EyeIcon, EyeOffIcon } from "../../Icons";
-import { validateStringField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
+import { validateStringField } from "../validation-functions";
 import { ParamInputProps } from "./ParameterInput";
 
 const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
@@ -18,10 +18,11 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
   readOnly,
   onValueChange,
 }) => {
+  const isPasswordField =
+    definition.options.password === true ||
+    definition.options.sensitive === true;
   const { errors, setError, touched, touch } = useValidationContext();
-  const [hideField, setHideField] = useState(
-    definition.options.password === true
-  );
+  const [hideField, setHideField] = useState(isPasswordField);
 
   function handleValueChange(e: ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
@@ -39,10 +40,12 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
 
   return (
     <TextField
-      multiline={definition.options.multiline ?? undefined}
+      multiline={
+        !isPasswordField && (definition.options.multiline ?? undefined)
+      }
       type={hideField ? "password" : "text"}
       InputProps={{
-        endAdornment: definition.options.password && (
+        endAdornment: isPasswordField && (
           <HideFieldToggle
             hideField={hideField}
             onToggle={() => {
@@ -50,7 +53,7 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
             }}
           />
         ),
-        autoComplete: definition.options.password ? "new-password" : "off",
+        autoComplete: isPasswordField ? "new-password" : "off",
       }}
       value={value}
       onChange={handleValueChange}

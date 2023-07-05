@@ -21,10 +21,8 @@ gql`
   mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
     removeAgentConfiguration(input: $input) {
       id
-      configuration {
-        Collector
-        Logging
-        Manager
+      configurationResource {
+        rendered
       }
     }
   }
@@ -142,8 +140,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
               {!isRawConfig && (
                 <Button
                   className={mixins["ml-2"]}
-                  variant="contained"
-                  color="secondary"
+                  variant="outlined"
+                  color="error"
                   onClick={onRemoveConfiguration}
                 >
                   Detach

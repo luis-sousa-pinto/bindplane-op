@@ -70,7 +70,7 @@ func TestConfigurationValidate(t *testing.T) {
 			testfile:                     "configuration-ok.yaml",
 			expectValidateError:          "",
 			expectValidateWithStoreError: "",
-			expectYAML:                   "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: false\n        - type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: true\n    destinations:\n        - name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
+			expectYAML:                   "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - id: MacOS_1\n          type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: false\n        - id: MacOS_2\n          type: MacOS:3\n          parameters:\n            - name: enable_system_log\n              value: true\n    destinations:\n        - id: cabin-production-logs\n          name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
 		},
 		{
 			testfile:                     "configuration-ok-empty.yaml",
@@ -80,7 +80,7 @@ func TestConfigurationValidate(t *testing.T) {
 		},
 		{
 			testfile:   "configuration-ok-versioned-resources.yaml",
-			expectYAML: "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n        - type: MacOS:3\n    destinations:\n        - name: cabin-production-logs:1\n        - name: cabin-production-logs:1\n        - name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
+			expectYAML: "apiVersion: bindplane.observiq.com/v1\nkind: Configuration\nmetadata:\n    name: macos\n    labels:\n        app: cabin\n        platform: macos\n    version: 1\nspec:\n    contentType: text/yaml\n    sources:\n        - id: MacOS\n          type: MacOS:3\n        - id: MacOS:1\n          type: MacOS:3\n        - id: MacOS:2\n          type: MacOS:3\n        - id: MacOS:3\n          type: MacOS:3\n        - id: MacOS:latest\n          type: MacOS:3\n    destinations:\n        - id: cabin-production-logs\n          name: cabin-production-logs:1\n        - id: cabin-production-logs:1\n          name: cabin-production-logs:1\n        - id: cabin-production-logs:latest\n          name: cabin-production-logs:1\n    selector:\n        matchLabels:\n            configuration: macos\n",
 		},
 	}
 

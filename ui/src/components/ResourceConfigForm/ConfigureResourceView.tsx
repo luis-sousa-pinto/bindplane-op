@@ -125,7 +125,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   );
 
   const backButton: JSX.Element | null = isFunction(onBack) ? (
-    <Button variant="contained" color="secondary" onClick={onBack}>
+    <Button variant="outlined" color="secondary" onClick={onBack}>
       Back
     </Button>
   ) : null;
@@ -138,7 +138,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
 
   const togglePauseButton: JSX.Element | null = isFunction(onTogglePause) ? (
     <Button
-      variant="contained"
+      variant="outlined"
       color={paused ? "primary" : "secondary"}
       onClick={onTogglePause}
       data-testid="resource-form-toggle-pause"

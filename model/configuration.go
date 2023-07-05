@@ -68,6 +68,7 @@ type Configuration struct {
 }
 
 var _ HasAgentSelector = (*Configuration)(nil)
+var _ HasSensitiveParameters = (*Configuration)(nil)
 
 // GetSpec returns the spec for this resource.
 func (c *Configuration) GetSpec() any {
@@ -318,9 +319,58 @@ func (r *Rollout) AgentsNextPhase() int {
 
 // ResourceConfiguration defines Sources and Destinations within a Configuration or Processors within a Source or Destination.
 type ResourceConfiguration struct {
-	Name              string `json:"name,omitempty" yaml:"name,omitempty" mapstructure:"name"`
-	DisplayName       string `json:"displayName,omitempty" yaml:"displayName,omitempty" mapstructure:"displayName"`
+	// ID will be generated and is used to uniquely identify the resource
+	ID string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id"`
+
+	// Name must be specified if this is a reference to another resource by name
+	Name string `json:"name,omitempty" yaml:"name,omitempty" mapstructure:"name"`
+
+	// DisplayName is a friendly name of the resource that will be displayed in the UI
+	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty" mapstructure:"displayName"`
+
+	// ParameterizedSpec contains the definition of an embedded resource if this is not a reference to another resource
 	ParameterizedSpec `yaml:",inline" json:",inline" mapstructure:",squash"`
+}
+
+var _ HasResourceParameters = (*ResourceConfiguration)(nil)
+
+// ResourceParameters returns the resource parameters for this resource.
+func (rc *ResourceConfiguration) ResourceParameters() []Parameter {
+	return rc.Parameters
+}
+
+// ensureID ensures that the ID is set to a non-empty value. If the ID is already set, this does nothing. A defaultID
+// can be specified to use if the ID is not already set.
+func (rc *ResourceConfiguration) ensureID() {
+	if rc.ID != "" {
+		return
+	}
+	rc.ID = NewResourceID()
+}
+
+// MaskSensitiveParameters masks sensitive parameter values based on the ParameterDefinitions in the ResourceType
+func (rc *ResourceConfiguration) maskSensitiveParameters(ctx context.Context) {
+	maskSensitiveParameters(ctx, rc)
+	for i, p := range rc.Processors {
+		p := p
+		maskSensitiveParameters(ctx, &p)
+		rc.Processors[i] = p
+	}
+}
+
+// PreserveSensitiveParameters will replace parameters with the SensitiveParameterPlaceholder value with the value of
+// the parameter from the existing resource. This does nothing if existing is nil because there is no existing
+// resource.
+func (rc *ResourceConfiguration) preserveSensitiveParameters(ctx context.Context, existing *ResourceConfiguration) {
+	preserveSensitiveParameters(ctx, rc, existing)
+	for i, p := range rc.Processors {
+		p := p
+		existingResource := findResourceConfiguration(p.ID, existing.Processors)
+		if existingResource != nil {
+			preserveSensitiveParameters(ctx, &p, existingResource)
+			rc.Processors[i] = p
+		}
+	}
 }
 
 // UpdateDependencies updates the dependencies for this resource to use the latest version.
@@ -819,6 +869,7 @@ func (rc *ResourceConfiguration) localName(kind Kind, index int) string {
 }
 
 func (rc *ResourceConfiguration) validate(ctx context.Context, resourceKind Kind, errors validation.Errors, store ResourceStore) {
+	rc.ensureID()
 	if rc.validateHasNameOrType(resourceKind, errors) {
 		rc.validateParameters(ctx, resourceKind, errors, store)
 	}
@@ -872,7 +923,7 @@ func (rc *ResourceConfiguration) validateParameters(ctx context.Context, resourc
 	}
 
 	// ensure parameters are valid
-	for _, parameter := range rc.Parameters {
+	for i, parameter := range rc.Parameters {
 		if parameter.Name == "" {
 			continue
 		}
@@ -885,6 +936,8 @@ func (rc *ResourceConfiguration) validateParameters(ctx context.Context, resourc
 		if err != nil {
 			errors.Add(err)
 		}
+		parameter.Sensitive = def.Options.Sensitive
+		rc.Parameters[i] = parameter
 	}
 }
 
@@ -1282,4 +1335,56 @@ func (c *Configuration) determinePipelineTypeUsage(ctx context.Context, store Re
 // supported telemetry types on a configuration.
 func (c *Configuration) Usage(ctx context.Context, store ResourceStore) *PipelineTypeUsage {
 	return c.determinePipelineTypeUsage(ctx, store)
+}
+
+// ----------------------------------------------------------------------
+
+// MaskSensitiveParameters masks sensitive parameter values based on the ParameterDefinitions in the ResourceType
+func (c *Configuration) MaskSensitiveParameters(ctx context.Context) {
+	// masking in configuration is more complicated because we need to mask parameters in the source and destination
+	for i, source := range c.Spec.Sources {
+		source.maskSensitiveParameters(ctx)
+		c.Spec.Sources[i] = source
+	}
+	for i, destination := range c.Spec.Destinations {
+		destination.maskSensitiveParameters(ctx)
+		c.Spec.Destinations[i] = destination
+	}
+}
+
+// PreserveSensitiveParameters will replace parameters with the SensitiveParameterPlaceholder value with the value of
+// the parameter from the existing resource. This does nothing if existing is nil because there is no existing
+// resource.
+func (c *Configuration) PreserveSensitiveParameters(ctx context.Context, existing *AnyResource) error {
+	existingConfiguration, err := ParseOne[*Configuration](existing)
+	if err != nil {
+		return err
+	}
+
+	for i, source := range c.Spec.Sources {
+		existingResource := findResourceConfiguration(source.ID, existingConfiguration.Spec.Sources)
+		if existingResource != nil {
+			source.preserveSensitiveParameters(ctx, existingResource)
+			c.Spec.Sources[i] = source
+		}
+	}
+	for i, destination := range c.Spec.Destinations {
+		existingResource := findResourceConfiguration(destination.ID, existingConfiguration.Spec.Destinations)
+		if existingResource != nil {
+			destination.preserveSensitiveParameters(ctx, existingResource)
+			c.Spec.Destinations[i] = destination
+		}
+	}
+
+	return nil
+}
+
+// findResourceConfiguration looks through all of the resources for a resource matching the specified resourceID.
+func findResourceConfiguration(resourceID string, resources []ResourceConfiguration) *ResourceConfiguration {
+	for _, resource := range resources {
+		if resource.ID == resourceID {
+			return &resource
+		}
+	}
+	return nil
 }

@@ -20,15 +20,13 @@ gql`
         status
         connectedAt
         disconnectedAt
-        configuration {
-          Collector
-        }
         configurationResource {
           metadata {
             id
             name
             version
           }
+          rendered
         }
       }
       changeType

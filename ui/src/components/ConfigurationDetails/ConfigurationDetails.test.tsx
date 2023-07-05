@@ -9,7 +9,10 @@ import {
   LATEST_VERSION,
   NEW_DESCRIPTION_BODY,
 } from "./__test__";
-import { EditConfigDescriptionDocument } from "../../graphql/generated";
+import {
+  EditConfigDescriptionDocument,
+  GetLatestConfigDescriptionDocument,
+} from "../../graphql/generated";
 
 describe("ConfigurationDetails component", () => {
   const configurationName = "linux-metrics";
@@ -59,8 +62,35 @@ describe("ConfigurationDetails component", () => {
       },
     };
 
+    const latestAfterMutationMock: MockedResponse = {
+      request: {
+        query: GetLatestConfigDescriptionDocument,
+        variables: {
+          configurationName: "linux-metrics:latest",
+        },
+      },
+      result: {
+        data: {
+          configuration: {
+            metadata: {
+              name: "linux-metrics",
+              id: "linux-metrics-id",
+              version: LATEST_VERSION,
+              description: NEW_DESCRIPTION_BODY,
+            },
+          },
+        },
+      },
+    };
+
     render(
-      <MockedProvider mocks={[...DETAILS_MOCKS, editDescriptionMutationMock]}>
+      <MockedProvider
+        mocks={[
+          ...DETAILS_MOCKS,
+          editDescriptionMutationMock,
+          latestAfterMutationMock,
+        ]}
+      >
         <ConfigurationDetails configurationName={configurationName} />
       </MockedProvider>
     );

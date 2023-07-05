@@ -107,6 +107,9 @@ func (u *updater) handleUpdates(ctx context.Context, updates store.BasicEventUpd
 
 	pending := pendingAgentUpdates{}
 
+	// remove sensitive parameter masking when rendering for the agent
+	ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
+
 	for _, change := range updates.Agents() {
 		// on delete, disconnect
 		if change.Type == store.EventTypeRemove {

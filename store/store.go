@@ -790,3 +790,23 @@ func UpdateDependentResources(ctx context.Context, store Store, resources []mode
 
 	return statuses, errs
 }
+
+// ----------------------------------------------------------------------
+// sensitive parameters
+
+// MaskSensitiveParameters masks sensitive parameter values based on the ParameterDefinitions in the ResourceType. This
+// should be called after reading a value from the store before returning it.
+func MaskSensitiveParameters[R model.Resource](ctx context.Context, resource R) {
+	if resourceWithSensitiveParameters, ok := any(resource).(model.HasSensitiveParameters); ok {
+		resourceWithSensitiveParameters.MaskSensitiveParameters(ctx)
+	}
+}
+
+// PreserveSensitiveParameters will replace sensitive parameters in the current Resource with values from the existing
+// Resource. This should be called before writing an updated value to the store.
+func PreserveSensitiveParameters(ctx context.Context, updated model.Resource, existing *model.AnyResource) error {
+	if resourceWithSensitiveParameters, ok := any(updated).(model.HasSensitiveParameters); ok {
+		return resourceWithSensitiveParameters.PreserveSensitiveParameters(ctx, existing)
+	}
+	return nil
+}

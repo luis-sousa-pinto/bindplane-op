@@ -114,7 +114,12 @@ export const BuildRolloutDialog: React.FC<BuildRolloutDialogProps> = ({
             </Typography>
 
             <Stack justifyContent={"center"} alignItems={"center"}>
-              <Button size="large" variant="contained" onClick={onStartRollout}>
+              <Button
+                color="primary"
+                size="large"
+                variant="contained"
+                onClick={onStartRollout}
+              >
                 Start Rollout
               </Button>
             </Stack>

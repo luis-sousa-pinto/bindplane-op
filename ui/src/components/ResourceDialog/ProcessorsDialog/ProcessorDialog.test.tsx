@@ -26,6 +26,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   metricCategories: null,
   labels: null,
   password: null,
+  sensitive: false,
 };
 
 const CONFIG_NO_PROCESSORS = {

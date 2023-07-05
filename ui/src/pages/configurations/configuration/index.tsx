@@ -40,6 +40,7 @@ gql`
       spec {
         raw
         sources {
+          id
           type
           name
           displayName
@@ -48,6 +49,7 @@ gql`
             value
           }
           processors {
+            id
             type
             displayName
             parameters {
@@ -59,6 +61,7 @@ gql`
           disabled
         }
         destinations {
+          id
           type
           name
           displayName
@@ -67,6 +70,7 @@ gql`
             value
           }
           processors {
+            id
             type
             displayName
             parameters {

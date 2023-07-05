@@ -35,8 +35,8 @@ export const App: React.FC = () => {
                   <Route path="/overview" element={<OverviewPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   {/* --------------- The following routes require authentication -------------- */}
-                  {/* No path at "/", reroute to agents */}
-                  <Route path="/" element={<Navigate to="/agents" />} />
+                  {/* No path at "/", reroute to overview */}
+                  <Route path="/" element={<Navigate to="/overview" />} />
                   <Route path="agents">
                     <Route index element={<AgentsPage />} />
                     <Route path="install" element={<InstallPage />} />

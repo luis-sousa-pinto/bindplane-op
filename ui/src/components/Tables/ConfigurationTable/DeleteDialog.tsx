@@ -55,8 +55,10 @@ export const DeleteDialog: React.FC<DeleteModalProps> = ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button color="error" onClick={onDelete}>
+        <Button variant="outlined" color="secondary" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" color="error" onClick={onDelete}>
           Delete
         </Button>
       </DialogActions>

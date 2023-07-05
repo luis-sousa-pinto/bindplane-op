@@ -18,25 +18,25 @@ spec:
       description: Identifies the instance of Microsoft 365 to be monitored.
       options:
         sectionHeader: true
-      type: string 
-      default: "" 
+      type: string
+      default: ""
       required: true
 
     - name: client_id
       label: Client ID
       description: Identifier this receiver will use when monitoring.
       type: string
-      default: "" 
+      default: ""
       required: true
 
     - name: client_secret
       label: Client secret
       description: Private key this receiver will use when monitoring, must belong to the given Client ID.
-      default: "" 
+      default: ""
       type: string
       required: true
       options:
-        password: true
+        sensitive: true
 
     # Metrics
     - name: enable_metrics
@@ -79,7 +79,7 @@ spec:
               - name: m365.teams.device_usage.users
               - name: m365.teams.meetings.count
               - name: m365.teams.messages.private.count
-              - name: m365.teams.messages.team.count      
+              - name: m365.teams.messages.team.count
       relevantIf:
         - name: enable_metrics
           operator: equals
@@ -192,9 +192,9 @@ spec:
             directory: $OIQ_OTEL_COLLECTOR_HOME/storage
      {{ end }}
 
-    receivers: | 
+    receivers: |
      {{ if .enable_logs }}
-      - m365/logs: 
+      - m365/logs:
           tenant_id: {{ .tenant_id }}
           client_id: {{ .client_id }}
           client_secret: {{ .client_secret }}

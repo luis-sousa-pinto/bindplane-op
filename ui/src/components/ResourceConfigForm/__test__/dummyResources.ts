@@ -19,6 +19,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   metricCategories: null,
   labels: null,
   password: null,
+  sensitive: false,
 };
 
 // This file contains dummy resources used for testing the ResourceConfigForm
@@ -59,7 +60,7 @@ export const stringPasswordDef: ParameterDefinition = {
   required: false,
   options: {
     ...DEFAULT_PARAMETER_OPTIONS,
-    password: true,
+    sensitive: true,
   },
 
   type: ParameterType.String,

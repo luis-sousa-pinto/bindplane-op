@@ -67,7 +67,7 @@ spec:
           operator: equals
           value: true
       options:
-        password: true
+        sensitive: true
 
     - name: databases
       label: Databases

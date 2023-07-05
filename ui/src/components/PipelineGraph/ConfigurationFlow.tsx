@@ -90,7 +90,8 @@ export const ConfigurationFlow: React.FC<ConfigurationFlowProps> = ({
       refetchConfiguration,
       setAddSourceOpen,
       setAddDestinationOpen,
-      Boolean(readOnlyGraph)
+      Boolean(readOnlyGraph),
+      selectedTelemetry
     );
 
     if (measurementData) {

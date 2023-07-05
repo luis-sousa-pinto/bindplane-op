@@ -214,7 +214,8 @@ export const OverviewGraph: React.FC = () => {
     () => {},
     () => {},
     () => {},
-    true
+    true,
+    selectedTelemetry
   );
   updateMetricData(
     Page.Overview,

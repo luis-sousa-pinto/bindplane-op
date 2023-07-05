@@ -71,7 +71,7 @@ spec:
     #       operator: equals
     #       value: true
     #   options:
-    #     password: true
+    #     sensitive: true
 
     # - name: enable_tls
     #   label: TLS

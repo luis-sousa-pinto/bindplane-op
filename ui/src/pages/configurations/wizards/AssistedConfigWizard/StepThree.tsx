@@ -98,6 +98,7 @@ gql`
               }
             }
             password
+            sensitive
           }
         }
         supportedPlatforms

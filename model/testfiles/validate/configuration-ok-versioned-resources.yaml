@@ -10,14 +10,22 @@ spec:
   sources:
     # no version => MacOS:3
     - type: MacOS
+      id: MacOS
     - type: MacOS:1
+      id: MacOS:1
     - type: MacOS:2
+      id: MacOS:2
     - type: MacOS:3
+      id: MacOS:3
     - type: MacOS:latest
+      id: MacOS:latest
   destinations:
     - name: cabin-production-logs
+      id: cabin-production-logs
     - name: cabin-production-logs:1
+      id: cabin-production-logs:1
     - name: cabin-production-logs:latest
+      id: cabin-production-logs:latest
   selector:
     matchLabels:
       "configuration": macos

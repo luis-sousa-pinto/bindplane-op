@@ -2351,10 +2351,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "description": "Name is the name of the parameter",
                     "type": "string"
                 },
+                "sensitive": {
+                    "description": "Sensitive will be true if the value is sensitive and should be masked when printed.",
+                    "type": "boolean"
+                },
                 "value": {
-                    "description": "This could be any of the following: string, bool, int, enum (string), float, []string"
+                    "description": "Value could be any of the following: string, bool, int, enum (string), float, []string, map"
                 }
             }
         },
@@ -2439,11 +2444,15 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "password": {
-                    "description": "Password indicates the string field is for a password and will be hidden by the UI.\nOnly applies to string parameters.",
+                    "description": "Password indicates the string field is for a password and will be hidden by the UI.\nOnly applies to string parameters.\nDeprecated, use Sensitive instead.",
                     "type": "boolean"
                 },
                 "sectionHeader": {
                     "description": "SectionHeader is used to indicate that the bool parameter input is\na switch for further configuration for UI styling.",
+                    "type": "boolean"
+                },
+                "sensitive": {
+                    "description": "Sensitive indicates that the field is sensitive and will be masked with (sensitive) in the response.",
                     "type": "boolean"
                 },
                 "trackUnchecked": {
@@ -2613,9 +2622,15 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "displayName": {
+                    "description": "DisplayName is a friendly name of the resource that will be displayed in the UI",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID will be generated and is used to uniquely identify the resource",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Name must be specified if this is a reference to another resource by name",
                     "type": "string"
                 },
                 "parameters": {

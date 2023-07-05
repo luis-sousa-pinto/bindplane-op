@@ -11,6 +11,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   metricCategories: null,
   labels: null,
   password: null,
+  sensitive: false,
   __typename: "ParameterOptions",
 };
 
@@ -54,6 +55,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -75,6 +77,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -97,6 +100,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -119,6 +123,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -147,6 +152,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -173,6 +179,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -201,6 +208,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -229,6 +237,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -257,6 +266,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -290,6 +300,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -323,6 +334,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -365,6 +377,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -407,6 +420,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -434,6 +448,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -467,6 +482,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -489,6 +505,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -511,6 +528,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -533,6 +551,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -555,6 +574,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -583,6 +603,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -605,6 +626,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -627,6 +649,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -649,6 +672,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -670,6 +694,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
                 {
@@ -691,6 +716,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
                     labels: {},
                     metricCategories: null,
                     password: false,
+                    sensitive: false,
                   },
                 },
               ],

@@ -88,7 +88,7 @@ spec:
           operator: equals
           value: basic
       options:
-        password: true
+        sensitive: true
 
     - name: sasl_username
       label: Username
@@ -118,7 +118,7 @@ spec:
           operator: equals
           value: sasl
       options:
-        password: true
+        sensitive: true
 
     - name: sasl_mechanism
       label: Mechanism
@@ -246,7 +246,7 @@ spec:
           operator: equals
           value: basic
       options:
-        password: true
+        sensitive: true
 
     - name: enable_metrics
       label: Enable Metrics
@@ -473,7 +473,7 @@ spec:
               config_file: {{ .kerberos_config_file }}
             {{ end }}
           {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
     processors: |
@@ -520,7 +520,7 @@ spec:
               config_file: {{ .kerberos_config_file }}
             {{ end }}
           {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
     processors: |
@@ -567,7 +567,7 @@ spec:
               config_file: {{ .kerberos_config_file }}
             {{ end }}
           {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
     processors: |

@@ -48,6 +48,10 @@ func AsAny(r Resource) (*AnyResource, error) {
 	if r == nil {
 		return nil, nil
 	}
+	value := reflect.ValueOf(r)
+	if value.Kind() == reflect.Ptr && value.IsNil() {
+		return nil, nil
+	}
 	if anyResource, ok := r.(*AnyResource); ok {
 		return anyResource, nil
 	}

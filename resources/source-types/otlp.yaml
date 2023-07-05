@@ -11,6 +11,8 @@ spec:
     - macos
     - linux
     - windows
+    - kubernetes-daemonset
+    - openshift-daemonset
   parameters:
     - name: listen_address
       label: Listen Address

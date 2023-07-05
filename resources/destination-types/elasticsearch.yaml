@@ -127,7 +127,7 @@ spec:
       default: ""
       advancedConfig: true
       options:
-        password: true
+        sensitive: true
       required: true
       relevantIf:
         - name: enable_auth
@@ -144,7 +144,7 @@ spec:
       default: ""
       advancedConfig: true
       options:
-        password: true
+        sensitive: true
       relevantIf:
         - name: enable_auth
           operator: equals
@@ -305,7 +305,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -370,7 +370,7 @@ spec:
             enabled: {{ .retry_on_failure_enabled }}
 
           num_workers: {{ .num_workers }}
-          
+
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
 
@@ -413,6 +413,6 @@ spec:
             enabled: {{ .retry_on_failure_enabled }}
 
           num_workers: {{ .num_workers }}
-          
+
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}

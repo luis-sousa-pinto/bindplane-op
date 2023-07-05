@@ -305,7 +305,8 @@ describe("getNodesAndEdges", () => {
       () => {},
       setAddSourceDialogOpen,
       setAddDestDialogOpen,
-      false
+      false,
+      ""
     );
 
     expect(nodes).toHaveLength(4);
