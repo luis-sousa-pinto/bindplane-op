@@ -3,6 +3,7 @@ import { TELEMETRY_SIZE_METRICS } from "../../components/MeasurementControlBar/M
 import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";
 import { Graph, GraphMetric } from "../../graphql/generated";
+import { isNodeDisabled } from "../../components/PipelineGraph/Nodes/nodeUtils";
 
 export const GRAPH_NODE_OFFSET = 150;
 export const GRAPH_PADDING = 300;
@@ -45,7 +46,8 @@ export function getNodesAndEdges(
   refetchConfiguration: () => void,
   setAddSourceDialogOpen: (b: boolean) => void,
   setAddDestDialogOpen: (b: boolean) => void,
-  readOnly: boolean
+  readOnly: boolean,
+  telemetryType: string | undefined | null
 ): {
   nodes: Node[];
   edges: Edge[];
@@ -391,14 +393,18 @@ export function getNodesAndEdges(
         connectedNodesAndEdges: [e.id],
       },
       type: isConfigurationFlow ? "configurationEdge" : "overviewEdge",
+      zIndex: 1,
     };
 
-    edges.push(edge);
     nodes.forEach((node) => {
       if (node.id === e.source) {
         edge.data.attributes = node.data.attributes;
       }
     });
+    if (isNodeDisabled(telemetryType || "", edge.data.attributes)) {
+      edge.zIndex = 0;
+    }
+    edges.push(edge);
   }
 
   // First create a map from node id to all child nodes and edges
