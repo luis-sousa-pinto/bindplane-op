@@ -19,6 +19,7 @@ kind: Namespace
 metadata:
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
   name: bindplane-agent
 ---
 apiVersion: v1
@@ -26,6 +27,7 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
   name: bindplane-agent
   namespace: bindplane-agent
 ---
@@ -35,6 +37,7 @@ metadata:
   name: bindplane-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
 rules:
 - apiGroups:
   - ""
@@ -101,6 +104,7 @@ metadata:
   name: bindplane-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -110,21 +114,77 @@ subjects:
   name: bindplane-agent
   namespace: bindplane-agent
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
+  name: bindplane-node-agent
+  namespace: bindplane-agent
+spec:
+  ports:
+  - appProtocol: grpc
+    name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
+  - appProtocol: http
+    name: otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: 4318
+  selector:
+    app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
+  name: bindplane-node-agent-headless
+  namespace: bindplane-agent
+spec:
+  clusterIP: None
+  ports:
+  - appProtocol: grpc
+    name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
+  - appProtocol: http
+    name: otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: 4318
+  selector:
+    app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
+  sessionAffinity: None
+  type: ClusterIP
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: bindplane-node-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: node
   namespace: bindplane-agent
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: bindplane-agent
+      app.kubernetes.io/component: node
   template:
     metadata:
       labels:
         app.kubernetes.io/name: bindplane-agent
+        app.kubernetes.io/component: node
     spec:
       serviceAccount: bindplane-agent
       initContainers:
@@ -158,6 +218,11 @@ spec:
             readOnlyRootFilesystem: true
             # Required for reading container logs hostPath.
             runAsUser: 0
+          ports:
+            - containerPort: 4317
+              name: otlpgrpc
+            - containerPort: 4318
+              name: otlphttp
           resources:
             requests:
               memory: 200Mi
@@ -224,6 +289,7 @@ kind: Namespace
 metadata:
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: cluster
   name: bindplane-agent
 ---
 apiVersion: v1
@@ -231,6 +297,7 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: cluster
   name: bindplane-agent
   namespace: bindplane-agent
 ---
@@ -240,6 +307,7 @@ metadata:
   name: bindplane-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: cluster
   namespace: bindplane-agent
 rules:
 - apiGroups:
@@ -307,6 +375,7 @@ metadata:
   name: bindplane-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: cluster
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -322,16 +391,19 @@ metadata:
   name: bindplane-cluster-agent
   labels:
     app.kubernetes.io/name: bindplane-agent
+    app.kubernetes.io/component: cluster
   namespace: bindplane-agent
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: bindplane-agent
+      app.kubernetes.io/component: cluster
   template:
     metadata:
       labels:
         app.kubernetes.io/name: bindplane-agent
+        app.kubernetes.io/component: cluster
     spec:
       serviceAccount: bindplane-agent
       initContainers:
