@@ -73,7 +73,7 @@ curl -fsSlL https://github.com/observiq/bindplane-op/releases/latest/download/in
 After the installer finishes, initialize the server using the `init` command. The specific command for your system is found in the installer output under the `Server Initialization` section. By default it is the following command for Linux:
 
 ```bash
-sudo /usr/local/bin/bindplane init server --config /etc/bindplane/config.yaml
+sudo BINDPLANE_CONFIG_HOME=/var/lib/bindplane /usr/local/bin/bindplane init server --config /etc/bindplane/config.yaml
 ```
 
 ## Client

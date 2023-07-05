@@ -386,7 +386,7 @@ display_results() {
 
     banner 'Server Initialization'
     increase_indent
-    info "To initialize the server, run: $(fg_cyan "sudo /usr/local/bin/bindplane init server --config /etc/bindplane/config.yaml")$(reset)"
+    info "To initialize the server, run: $(fg_cyan "sudo BINDPLANE_CONFIG_HOME=/var/lib/bindplane /usr/local/bin/bindplane init server --config /etc/bindplane/config.yaml")$(reset)"
     decrease_indent
 
     banner 'EULA'
