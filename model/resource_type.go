@@ -34,7 +34,7 @@ import (
 // ResourceType is a resource that describes a type of resource including parameters for creating that resource and a
 // template for formatting the resource configuration.
 //
-// There will be separate ResourceTypes for each type of resource, e.g. SourceType for Source resources.
+// There are separate ResourceTypes for each type of resource, e.g. SourceType for Source resources.
 type ResourceType struct {
 	ResourceMeta              `yaml:",inline" json:",inline" mapstructure:",squash"`
 	Spec                      ResourceTypeSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
@@ -443,6 +443,13 @@ func (s *ResourceTypeSpec) validateParameterDefinitions(kind Kind, errs validati
 		parameter.validateDefinition(kind, errs)
 		s.validateParameterRelevantIf(parameter, errs)
 
+		// indicate that password is deprecated
+		if parameter.Options.Password {
+			errs.Warn(fmt.Errorf("parameter '%s' uses deprecated 'password' option, use 'sensitive' instead", parameter.Name))
+		}
+		if parameter.Options.Sensitive && parameter.Options.Multiline {
+			errs.Warn(fmt.Errorf("parameter '%s' cannot be 'sensitive' and 'multiline', ignoring 'multiline'", parameter.Name))
+		}
 	}
 
 	s.validateNoDuplicateParameterNames(errs)

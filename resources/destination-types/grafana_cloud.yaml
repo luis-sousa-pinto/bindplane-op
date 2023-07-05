@@ -26,7 +26,7 @@ spec:
           url: https://grafana.com/docs/grafana-cloud/data-configuration/otlp/send-data-otlp/
       required: true
       options:
-        password: true
+        sensitive: true
 
     - name: gcp_zone
       label: Zone
@@ -36,7 +36,7 @@ spec:
       required: true
       options:
           creatable: true
-      validValues: 
+      validValues:
           - prod-au-southeast-0
           - prod-eu-west-0
           - prod-sa-east-0
@@ -153,7 +153,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -181,14 +181,14 @@ spec:
           compaction:
             on_rebound: true
             directory: {{ .persistent_queue_directory }}
-      {{ end }}      
+      {{ end }}
     exporters: |
       - otlphttp:
           endpoint: https://otlp-gateway-{{ .gcp_zone}}.grafana.net/otlp
           auth:
             authenticator: {{ bpComponentID "basicauth" }}
-          
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
     processors: |
       - batch:

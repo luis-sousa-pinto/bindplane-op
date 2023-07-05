@@ -27,6 +27,7 @@ const DEFAULT_PARAMETER_OPTIONS = {
   metricCategories: null,
   labels: null,
   password: null,
+  sensitive: false,
 };
 
 const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {

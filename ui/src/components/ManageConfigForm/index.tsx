@@ -21,10 +21,8 @@ gql`
   mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
     removeAgentConfiguration(input: $input) {
       id
-      configuration {
-        Collector
-        Logging
-        Manager
+      configurationResource {
+        rendered
       }
     }
   }

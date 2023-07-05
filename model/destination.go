@@ -37,6 +37,7 @@ type Destination struct {
 }
 
 var _ parameterizedResource = (*Destination)(nil)
+var _ HasSensitiveParameters = (*Destination)(nil)
 
 // ValidateWithStore checks that the destination is valid, returning an error if it is not. It uses the store to
 // retrieve the destination type so that parameter values can be validated against the parameter definitions.
@@ -138,4 +139,18 @@ func (d *Destination) PrintableFieldValue(title string) string {
 	default:
 		return d.ResourceMeta.PrintableFieldValue(title)
 	}
+}
+
+// ----------------------------------------------------------------------
+
+// MaskSensitiveParameters masks sensitive parameter values based on the ParameterDefinitions in the ResourceType
+func (d *Destination) MaskSensitiveParameters(ctx context.Context) {
+	d.Spec.maskSensitiveParameters(ctx)
+}
+
+// PreserveSensitiveParameters will replace parameters with the SensitiveParameterPlaceholder value with the value of
+// the parameter from the existing resource. This does nothing if existing is nil because there is no existing
+// resource.
+func (d *Destination) PreserveSensitiveParameters(ctx context.Context, existing *AnyResource) error {
+	return PreserveSensitiveParameters(ctx, d, existing)
 }

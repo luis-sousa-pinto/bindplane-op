@@ -66,6 +66,7 @@ gql`
               }
             }
             password
+            sensitive
           }
           documentation {
             text

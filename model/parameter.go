@@ -104,7 +104,11 @@ type ParameterOptions struct {
 
 	// Password indicates the string field is for a password and will be hidden by the UI.
 	// Only applies to string parameters.
+	// Deprecated, use Sensitive instead.
 	Password bool `json:"password,omitempty" yaml:"password,omitempty"`
+
+	// Sensitive indicates that the field is sensitive and will be masked with (sensitive) in the response.
+	Sensitive bool `json:"sensitive,omitempty" yaml:"sensitive,omitempty"`
 }
 
 // MetricCategory consists of the label, optional column, and metrics for a metricsType Parameter

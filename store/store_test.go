@@ -4307,3 +4307,437 @@ func runTestCountAgents(ctx context.Context, t *testing.T, store Store) {
 	require.NoError(t, err)
 	require.Equal(t, 4, len(agentIDs))
 }
+
+func runTestMaskSensitiveParameters(ctx context.Context, t *testing.T, store Store) {
+	store.Clear()
+
+	sensitiveSourceType := model.NewSourceType("source-type-1", []model.ParameterDefinition{
+		{
+			Name: "username",
+			Type: "string",
+		},
+		{
+			Name: "password",
+			Type: "string",
+			Options: model.ParameterOptions{
+				Sensitive: true,
+			},
+		},
+	}, []string{"macos"})
+	sensitiveProcessorType := model.NewProcessorType("processor-type-1", []model.ParameterDefinition{
+		{
+			Name: "username",
+			Type: "string",
+		},
+		{
+			Name: "password",
+			Type: "string",
+			Options: model.ParameterOptions{
+				Sensitive: true,
+			},
+		},
+	})
+	sensitiveDestination := model.NewDestination("destination-1", "destination-type-1", []model.Parameter{
+		{
+			Name:  "username",
+			Value: "user1",
+		},
+		{
+			Name:  "password",
+			Value: "pw1",
+		},
+	})
+	sensitiveDestinationType := model.NewDestinationType("destination-type-1", []model.ParameterDefinition{
+		{
+			Name: "username",
+			Type: "string",
+		},
+		{
+			Name: "password",
+			Type: "string",
+			Options: model.ParameterOptions{
+				Sensitive: true,
+			},
+		},
+	})
+	sensitiveDestination.Spec.Processors = []model.ResourceConfiguration{
+		{
+			ParameterizedSpec: model.ParameterizedSpec{
+				Type: "processor-type-1",
+				Parameters: []model.Parameter{
+					{
+						Name:  "username",
+						Value: "user2",
+					},
+					{
+						Name:  "password",
+						Value: "pw2",
+					},
+				},
+			},
+		},
+	}
+	sensitiveConfiguration := model.NewConfigurationWithSpec("configuration-1", model.ConfigurationSpec{
+		Sources: []model.ResourceConfiguration{
+			{
+				ParameterizedSpec: model.ParameterizedSpec{
+					Type: "source-type-1",
+					Parameters: []model.Parameter{
+						{
+							Name:  "username",
+							Value: "user3",
+						},
+						{
+							Name:  "password",
+							Value: "pw3",
+						},
+					},
+					Processors: []model.ResourceConfiguration{
+						{
+							ParameterizedSpec: model.ParameterizedSpec{
+								Type: "processor-type-1",
+								Parameters: []model.Parameter{
+									{
+										Name:  "username",
+										Value: "user4",
+									},
+									{
+										Name:  "password",
+										Value: "pw4",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Destinations: []model.ResourceConfiguration{
+			{
+				Name: "destination-1",
+				ParameterizedSpec: model.ParameterizedSpec{
+					Processors: []model.ResourceConfiguration{
+						{
+							ParameterizedSpec: model.ParameterizedSpec{
+								Type: "processor-type-1",
+								Parameters: []model.Parameter{
+									{
+										Name:  "username",
+										Value: "user5",
+									},
+									{
+										Name:  "password",
+										Value: "pw5",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	seq := util.NewTestSequence(t)
+
+	seq.Run("create the resources", func(t *testing.T) {
+		_, err := store.ApplyResources(ctx, []model.Resource{
+			sensitiveSourceType,
+			sensitiveProcessorType,
+			sensitiveDestinationType,
+			sensitiveDestination,
+			sensitiveConfiguration,
+		})
+		require.NoError(t, err)
+	})
+
+	seq.Run("test that the sensitive parameters are not returned by accessor", func(t *testing.T) {
+		destination, err := store.Destination(ctx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user1", destination.Spec.Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+		require.Equal(t, "user2", destination.Spec.Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Processors[0].Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+
+		config, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user4", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+	})
+
+	seq.Run("test that the sensitive parameters are not returned by list", func(t *testing.T) {
+		destinations, err := store.Destinations(ctx)
+		require.NoError(t, err)
+		require.Equal(t, 1, len(destinations))
+		destination := destinations[0]
+		require.Equal(t, "user1", destination.Spec.Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+		require.Equal(t, "user2", destination.Spec.Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Processors[0].Parameters[1].Value)
+		require.True(t, destination.Spec.Processors[0].Parameters[1].Sensitive)
+
+		configs, err := store.Configurations(ctx)
+		require.NoError(t, err)
+		require.Equal(t, 1, len(configs))
+		config := configs[0]
+		require.NoError(t, err)
+		require.Equal(t, "user3", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user4", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+	})
+
+	seq.Run("test that the sensitive parameters are not returned by delete", func(t *testing.T) {
+		config, err := store.DeleteConfiguration(ctx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user4", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+
+		destination, err := store.DeleteDestination(ctx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user1", destination.Spec.Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Parameters[1].Value)
+		require.Equal(t, "user2", destination.Spec.Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Processors[0].Parameters[1].Value)
+		require.True(t, destination.Spec.Processors[0].Parameters[1].Sensitive)
+	})
+
+	seq.Run("add the destination again", func(t *testing.T) {
+		_, err := store.ApplyResources(ctx, []model.Resource{
+			sensitiveDestination,
+			sensitiveConfiguration,
+		})
+		require.NoError(t, err)
+	})
+
+	seq.Run("edit the destination and confirm that the sensitive parameters are preserved", func(t *testing.T) {
+		modified, err := store.Destination(ctx, "destination-1")
+		require.NoError(t, err)
+		modified.Spec.Parameters[0].Value = "user3"
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm that the sensitive parameters are masked
+		destination, err := store.Destination(ctx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", destination.Spec.Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+
+		// confirm that the sensitive parameters are preserved
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		destination, err = store.Destination(noMaskingCtx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", destination.Spec.Parameters[0].Value)
+		require.Equal(t, "pw1", destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+	})
+
+	seq.Run("edit the configuration and confirm at the sensitive parameters are perserved", func(t *testing.T) {
+		modified, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		modified.Spec.Sources[0].Parameters[0].Value = "user5"
+		modified.Spec.Sources[0].Processors[0].Parameters[0].Value = "user6"
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm that the sensitive parameters are masked
+		config, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+
+		// confirm that the sensitive parameters are preserved
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		config, err = store.Configuration(noMaskingCtx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, "pw3", config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, "pw4", config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+	})
+
+	seq.Run("edit the destination and change the sensitive parameter", func(t *testing.T) {
+		modified, err := store.Destination(ctx, "destination-1")
+		require.NoError(t, err)
+		modified.Spec.Parameters[1].Value = "pw3"
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm that the sensitive parameters are masked
+		destination, err := store.Destination(ctx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", destination.Spec.Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+
+		// confirm that the sensitive parameters are preserved
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		destination, err = store.Destination(noMaskingCtx, "destination-1")
+		require.NoError(t, err)
+		require.Equal(t, "user3", destination.Spec.Parameters[0].Value)
+		require.Equal(t, "pw3", destination.Spec.Parameters[1].Value)
+		require.True(t, destination.Spec.Parameters[1].Sensitive)
+	})
+
+	seq.Run("edit the configuration and change the sensitive parameters", func(t *testing.T) {
+		modified, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		modified.Spec.Sources[0].Parameters[1].Value = "pw10"
+		modified.Spec.Sources[0].Processors[0].Parameters[1].Value = "pw11"
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm that the sensitive parameters are masked
+		config, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+
+		// confirm that the sensitive parameters are preserved
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		config, err = store.Configuration(noMaskingCtx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, "pw10", config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, "pw11", config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+	})
+
+	seq.Run("edit a dependency and confirm that the sensitive parameters are preserved", func(t *testing.T) {
+		config, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		oldVersion := config.Version()
+
+		_, err = store.StartRollout(ctx, "configuration-1", nil)
+		require.NoError(t, err)
+		_, err = store.UpdateRollout(ctx, "configuration-1")
+		require.NoError(t, err)
+
+		modified, err := model.Clone(sensitiveSourceType)
+		require.NoError(t, err)
+		modified.Spec.Parameters = append(modified.Spec.Parameters, model.ParameterDefinition{
+			Name: "param3",
+			Type: "string",
+		})
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm the new version of the processor-type
+		sourceType, err := store.SourceType(ctx, "source-type-1")
+		require.NoError(t, err)
+		require.Equal(t, model.Version(2), sourceType.Version())
+
+		// confirm that the configuration is updated
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		config, err = store.Configuration(noMaskingCtx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "source-type-1:2", config.Spec.Sources[0].Type)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, "pw10", config.Spec.Sources[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, "pw11", config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+		require.Equal(t, model.Version(oldVersion+1), config.Version())
+
+		// rollout these changes
+		_, err = store.StartRollout(ctx, "configuration-1", nil)
+		require.NoError(t, err)
+		_, err = store.UpdateRollout(ctx, "configuration-1")
+		require.NoError(t, err)
+	})
+
+	seq.Run("edit a processor type dependency and confirm that the sensitive parameters are also preserved", func(t *testing.T) {
+		config, err := store.Configuration(ctx, "configuration-1")
+		require.NoError(t, err)
+		oldVersion := config.Version()
+
+		modified, err := model.Clone(sensitiveProcessorType)
+		require.NoError(t, err)
+		modified.Spec.Parameters = append(modified.Spec.Parameters, model.ParameterDefinition{
+			Name: "param4",
+			Type: "string",
+		})
+		statuses, err := store.ApplyResources(ctx, []model.Resource{modified})
+		require.NoError(t, err)
+		require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+		// confirm the new version of the processor-type
+		processorType, err := store.ProcessorType(ctx, "processor-type-1")
+		require.NoError(t, err)
+		require.Equal(t, model.Version(2), processorType.Version())
+
+		// confirm that the configuration is updated
+		noMaskingCtx := model.ContextWithoutSensitiveParameterMasking(ctx)
+		config, err = store.Configuration(noMaskingCtx, "configuration-1")
+		require.NoError(t, err)
+		require.Equal(t, "source-type-1:2", config.Spec.Sources[0].Type)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, "pw10", config.Spec.Sources[0].Parameters[1].Value)
+		require.Equal(t, "processor-type-1:2", config.Spec.Sources[0].Processors[0].Type)
+		require.True(t, config.Spec.Sources[0].Parameters[1].Sensitive)
+		require.Equal(t, "user6", config.Spec.Sources[0].Processors[0].Parameters[0].Value)
+		require.Equal(t, "pw11", config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+		require.True(t, config.Spec.Sources[0].Processors[0].Parameters[1].Sensitive)
+		require.Equal(t, "processor-type-1:2", config.Spec.Destinations[0].Processors[0].Type)
+		require.Equal(t, model.Version(oldVersion+1), config.Version())
+	})
+
+	seq.Run("confirm that all versions of the resource have masked parameters", func(t *testing.T) {
+		s, ok := store.(ArchiveStore)
+		if !ok {
+			t.Skip("store does not implement ArchiveStore")
+			return
+		}
+		history, err := s.ResourceHistory(ctx, model.KindConfiguration, "configuration-1")
+		require.NoError(t, err)
+
+		configs, err := model.Parse[*model.Configuration](history)
+		require.NoError(t, err)
+
+		for _, config := range configs {
+			require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+			require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Processors[0].Parameters[1].Value)
+			require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Destinations[0].Processors[0].Parameters[1].Value)
+		}
+	})
+
+	seq.Run("get an old version and confirm that the sensitive parameters are masked", func(t *testing.T) {
+		config, err := store.Configuration(ctx, "configuration-1:1")
+		require.NoError(t, err)
+		require.Equal(t, "source-type-1:1", config.Spec.Sources[0].Type)
+		require.Equal(t, "user5", config.Spec.Sources[0].Parameters[0].Value)
+		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
+	})
+}

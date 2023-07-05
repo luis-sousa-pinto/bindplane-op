@@ -108,7 +108,7 @@ spec:
           value: basic
       advancedConfig: true
       options:
-        password: true
+        sensitive: true
 
     - name: sasl_username
       label: Username

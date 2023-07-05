@@ -80,6 +80,7 @@ gql`
           version
           name
         }
+        rendered
       }
       upgrade {
         status
@@ -408,7 +409,7 @@ export const AgentPageContent: React.FC = () => {
                 </div>
               ) : (
                 <YamlEditor
-                  value={data.agent.configuration?.Collector || ""}
+                  value={data.agent.configurationResource?.rendered || ""}
                   readOnly
                   limitHeight
                 />

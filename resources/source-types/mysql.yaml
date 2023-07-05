@@ -42,7 +42,7 @@ spec:
           operator: equals
           value: true
       options:
-        password: true
+        sensitive: true
 
     - name: endpoint
       label: Endpoint

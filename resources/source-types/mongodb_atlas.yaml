@@ -28,7 +28,7 @@ spec:
       default: ""
       required: true
       options:
-        password: true
+        sensitive: true
 
     # Metrics
     #
@@ -454,7 +454,7 @@ spec:
           private_key: {{ .private_key }}
           logs:
             enabled: true
-            projects: 
+            projects:
               - name: {{ .log_project_name }}
                 collect_audit_logs: {{ .collect_audit_logs }}
                 {{ if eq .log_filter_mode "Inclusive" }}
@@ -509,5 +509,5 @@ spec:
               cert_file: {{ .listen_tls_cert_file }}
             {{ end }}
           {{ end }}
-        
+
       {{ end }}

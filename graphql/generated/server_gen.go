@@ -273,8 +273,9 @@ type ComplexityRoot struct {
 	}
 
 	Parameter struct {
-		Name  func(childComplexity int) int
-		Value func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Sensitive func(childComplexity int) int
+		Value     func(childComplexity int) int
 	}
 
 	ParameterDefinition struct {
@@ -299,6 +300,7 @@ type ComplexityRoot struct {
 		Multiline        func(childComplexity int) int
 		Password         func(childComplexity int) int
 		SectionHeader    func(childComplexity int) int
+		Sensitive        func(childComplexity int) int
 		TrackUnchecked   func(childComplexity int) int
 	}
 
@@ -365,6 +367,7 @@ type ComplexityRoot struct {
 	ResourceConfiguration struct {
 		Disabled    func(childComplexity int) int
 		DisplayName func(childComplexity int) int
+		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Parameters  func(childComplexity int) int
 		Processors  func(childComplexity int) int
@@ -1451,6 +1454,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Parameter.Name(childComplexity), true
 
+	case "Parameter.sensitive":
+		if e.complexity.Parameter.Sensitive == nil {
+			break
+		}
+
+		return e.complexity.Parameter.Sensitive(childComplexity), true
+
 	case "Parameter.value":
 		if e.complexity.Parameter.Value == nil {
 			break
@@ -1583,6 +1593,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ParameterOptions.SectionHeader(childComplexity), true
+
+	case "ParameterOptions.sensitive":
+		if e.complexity.ParameterOptions.Sensitive == nil {
+			break
+		}
+
+		return e.complexity.ParameterOptions.Sensitive(childComplexity), true
 
 	case "ParameterOptions.trackUnchecked":
 		if e.complexity.ParameterOptions.TrackUnchecked == nil {
@@ -1983,6 +2000,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ResourceConfiguration.DisplayName(childComplexity), true
+
+	case "ResourceConfiguration.id":
+		if e.complexity.ResourceConfiguration.ID == nil {
+			break
+		}
+
+		return e.complexity.ResourceConfiguration.ID(childComplexity), true
 
 	case "ResourceConfiguration.name":
 		if e.complexity.ResourceConfiguration.Name == nil {
@@ -2562,6 +2586,7 @@ type ConfigurationSpec {
 }
 
 type ResourceConfiguration {
+  id: String
   name: String
   displayName: String
   type: String
@@ -2573,6 +2598,7 @@ type ResourceConfiguration {
 type Parameter {
   name: String!
   value: Any!
+  sensitive: Boolean
 }
 
 # ----------------------------------------------------------------------
@@ -2737,6 +2763,7 @@ type ParameterOptions {
   multiline: Boolean
   labels: Map
   password: Boolean
+  sensitive: Boolean
 }
 
 type MetricCategory {
@@ -5854,6 +5881,8 @@ func (ec *executionContext) fieldContext_ConfigurationSpec_sources(ctx context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_ResourceConfiguration_id(ctx, field)
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
 			case "displayName":
@@ -5909,6 +5938,8 @@ func (ec *executionContext) fieldContext_ConfigurationSpec_destinations(ctx cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_ResourceConfiguration_id(ctx, field)
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
 			case "displayName":
@@ -9510,6 +9541,47 @@ func (ec *executionContext) fieldContext_Parameter_value(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Parameter_sensitive(ctx context.Context, field graphql.CollectedField, obj *model1.Parameter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Parameter_sensitive(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sensitive, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Parameter_sensitive(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Parameter",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ParameterDefinition_name(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterDefinition) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ParameterDefinition_name(ctx, field)
 	if err != nil {
@@ -9957,6 +10029,8 @@ func (ec *executionContext) fieldContext_ParameterDefinition_options(ctx context
 				return ec.fieldContext_ParameterOptions_labels(ctx, field)
 			case "password":
 				return ec.fieldContext_ParameterOptions_password(ctx, field)
+			case "sensitive":
+				return ec.fieldContext_ParameterOptions_sensitive(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ParameterOptions", field.Name)
 		},
@@ -10347,6 +10421,47 @@ func (ec *executionContext) fieldContext_ParameterOptions_password(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _ParameterOptions_sensitive(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterOptions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ParameterOptions_sensitive(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sensitive, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ParameterOptions_sensitive(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ParameterOptions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ParameterizedSpec_type(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterizedSpec) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ParameterizedSpec_type(ctx, field)
 	if err != nil {
@@ -10431,6 +10546,8 @@ func (ec *executionContext) fieldContext_ParameterizedSpec_parameters(ctx contex
 				return ec.fieldContext_Parameter_name(ctx, field)
 			case "value":
 				return ec.fieldContext_Parameter_value(ctx, field)
+			case "sensitive":
+				return ec.fieldContext_Parameter_sensitive(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Parameter", field.Name)
 		},
@@ -10474,6 +10591,8 @@ func (ec *executionContext) fieldContext_ParameterizedSpec_processors(ctx contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_ResourceConfiguration_id(ctx, field)
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
 			case "displayName":
@@ -12837,6 +12956,47 @@ func (ec *executionContext) fieldContext_RelevantIfCondition_value(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _ResourceConfiguration_id(ctx context.Context, field graphql.CollectedField, obj *model1.ResourceConfiguration) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceConfiguration_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceConfiguration_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceConfiguration",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ResourceConfiguration_name(ctx context.Context, field graphql.CollectedField, obj *model1.ResourceConfiguration) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ResourceConfiguration_name(ctx, field)
 	if err != nil {
@@ -13000,6 +13160,8 @@ func (ec *executionContext) fieldContext_ResourceConfiguration_parameters(ctx co
 				return ec.fieldContext_Parameter_name(ctx, field)
 			case "value":
 				return ec.fieldContext_Parameter_value(ctx, field)
+			case "sensitive":
+				return ec.fieldContext_Parameter_sensitive(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Parameter", field.Name)
 		},
@@ -13043,6 +13205,8 @@ func (ec *executionContext) fieldContext_ResourceConfiguration_processors(ctx co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "id":
+				return ec.fieldContext_ResourceConfiguration_id(ctx, field)
 			case "name":
 				return ec.fieldContext_ResourceConfiguration_name(ctx, field)
 			case "displayName":
@@ -18710,6 +18874,10 @@ func (ec *executionContext) _Parameter(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "sensitive":
+
+			out.Values[i] = ec._Parameter_sensitive(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18871,6 +19039,10 @@ func (ec *executionContext) _ParameterOptions(ctx context.Context, sel ast.Selec
 		case "password":
 
 			out.Values[i] = ec._ParameterOptions_password(ctx, field, obj)
+
+		case "sensitive":
+
+			out.Values[i] = ec._ParameterOptions_sensitive(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -19727,6 +19899,10 @@ func (ec *executionContext) _ResourceConfiguration(ctx context.Context, sel ast.
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ResourceConfiguration")
+		case "id":
+
+			out.Values[i] = ec._ResourceConfiguration_id(ctx, field, obj)
+
 		case "name":
 
 			out.Values[i] = ec._ResourceConfiguration_name(ctx, field, obj)

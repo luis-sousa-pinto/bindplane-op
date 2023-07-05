@@ -721,10 +721,12 @@ func TestUpdateDependencies(t *testing.T) {
 				Spec: ConfigurationSpec{
 					Sources: []ResourceConfiguration{
 						{
+							ID: "source1",
 							ParameterizedSpec: ParameterizedSpec{
 								Type: "source-type:1",
 								Processors: []ResourceConfiguration{
 									{
+										ID: "source1-processor1",
 										ParameterizedSpec: ParameterizedSpec{
 											Type: "processor-type:1",
 										},
@@ -735,10 +737,12 @@ func TestUpdateDependencies(t *testing.T) {
 					},
 					Destinations: []ResourceConfiguration{
 						{
+							ID: "destination1",
 							ParameterizedSpec: ParameterizedSpec{
 								Type: "destination-type:1",
 								Processors: []ResourceConfiguration{
 									{
+										ID: "destination1-processor1",
 										ParameterizedSpec: ParameterizedSpec{
 											Type: "processor-type:1",
 										},
@@ -758,10 +762,12 @@ func TestUpdateDependencies(t *testing.T) {
 				Spec: ConfigurationSpec{
 					Sources: []ResourceConfiguration{
 						{
+							ID: "source1",
 							ParameterizedSpec: ParameterizedSpec{
 								Type: "source-type:2",
 								Processors: []ResourceConfiguration{
 									{
+										ID: "source1-processor1",
 										ParameterizedSpec: ParameterizedSpec{
 											Type: "processor-type:2",
 										},
@@ -772,10 +778,12 @@ func TestUpdateDependencies(t *testing.T) {
 					},
 					Destinations: []ResourceConfiguration{
 						{
+							ID: "destination1",
 							ParameterizedSpec: ParameterizedSpec{
 								Type: "destination-type:2",
 								Processors: []ResourceConfiguration{
 									{
+										ID: "destination1-processor1",
 										ParameterizedSpec: ParameterizedSpec{
 											Type: "processor-type:2",
 										},

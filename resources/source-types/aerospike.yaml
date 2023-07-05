@@ -106,7 +106,7 @@ spec:
           operator: equals
           value: true
       options:
-        password: true
+        sensitive: true
       advancedConfig: true
 
     - name: disable_metrics

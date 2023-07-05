@@ -17,7 +17,7 @@ spec:
         - text: Read more
           url: https://coralogix.com/docs/private-key/
       options:
-        password: true
+        sensitive: true
 
     - name: application_name
       label: Application Name

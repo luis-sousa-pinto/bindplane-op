@@ -185,6 +185,8 @@ func (m *DefaultManager) UpsertAgent(ctx context.Context, agentID string, update
 
 // AgentUpdates returns the updates that should be applied to an agent based on the current bindplane configuration
 func (m *DefaultManager) AgentUpdates(ctx context.Context, agent *model.Agent) (*protocol.AgentUpdates, error) {
+	// remove sensitive parameter masking when rendering for the agent
+	ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
 	newConfiguration, err := m.Storage.AgentConfiguration(ctx, agent)
 	if err != nil {
 		return nil, err

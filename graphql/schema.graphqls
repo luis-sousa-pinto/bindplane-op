@@ -145,6 +145,7 @@ type ConfigurationSpec {
 }
 
 type ResourceConfiguration {
+  id: String
   name: String
   displayName: String
   type: String
@@ -156,6 +157,7 @@ type ResourceConfiguration {
 type Parameter {
   name: String!
   value: Any!
+  sensitive: Boolean
 }
 
 # ----------------------------------------------------------------------
@@ -320,6 +322,7 @@ type ParameterOptions {
   multiline: Boolean
   labels: Map
   password: Boolean
+  sensitive: Boolean
 }
 
 type MetricCategory {

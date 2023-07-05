@@ -62,7 +62,7 @@ spec:
           operator: equals
           value: true
       options:
-        password: true
+        sensitive: true
 
     - name: collection_interval
       label: Collection Interval

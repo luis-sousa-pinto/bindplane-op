@@ -93,7 +93,7 @@ spec:
           value: true
       advancedConfig: true
       options:
-        password: true
+        sensitive: true
 
     - name: collection_interval
       label: Collection Interval
