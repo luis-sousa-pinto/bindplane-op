@@ -20,6 +20,7 @@ export const ConfigurationsPageContent: React.FC = () => {
         selected={selected}
         setSelected={setSelected}
         enableDelete={true}
+        maxHeight="70vh"
       />
     </CardContainer>
   );

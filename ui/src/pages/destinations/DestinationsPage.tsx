@@ -58,6 +58,8 @@ export interface DestinationsPageContentProps {
   setSelected: (selected: GridRowSelectionModel) => void;
   columnFields?: DestinationsTableField[];
   minHeight?: string;
+  maxHeight?: string;
+
   editingDestination: string | null;
   setEditingDestination: (dest: string | null) => void;
 
@@ -95,6 +97,7 @@ export const DestinationsPageSubContent: React.FC<
   columnFields,
   destinationsQuery,
   minHeight,
+  maxHeight,
   editingDestination,
   setEditingDestination,
   allowSelection,
@@ -187,6 +190,7 @@ export const DestinationsPageSubContent: React.FC<
         onEditDestination={(name: string) => setEditingDestination(name)}
         columnFields={columnFields}
         minHeight={minHeight}
+        maxHeight={maxHeight}
         rows={rows}
         allowSelection={allowSelection}
         classes={
@@ -246,7 +250,7 @@ export const DestinationsPageContent: React.FC = () => {
         editingDestination={editingDestination}
         setEditingDestination={setEditingDestination}
         destinationsQuery={useDestinationsQuery}
-        minHeight="300px"
+        maxHeight="80vh"
       />
     </CardContainer>
   );

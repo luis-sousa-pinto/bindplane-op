@@ -16,6 +16,7 @@ import styles from "./cells.module.scss";
 export enum DestinationsTableField {
   NAME = "name",
   TYPE = "type",
+  ICON_AND_NAME = "icon",
 }
 
 interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
@@ -24,6 +25,7 @@ interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
   loading: boolean;
   columnFields?: DestinationsTableField[];
   minHeight?: string;
+  maxHeight?: string;
   selectionModel?: GridRowSelectionModel;
   destinationsPage?: boolean;
   allowSelection: boolean;
@@ -35,6 +37,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
     onEditDestination,
     columnFields,
     minHeight,
+    maxHeight,
     selectionModel,
     destinationsPage,
     allowSelection,
@@ -55,6 +58,22 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
       }
 
       return renderStringCell(cellParams);
+    }
+
+    function renderNameAndIconCell(
+      cellParams: GridCellParams<any, { name: string; type: string }>
+    ): JSX.Element {
+      return (
+        <>
+          <DestinationTypeCell icon type={cellParams?.value?.type ?? ""} />
+          <button
+            onClick={() => onEditDestination(cellParams.value?.name!)}
+            className={styles.link}
+          >
+            {cellParams.value?.name}
+          </button>
+        </>
+      );
     }
 
     const columns: GridColDef[] = (columnFields || []).map((field) => {
@@ -78,6 +97,22 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
               params.row.spec.type,
             renderCell: renderTypeCell,
           };
+        case DestinationsTableField.ICON_AND_NAME:
+          return {
+            field: DestinationsTableField.ICON_AND_NAME,
+            flex: 1,
+            headerName: "Name",
+            valueGetter: (params: GridValueGetterParams) => {
+              return {
+                type: params.row.spec.type,
+                name: params.row.metadata.name,
+              };
+            },
+            sortComparator: (v1, v2: { name: string; type: string }) => {
+              return v1.name.localeCompare(v2.name);
+            },
+            renderCell: renderNameAndIconCell,
+          };
         default:
           return { field: DestinationsTableField.TYPE };
       }
@@ -95,7 +130,7 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
             </Stack>
           ),
         }}
-        style={{ minHeight }}
+        style={{ minHeight, maxHeight }}
         disableRowSelectionOnClick
         getRowId={(row) => `${row.kind}|${row.metadata.name}`}
         columns={columns}

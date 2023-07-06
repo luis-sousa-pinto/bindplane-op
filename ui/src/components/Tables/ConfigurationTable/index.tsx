@@ -1,7 +1,7 @@
 import mixins from "../../../styles/mixins.module.scss";
 import { gql } from "@apollo/client";
 import { Button, Stack, Typography } from "@mui/material";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
+import { DataGridProps, GridRowSelectionModel } from "@mui/x-data-grid";
 import { debounce } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -111,7 +111,8 @@ function mergeConfigs(
   return newConfigs;
 }
 
-interface ConfigurationTableProps {
+interface ConfigurationTableProps
+  extends Omit<DataGridProps, "columns" | "rows"> {
   selector?: string;
   initQuery?: string;
   columns?: ConfigurationsTableField[];
@@ -121,6 +122,7 @@ interface ConfigurationTableProps {
   enableNew?: boolean;
   allowSelection: boolean;
   minHeight?: string;
+  maxHeight?: string;
   overviewPage?: boolean;
 }
 
@@ -134,6 +136,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
   enableNew = true,
   allowSelection,
   minHeight,
+  maxHeight,
   overviewPage = false,
   ...dataGridProps
 }) => {
@@ -253,6 +256,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
           columnFields={columns}
           selectionModel={selected}
           minHeight={minHeight}
+          maxHeight={maxHeight}
           classes={
             overviewPage &&
             (data?.configurations.configurations.length ?? 0) < 100
