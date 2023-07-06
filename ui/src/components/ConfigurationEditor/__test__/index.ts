@@ -8,6 +8,7 @@ export const NO_VERSION_HISTORY: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         latest: true,
         pending: false,
@@ -25,6 +26,8 @@ export const NO_VERSION_HISTORY_WITH_PENDING: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
+
       status: {
         latest: true,
         pending: true,
@@ -43,6 +46,7 @@ export const NO_VERSION_HISTORY_CURRENT_IS_STABLE: GetConfigurationVersionsQuery
           id: "linux-metrics",
           version: 1,
         },
+        activeTypes: ["logs", "metrics", "traces"],
         status: {
           latest: true,
           pending: true,
@@ -60,6 +64,7 @@ export const HISTORY_CURRENT_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 2,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         latest: true,
         pending: false,
@@ -72,6 +77,7 @@ export const HISTORY_CURRENT_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         latest: false,
         pending: true,
@@ -89,6 +95,7 @@ export const HISTORY_LATEST_IS_PENDING: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 3,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: true,
@@ -101,6 +108,7 @@ export const HISTORY_LATEST_IS_PENDING: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 2,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: true,
         pending: false,
@@ -113,6 +121,7 @@ export const HISTORY_LATEST_IS_PENDING: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -130,6 +139,7 @@ export const HISTORY_LATEST_IS_CURRENT: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 3,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: true,
         pending: true,
@@ -142,6 +152,7 @@ export const HISTORY_LATEST_IS_CURRENT: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 2,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -154,6 +165,7 @@ export const HISTORY_LATEST_IS_CURRENT: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -171,6 +183,7 @@ export const HISTORY_LATEST_IS_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 3,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -183,6 +196,7 @@ export const HISTORY_LATEST_IS_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 2,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: true,
         pending: false,
@@ -195,6 +209,7 @@ export const HISTORY_LATEST_IS_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -213,6 +228,7 @@ export const HISTORY_LATEST_IS_NEW_WITH_PENDING: GetConfigurationVersionsQuery =
           id: "linux-metrics",
           version: 3,
         },
+        activeTypes: ["logs", "metrics", "traces"],
         status: {
           current: false,
           pending: false,
@@ -225,6 +241,7 @@ export const HISTORY_LATEST_IS_NEW_WITH_PENDING: GetConfigurationVersionsQuery =
           id: "linux-metrics",
           version: 2,
         },
+        activeTypes: ["logs", "metrics", "traces"],
         status: {
           current: false,
           pending: true,
@@ -237,6 +254,7 @@ export const HISTORY_LATEST_IS_NEW_WITH_PENDING: GetConfigurationVersionsQuery =
           id: "linux-metrics",
           version: 1,
         },
+        activeTypes: ["logs", "metrics", "traces"],
         status: {
           current: true,
           pending: false,
@@ -254,6 +272,7 @@ export const HISTORY_WITH_PENDING_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 4,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,
@@ -266,6 +285,7 @@ export const HISTORY_WITH_PENDING_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 3,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: true,
@@ -278,6 +298,7 @@ export const HISTORY_WITH_PENDING_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 2,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: true,
         pending: false,
@@ -290,6 +311,7 @@ export const HISTORY_WITH_PENDING_AND_NEW: GetConfigurationVersionsQuery = {
         id: "linux-metrics",
         version: 1,
       },
+      activeTypes: ["logs", "metrics", "traces"],
       status: {
         current: false,
         pending: false,

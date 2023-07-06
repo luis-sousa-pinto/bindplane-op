@@ -101,9 +101,7 @@ export const EditorSection: React.FC<EditorSectionProps> = ({
       <CardHeader
         title={isOtel ? "Configuration" : "Topology"}
         titleTypographyProps={{ fontWeight: 600 }}
-        classes={{
-          root: styles.padding,
-        }}
+        classes={{ root: styles.padding }}
       />
       <Divider />
       <CardContent classes={{ root: styles["card-content"] }}>

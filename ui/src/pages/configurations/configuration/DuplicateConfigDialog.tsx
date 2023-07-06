@@ -11,43 +11,58 @@ import { isFunction } from "lodash";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetConfigNamesQuery } from "../../../graphql/generated";
+import { useGetConfigNamesLazyQuery } from "../../../graphql/generated";
 import { validateNameField } from "../../../utils/forms/validate-name-field";
 import { copyConfig } from "../../../utils/rest/copy-config";
 
 interface Props extends DialogProps {
   currentConfigName: string;
+  onSuccess: () => void;
 }
 
 export const DuplicateConfigDialog: React.FC<Props> = ({
   currentConfigName,
+  onSuccess,
   ...dialogProps
 }) => {
   const [newName, setNewName] = useState("");
   const [touched, setTouched] = useState(false);
+  const [existingConfigNames, setExistingConfigNames] = useState<string[]>([]);
 
-  const { data, error } = useGetConfigNamesQuery();
-  const configNames = data?.configurations.configurations.map(
-    (c) => c.metadata.name
+  const [fetchConfigNames] = useGetConfigNamesLazyQuery({
+    fetchPolicy: "network-only",
+    onCompleted: (data) => {
+      setExistingConfigNames(
+        data.configurations.configurations.map((c) => c.metadata.name)
+      );
+    },
+    onError: (error) => {
+      console.error(error);
+      enqueueSnackbar("Error retrieving config names.", {
+        variant: "error",
+      });
+    },
+  });
+
+  const formError = validateNameField(
+    newName,
+    "configuration",
+    existingConfigNames
   );
-  const formError = validateNameField(newName, "configuration", configNames);
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!dialogProps.open) {
-      setTouched(false);
-      setNewName("");
-    }
-  }, [dialogProps.open]);
+  function clearState() {
+    setTouched(false);
+    setNewName("");
+  }
 
   useEffect(() => {
-    if (error != null) {
-      const message = "Error retrieving configuration names.";
-      enqueueSnackbar(message, { key: message, variant: "error" });
+    if (dialogProps.open) {
+      fetchConfigNames();
     }
-  }, [enqueueSnackbar, error]);
+  }, [dialogProps.open, fetchConfigNames]);
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,6 +84,7 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
         break;
       case "created":
         message = "Successfully duplicated!";
+        onSuccess();
         enqueueSnackbar(message, { key: message, variant: "success" });
         navigate(`/configurations/${newName}`);
         break;
@@ -85,18 +101,24 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
   }
 
   return (
-    <Dialog {...dialogProps}>
+    <Dialog
+      {...dialogProps}
+      TransitionProps={{
+        onExited: clearState,
+      }}
+    >
       <DialogContent>
         <Typography variant="h6" marginBottom={2}>
           Duplicate Configuration
         </Typography>
-        <Typography variant="body2">
+        <Typography>
           Clicking save will create a new Configuration with identical sources
           and destinations.
         </Typography>
         <form onSubmit={handleSave}>
           <TextField
             value={newName}
+            autoComplete="off"
             onChange={handleChange}
             size="small"
             label="Name"
@@ -109,9 +131,15 @@ export const DuplicateConfigDialog: React.FC<Props> = ({
             onBlur={() => setTouched(true)}
           />
 
-          <Stack direction="row" justifyContent="space-between">
+          <Stack
+            direction="row"
+            justifyContent="end"
+            spacing={1}
+            marginTop="8px"
+          >
             <Button
               color="secondary"
+              variant="outlined"
               onClick={() => {
                 isFunction(dialogProps.onClose) &&
                   dialogProps.onClose({}, "backdropClick");

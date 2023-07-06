@@ -1,0 +1,1 @@
+export { ConfigDetailsMenu } from "./ConfigDetailsMenu";

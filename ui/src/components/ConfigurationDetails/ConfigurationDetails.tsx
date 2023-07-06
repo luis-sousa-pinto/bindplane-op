@@ -22,6 +22,7 @@ import {
 } from "../../graphql/generated";
 import { asCurrentVersion, asLatestVersion } from "../../utils/version-helpers";
 import { useRefetchOnConfigurationChange } from "../../hooks/useRefetchOnConfigurationChanges";
+import { ConfigDetailsMenu } from "../ConfigDetailsMenu/ConfigDetailsMenu";
 
 import styles from "./configuration-details.module.scss";
 
@@ -56,7 +57,7 @@ gql`
 
 interface ConfigurationDetailsProps {
   configurationName: string;
-  disableDescriptionEdit?: boolean;
+  disableEdit?: boolean;
 }
 
 /**
@@ -68,7 +69,7 @@ interface ConfigurationDetailsProps {
  */
 export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
   configurationName,
-  disableDescriptionEdit,
+  disableEdit,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   function onError(error: ApolloError) {
@@ -135,7 +136,7 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
     {
       label: "Description",
       value: latestVersionData?.configuration?.metadata.description ?? "",
-      onChange: disableDescriptionEdit ? undefined : handleEditDescriptionSave,
+      onChange: disableEdit ? undefined : handleEditDescriptionSave,
       loading: !latestVersionData || editLoading || loadingLatest,
       flexGrow: 4,
     },
@@ -144,6 +145,11 @@ export const ConfigurationDetails: React.FC<ConfigurationDetailsProps> = ({
   return (
     <Card classes={{ root: styles.card }}>
       <CardHeader
+        action={
+          disableEdit ? null : (
+            <ConfigDetailsMenu configName={configurationName} />
+          )
+        }
         title={configurationName}
         titleTypographyProps={{ fontWeight: 600 }}
         classes={{ root: styles.padding }}
@@ -197,7 +203,11 @@ const Detail: React.FC<DetailProps> = ({
       <Stack direction="row" alignItems="center" height="24px" spacing={1}>
         <Typography fontWeight={600}>{label}</Typography>{" "}
         {onChange && !editing && (
-          <IconButton size="small" onClick={handleEdit}>
+          <IconButton
+            size="small"
+            onClick={handleEdit}
+            data-testid="edit-description-button"
+          >
             <PencilIcon width={14} />
           </IconButton>
         )}
