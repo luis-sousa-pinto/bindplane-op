@@ -615,7 +615,7 @@ func Configuration(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	raw, err := config.Render(ctx, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), bindplane.Store(), model.OssOtelHeaders)
+	raw, err := config.Render(ctx, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), bindplane.Store(), model.GetOssOtelHeaders())
 	if !OkResponse(c, err) {
 		return
 	}
@@ -1065,7 +1065,7 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 	// Extra validation for configs; We want to ensure that the configuration CAN be rendered before saving it.
 	for _, res := range resources {
 		if conf, ok := res.(*model.Configuration); ok {
-			_, err := conf.Render(c, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), memoryFirstStore, model.OssOtelHeaders)
+			_, err := conf.Render(c, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), memoryFirstStore, model.GetOssOtelHeaders())
 			if err != nil {
 				HandleErrorResponse(c, http.StatusBadRequest, fmt.Errorf("failed to render config (resourceID: %s): %w", res.ID(), err))
 				return

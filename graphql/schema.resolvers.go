@@ -123,7 +123,7 @@ func (r *configurationResolver) Graph(ctx context.Context, obj *model.Configurat
 
 // Rendered is the resolver for the rendered field.
 func (r *configurationResolver) Rendered(ctx context.Context, obj *model.Configuration) (*string, error) {
-	rendered, err := obj.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.OssOtelHeaders)
+	rendered, err := obj.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.GetOssOtelHeaders())
 	if err != nil {
 		return nil, err
 	}
