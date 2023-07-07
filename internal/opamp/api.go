@@ -595,7 +595,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 func (s *opampServer) updatedConfiguration(ctx context.Context, agent *model.Agent, agentConfiguration *observiq.AgentConfiguration, updates *protocol.AgentUpdates) (diff observiq.AgentConfiguration, err error) {
 	// Configuration => collector.yaml
 	if updates.Configuration != nil {
-		newCollectorYAML, err := updates.Configuration.Render(ctx, agent, s.manager.BindPlaneURL(), s.manager.BindPlaneInsecureSkipVerify(), s.manager.ResourceStore(), model.OssOtelHeaders)
+		newCollectorYAML, err := updates.Configuration.Render(ctx, agent, s.manager.BindPlaneURL(), s.manager.BindPlaneInsecureSkipVerify(), s.manager.ResourceStore(), model.GetOssOtelHeaders())
 		if err != nil {
 			return diff, err
 		}

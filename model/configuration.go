@@ -42,8 +42,10 @@ type configurationKind struct{}
 
 func (k *configurationKind) NewEmptyResource() *Configuration { return &Configuration{} }
 
-// OssOtelHeaders are the Headers used to add headers to the otel configuration
-var OssOtelHeaders = map[string]string{}
+// GetOssOtelHeaders are the Headers used to add headers to the otel configuration
+func GetOssOtelHeaders() map[string]string {
+	return map[string]string{}
+}
 
 // ConfigurationType indicates the kind of configuration. It is based on the presence of the Raw, Sources, and
 // Destinations fields.
@@ -1315,7 +1317,7 @@ func (c *Configuration) determinePipelineTypeUsage(ctx context.Context, store Re
 		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false, nil),
 		pipelineTypeUsage: p,
 	}
-	config, err := c.otelConfigurationWithRenderContext(ctx, rc, store, OssOtelHeaders)
+	config, err := c.otelConfigurationWithRenderContext(ctx, rc, store, GetOssOtelHeaders())
 	if err != nil {
 		// pipeline type usage won't be available if there is an error rendering the configuration, but that's ok.
 		return p

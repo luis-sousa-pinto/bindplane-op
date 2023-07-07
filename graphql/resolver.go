@@ -247,7 +247,7 @@ func (r *Resolver) UpdateProcessors(ctx context.Context, input model1.UpdateProc
 	}
 
 	// Ensure that the config can still be rendered with the added processors
-	_, err = config.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.OssOtelHeaders)
+	_, err = config.Render(ctx, nil, r.Bindplane.BindPlaneURL(), r.Bindplane.BindPlaneInsecureSkipVerify(), r.Bindplane.Store(), model.GetOssOtelHeaders())
 	if err != nil {
 		return nil, fmt.Errorf("failed  to render config: %w", err)
 	}

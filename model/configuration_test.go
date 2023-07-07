@@ -152,7 +152,7 @@ func TestEvalConfiguration(t *testing.T) {
 	store.destinationTypes.add(cabinType)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-sources.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -232,7 +232,7 @@ func TestEvalConfiguration2(t *testing.T) {
 	store.destinationTypes.add(googleCloudType)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-googlecloud.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -331,7 +331,7 @@ func TestEvalConfiguration3(t *testing.T) {
 	store.destinationTypes.add(otlpDestinationType)
 
 	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -384,7 +384,7 @@ func TestEvalConfiguration4(t *testing.T) {
 	store.destinationTypes.add(googleCloudType)
 
 	configuration := testResource[*Configuration](t, "configuration-postgresql-googlecloud.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -432,7 +432,7 @@ func TestEvalConfiguration5(t *testing.T) {
 	store.processorTypes.add(resourceAttributeTransposerType)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-processors.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -513,7 +513,7 @@ func TestEvalConfigurationDestinationProcessors(t *testing.T) {
 	store.processorTypes.add(resourceAttributeTransposerType)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-destination-processors.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -611,7 +611,7 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurements(t *testing.T) {
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-destination-processors.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -792,7 +792,7 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsMTLS(t *testing.T
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-destination-processors.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -981,7 +981,7 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsMTLSInsecureOverr
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-destination-processors.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -1164,7 +1164,7 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsTLSSkipVerify(t *
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-destination-processors.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -1346,7 +1346,7 @@ func TestEvalConfigurationMultiDestination(t *testing.T) {
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-multi-destination.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -1535,7 +1535,7 @@ func TestEvalConfigurationSameDestination(t *testing.T) {
 	}
 
 	configuration := testResource[*Configuration](t, "configuration-macos-same-destination.yaml")
-	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`receivers:
@@ -1771,7 +1771,7 @@ func TestEvalConfigurationFailsMissingResource(t *testing.T) {
 			// before rendering, delete resources that we reference
 			test.deleteResources()
 
-			_, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+			_, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 			require.Error(t, err)
 			require.EqualError(t, test.expectError, err.Error())
 
@@ -1804,7 +1804,7 @@ func TestConfigurationRender_DisabledDestination(t *testing.T) {
 	store.destinations.add(cabin)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-googlecloud-disabled.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	// We expect the full pipeline, omitting the disabled googlecloud destination
@@ -1889,7 +1889,7 @@ func TestConfigurationRender_DisabledSource(t *testing.T) {
 	store.destinations.add(googleCloud)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-source-disabled.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	// We expect the full pipeline, omitting the disabled macOS source
@@ -1946,7 +1946,7 @@ func TestConfigurationRender_DisabledProcessor(t *testing.T) {
 	store.processorTypes.add(resourceAttributeTransposerType)
 
 	configuration := testResource[*Configuration](t, "configuration-macos-processors-disabled.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -2016,7 +2016,7 @@ func TestEvalConfiguration_FileLogStorage(t *testing.T) {
 	store.destinations.add(googleCloud)
 
 	configuration := testResource[*Configuration](t, "configuration-filelog-storage.yaml")
-	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), nil, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -2109,7 +2109,7 @@ func TestEvalConfiguration_TestAgentMetricsTLS(t *testing.T) {
 
 	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
 
-	result, err := configuration.Render(context.TODO(), &agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), &agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
@@ -2266,7 +2266,7 @@ func TestEvalConfiguration_TestAgentMetricsTLSInsecure(t *testing.T) {
 
 	configuration := testResource[*Configuration](t, "configuration-otlp.yaml")
 
-	result, err := configuration.Render(context.TODO(), &agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, OssOtelHeaders)
+	result, err := configuration.Render(context.TODO(), &agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
