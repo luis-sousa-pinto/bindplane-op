@@ -1,15 +1,17 @@
 import { Box, Button, Paper, Popover, Typography } from "@mui/material";
 import React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { classes } from "../../utils/styles";
 
 import styles from "./code-block.module.scss";
 import mixins from "../../styles/mixins.module.scss";
 
 interface CodeBlockProps {
   value: string;
+  paperClass?: string;
 }
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ value }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ value, paperClass }) => {
   const CopyButton: React.FC = () => {
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
       null
@@ -46,7 +48,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ value }) => {
     );
   };
   return (
-    <Paper variant="outlined" classes={{ root: styles.paper }}>
+    <Paper
+      variant="outlined"
+      classes={{ root: classes([styles.paper, paperClass]) }}
+    >
       <Box component="div" className={styles["block-header"]}>
         <CopyButton />
       </Box>
