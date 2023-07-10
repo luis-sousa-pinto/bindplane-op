@@ -92,6 +92,9 @@ export const typePolicies: InMemoryCacheConfig["typePolicies"] = {
   Metadata: {
     keyFields: ["id", "name", "version"],
   },
+  ResourceConfiguration: {
+    keyFields: ["id", "name", "type"],
+  },
 };
 
 const APOLLO_CLIENT = new ApolloClient({
