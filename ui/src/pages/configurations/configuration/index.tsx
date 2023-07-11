@@ -51,6 +51,7 @@ gql`
           processors {
             id
             type
+            name
             displayName
             parameters {
               name
@@ -72,6 +73,7 @@ gql`
           processors {
             id
             type
+            name
             displayName
             parameters {
               name
