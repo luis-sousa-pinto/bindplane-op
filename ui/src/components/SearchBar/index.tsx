@@ -28,6 +28,7 @@ interface SearchBarProps {
   initialQuery?: string;
   filterOptions?: Suggestion[];
   onQueryChange: (v: string) => void;
+  placeholder?: string;
 }
 
 const SearchBarComponent: React.FC<SearchBarProps> = ({
@@ -36,6 +37,7 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
   suggestionQuery,
   initialQuery,
   onQueryChange,
+  placeholder,
 }) => {
   const popperElRef = useRef<HTMLSpanElement | null>(null);
   const [open, setOpen] = useState<boolean>(false);
@@ -76,6 +78,7 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
         popperElRef={popperElRef}
         {...params}
         onFilterClick={handleFilterClick}
+        placeholder={placeholder}
       />
     );
   }

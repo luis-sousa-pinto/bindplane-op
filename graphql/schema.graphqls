@@ -488,10 +488,9 @@ type Query {
   processorTypes: [ProcessorType!]!
   processorType(name: String!): ProcessorType
 
-  destinations: [Destination!]!
+  destinations(query: String, filterUnused: Boolean): [Destination!]!
   destination(name: String!): Destination
   destinationWithType(name: String!): DestinationWithType!
-  destinationsInConfigs: [Destination!]!
 
   destinationTypes: [DestinationType!]!
   destinationType(name: String!): DestinationType

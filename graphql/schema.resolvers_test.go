@@ -549,3 +549,216 @@ func Test_mutationResolver_EditConfigurationDescription(t *testing.T) {
 		})
 	}
 }
+
+func Test_queryResolver_Destination(t *testing.T) {
+	updates := sourceMocks.NewMockSource[store.BasicEventUpdates](t)
+	updates.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	destinations := []*model.Destination{
+		{
+			ResourceMeta: model.ResourceMeta{
+				Kind: model.KindDestination,
+				Metadata: model.Metadata{
+					Name: "dest_1",
+				},
+			},
+		},
+		{
+			ResourceMeta: model.ResourceMeta{
+				Kind: model.KindDestination,
+				Metadata: model.Metadata{
+					Name: "dest_2",
+				},
+			},
+		},
+	}
+
+	// setup defaultStore:
+	defaultStore := &mocks.MockStore{}
+	defaultStore.On("Updates", mock.Anything).Return(updates)
+
+	defaultStore.On("Destinations", mock.Anything).Return(
+		destinations, nil)
+	defaultStore.On("AgentsIDsMatchingConfiguration", mock.Anything, mock.Anything).Return([]string{"agent_id"}, nil)
+	for _, d := range destinations {
+		defaultStore.On("Destination", mock.Anything, d.Metadata.Name).Return(d, nil)
+	}
+	defaultStore.On("Configurations", mock.Anything).Return([]*model.Configuration{
+		{
+			ResourceMeta: model.ResourceMeta{
+				Kind: model.KindConfiguration,
+				Metadata: model.Metadata{
+					Name: "config_1",
+				},
+			},
+			Spec: model.ConfigurationSpec{
+				Destinations: []model.ResourceConfiguration{
+					{
+						Name: "dest_1",
+						ID:   "dest_1",
+					},
+				},
+			},
+		},
+	}, nil)
+	pointerToString := func(s string) *string {
+		return &s
+	}
+	pointerToBool := func(b bool) *bool {
+		return &b
+	}
+
+	type args struct {
+		query         *string
+		onlyInConfigs *bool
+	}
+	tests := []struct {
+		name           string
+		store          func(t *testing.T) any
+		args           args
+		want           []*model.Destination
+		wantErr        bool
+		wantErrMessage string
+	}{
+
+		{
+			"Destinations fails",
+			func(t *testing.T) any {
+				store := &mocks.MockStore{}
+				store.On("Updates", mock.Anything).Return(updates)
+				store.On("Destinations", mock.Anything).Return(nil, errors.New("error"))
+
+				return store
+			},
+			args{
+				query:         nil,
+				onlyInConfigs: nil,
+			},
+			nil,
+			true,
+			"queryResolver.Destinations failed to get Destinations from store\nerror",
+		},
+
+		{
+			"returns destinations",
+			func(t *testing.T) any {
+
+				return defaultStore
+			},
+			args{
+				query:         nil,
+				onlyInConfigs: nil,
+			},
+			destinations,
+			false,
+			"",
+		},
+		{
+			"returns destinations with query",
+			func(t *testing.T) any {
+
+				return defaultStore
+			},
+			args{
+				query:         pointerToString("dest"),
+				onlyInConfigs: nil,
+			},
+			destinations,
+			false,
+			"",
+		},
+		{
+			"returns no destinations with query",
+			func(t *testing.T) any {
+				return defaultStore
+			},
+			args{
+				query:         pointerToString("xxxxxxx"),
+				onlyInConfigs: nil,
+			},
+			[]*model.Destination{},
+			false,
+			"",
+		},
+		{
+			"returns one destination with query",
+			func(t *testing.T) any {
+				return defaultStore
+			},
+			args{
+				query:         pointerToString("dest_2"),
+				onlyInConfigs: nil,
+			},
+			[]*model.Destination{
+				{
+					ResourceMeta: model.ResourceMeta{
+						Kind: model.KindDestination,
+						Metadata: model.Metadata{
+							Name: "dest_2",
+						},
+					},
+				},
+			},
+			false,
+			"",
+		},
+		{
+			"handles weird characters in query",
+			func(t *testing.T) any {
+				return defaultStore
+			},
+			args{
+				query:         pointerToString(`3%'	2\\]\;" 	$|@>!#<^&*()_+{}[]:;?/.,~\ + "'`),
+				onlyInConfigs: nil,
+			},
+			[]*model.Destination{},
+			false,
+			"",
+		},
+		{
+			"returns destinations with onlyInConfigs",
+			func(t *testing.T) any {
+				return defaultStore
+			},
+			args{
+				query:         nil,
+				onlyInConfigs: pointerToBool(true),
+			},
+			[]*model.Destination{{
+				ResourceMeta: model.ResourceMeta{
+					Kind: model.KindDestination,
+					Metadata: model.Metadata{
+						Name: "dest_1",
+					},
+				},
+			}},
+			false,
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindplane := server.NewBindPlane(
+				&config.Config{},
+				zap.NewNop(),
+				tt.store(t).(store.Store),
+				mockVersions(),
+			)
+
+			resolver := NewResolver(bindplane)
+			r := &queryResolver{
+				Resolver: resolver,
+			}
+			got, err := r.Destinations(context.Background(), tt.args.query, tt.args.onlyInConfigs)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Equal(t, tt.wantErrMessage, err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.want, got)
+		})
+	}
+}

@@ -408,7 +408,6 @@ export type Query = {
   destinationTypes: Array<DestinationType>;
   destinationWithType: DestinationWithType;
   destinations: Array<Destination>;
-  destinationsInConfigs: Array<Destination>;
   overviewMetrics: GraphMetrics;
   overviewPage: OverviewPage;
   processor?: Maybe<Processor>;
@@ -475,6 +474,12 @@ export type QueryDestinationTypeArgs = {
 
 export type QueryDestinationWithTypeArgs = {
   name: Scalars['String']['input'];
+};
+
+
+export type QueryDestinationsArgs = {
+  filterUnused?: InputMaybe<Scalars['Boolean']['input']>;
+  query?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -929,7 +934,10 @@ export type GetConfigNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetConfigNamesQuery = { __typename?: 'Query', configurations: { __typename?: 'Configurations', configurations: Array<{ __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } }> } };
 
-export type DestinationsQueryVariables = Exact<{ [key: string]: never; }>;
+export type DestinationsQueryVariables = Exact<{
+  query?: InputMaybe<Scalars['String']['input']>;
+  filterUnused?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
 
 
 export type DestinationsQuery = { __typename?: 'Query', destinations: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
@@ -952,11 +960,6 @@ export type OverviewMetricsSubscriptionVariables = Exact<{
 
 
 export type OverviewMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', maxMetricValue: number, maxLogValue: number, maxTraceValue: number, metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
-
-export type DestinationsInConfigsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type DestinationsInConfigsQuery = { __typename?: 'Query', destinationsInConfigs: Array<{ __typename?: 'Destination', kind: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string } }> };
 
 export type DeployedConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2916,8 +2919,8 @@ export type GetConfigNamesQueryHookResult = ReturnType<typeof useGetConfigNamesQ
 export type GetConfigNamesLazyQueryHookResult = ReturnType<typeof useGetConfigNamesLazyQuery>;
 export type GetConfigNamesQueryResult = Apollo.QueryResult<GetConfigNamesQuery, GetConfigNamesQueryVariables>;
 export const DestinationsDocument = gql`
-    query Destinations {
-  destinations {
+    query Destinations($query: String, $filterUnused: Boolean) {
+  destinations(query: $query, filterUnused: $filterUnused) {
     kind
     metadata {
       id
@@ -2943,6 +2946,8 @@ export const DestinationsDocument = gql`
  * @example
  * const { data, loading, error } = useDestinationsQuery({
  *   variables: {
+ *      query: // value for 'query'
+ *      filterUnused: // value for 'filterUnused'
  *   },
  * });
  */
@@ -3070,48 +3075,6 @@ export function useOverviewMetricsSubscription(baseOptions: Apollo.SubscriptionH
       }
 export type OverviewMetricsSubscriptionHookResult = ReturnType<typeof useOverviewMetricsSubscription>;
 export type OverviewMetricsSubscriptionResult = Apollo.SubscriptionResult<OverviewMetricsSubscription>;
-export const DestinationsInConfigsDocument = gql`
-    query DestinationsInConfigs {
-  destinationsInConfigs {
-    kind
-    metadata {
-      id
-      version
-      name
-    }
-    spec {
-      type
-    }
-  }
-}
-    `;
-
-/**
- * __useDestinationsInConfigsQuery__
- *
- * To run a query within a React component, call `useDestinationsInConfigsQuery` and pass it any options that fit your needs.
- * When your component renders, `useDestinationsInConfigsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useDestinationsInConfigsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useDestinationsInConfigsQuery(baseOptions?: Apollo.QueryHookOptions<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>(DestinationsInConfigsDocument, options);
-      }
-export function useDestinationsInConfigsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>(DestinationsInConfigsDocument, options);
-        }
-export type DestinationsInConfigsQueryHookResult = ReturnType<typeof useDestinationsInConfigsQuery>;
-export type DestinationsInConfigsLazyQueryHookResult = ReturnType<typeof useDestinationsInConfigsLazyQuery>;
-export type DestinationsInConfigsQueryResult = Apollo.QueryResult<DestinationsInConfigsQuery, DestinationsInConfigsQueryVariables>;
 export const DeployedConfigsDocument = gql`
     query DeployedConfigs {
   configurations(onlyDeployedConfigurations: true) {

@@ -1,8 +1,10 @@
-import { gql, QueryHookOptions, QueryResult } from "@apollo/client";
+import { gql } from "@apollo/client";
 import { Typography, Button, Stack } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
+import { debounce } from "lodash";
+
 import { CardContainer } from "../../components/CardContainer";
 import { ConfirmDeleteResourceDialog } from "../../components/ConfirmDeleteResourceDialog";
 import { withNavBar } from "../../components/NavBar";
@@ -13,15 +15,7 @@ import {
 import { EditDestinationDialog } from "../../components/Tables/DestinationsTable/EditDestinationDialog";
 import { FailedDeleteDialog } from "../../components/Tables/DestinationsTable/FailedDeleteDialog";
 import { withRequireLogin } from "../../contexts/RequireLogin";
-import {
-  DestinationsInConfigsQuery,
-  DestinationsInConfigsQueryVariables,
-  DestinationsQuery,
-  DestinationsQueryVariables,
-  Exact,
-  Role,
-  useDestinationsQuery,
-} from "../../graphql/generated";
+import { Role, useDestinationsQuery } from "../../graphql/generated";
 import { ResourceStatus, ResourceKind } from "../../types/resources";
 import {
   deleteResources,
@@ -31,12 +25,13 @@ import { useRole } from "../../hooks/useRole";
 import { hasPermission } from "../../utils/has-permission";
 import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
 import { useLocation } from "react-router-dom";
+import { SearchBar } from "../../components/SearchBar";
 
 import mixins from "../../styles/mixins.module.scss";
 
 gql`
-  query Destinations {
-    destinations {
+  query Destinations($query: String, $filterUnused: Boolean) {
+    destinations(query: $query, filterUnused: $filterUnused) {
       kind
       metadata {
         id
@@ -59,35 +54,11 @@ export interface DestinationsPageContentProps {
   columnFields?: DestinationsTableField[];
   minHeight?: string;
   maxHeight?: string;
-
   editingDestination: string | null;
   setEditingDestination: (dest: string | null) => void;
-
   allowSelection: boolean;
-
-  // as function for the graphql query
-  destinationsQuery:
-    | ((
-        baseOptions?: QueryHookOptions<
-          DestinationsQuery,
-          DestinationsQueryVariables
-        >
-      ) => QueryResult<
-        DestinationsQuery,
-        Exact<{
-          [key: string]: never;
-        }>
-      >)
-    | ((
-        baseOptions?: QueryHookOptions<
-          DestinationsInConfigsQuery,
-          DestinationsInConfigsQueryVariables
-        >
-      ) => QueryResult<
-        DestinationsInConfigsQuery,
-        Exact<{ [key: string]: never }>
-      >);
 }
+
 export const DestinationsPageSubContent: React.FC<
   DestinationsPageContentProps
 > = ({
@@ -95,7 +66,6 @@ export const DestinationsPageSubContent: React.FC<
   selected,
   setSelected,
   columnFields,
-  destinationsQuery,
   minHeight,
   maxHeight,
   editingDestination,
@@ -110,9 +80,20 @@ export const DestinationsPageSubContent: React.FC<
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const { data, loading, refetch, error } = destinationsQuery({
+  const { data, refetch, error } = useDestinationsQuery({
+    variables: {
+      filterUnused: !destinationsPage,
+    },
     fetchPolicy: "cache-and-network",
+    refetchWritePolicy: "merge",
   });
+
+  const debouncedRefetch = debounce((query: string) => {
+    refetch({
+      filterUnused: !destinationsPage,
+      query: query,
+    });
+  }, 100);
 
   useEffect(() => {
     if (error != null) {
@@ -152,11 +133,6 @@ export const DestinationsPageSubContent: React.FC<
       enqueueSnackbar("Failed to delete destinations.", { variant: "error" });
     }
   }
-  const queryData = data ?? { destinations: [] };
-  const rows =
-    "destinations" in queryData
-      ? [...queryData.destinations]
-      : [...queryData.destinationsInConfigs];
 
   return (
     <>
@@ -181,24 +157,33 @@ export const DestinationsPageSubContent: React.FC<
           </RBACWrapper>
         )}
       </Stack>
-      <DestinationsDataGrid
-        loading={loading}
-        setSelectionModel={setSelected}
-        selectionModel={selected}
-        disableRowSelectionOnClick
-        checkboxSelection
-        onEditDestination={(name: string) => setEditingDestination(name)}
-        columnFields={columnFields}
-        minHeight={minHeight}
-        maxHeight={maxHeight}
-        rows={rows}
-        allowSelection={allowSelection}
-        classes={
-          !destinationsPage && rows.length < 100
-            ? { footerContainer: mixins["hidden"] }
-            : {}
-        }
-      />
+      <Stack spacing={1}>
+        <SearchBar
+          suggestions={[]}
+          onQueryChange={debouncedRefetch}
+          suggestionQuery={""}
+          initialQuery={""}
+          placeholder={"Filter by destination name"}
+        />
+        <DestinationsDataGrid
+          loading={data == null}
+          setSelectionModel={setSelected}
+          selectionModel={selected}
+          disableRowSelectionOnClick
+          checkboxSelection
+          onEditDestination={(name: string) => setEditingDestination(name)}
+          columnFields={columnFields}
+          minHeight={minHeight}
+          maxHeight={maxHeight}
+          rows={data?.destinations ?? []}
+          allowSelection={allowSelection}
+          classes={
+            !destinationsPage && (data?.destinations ?? []).length < 100
+              ? { footerContainer: mixins["hidden"] }
+              : {}
+          }
+        />
+      </Stack>
       <ConfirmDeleteResourceDialog
         open={open}
         onClose={() => setOpen(false)}
@@ -249,8 +234,8 @@ export const DestinationsPageContent: React.FC = () => {
         setSelected={setSelected}
         editingDestination={editingDestination}
         setEditingDestination={setEditingDestination}
-        destinationsQuery={useDestinationsQuery}
-        maxHeight="80vh"
+        maxHeight="70vh"
+        minHeight="70vh"
       />
     </CardContainer>
   );

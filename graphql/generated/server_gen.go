@@ -332,30 +332,29 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Agent                 func(childComplexity int, id string) int
-		AgentMetrics          func(childComplexity int, period string, ids []string) int
-		Agents                func(childComplexity int, selector *string, query *string) int
-		Configuration         func(childComplexity int, name string) int
-		ConfigurationHistory  func(childComplexity int, name string) int
-		ConfigurationMetrics  func(childComplexity int, period string, name *string) int
-		Configurations        func(childComplexity int, selector *string, query *string, onlyDeployedConfigurations *bool) int
-		Destination           func(childComplexity int, name string) int
-		DestinationType       func(childComplexity int, name string) int
-		DestinationTypes      func(childComplexity int) int
-		DestinationWithType   func(childComplexity int, name string) int
-		Destinations          func(childComplexity int) int
-		DestinationsInConfigs func(childComplexity int) int
-		OverviewMetrics       func(childComplexity int, period string, configIDs []string, destinationIDs []string) int
-		OverviewPage          func(childComplexity int, configIDs []string, destinationIDs []string, period string, telemetryType string) int
-		Processor             func(childComplexity int, name string) int
-		ProcessorType         func(childComplexity int, name string) int
-		ProcessorTypes        func(childComplexity int) int
-		Processors            func(childComplexity int) int
-		Snapshot              func(childComplexity int, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) int
-		Source                func(childComplexity int, name string) int
-		SourceType            func(childComplexity int, name string) int
-		SourceTypes           func(childComplexity int) int
-		Sources               func(childComplexity int) int
+		Agent                func(childComplexity int, id string) int
+		AgentMetrics         func(childComplexity int, period string, ids []string) int
+		Agents               func(childComplexity int, selector *string, query *string) int
+		Configuration        func(childComplexity int, name string) int
+		ConfigurationHistory func(childComplexity int, name string) int
+		ConfigurationMetrics func(childComplexity int, period string, name *string) int
+		Configurations       func(childComplexity int, selector *string, query *string, onlyDeployedConfigurations *bool) int
+		Destination          func(childComplexity int, name string) int
+		DestinationType      func(childComplexity int, name string) int
+		DestinationTypes     func(childComplexity int) int
+		DestinationWithType  func(childComplexity int, name string) int
+		Destinations         func(childComplexity int, query *string, filterUnused *bool) int
+		OverviewMetrics      func(childComplexity int, period string, configIDs []string, destinationIDs []string) int
+		OverviewPage         func(childComplexity int, configIDs []string, destinationIDs []string, period string, telemetryType string) int
+		Processor            func(childComplexity int, name string) int
+		ProcessorType        func(childComplexity int, name string) int
+		ProcessorTypes       func(childComplexity int) int
+		Processors           func(childComplexity int) int
+		Snapshot             func(childComplexity int, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) int
+		Source               func(childComplexity int, name string) int
+		SourceType           func(childComplexity int, name string) int
+		SourceTypes          func(childComplexity int) int
+		Sources              func(childComplexity int) int
 	}
 
 	RelevantIfCondition struct {
@@ -510,10 +509,9 @@ type QueryResolver interface {
 	Processor(ctx context.Context, name string) (*model1.Processor, error)
 	ProcessorTypes(ctx context.Context) ([]*model1.ProcessorType, error)
 	ProcessorType(ctx context.Context, name string) (*model1.ProcessorType, error)
-	Destinations(ctx context.Context) ([]*model1.Destination, error)
+	Destinations(ctx context.Context, query *string, filterUnused *bool) ([]*model1.Destination, error)
 	Destination(ctx context.Context, name string) (*model1.Destination, error)
 	DestinationWithType(ctx context.Context, name string) (*model.DestinationWithType, error)
-	DestinationsInConfigs(ctx context.Context) ([]*model1.Destination, error)
 	DestinationTypes(ctx context.Context) ([]*model1.DestinationType, error)
 	DestinationType(ctx context.Context, name string) (*model1.DestinationType, error)
 	Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model.Snapshot, error)
@@ -1845,14 +1843,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Destinations(childComplexity), true
-
-	case "Query.destinationsInConfigs":
-		if e.complexity.Query.DestinationsInConfigs == nil {
-			break
+		args, err := ec.field_Query_destinations_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
 		}
 
-		return e.complexity.Query.DestinationsInConfigs(childComplexity), true
+		return e.complexity.Query.Destinations(childComplexity, args["query"].(*string), args["filterUnused"].(*bool)), true
 
 	case "Query.overviewMetrics":
 		if e.complexity.Query.OverviewMetrics == nil {
@@ -2929,10 +2925,9 @@ type Query {
   processorTypes: [ProcessorType!]!
   processorType(name: String!): ProcessorType
 
-  destinations: [Destination!]!
+  destinations(query: String, filterUnused: Boolean): [Destination!]!
   destination(name: String!): Destination
   destinationWithType(name: String!): DestinationWithType!
-  destinationsInConfigs: [Destination!]!
 
   destinationTypes: [DestinationType!]!
   destinationType(name: String!): DestinationType
@@ -3307,6 +3302,30 @@ func (ec *executionContext) field_Query_destination_args(ctx context.Context, ra
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_destinations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
+	var arg1 *bool
+	if tmp, ok := rawArgs["filterUnused"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filterUnused"))
+		arg1, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filterUnused"] = arg1
 	return args, nil
 }
 
@@ -12104,7 +12123,7 @@ func (ec *executionContext) _Query_destinations(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Destinations(rctx)
+		return ec.resolvers.Query().Destinations(rctx, fc.Args["query"].(*string), fc.Args["filterUnused"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12140,6 +12159,17 @@ func (ec *executionContext) fieldContext_Query_destinations(ctx context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_destinations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -12263,60 +12293,6 @@ func (ec *executionContext) fieldContext_Query_destinationWithType(ctx context.C
 	if fc.Args, err = ec.field_Query_destinationWithType_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_destinationsInConfigs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_destinationsInConfigs(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().DestinationsInConfigs(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model1.Destination)
-	fc.Result = res
-	return ec.marshalNDestination2ᚕᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐDestinationᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_destinationsInConfigs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "apiVersion":
-				return ec.fieldContext_Destination_apiVersion(ctx, field)
-			case "kind":
-				return ec.fieldContext_Destination_kind(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Destination_metadata(ctx, field)
-			case "spec":
-				return ec.fieldContext_Destination_spec(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Destination", field.Name)
-		},
 	}
 	return fc, nil
 }
@@ -19640,29 +19616,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_destinationWithType(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "destinationsInConfigs":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_destinationsInConfigs(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

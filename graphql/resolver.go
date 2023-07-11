@@ -424,11 +424,6 @@ func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model
 	}, nil
 }
 
-// DestinationsInConfigs is the resolver for the destinationsInConfigs field.
-func (r *Resolver) DestinationsInConfigs(ctx context.Context) ([]*model.Destination, error) {
-	return destinationsInConfigs(ctx, r.Bindplane.Store())
-}
-
 // Snapshot returns a snapshot of the agent with the specified id and pipeline type
 func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model1.Snapshot, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
@@ -684,13 +679,29 @@ func configIsDeployed(ctx context.Context, bindplane exposedserver.BindPlane, co
 	return true
 }
 
-func destinationsInConfigs(ctx context.Context, store store.Store) ([]*model.Destination, error) {
+func matchSubsequence(query string, target string) bool {
+	query = strings.ToLower(query)
+	target = strings.ToLower(target)
+	j := 0
+	for i := 0; i < len(target) && j < len(query); i++ {
+		if query[j] == target[i] {
+			j++
+		}
+	}
+	return j == len(query)
+}
+
+func destinationsInConfigs(ctx context.Context, store store.Store, query *string) ([]*model.Destination, error) {
 	// returns only destinations that are in non-raw (managed?) configs and deployed to agents
 	configs, err := store.Configurations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	if query == nil {
+		emptyQuery := ""
+		query = &emptyQuery
+	}
 	// create a map from destination name to destination
 	destinationsMap := make(map[string]string)
 	destinations := make([]*model.Destination, 0, len(destinationsMap))
@@ -713,11 +724,14 @@ func destinationsInConfigs(ctx context.Context, store store.Store) ([]*model.Des
 						return destinations, err
 					}
 					destinationsMap[destination.Name] = "Remember that we've already seen this destination!"
-					destinations = append(destinations, dest)
+					if matchSubsequence(*query, destination.Name) {
+						destinations = append(destinations, dest)
+					}
 				}
 			}
 		}
 	}
+
 	return destinations, nil
 }
 
@@ -789,7 +803,7 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		}
 	}
 
-	destinations, err := destinationsInConfigs(ctx, bindplane.Store())
+	destinations, err := destinationsInConfigs(ctx, bindplane.Store(), nil)
 	if err != nil {
 		return nil, errors.Join(errors.New("Failed to get destinations in OverviewMetrics"), err)
 	}

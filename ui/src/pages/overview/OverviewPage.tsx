@@ -5,8 +5,8 @@ import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable"
 import { withRequireLogin } from "../../contexts/RequireLogin";
 import {
   useOverviewPageMetricsSubscription,
-  useDestinationsInConfigsQuery,
   useDeployedConfigsQuery,
+  useDestinationsQuery,
 } from "../../graphql/generated";
 import { OverviewGraph } from "./OverviewGraph";
 import { OverviewPageProvider, useOverviewPage } from "./OverviewPageContext";
@@ -27,19 +27,6 @@ import mixins from "../../styles/mixins.module.scss";
 import styles from "./overview-page.module.scss";
 
 gql`
-  query DestinationsInConfigs {
-    destinationsInConfigs {
-      kind
-      metadata {
-        id
-        version
-        name
-      }
-      spec {
-        type
-      }
-    }
-  }
   query DeployedConfigs {
     configurations(onlyDeployedConfigurations: true) {
       configurations {
@@ -90,7 +77,9 @@ const OverviewPageSubContent: React.FC = () => {
   } = useOverviewPage();
 
   const { data: deployedConfigs } = useDeployedConfigsQuery();
-  const { data: destinationsInConfigs } = useDestinationsInConfigsQuery();
+  const { data: destinationsInConfigs } = useDestinationsQuery({
+    variables: { filterUnused: true },
+  });
   // we need these metrics to select the top three configs on load
   const { data: metrics } = useOverviewPageMetricsSubscription({
     variables: {
@@ -98,7 +87,7 @@ const OverviewPageSubContent: React.FC = () => {
       configIDs: deployedConfigs?.configurations?.configurations.map(
         (c) => c.metadata.name
       ),
-      destinationIDs: destinationsInConfigs?.destinationsInConfigs.map(
+      destinationIDs: destinationsInConfigs?.destinations.map(
         (d) => d.metadata.name
       ),
     },
@@ -190,8 +179,8 @@ const OverviewPageSubContent: React.FC = () => {
             enableNew={false}
             columns={[ConfigurationsTableField.NAME]}
             overviewPage
-            minHeight="calc(50vh - 200px)"
-            maxHeight="calc(50vh - 200px)"
+            minHeight="calc(50vh - 180px)"
+            maxHeight="calc(50vh - 180px)"
           />
         </Paper>
 
@@ -213,12 +202,11 @@ const OverviewPageSubContent: React.FC = () => {
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
             destinationsPage={false}
-            destinationsQuery={useDestinationsInConfigsQuery}
             columnFields={[DestinationsTableField.ICON_AND_NAME]}
             editingDestination={editingDestination}
             setEditingDestination={setEditingDestination}
-            minHeight="calc(50vh - 130px)"
-            maxHeight="calc(50vh - 130px)"
+            minHeight="calc(50vh - 180px)"
+            maxHeight="calc(50vh - 180px)"
           />
         </Paper>
       </Stack>
