@@ -43,7 +43,6 @@ import (
 	"github.com/observiq/bindplane-op/client"
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/config"
-	"github.com/observiq/bindplane-op/config/legacy"
 	"github.com/observiq/bindplane-op/logging"
 	"github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/store"
@@ -62,10 +61,6 @@ type Factory struct {
 
 // LoadConfig loads the configuration from the given path.
 func (f *Factory) LoadConfig(_ context.Context, path string) error {
-	if err := legacy.ConvertFile(path); err != nil {
-		return fmt.Errorf("failed to convert legacy configuration file: %w", err)
-	}
-
 	viper.SetConfigFile(path)
 	if err := viper.ReadInConfig(); err != nil {
 		return fmt.Errorf("error reading in configuration file: %s, %w", path, err)
