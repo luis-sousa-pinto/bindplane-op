@@ -48,8 +48,7 @@ spec:
       validValues:
         - basic
         - sasl
-        # TODO: Should be tested before implemented
-        #- tls
+        - tls
         - kerberos
       default: basic
       advancedConfig: true
@@ -136,6 +135,70 @@ spec:
         - name: auth_type
           operator: equals
           value: sasl
+
+    - name: tls_insecure
+      label: Skip TLS Certificate Verification
+      description: Enable to skip TLS certificate verification.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+
+    - name: tls_ca_file
+      label: Certificate Authority File
+      description: Certificate authority used to validate TLS certificates.
+      type: string
+      required: false
+      advancedConfig: true
+      default: ""
+      relevantIf:
+        - name: tls_insecure
+          operator: equals
+          value: false
+        - name: auth_type
+          operator: equals
+          value: tls
+
+    - name: tls_cert_file
+      label: Mutual TLS Client Certificate File
+      description: A TLS certificate used for client authentication.
+      type: string
+      required: true
+      advancedConfig: true
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+
+    - name: tls_key_file
+      label: Mutual TLS Client Private Key File
+      description: A TLS private key used for client authentication.
+      type: string
+      required: true
+      advancedConfig: true
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+
+    - name: tls_server_name_override
+      label: Server Name Override
+      description: Indicates the name of the server requested by the client in order to support virtual hosting.
+      type: string
+      required: false
+      advancedConfig: true
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
 
     - name: kerberos_service_name
       label: Service Name
@@ -458,6 +521,15 @@ spec:
               username: "{{ .sasl_username }}"
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
+            {{ else if eq .auth_type "tls" }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
@@ -505,6 +577,15 @@ spec:
               username: "{{ .sasl_username }}"
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
+            {{ else if eq .auth_type "tls" }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
@@ -552,6 +633,15 @@ spec:
               username: "{{ .sasl_username }}"
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
+            {{ else if eq .auth_type "tls" }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}              
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
