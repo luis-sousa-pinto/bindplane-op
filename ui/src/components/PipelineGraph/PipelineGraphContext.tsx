@@ -25,8 +25,8 @@ export interface PipelineGraphContextValue {
 
   addSourceOpen: boolean;
   addDestinationOpen: boolean;
-  setAddSourceOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setAddDestinationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAddSourceOpen: (value: boolean) => void;
+  setAddDestinationOpen: (value: boolean) => void;
 }
 export interface PipelineGraphProviderProps {
   configuration: MinimumRequiredConfig;
@@ -35,8 +35,8 @@ export interface PipelineGraphProviderProps {
   readOnly?: boolean;
   addSourceOpen: boolean;
   addDestinationOpen: boolean;
-  setAddSourceOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setAddDestinationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAddSourceOpen: (value: boolean) => void;
+  setAddDestinationOpen: (value: boolean) => void;
   maxValues: MaxValueMap;
 }
 

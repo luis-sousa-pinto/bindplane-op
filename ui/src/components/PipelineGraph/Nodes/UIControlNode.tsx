@@ -10,7 +10,7 @@ function UIControlNode({
   data,
 }: {
   data: {
-    onClick: () => void;
+    onClick: (value: boolean) => void;
     buttonText: string;
     handlePosition: Position;
     handleType: "source" | "target";
@@ -21,7 +21,7 @@ function UIControlNode({
     <>
       {data.isButton ? (
         <Button
-          onClick={data.onClick}
+          onClick={() => data.onClick(true)}
           variant="contained"
           startIcon={<PlusCircleIcon />}
           classes={{ root: mixins["float-right"] }}
@@ -31,7 +31,7 @@ function UIControlNode({
       ) : (
         <>
           <AddResourceCard
-            onClick={data.onClick}
+            onClick={() => data.onClick(true)}
             buttonText={data.buttonText}
           />
           <Handle type={data.handleType} position={data.handlePosition} />
