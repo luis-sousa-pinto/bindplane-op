@@ -28,7 +28,7 @@ Default.parameters = {
 export const NoEditDescription = Template.bind({});
 NoEditDescription.args = {
   configurationName: "linux-metrics",
-  disableDescriptionEdit: true,
+  disableEdit: true,
 };
 NoEditDescription.parameters = {
   apolloClient: {

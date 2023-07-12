@@ -45,6 +45,7 @@ interface ConfigurationsDataGridProps
   configurationMetrics?: ConfigurationTableMetricsSubscription;
   columnFields?: ConfigurationsTableField[];
   minHeight?: string;
+  maxHeight?: string;
   selectionModel?: GridRowSelectionModel;
   allowSelection: boolean;
 }
@@ -59,6 +60,7 @@ const ConfigurationsDataGridComponent: React.FC<
   columnFields,
   density = "standard",
   minHeight,
+  maxHeight,
   selectionModel,
   allowSelection,
   ...dataGridProps
@@ -132,7 +134,7 @@ const ConfigurationsDataGridComponent: React.FC<
           </Stack>
         ),
       }}
-      style={{ minHeight }}
+      style={{ minHeight, maxHeight }}
       disableRowSelectionOnClick
       getRowId={(row) => row.metadata.name}
       columns={columns}

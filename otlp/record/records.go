@@ -215,7 +215,12 @@ func getSummaryPointValue(point pmetric.SummaryDataPoint) map[string]any {
 	value := make(map[string]any)
 	for i := 0; i < point.QuantileValues().Len(); i++ {
 		q := point.QuantileValues().At(i)
-		value[fmt.Sprintf("%v", q.Quantile())] = q.Value()
+		qVal := q.Value()
+		// Don't record values that have illegal float values as they won't marshal to json
+		if math.IsNaN(qVal) || math.IsInf(qVal, 0) {
+			continue
+		}
+		value[fmt.Sprintf("%v", q.Quantile())] = qVal
 	}
 	return value
 }

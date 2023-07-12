@@ -13,29 +13,44 @@ import {
   EditConfigDescriptionDocument,
   GetLatestConfigDescriptionDocument,
 } from "../../graphql/generated";
+import { SnackbarProvider } from "notistack";
+import { MemoryRouter } from "react-router-dom";
+
+const Wrapper: React.FC<{ mocks: MockedResponse[] }> = ({
+  children,
+  mocks,
+}) => {
+  return (
+    <SnackbarProvider>
+      <MemoryRouter>
+        <MockedProvider mocks={mocks}>{children}</MockedProvider>
+      </MemoryRouter>
+    </SnackbarProvider>
+  );
+};
 
 describe("ConfigurationDetails component", () => {
   const configurationName = "linux-metrics";
   it("renders", () => {
     render(
-      <MockedProvider mocks={DETAILS_MOCKS}>
+      <Wrapper mocks={DETAILS_MOCKS}>
         <ConfigurationDetails configurationName={configurationName} />
-      </MockedProvider>
+      </Wrapper>
     );
   });
   it("shows latest description", async () => {
     render(
-      <MockedProvider mocks={DETAILS_MOCKS}>
+      <Wrapper mocks={DETAILS_MOCKS}>
         <ConfigurationDetails configurationName={configurationName} />
-      </MockedProvider>
+      </Wrapper>
     );
     await screen.findByText(LATEST_DESCRIPTION_BODY);
   });
   it("shows current version", async () => {
     render(
-      <MockedProvider mocks={DETAILS_MOCKS}>
+      <Wrapper mocks={DETAILS_MOCKS}>
         <ConfigurationDetails configurationName={configurationName} />
-      </MockedProvider>
+      </Wrapper>
     );
     await screen.findByText(`${CURRENT_VERSION}`);
     expect(screen.queryByText(`${LATEST_VERSION}`)).not.toBeInTheDocument();
@@ -84,7 +99,7 @@ describe("ConfigurationDetails component", () => {
     };
 
     render(
-      <MockedProvider
+      <Wrapper
         mocks={[
           ...DETAILS_MOCKS,
           editDescriptionMutationMock,
@@ -92,11 +107,11 @@ describe("ConfigurationDetails component", () => {
         ]}
       >
         <ConfigurationDetails configurationName={configurationName} />
-      </MockedProvider>
+      </Wrapper>
     );
 
     await screen.findByText(LATEST_DESCRIPTION_BODY);
-    const editButton = screen.getByRole("button");
+    const editButton = screen.getByTestId("edit-description-button");
     editButton.click();
 
     const textbox = await screen.findByRole("textbox");
@@ -110,16 +125,20 @@ describe("ConfigurationDetails component", () => {
     });
   });
 
-  it("hides the edit button when disableDescriptionEdit is true", async () => {
+  it("hides buttons when disableEdit is true", async () => {
     render(
-      <MockedProvider mocks={DETAILS_MOCKS}>
+      <Wrapper mocks={DETAILS_MOCKS}>
         <ConfigurationDetails
           configurationName={configurationName}
-          disableDescriptionEdit={true}
+          disableEdit={true}
         />
-      </MockedProvider>
+      </Wrapper>
     );
     await screen.findByText(LATEST_DESCRIPTION_BODY);
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("edit-description-button")
+    ).not.toBeInTheDocument();
+
+    expect(screen.queryByTestId("config-menu-button")).not.toBeInTheDocument();
   });
 });

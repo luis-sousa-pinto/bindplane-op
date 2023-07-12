@@ -21,8 +21,16 @@ export const SearchInput: React.FC<
     // The suggestions to display in the filter drop down.
     filterOptions?: Suggestion[];
     onFilterClick: (query: string) => void;
+    placeholder?: string;
   }
-> = ({ inputValue, popperElRef, onFilterClick, filterOptions, ...params }) => {
+> = ({
+  inputValue,
+  popperElRef,
+  onFilterClick,
+  filterOptions,
+  placeholder,
+  ...params
+}) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -71,9 +79,9 @@ export const SearchInput: React.FC<
         </>
       )}
       <InputBase
-        aria-label="Filter by field or label"
+        aria-label={placeholder ?? "Filter by field or label"}
         classes={{ root: mixins["ml-2"] }}
-        placeholder="Filter by field or label"
+        placeholder={placeholder ?? "Filter by field or label"}
         style={{
           width: getInputWidth(inputValue),
           fontFamily: "monospace",

@@ -124,7 +124,7 @@ func TestConvertMetrics(t *testing.T) {
 			},
 		},
 		{
-			name: "NaN and Inf filtering",
+			name: "Gauge NaN and Inf filtering",
 			input: func() pmetric.Metrics {
 				metrics := pmetric.NewMetrics()
 				rm := metrics.ResourceMetrics().AppendEmpty()
@@ -171,6 +171,65 @@ func TestConvertMetrics(t *testing.T) {
 					},
 					Resource: map[string]any{
 						"resource": "one",
+					},
+				},
+			},
+		},
+		{
+			name: "Summary NaN and Inf filtering",
+			input: func() pmetric.Metrics {
+				metrics := pmetric.NewMetrics()
+				rm := metrics.ResourceMetrics().AppendEmpty()
+				rm.Resource().Attributes().PutStr("resource", "nineteen")
+				sm := rm.ScopeMetrics().AppendEmpty()
+
+				summaryMetric := sm.Metrics().AppendEmpty()
+				summaryMetric.SetUnit("requests")
+				summaryMetric.SetName("summary metric")
+				summary := summaryMetric.SetEmptySummary()
+				summaryDP := summary.DataPoints().AppendEmpty()
+				summaryDP.SetCount(3)
+				summaryDP.SetTimestamp(pcommon.NewTimestampFromTime(testTimestamp))
+				summaryDP.SetStartTimestamp(pcommon.NewTimestampFromTime(startTestTimestamp))
+				summaryDP.Attributes().PutDouble("double", 1.2)
+
+				// .5 quantile is NaN
+				summaryDPQuantile := summaryDP.QuantileValues().AppendEmpty()
+				summaryDPQuantile.SetQuantile(0.5)
+				summaryDPQuantile.SetValue(math.NaN())
+
+				// .75 quantile is Inf
+				summaryDPQuantile = summaryDP.QuantileValues().AppendEmpty()
+				summaryDPQuantile.SetQuantile(0.75)
+				summaryDPQuantile.SetValue(math.Inf(1))
+
+				// .9 quantile is -Inf
+				summaryDPQuantile = summaryDP.QuantileValues().AppendEmpty()
+				summaryDPQuantile.SetQuantile(0.9)
+				summaryDPQuantile.SetValue(math.Inf(-1))
+
+				// .95 quantile is 19.19
+				summaryDPQuantile = summaryDP.QuantileValues().AppendEmpty()
+				summaryDPQuantile.SetQuantile(0.95)
+				summaryDPQuantile.SetValue(19.19)
+
+				return metrics
+			},
+			expected: []*Metric{
+				{
+					Name:           "summary metric",
+					Timestamp:      testTimestamp,
+					StartTimestamp: startTestTimestamp,
+					Value: map[string]any{
+						"0.95": float64(19.19),
+					},
+					Unit: "requests",
+					Type: pmetric.MetricTypeSummary.String(),
+					Attributes: map[string]any{
+						"double": float64(1.2),
+					},
+					Resource: map[string]any{
+						"resource": "nineteen",
 					},
 				},
 			},

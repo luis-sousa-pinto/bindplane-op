@@ -284,8 +284,25 @@ func (r *queryResolver) ProcessorType(ctx context.Context, name string) (*model.
 }
 
 // Destinations is the resolver for the destinations field.
-func (r *queryResolver) Destinations(ctx context.Context) ([]*model.Destination, error) {
-	return r.Bindplane.Store().Destinations(ctx)
+func (r *queryResolver) Destinations(ctx context.Context, query *string, filterUnused *bool) ([]*model.Destination, error) {
+	if filterUnused != nil && *filterUnused {
+		return destinationsInConfigs(ctx, r.Bindplane.Store(), query)
+	}
+
+	dests, err := r.Bindplane.Store().Destinations(ctx)
+	if err != nil {
+		return dests, errors.Join(errors.New("queryResolver.Destinations failed to get Destinations from store"), err)
+	}
+	if query == nil {
+		return dests, nil
+	}
+	destinations := []*model.Destination{}
+	for _, dest := range dests {
+		if matchSubsequence(*query, dest.Name()) {
+			destinations = append(destinations, dest)
+		}
+	}
+	return destinations, nil
 }
 
 // Destination is the resolver for the destination field.
@@ -296,11 +313,6 @@ func (r *queryResolver) Destination(ctx context.Context, name string) (*model.De
 // DestinationWithType is the resolver for the destinationWithType field.
 func (r *queryResolver) DestinationWithType(ctx context.Context, name string) (*model1.DestinationWithType, error) {
 	return r.Resolver.DestinationWithType(ctx, name)
-}
-
-// DestinationsInConfigs is the resolver for the destinationsInConfigs field.
-func (r *queryResolver) DestinationsInConfigs(ctx context.Context) ([]*model.Destination, error) {
-	return r.Resolver.DestinationsInConfigs(ctx)
 }
 
 // DestinationTypes is the resolver for the destinationTypes field.

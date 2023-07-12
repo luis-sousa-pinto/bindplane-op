@@ -5,10 +5,12 @@ import styles from "./cells.module.scss";
 
 interface ResourceTypeCellProps {
   type: string;
+  icon?: boolean;
 }
 
 export const DestinationTypeCell: React.FC<ResourceTypeCellProps> = ({
   type,
+  icon,
 }) => {
   const { data } = useGetDestinationTypeDisplayInfoQuery({
     variables: { name: type },
@@ -21,7 +23,7 @@ export const DestinationTypeCell: React.FC<ResourceTypeCellProps> = ({
           backgroundImage: `url(${data.destinationType?.metadata.icon ?? ""})`,
         }}
       />
-      {data.destinationType?.metadata.displayName}
+      {!icon && data.destinationType?.metadata.displayName}
     </div>
   ) : (
     <div>{type}</div>

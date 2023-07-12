@@ -1,12 +1,12 @@
-import { Box, Button, Card, Grid, Tooltip } from "@mui/material";
+import { Button, Card, Paper, Stack, Tooltip } from "@mui/material";
 import { ReactFlowProvider } from "reactflow";
 import { withNavBar } from "../../components/NavBar";
 import { ConfigurationsTable } from "../../components/Tables/ConfigurationTable";
 import { withRequireLogin } from "../../contexts/RequireLogin";
 import {
   useOverviewPageMetricsSubscription,
-  useDestinationsInConfigsQuery,
   useDeployedConfigsQuery,
+  useDestinationsQuery,
 } from "../../graphql/generated";
 import { OverviewGraph } from "./OverviewGraph";
 import { OverviewPageProvider, useOverviewPage } from "./OverviewPageContext";
@@ -21,24 +21,12 @@ import { DestinationsTableField } from "../../components/Tables/DestinationsTabl
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageSubContent } from "../destinations/DestinationsPage";
 import { useCallback, useEffect } from "react";
-import colors from "../../styles/colors";
 
+import colors from "../../styles/colors";
 import mixins from "../../styles/mixins.module.scss";
+import styles from "./overview-page.module.scss";
 
 gql`
-  query DestinationsInConfigs {
-    destinationsInConfigs {
-      kind
-      metadata {
-        id
-        version
-        name
-      }
-      spec {
-        type
-      }
-    }
-  }
   query DeployedConfigs {
     configurations(onlyDeployedConfigurations: true) {
       configurations {
@@ -89,7 +77,9 @@ const OverviewPageSubContent: React.FC = () => {
   } = useOverviewPage();
 
   const { data: deployedConfigs } = useDeployedConfigsQuery();
-  const { data: destinationsInConfigs } = useDestinationsInConfigsQuery();
+  const { data: destinationsInConfigs } = useDestinationsQuery({
+    variables: { filterUnused: true },
+  });
   // we need these metrics to select the top three configs on load
   const { data: metrics } = useOverviewPageMetricsSubscription({
     variables: {
@@ -97,7 +87,7 @@ const OverviewPageSubContent: React.FC = () => {
       configIDs: deployedConfigs?.configurations?.configurations.map(
         (c) => c.metadata.name
       ),
-      destinationIDs: destinationsInConfigs?.destinationsInConfigs.map(
+      destinationIDs: destinationsInConfigs?.destinations.map(
         (d) => d.metadata.name
       ),
     },
@@ -166,13 +156,9 @@ const OverviewPageSubContent: React.FC = () => {
     selectedTelemetry,
   ]);
   return (
-    <Grid container spacing={3} alignItems="center" wrap={"nowrap"}>
-      <Grid item md={"auto"} lg={"auto"}>
-        <Box
-          sx={{
-            width: "370px",
-          }}
-        >
+    <Stack direction={"row"} spacing={2} height={"calc(100vh - 120px)"}>
+      <Stack spacing={1} minWidth="400px">
+        <Paper className={styles["overview-table-paper"]}>
           <Tooltip
             enterDelay={1000}
             title="Limit the displayed configurations to the three receiving the most data of the selected telemetry type over the selected period."
@@ -185,45 +171,20 @@ const OverviewPageSubContent: React.FC = () => {
               Top Three
             </Button>
           </Tooltip>
-
           <ConfigurationsTable
             allowSelection
             selected={selectedConfigs}
             setSelected={setSelectedConfigs}
             enableDelete={false}
             enableNew={false}
-            minHeight="calc(100vh - 231px)"
             columns={[ConfigurationsTableField.NAME]}
             overviewPage
+            minHeight="calc(50vh - 180px)"
+            maxHeight="calc(50vh - 180px)"
           />
-        </Box>
-      </Grid>
-      <Grid item md={true} lg={true}>
-        <Card
-          style={{
-            height: "calc(100vh - 120px)",
-            width: "100%",
-            backgroundColor: colors.backgroundGrey,
-          }}
-        >
-          <MeasurementControlBar
-            telemetry={selectedTelemetry || DEFAULT_TELEMETRY_TYPE}
-            onTelemetryTypeChange={setSelectedTelemetry}
-            period={selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD}
-            onPeriodChange={setPeriod}
-          />
-          <ReactFlowProvider>
-            <OverviewGraph />
-          </ReactFlowProvider>
-        </Card>
-      </Grid>
+        </Paper>
 
-      <Grid item md={"auto"} lg={"auto"}>
-        <Box
-          sx={{
-            width: "360px",
-          }}
-        >
+        <Paper className={styles["overview-table-paper"]}>
           <Tooltip
             enterDelay={1000}
             title="Limit the displayed destinations to the three receiving the most data of the selected telemetry type over the selected period."
@@ -236,21 +197,38 @@ const OverviewPageSubContent: React.FC = () => {
               Top Three
             </Button>
           </Tooltip>
-
           <DestinationsPageSubContent
             allowSelection
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
             destinationsPage={false}
-            destinationsQuery={useDestinationsInConfigsQuery}
-            columnFields={[DestinationsTableField.NAME]}
-            minHeight="calc(100vh - 181px)"
+            columnFields={[DestinationsTableField.ICON_AND_NAME]}
             editingDestination={editingDestination}
             setEditingDestination={setEditingDestination}
+            minHeight="calc(50vh - 180px)"
+            maxHeight="calc(50vh - 180px)"
           />
-        </Box>
-      </Grid>
-    </Grid>
+        </Paper>
+      </Stack>
+
+      <Card
+        style={{
+          height: "100%",
+          width: "100%",
+          backgroundColor: colors.backgroundGrey,
+        }}
+      >
+        <MeasurementControlBar
+          telemetry={selectedTelemetry || DEFAULT_TELEMETRY_TYPE}
+          onTelemetryTypeChange={setSelectedTelemetry}
+          period={selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD}
+          onPeriodChange={setPeriod}
+        />
+        <ReactFlowProvider>
+          <OverviewGraph />
+        </ReactFlowProvider>
+      </Card>
+    </Stack>
   );
 };
 

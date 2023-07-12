@@ -6,7 +6,7 @@ metadata:
   description: Collect metrics from Kafka cluster brokers.
   icon: /icons/sources/kafka.svg
 spec:
-  version: 0.0.1
+  version: 0.1.0
   supportedPlatforms:
     - macos
     - linux
@@ -68,8 +68,7 @@ spec:
       validValues:
         - basic
         - sasl
-        # TODO: Should be tested before implemented
-        #- tls
+        - tls
         - kerberos
       default: basic
       options:
@@ -78,6 +77,53 @@ spec:
         - name: enable_auth
           operator: equals
           value: true
+      advancedConfig: true
+
+    - name: insecure_skip_verify
+      label: Skip TLS Certificate Verification
+      description: Enable to skip TLS certificate verification.
+      type: bool
+      default: false
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+      advancedConfig: true
+
+    - name: ca_file
+      label: TLS Certificate Authority File
+      description: Certificate authority used to validate TLS certificates.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+      advancedConfig: true
+
+    - name: cert_file
+      label: Mutual TLS Client Certificate File
+      description: A TLS certificate used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
+      advancedConfig: true
+
+    - name: key_file
+      label: TLS Client Private Key File
+      description: A TLS private key used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: auth_type
+          operator: equals
+          value: tls
       advancedConfig: true
 
     - name: basic_username
@@ -302,6 +348,12 @@ spec:
               password: {{ .kerberos_password }}
               {{ end }}
               config_file: {{ .kerberos_config_file }}
+              {{ else if eq .auth_type "tls" }}
+              tls:
+                ca_file: {{ .ca_file }}
+                cert_file: {{ .cert_file }}
+                key_file: {{ .key_file }}
+                insecure: {{ .insecure_skip_verify }}
             {{ end }}
           {{ end }}
 

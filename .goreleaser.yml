@@ -11,9 +11,14 @@ builds:
   mod_timestamp: '{{ .CommitTimestamp }}'
   goos:
     - linux
+    - darwin
+    - windows
   goarch:
     - amd64
     - arm64
+  ignore:
+    - goos: windows
+      goarch: arm64
   binary: 'bindplane'
   ldflags:
     - -X github.com/observiq/bindplane-op/version.gitTag=v{{ .Version }}
