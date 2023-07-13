@@ -6,7 +6,7 @@ metadata:
   icon: /icons/sources/file.svg
   description: Collect logs from generic log files.
 spec:
-  version: 0.0.2
+  version: 0.1.0
   supportedPlatforms:
     - macos
     - linux
@@ -106,6 +106,19 @@ spec:
       type: string
       default: timestamp
       required: true
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+
+    - name: timezone
+      label: Timezone
+      description: The timezone to use if Timestamp Format doesn't include a time zone. Otherwise, the time zone in Timestamp Format will be respected.
+      type: timezone
+      default: "UTC"
       relevantIf:
         - name: parse_timestamp
           operator: equals
@@ -407,44 +420,8 @@ spec:
           max_concurrent_files: {{ .max_concurrent_files }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           operators:
-            {{ if eq .parse_format "json" }}
-            - type: json_parser
-              parse_to: {{ .parse_to }}
-            {{ if .parse_timestamp }}
-              timestamp:
-                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
-                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
-                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
-                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
-                {{ if eq .parse_timestamp_format "Epoch" }}
-                layout_type: epoch
-                layout: {{ .epoch_timestamp_format }}
-                {{ end }}
-            {{ end }}
-            {{ if .parse_severity }}
-              severity:
-                parse_from: {{ .parse_to }}.{{ .severity_field }}
-            {{ end }}
-            {{ end }}
-            {{ if eq .parse_format "regex" }}
-            - type: regex_parser
-              regex: {{ .regex_pattern | quote }}
-              parse_to: {{ .parse_to }}
-            {{ if .parse_timestamp }}
-              timestamp:
-                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
-                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
-                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
-                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
-                {{ if eq .parse_timestamp_format "Epoch" }}
-                layout_type: epoch
-                layout: {{ .epoch_timestamp_format }}
-                {{ end }}
-            {{ end }}
-            {{ if .parse_severity }}
-              severity:
-                parse_from: {{ .parse_to }}.{{ .severity_field }}
-            {{ end }}
+            {{ if ne .parse_format "none" }}
+            - {{ bpRenderStandardParsingOperator .parse_format .parse_to .regex_pattern .parse_timestamp .timestamp_field .timezone .parse_timestamp_format .epoch_timestamp_format .manual_timestamp_format .parse_severity .severity_field }}
             {{ end }}
             - type: add
               field: attributes.log_type
