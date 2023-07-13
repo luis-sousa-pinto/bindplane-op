@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, CircularProgress, Collapse, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   GetRolloutHistoryQuery,
   useGetRolloutHistoryQuery,
@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { useRefetchOnConfigurationChange } from "../../hooks/useRefetchOnConfigurationChanges";
 
 import styles from "./rollout-history.module.scss";
+import { ExpandButton } from "../ExpandButton";
 
 gql`
   query getRolloutHistory($name: String!) {
@@ -54,30 +55,47 @@ export const RolloutHistory: React.FC<RolloutHistoryProps> = ({
     return makeMessages(data);
   }, [data]);
 
+  // state to control whether the accordion is expanded or not
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <Box
       className={styles.box}
       aria-describedby={"rollout-history-loading"}
       aria-busy={data == null}
     >
-      <Typography fontSize={18} fontWeight={600} marginBottom="8px">
-        Rollout History
-      </Typography>
-
-      {data == null && (
+      <Stack>
+        <Typography fontSize={18} fontWeight={600} marginBottom="8px">
+          Rollout History
+        </Typography>
+        {messages.slice(0, 1)}
+      </Stack>
+      {data == null ? (
         <Stack width="100%" alignItems={"center"} justifyContent="center">
-          {data == null && (
-            <CircularProgress
-              size={24}
-              id="rollout-history-loading"
-              data-testid="circular-progress"
-              disableShrink
-            />
-          )}
+          <CircularProgress
+            size={24}
+            id="rollout-history-loading"
+            data-testid="circular-progress"
+            disableShrink
+          />
         </Stack>
+      ) : (
+        <Collapse in={expanded} collapsedSize={0}>
+          {messages.slice(1)}
+        </Collapse>
       )}
 
-      {messages}
+      {
+        // only show the expand button if there are more than 1 messages
+        messages.length > 1 && (
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <ExpandButton
+              expanded={expanded}
+              onToggleExpanded={() => setExpanded((prev) => !prev)}
+            />
+          </Stack>
+        )
+      }
     </Box>
   );
 };
