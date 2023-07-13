@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import {
   awsCloudWatchFieldInputDef,
   enumDef,
@@ -207,4 +207,28 @@ describe("ParameterInput supports readOnly", () => {
     expect(screen.queryByText("Disable All")).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox")).toBeDisabled();
   });
+});
+
+describe("StringsParamInput trims whitespace", () => {
+  var gotValue: string[] = [];
+
+  const onValueChange = (value: string[]) => {
+    gotValue = value;
+  };
+
+  render(
+    <StringsParamInput definition={stringsDef} onValueChange={onValueChange} />
+  );
+
+  const autocomplete = screen.getByRole("combobox");
+
+  fireEvent.change(autocomplete, { target: { value: "  test  " } });
+  fireEvent.blur(autocomplete);
+
+  expect(gotValue).toEqual(["test"]);
+
+  fireEvent.change(autocomplete, { target: { value: "internal space" } });
+  fireEvent.blur(autocomplete);
+
+  expect(gotValue).toEqual(["internal space"]);
 });
