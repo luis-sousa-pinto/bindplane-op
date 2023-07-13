@@ -316,7 +316,7 @@ ui-build:
 
 # goreleaser will call ui-build to ensure the static site
 # is up to date. goreleaser will not call `make install`.
-.PHONY: build # builds bindplane and bindplanectl using goreleaser
+.PHONY: build # builds bindplane using goreleaser
 build:
 	goreleaser build --clean --skip-validate --single-target --snapshot
 

@@ -376,7 +376,7 @@ jobs:
 
       - name: Test Server Install
         run: |
-          VERSION=$(ls dist/ | grep -v bindplanectl | grep linux_amd64.deb | rev | cut -c17- | rev | cut -c11- | sed 's/-SNAP/~SNAP/g')
+          VERSION=$(ls dist/ |  grep linux_amd64.deb | rev | cut -c17- | rev | cut -c11- | sed 's/-SNAP/~SNAP/g')
           sudo cinc-auditor exec test/inspec/package/install/package.rb --input version=$VERSION
 
       - name: Run Cinc Tests (Container Image)

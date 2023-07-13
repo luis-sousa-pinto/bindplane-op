@@ -17,9 +17,14 @@
 package serve
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
+
+// ErrUnsupportedPlatform is returned when serve is called by an unsupported platform
+var ErrUnsupportedPlatform = errors.New("cannot start server, unsupported platform")
 
 // Command returns the BindPlane serve cobra command
 func Command(builder Builder) *cobra.Command {
@@ -31,6 +36,10 @@ func Command(builder Builder) *cobra.Command {
 		Short: "Starts the server",
 		Long:  `Serves websockets for agents, REST for cli, and GraphQL.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if !builder.SupportsServer() {
+				return ErrUnsupportedPlatform
+			}
+
 			ctx := cmd.Context()
 			server, err := builder.BuildServer(ctx)
 			if err != nil {

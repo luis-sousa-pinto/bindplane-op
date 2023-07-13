@@ -4,245 +4,207 @@ before:
     - make ui-build
 
 builds:
-- id: bindplane
-  main: ./cmd/bindplane
-  env:
-    - CGO_ENABLED=0
-  mod_timestamp: '{{ .CommitTimestamp }}'
-  goos:
-    - linux
-    - darwin
-    - windows
-  goarch:
-    - amd64
-    - arm64
-  ignore:
-    - goos: windows
-      goarch: arm64
-  binary: 'bindplane'
-  ldflags:
-    - -X github.com/observiq/bindplane-op/version.gitTag=v{{ .Version }}
-    - -X github.com/observiq/bindplane-op/version.gitCommit={{ .FullCommit }}
-- id: bindplanectl
-  main: ./cmd/bindplanectl
-  env:
-    - CGO_ENABLED=0
-  mod_timestamp: '{{ .CommitTimestamp }}'
-  goos:
-    - windows
-    - linux
-    - darwin
-  goarch:
-    - amd64
-    - arm64
-  binary: 'bindplanectl'
-  ldflags:
-    - -X github.com/observiq/bindplane-op/version.gitTag=v{{ .Version }}
-    - -X github.com/observiq/bindplane-op/version.gitCommit={{ .FullCommit }}
+  - id: bindplane
+    main: ./cmd/bindplane
+    env:
+      - CGO_ENABLED=0
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    binary: "bindplane"
+    ldflags:
+      - -X github.com/observiq/bindplane-op/version.gitTag=v{{ .Version }}
+      - -X github.com/observiq/bindplane-op/version.gitCommit={{ .FullCommit }}
 
 archives:
-- format: zip
-  id: bindplane
-  name_template: 'bindplane-v{{ .Version }}-{{ .Os }}-{{ .Arch }}'
-  builds:
-    - bindplane
-- format: zip
-  id: bindplanectl
-  name_template: 'bindplanectl-v{{ .Version }}-{{ .Os }}-{{ .Arch }}'
-  builds:
-    - bindplanectl
+  - format: zip
+    id: bindplane
+    name_template: "bindplane-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    builds:
+      - bindplane
 
 nfpms:
-- id: bindplanectl
-  package_name: bindplanectl
-  conflicts:
-    - bindplanectl-ee
-  builds:
-    - bindplanectl
-  vendor: observIQ, Inc
-  homepage: https://github.com/observIQ/bindplane-op
-  maintainer: observIQ, Inc
-  description: Next generation agent management platform
-  license: Apache 2.0
-  formats:
-  - rpm
-  - deb
-  - apk
-  bindir: /usr/local/bin
-
-- id: bindplane
-  package_name: bindplane
-  conflicts:
-    - bindplane-ee
-  builds:
-    - bindplane
-  vendor: observIQ, Inc
-  homepage: https://github.com/observIQ/bindplane-op
-  maintainer: observIQ, Inc
-  description: Next generation agent management platform
-  license: Apache 2.0
-  formats:
-  - rpm
-  - deb
-  bindir: /usr/local/bin
-  contents:
-  - dst: /var/lib/bindplane
-    type: dir
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0750
-  - dst: /var/lib/bindplane/storage
-    type: dir
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0750
-  - dst: /var/lib/bindplane/downloads
-    type: dir
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0750
-  - dst: /var/log/bindplane
-    type: dir
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0750
-  - src: scripts/systemd/bindplane.service
-    dst: /usr/lib/systemd/system/bindplane.service
-    type: "config"
-    file_info:
-      owner: root
-      group: root
-      mode: 0640
-  - dst: /etc/bindplane
-    type: dir
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0750
-  - src: scripts/package/bindplane.example.yaml
-    dst: /etc/bindplane/config.yaml
-    type: "config|noreplace"
-    file_info:
-      owner: bindplane
-      group: bindplane
-      mode: 0640
-  scripts:
-    preremove: "./scripts/package/preremove.sh"
-    postremove: "./scripts/package/postremove.sh"
-    preinstall: "./scripts/package/preinstall.sh"
-    postinstall: ./scripts/package/postinstall.sh
+  - id: bindplane
+    package_name: bindplane
+    conflicts:
+      - bindplane-ee
+    builds:
+      - bindplane
+    vendor: observIQ, Inc
+    homepage: https://github.com/observIQ/bindplane-op
+    maintainer: observIQ, Inc
+    description: Next generation agent management platform
+    license: Apache 2.0
+    formats:
+      - rpm
+      - deb
+    bindir: /usr/local/bin
+    contents:
+      - dst: /var/lib/bindplane
+        type: dir
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0750
+      - dst: /var/lib/bindplane/storage
+        type: dir
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0750
+      - dst: /var/lib/bindplane/downloads
+        type: dir
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0750
+      - dst: /var/log/bindplane
+        type: dir
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0750
+      - src: scripts/systemd/bindplane.service
+        dst: /usr/lib/systemd/system/bindplane.service
+        type: "config"
+        file_info:
+          owner: root
+          group: root
+          mode: 0640
+      - dst: /etc/bindplane
+        type: dir
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0750
+      - src: scripts/package/bindplane.example.yaml
+        dst: /etc/bindplane/config.yaml
+        type: "config|noreplace"
+        file_info:
+          owner: bindplane
+          group: bindplane
+          mode: 0640
+    scripts:
+      preremove: "./scripts/package/preremove.sh"
+      postremove: "./scripts/package/postremove.sh"
+      preinstall: "./scripts/package/preinstall.sh"
+      postinstall: ./scripts/package/postinstall.sh
 
 dockers:
-- id: debian-amd64
-  goos: linux
-  goarch: amd64
-  ids:
-  - bindplane
-  image_templates:
-  # Dockerhub
-  - "observiq/bindplane-amd64:latest"
-  - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
-  - "observiq/bindplane-amd64:{{ .Major }}"
-  # Github
-  - "ghcr.io/observiq/bindplane-amd64:latest"
-  - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
-  - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}"
-  # GAR
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}"
-  dockerfile: ./docker/Dockerfile.debian
-  use: buildx
-  build_flag_templates:
-  - "--label=created={{.Date}}"
-  - "--label=title={{.ProjectName}}"
-  - "--label=revision={{.FullCommit}}"
-  - "--label=version={{.Version}}"
-  - "--platform=linux/amd64"
-  extra_files:
-  - LICENSE
-- id: debian-arm64
-  goos: linux
-  goarch: arm64
-  ids:
-  - bindplane
-  image_templates:
-  # Dockerhub
-  - "observiq/bindplane-arm64:latest"
-  - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
-  - "observiq/bindplane-arm64:{{ .Major }}"
-  # Github
-  - "ghcr.io/observiq/bindplane-arm64:latest"
-  - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
-  - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}"
-  # GAR
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}"
-  dockerfile: ./docker/Dockerfile.debian
-  use: buildx
-  build_flag_templates:
-  - "--label=created={{.Date}}"
-  - "--label=title={{.ProjectName}}"
-  - "--label=revision={{.FullCommit}}"
-  - "--label=version={{.Version}}"
-  - "--platform=linux/arm64"
-  extra_files:
-  - LICENSE
-- id: ubi8-amd64
-  goos: linux
-  goarch: amd64
-  ids:
-  - bindplane
-  image_templates:
-  - "observiq/bindplane-amd64:latest-ubi8"
-  - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  - "ghcr.io/observiq/bindplane-amd64:latest-ubi8"
-  - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest-ubi8"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  dockerfile: ./docker/Dockerfile.ubi8
-  use: buildx
-  build_flag_templates:
-  - "--label=created={{.Date}}"
-  - "--label=title={{.ProjectName}}"
-  - "--label=revision={{.FullCommit}}"
-  - "--label=version={{.Version}}"
-  - "--platform=linux/amd64"
-  extra_files:
-  - LICENSE
-- id: ubi8-arm64
-  goos: linux
-  goarch: arm64
-  ids:
-  - bindplane
-  image_templates:
-  - "observiq/bindplane-arm64:latest-ubi8"
-  - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  - "ghcr.io/observiq/bindplane-arm64:latest-ubi8"
-  - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest-ubi8"
-  - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
-  dockerfile: ./docker/Dockerfile.ubi8
-  use: buildx
-  build_flag_templates:
-  - "--label=created={{.Date}}"
-  - "--label=title={{.ProjectName}}"
-  - "--label=revision={{.FullCommit}}"
-  - "--label=version={{.Version}}"
-  - "--platform=linux/arm64"
-  extra_files:
-  - LICENSE
+  - id: debian-amd64
+    goos: linux
+    goarch: amd64
+    ids:
+      - bindplane
+    image_templates:
+      # Dockerhub
+      - "observiq/bindplane-amd64:latest"
+      - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
+      - "observiq/bindplane-amd64:{{ .Major }}"
+      # Github
+      - "ghcr.io/observiq/bindplane-amd64:latest"
+      - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}"
+      # GAR
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}"
+    dockerfile: ./docker/Dockerfile.debian
+    use: buildx
+    build_flag_templates:
+      - "--label=created={{.Date}}"
+      - "--label=title={{.ProjectName}}"
+      - "--label=revision={{.FullCommit}}"
+      - "--label=version={{.Version}}"
+      - "--platform=linux/amd64"
+    extra_files:
+      - LICENSE
+  - id: debian-arm64
+    goos: linux
+    goarch: arm64
+    ids:
+      - bindplane
+    image_templates:
+      # Dockerhub
+      - "observiq/bindplane-arm64:latest"
+      - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
+      - "observiq/bindplane-arm64:{{ .Major }}"
+      # Github
+      - "ghcr.io/observiq/bindplane-arm64:latest"
+      - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}"
+      # GAR
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}"
+    dockerfile: ./docker/Dockerfile.debian
+    use: buildx
+    build_flag_templates:
+      - "--label=created={{.Date}}"
+      - "--label=title={{.ProjectName}}"
+      - "--label=revision={{.FullCommit}}"
+      - "--label=version={{.Version}}"
+      - "--platform=linux/arm64"
+    extra_files:
+      - LICENSE
+  - id: ubi8-amd64
+    goos: linux
+    goarch: amd64
+    ids:
+      - bindplane
+    image_templates:
+      - "observiq/bindplane-amd64:latest-ubi8"
+      - "observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+      - "ghcr.io/observiq/bindplane-amd64:latest-ubi8"
+      - "ghcr.io/observiq/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:latest-ubi8"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-amd64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+    dockerfile: ./docker/Dockerfile.ubi8
+    use: buildx
+    build_flag_templates:
+      - "--label=created={{.Date}}"
+      - "--label=title={{.ProjectName}}"
+      - "--label=revision={{.FullCommit}}"
+      - "--label=version={{.Version}}"
+      - "--platform=linux/amd64"
+    extra_files:
+      - LICENSE
+  - id: ubi8-arm64
+    goos: linux
+    goarch: arm64
+    ids:
+      - bindplane
+    image_templates:
+      - "observiq/bindplane-arm64:latest-ubi8"
+      - "observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+      - "ghcr.io/observiq/bindplane-arm64:latest-ubi8"
+      - "ghcr.io/observiq/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:latest-ubi8"
+      - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
+    dockerfile: ./docker/Dockerfile.ubi8
+    use: buildx
+    build_flag_templates:
+      - "--label=created={{.Date}}"
+      - "--label=title={{.ProjectName}}"
+      - "--label=revision={{.FullCommit}}"
+      - "--label=version={{.Version}}"
+      - "--platform=linux/arm64"
+    extra_files:
+      - LICENSE
 
 docker_manifests:
   # Dockerhub
@@ -323,24 +285,24 @@ docker_manifests:
       - "us-central1-docker.pkg.dev/observiq-containers/bindplane/bindplane-arm64:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-ubi8"
 
 checksum:
-  name_template: '{{ .ProjectName }}-v{{ .Version }}-SHA256SUMS'
+  name_template: "{{ .ProjectName }}-v{{ .Version }}-SHA256SUMS"
   algorithm: sha256
 
 brews:
-- name: bindplane
-  tap:
-    owner: observIQ
-    name: homebrew-bindplane-op
-    branch: main
-  folder: Formula
-  url_template: https://github.com/observIQ/bindplane-op/releases/download/{{ .Tag }}/{{ .ArtifactName }}
-  commit_author:
-    name: bindplane
-    email: support@observiq.com
-  homepage: "https://github.com/observIQ/bindplane-op"
-  license: "Apache 2.0"
-  ids:
-    - bindplane
+  - name: bindplane
+    tap:
+      owner: observIQ
+      name: homebrew-bindplane-op
+      branch: main
+    folder: Formula
+    url_template: https://github.com/observIQ/bindplane-op/releases/download/{{ .Tag }}/{{ .ArtifactName }}
+    commit_author:
+      name: bindplane
+      email: support@observiq.com
+    homepage: "https://github.com/observIQ/bindplane-op"
+    license: "Apache 2.0"
+    ids:
+      - bindplane
 
 release:
   # brew will fail if the release is a "draft"
@@ -355,13 +317,13 @@ changelog:
   use: github
   sort: asc
   groups:
-    - title: 'New Features'
+    - title: "New Features"
       regexp: "^.*feat[(\\w)]*:+.*$"
       order: 0
-    - title: 'Bug Fixes'
+    - title: "Bug Fixes"
       regexp: "^.*fix[(\\w)]*:+.*$"
       order: 10
-    - title: 'Dependencies'
+    - title: "Dependencies"
       regexp: '^deps\(deps.*?\):\s.*$'
       order: 30
     - title: Other

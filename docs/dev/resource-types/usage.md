@@ -1,6 +1,6 @@
 # Resource Type Usage
 
-The `bindplanectl` command line interface can be used to interact with resource types.
+The `bindplane` command line interface can be used to interact with resource types.
 
 Resource types are used to generate agent configurations. Changes to resource types
 will immediately result in updates to related configurations.
@@ -10,9 +10,9 @@ will immediately result in updates to related configurations.
 You can list source, processor, and destination types with the `get` command.
 
 ```bash
-bindplanectl get source-type
-bindplanectl get processor-types
-bindplanectl get destination-types
+bindplane get source-type
+bindplane get processor-types
+bindplane get destination-types
 ```
 
 ## Delete Resource Type
@@ -20,7 +20,7 @@ bindplanectl get destination-types
 Resource types can be deleted with the `delete` command.
 
 ```
-bindplanectl delete source-type <source type name>
+bindplane delete source-type <source type name>
 ```
 
 > **_NOTE:_** Build in resource types can be deleted, however, they will be recreated when BindPlane is restarted.
@@ -33,7 +33,7 @@ an argument along with the `yaml` output option.
 For example, you can describe the `host` source type like this:
 
 ```bash
-bindplanectl get source-type host -o yaml
+bindplane get source-type host -o yaml
 ```
 
 ## Create New Resource Type From Built In Resource Type
@@ -41,7 +41,7 @@ bindplanectl get source-type host -o yaml
 If you wish to make a copy of the source type, output it to a file:
 
 ```bash
-bindplanectl get source-type host -o yaml > host.custom.yaml
+bindplane get source-type host -o yaml > host.custom.yaml
 ```
 
 > **_NOTE:_** Build in resource types can be modified, but will be replaced by BindPlane on restart. It is best to create a new resource type based on a built in resource type.
@@ -56,13 +56,13 @@ Make the following changes:
 Once you have reconfigured your source type, you can apply it to create a new source type:
 
 ```bash
-bindplanectl apply -f host.custom.yaml
+bindplane apply -f host.custom.yaml
 ```
 
 Comfirm the new source type exists:
 
 ```
-bindplanectl get source-type <new source type name>
+bindplane get source-type <new source type name>
 ```
 
 If using the web interface, be sure to refresh your browser before searching for the new source type.

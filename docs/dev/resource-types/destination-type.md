@@ -26,7 +26,7 @@ spec:
 You can deploy the destination type with:
 
 ```bash
-bindplanectl apply -f ./mydestinationtype.yaml
+bindplane apply -f ./mydestinationtype.yaml
 ```
 
 > **_NOTE:_**  Refresh the browser in order to see the new destination type.
@@ -60,7 +60,7 @@ spec:
 You can update the destination type with:
 
 ```bash
-bindplanectl apply -f ./mydestinationtype.yaml
+bindplane apply -f ./mydestinationtype.yaml
 ```
 
 > **_NOTE:_**  Refresh the browser in order to see changes.

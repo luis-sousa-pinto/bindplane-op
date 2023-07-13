@@ -102,28 +102,28 @@ Server URL and Remote URL should be set to the docker host's hostname or IP addr
 
 ## Client
 
-The `bindplanectl` command can be installed on Linux, Windows, and macOS. See the 
+The `bindplane` command can be installed on Linux, Windows, and macOS. See the 
 [client profile configuration documentation](./configuration.md#client-profiles) for configuration instructions.
 
 ### Linux
 
 Packages can be downloaded and installed from a Github Release.
 
-1. Download a bindplanectl package (rpm or deb) from the [releases page](https://github.com/observIQ/bindplane-op/releases)
+1. Download a bindplane package (rpm or deb) from the [releases page](https://github.com/observIQ/bindplane-op/releases)
 2. Install the package
 3. Create a profile
 
 On RHEL based platforms:
 
 ```bash
-sudo dnf install https://github.com/observIQ/bindplane-op/releases/download/v0.5.0/bindplanectl_0.5.0_linux_amd64.rpm
+sudo dnf install https://github.com/observIQ/bindplane-op/releases/download/v0.5.0/bindplane_0.5.0_linux_amd64.rpm
 ```
 
 On Debian based platforms:
 
 ```bash
-curl -L -o bindplanectl.deb https://github.com/observIQ/bindplane-op/releases/download/v0.5.0/bindplanectl_0.5.0_linux_amd64.deb
-sudo apt install -f ./bindplanectl.deb
+curl -L -o bindplane.deb https://github.com/observIQ/bindplane-op/releases/download/v0.5.0/bindplane_0.5.0_linux_amd64.deb
+sudo apt install -f ./bindplane.deb
 ```
 
 Once installed, create a [client profile](./configuration.md#client-profiles).
@@ -132,7 +132,7 @@ Once installed, create a [client profile](./configuration.md#client-profiles).
 
 Binary releases can be downloaded from a Github Release.
 
-1. Download a `bindplanectl` binary from the [releases page](https://github.com/observIQ/bindplane-op/releases)
+1. Download a `bindplane` binary from the [releases page](https://github.com/observIQ/bindplane-op/releases)
 2. Extract
 3. Create a profile
 
@@ -140,7 +140,7 @@ Example steps:
 
 1. Download a Windows Release: https://github.com/observIQ/bindplane-op/releases/download/v0.5.0/bindplane-v0.5.0-windows-amd64.zip
 2. Extract the zip file
-3. Run `bindplanectl.exe` from command prompt or PowerShell.
+3. Run `bindplane.exe` from command prompt or PowerShell.
 4. Optionally [add the executable to your path](https://docs.microsoft.com/en-us/previous-versions/office/developer/sharepoint-2010/ee537574(v=office.14))
 
 Once installed, create a [client profile](./configuration.md#client-profiles).
@@ -168,33 +168,33 @@ After running the collector install command, the collector will appear in the we
 
 ### Bindplane CLI
 
-If you wish to use `bindplanectl` to generate your install command, you can run the following:
+If you wish to use `bindplane` to generate your install command, you can run the following:
 
 ```bash
-bindplanectl install agent
+bindplane install agent
 ```
 or specify a platform
 ```
-bindplanectl install agent --platform linux
+bindplane install agent --platform linux
 ```
 
-Available platforms can be found with `bindplanectl install agent --help`.
+Available platforms can be found with `bindplane install agent --help`.
 
 Copy the output and run the command on the system your wish to install the collector on.
 
-After running the collector install command, the collector will appear in the `bindplanectl get agents` output.
+After running the collector install command, the collector will appear in the `bindplane get agents` output.
 
 ### Shell Completion
 
 #### Linux: bash
 
 1. Verify that `bash-completion` is installed on the host
-2. `bindplanectl completion bash | sudo tee -a /etc/bash_completion.d/bindplanectl` appends the output to a file in the bash completion directory
+2. `bindplane completion bash | sudo tee -a /etc/bash_completion.d/bindplane` appends the output to a file in the bash completion directory
 3. Restart the shell
 
 #### macOS/Linux: ZSH
 
-To setup zsh completion for bindplanectl on MacOS:
+To setup zsh completion for bindplane on MacOS:
 1. Include the following lines in `~/.zshrc`&nbsp;
 ```
 autoload -Uz compinit
@@ -202,8 +202,8 @@ compinit
 ```
 2. Locate `fpath` by running `echo $fpath`, there may be several listed, some may not exist, use an existing one in the next step.
 3. Run the following command to generate the zsh tab completion script.\
-`bindplanectl completion zsh ><YOUR FPATH HERE>/_bindplanectl`
-4. Restart zsh and the bindplanectl tab completions will be available.
+`bindplane completion zsh ><YOUR FPATH HERE>/_bindplane`
+4. Restart zsh and the bindplane tab completions will be available.
 
 ### Manual Install
 

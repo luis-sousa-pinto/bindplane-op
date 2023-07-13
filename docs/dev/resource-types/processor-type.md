@@ -37,7 +37,7 @@ spec:
 You can deploy the source type with:
 
 ```bash
-bindplanectl apply -f ./myprocessortype.yaml
+bindplane apply -f ./myprocessortype.yaml
 ```
 
 > **_NOTE:_**  Refresh the browser in order to see the new source type.
