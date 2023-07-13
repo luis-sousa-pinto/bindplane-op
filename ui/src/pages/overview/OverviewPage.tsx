@@ -20,11 +20,12 @@ import { gql } from "@apollo/client";
 import { DestinationsTableField } from "../../components/Tables/DestinationsTable/DestinationsDataGrid";
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageSubContent } from "../destinations/DestinationsPage";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import colors from "../../styles/colors";
 import mixins from "../../styles/mixins.module.scss";
 import styles from "./overview-page.module.scss";
+import { GridSortItem } from "@mui/x-data-grid";
 
 gql`
   query DeployedConfigs {
@@ -106,7 +107,11 @@ const OverviewPageSubContent: React.FC = () => {
               ]
           )
           .sort((a, b) => {
-            return b.value - a.value;
+            const valueDiff = b.value - a.value;
+            if (valueDiff !== 0) {
+              return valueDiff;
+            }
+            return a.nodeID.localeCompare(b.nodeID);
           }) || [];
 
       const topResources = filteredMetrics.slice(0, count).map((metric) => {
@@ -119,16 +124,28 @@ const OverviewPageSubContent: React.FC = () => {
 
   const selectTopConfigs = useCallback(
     (count: number) => {
+      setSortModel([
+        {
+          field: selectedTelemetry ?? ConfigurationsTableField.LOGS,
+          sort: "desc",
+        },
+      ]);
       const topConfigs = selectTopResources(count, "configuration");
       if (topConfigs) {
         setSelectedConfigs(topConfigs);
       }
     },
-    [setSelectedConfigs, selectTopResources]
+    [setSelectedConfigs, selectTopResources, selectedTelemetry]
   );
 
   const selectTopDestinations = useCallback(
     (count: number) => {
+      setDestinationsSortModel([
+        {
+          field: selectedTelemetry ?? DestinationsTableField.LOGS,
+          sort: "desc",
+        },
+      ]);
       const topDests = selectTopResources(count, "destination").map((name) => {
         // map from name to "Destination|name"
         return `Destination|${name}`;
@@ -137,7 +154,7 @@ const OverviewPageSubContent: React.FC = () => {
         setSelectedDestinations(topDests);
       }
     },
-    [setSelectedDestinations, selectTopResources]
+    [setSelectedDestinations, selectTopResources, selectedTelemetry]
   );
 
   useEffect(() => {
@@ -155,6 +172,17 @@ const OverviewPageSubContent: React.FC = () => {
     selectTopDestinations,
     selectedTelemetry,
   ]);
+
+  const [sortModel, setSortModel] = useState<GridSortItem[]>([
+    { field: selectedTelemetry ?? ConfigurationsTableField.LOGS, sort: "desc" },
+  ]);
+
+  const [destinationsSortModel, setDestinationsSortModel] = useState<
+    GridSortItem[]
+  >([
+    { field: selectedTelemetry ?? ConfigurationsTableField.LOGS, sort: "desc" },
+  ]);
+
   return (
     <Stack direction={"row"} spacing={2} height={"calc(100vh - 120px)"}>
       <Stack spacing={1} minWidth="400px">
@@ -177,10 +205,26 @@ const OverviewPageSubContent: React.FC = () => {
             setSelected={setSelectedConfigs}
             enableDelete={false}
             enableNew={false}
-            columns={[ConfigurationsTableField.NAME]}
+            columns={[
+              ConfigurationsTableField.NAME,
+              ConfigurationsTableField.LOGS,
+              ConfigurationsTableField.METRICS,
+              ConfigurationsTableField.TRACES,
+            ]}
             overviewPage
-            minHeight="calc(50vh - 180px)"
-            maxHeight="calc(50vh - 180px)"
+            minHeight="calc(50vh - 200px)"
+            maxHeight="calc(50vh - 200px)"
+            initialState={{
+              columns: {
+                columnVisibilityModel: {
+                  logs: false,
+                  metrics: false,
+                  traces: false,
+                },
+              },
+            }}
+            sortModel={sortModel}
+            onSortModelChange={(model) => setSortModel(model)}
           />
         </Paper>
 
@@ -202,7 +246,23 @@ const OverviewPageSubContent: React.FC = () => {
             selected={selectedDestinations}
             setSelected={setSelectedDestinations}
             destinationsPage={false}
-            columnFields={[DestinationsTableField.ICON_AND_NAME]}
+            columnFields={[
+              DestinationsTableField.ICON_AND_NAME,
+              DestinationsTableField.LOGS,
+              DestinationsTableField.METRICS,
+              DestinationsTableField.TRACES,
+            ]}
+            initialState={{
+              columns: {
+                columnVisibilityModel: {
+                  logs: false,
+                  metrics: false,
+                  traces: false,
+                },
+              },
+            }}
+            sortModel={destinationsSortModel}
+            onSortModelChange={(model) => setDestinationsSortModel(model)}
             editingDestination={editingDestination}
             setEditingDestination={setEditingDestination}
             minHeight="calc(50vh - 180px)"
