@@ -554,6 +554,7 @@ input ParameterInput {
 }
 
 input ProcessorInput {
+  id: String
   name: String
   displayName: String
   type: String

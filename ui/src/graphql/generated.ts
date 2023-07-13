@@ -381,6 +381,7 @@ export type Processor = {
 export type ProcessorInput = {
   disabled?: InputMaybe<Scalars['Boolean']['input']>;
   displayName?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   parameters?: InputMaybe<Array<ParameterInput>>;
   type?: InputMaybe<Scalars['String']['input']>;
