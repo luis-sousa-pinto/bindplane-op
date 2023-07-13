@@ -1,8 +1,9 @@
 import { LoadingButton } from "@mui/lab";
 import { Box, Button, LinearProgress, Stack, Typography } from "@mui/material";
+import { useMemo } from "react";
+import { SendIcon } from "../Icons";
 
 import styles from "./rollout-progress.module.scss";
-import { useMemo } from "react";
 
 interface RolloutProgressProps {
   totalCount: number;
@@ -55,10 +56,11 @@ export const RolloutProgressBar: React.FC<RolloutProgressProps> = ({
       case 0: // pending
         return (
           <Button
-            classes={{ root: styles.button }}
+            size="large"
             color="primary"
             variant="contained"
             onClick={onStart}
+            startIcon={<SendIcon />}
           >
             Start Rollout
           </Button>
