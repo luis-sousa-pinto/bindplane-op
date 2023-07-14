@@ -116,7 +116,7 @@ spec:
 
     - name: timezone
       label: Timezone
-      description: The timezone to use if Timestamp Format doesn't include a time zone. Otherwise, the time zone in Timestamp Format will be respected.
+      description: The timezone to use if Timestamp Format doesn't include a timezone. Otherwise, the timezone in Timestamp Format will be respected.
       type: timezone
       default: "UTC"
       relevantIf:
