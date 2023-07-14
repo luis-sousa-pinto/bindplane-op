@@ -120,6 +120,13 @@ func (p *DefaultProfiler) SetCurrentProfileName(ctx context.Context, name string
 	return nil
 }
 
+func (p *DefaultProfiler) ensureCurrentProfileName(ctx context.Context, defaultName string) error {
+	if _, err := p.GetCurrentProfileName(ctx); err != nil {
+		return p.SetCurrentProfileName(ctx, defaultName)
+	}
+	return nil
+}
+
 // GetProfileNames returns a list of profile names.
 func (p *DefaultProfiler) GetProfileNames(_ context.Context) ([]string, error) {
 	files, err := ioutil.ReadDir(p.folder)
@@ -167,7 +174,7 @@ func (p *DefaultProfiler) CreateProfile(ctx context.Context, name string) error 
 		return fmt.Errorf("failed to write profile: %w", err)
 	}
 
-	return nil
+	return p.ensureCurrentProfileName(ctx, name)
 }
 
 // DeleteProfile deletes a profile.

@@ -16,7 +16,7 @@
 package profile
 
 import (
-	"errors"
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -50,10 +50,10 @@ func Command(builder Builder) *cobra.Command {
 // GetCommand returns the BindPlane profile get cobra command
 func GetCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get <name>",
-		Short: "Get details on a saved profile.",
+		Use:   "get [name]",
+		Short: "Get details of a profile",
+		Long:  "Get details of a profile. If no name is specified, the current profile is returned.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var name string
 			ctx := cmd.Context()
 			writer := cmd.OutOrStdout()
 			profiler, err := builder.BuildProfiler(ctx)
@@ -61,15 +61,9 @@ func GetCommand(builder Builder) *cobra.Command {
 				return err
 			}
 
-			// return the current context if --current-context is passed
-			if currentFlag || len(args) == 0 {
-				currentName, err := profiler.GetCurrentProfileName(ctx)
-				if err != nil {
-					return err
-				}
-				name = currentName
-			} else {
-				name = args[0]
+			name, err := profileNameArgOrCurrent(ctx, args, profiler)
+			if err != nil {
+				return err
 			}
 
 			contents, err := profiler.GetProfileRaw(ctx, name)
@@ -82,25 +76,28 @@ func GetCommand(builder Builder) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&currentFlag, "current", false, "show the settings for the current profile")
+	cmd.Flags().BoolVar(&currentFlag, "current", false, "get the settings for the current profile")
+	_ = cmd.Flags().MarkHidden("current")
 	return cmd
 }
 
 // SetCommand returns the BindPlane profile set cobra command
 func SetCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set <name>",
-		Short: "set a parameter on a saved profile",
+		Use:   "set [name]",
+		Short: "Set details of a profile",
+		Long:  "Set details of a profile. If no name is specified, the current profile is modified.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return errors.New("missing required argument <name>")
-			}
-
-			name := args[0]
 			ctx := cmd.Context()
 			profiler, err := builder.BuildProfiler(ctx)
 			if err != nil {
 				return err
+			}
+
+			name, err := profileNameArgOrCurrent(ctx, args, profiler)
+			if err != nil {
+				// rather than fail, just create a new profile called "default"
+				name = "default"
 			}
 
 			if !profiler.ProfileExists(ctx, name) {
@@ -126,6 +123,8 @@ func SetCommand(builder Builder) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().BoolVar(&currentFlag, "current", false, "set the settings for the current profile")
+	_ = cmd.Flags().MarkHidden("current")
 	return cmd
 }
 
@@ -133,7 +132,7 @@ func SetCommand(builder Builder) *cobra.Command {
 func DeleteCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <name>",
-		Short: "delete a saved profile",
+		Short: "Delete a profile",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("missing required argument <name>")
@@ -151,7 +150,7 @@ func DeleteCommand(builder Builder) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(writer, "deleted saved profile '%s'\n", name)
+			fmt.Fprintf(writer, "deleted profile '%s'\n", name)
 			return nil
 		},
 	}
@@ -162,7 +161,7 @@ func DeleteCommand(builder Builder) *cobra.Command {
 func CreateCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create <name>",
-		Short: "create a new profile",
+		Short: "Create a new profile",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("missing required argument <name>")
@@ -191,7 +190,7 @@ func CreateCommand(builder Builder) *cobra.Command {
 func ListCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "list the available saved profiles",
+		Short: "List all profiles",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			writer := cmd.OutOrStdout()
@@ -206,7 +205,7 @@ func ListCommand(builder Builder) *cobra.Command {
 			}
 
 			if len(names) == 0 {
-				fmt.Fprintf(writer, "%s\n", "No saved profiles found.")
+				fmt.Fprintf(writer, "%s\n", "No profiles found.")
 			}
 
 			for _, name := range names {
@@ -222,7 +221,7 @@ func ListCommand(builder Builder) *cobra.Command {
 func UseCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use <name>",
-		Short: "specify the default saved context to use",
+		Short: "Set the current profile to the specified profile",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("missing required argument <name>")
@@ -245,7 +244,7 @@ func UseCommand(builder Builder) *cobra.Command {
 func CurrentCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "current",
-		Short: "returns the name of the currently used profile",
+		Short: "Print the name of the current profile",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			writer := cmd.OutOrStdout()
@@ -265,4 +264,11 @@ func CurrentCommand(builder Builder) *cobra.Command {
 	}
 
 	return cmd
+}
+
+func profileNameArgOrCurrent(ctx context.Context, args []string, profiler Profiler) (string, error) {
+	if currentFlag || len(args) == 0 {
+		return profiler.GetCurrentProfileName(ctx)
+	}
+	return args[0], nil
 }
