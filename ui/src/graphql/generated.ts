@@ -340,6 +340,7 @@ export enum ParameterType {
   Bool = 'bool',
   Enum = 'enum',
   Enums = 'enums',
+  FileLogSort = 'fileLogSort',
   Int = 'int',
   Map = 'map',
   Metrics = 'metrics',

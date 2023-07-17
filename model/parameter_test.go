@@ -778,3 +778,105 @@ func TestValidateAwsCloudwatchNamedFieldType(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateFileLogSortingType(t *testing.T) {
+	tests := []struct {
+		description   string
+		parameterType ParameterDefinition
+		value         any
+		wantErr       string
+	}{
+		{
+			"bad value type int",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			4,
+			"malformed value for parameter of type filelogsort",
+		},
+		{
+			"bad value type bad map",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[int]string{{1: "one", 2: "two"}},
+			"malformed value for parameter of type filelogsort",
+		},
+		{
+			"bad string value",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":  1,
+					"ascending": true,
+					"regexKey":  "regexKey",
+					"layout":    "layout",
+					"location":  "location",
+				},
+			},
+			"incorrect type included in 'sort_rules' field",
+		},
+		{
+			"bad bool value",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":  "sortType",
+					"ascending": "failure",
+					"regexKey":  "regexKey",
+					"layout":    "layout",
+					"location":  "location",
+				},
+			},
+			"incorrect type included in ascending field",
+		},
+		{
+			"bad key",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":  "sortType",
+					"ascending": true,
+					"regexKey":  "regexKey",
+					"layout":    "layout",
+					"location":  "location",
+					"foo":       "bar",
+				},
+			},
+			"unexpected field foo included in struct",
+		},
+		{
+			"ok value",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":  "sortType",
+					"ascending": true,
+					"regexKey":  "regexKey",
+					"layout":    "layout",
+					"location":  "location",
+				},
+			},
+			"",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			gotErr := test.parameterType.validateFileLogSortType(fileLogSortType, test.value)
+			if test.wantErr != "" {
+				require.Equal(t, test.wantErr, gotErr.Error())
+			} else {
+				require.NoError(t, gotErr)
+			}
+		})
+	}
+}

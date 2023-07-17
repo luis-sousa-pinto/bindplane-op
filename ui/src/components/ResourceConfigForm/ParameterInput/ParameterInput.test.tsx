@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import {
+  FileLogSort,
   awsCloudWatchFieldInputDef,
   enumDef,
   enumsDef,
@@ -22,6 +23,7 @@ import { StringParamInput } from "./StringParamInput";
 import { StringsParamInput } from "./StringsParamInput";
 import { TimezoneParamInput } from "./TimezoneParamInput";
 import { YamlParamInput } from "./YamlParamInput";
+import { FileLogSortInput } from "./FileLogSortInput";
 
 describe("ParameterInput supports readOnly", () => {
   it("StringParamInput editable", () => {
@@ -184,6 +186,26 @@ describe("ParameterInput supports readOnly", () => {
         readOnly={true}
       />
     );
+    const inputs = screen.getAllByRole("textbox");
+    for (const textbox of inputs) {
+      expect(textbox).toBeDisabled();
+    }
+    const button = screen.getByRole("button", { name: "New field" });
+    expect(button).toBeDisabled();
+  });
+
+  it("fileLogSort editable", () => {
+    render(<FileLogSortInput definition={FileLogSort} readOnly={false} />);
+    const inputs = screen.getAllByRole("textbox");
+    for (const textbox of inputs) {
+      expect(textbox).not.toBeDisabled();
+    }
+    const button = screen.getByRole("button", { name: "New field" });
+    expect(button).not.toBeDisabled();
+  });
+
+  it("fileLogSort readonly", () => {
+    render(<FileLogSortInput definition={FileLogSort} readOnly={true} />);
     const inputs = screen.getAllByRole("textbox");
     for (const textbox of inputs) {
       expect(textbox).toBeDisabled();

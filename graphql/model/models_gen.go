@@ -193,6 +193,7 @@ const (
 	ParameterTypeTimezone                ParameterType = "timezone"
 	ParameterTypeMetrics                 ParameterType = "metrics"
 	ParameterTypeAwsCloudwatchNamedField ParameterType = "awsCloudwatchNamedField"
+	ParameterTypeFileLogSort             ParameterType = "fileLogSort"
 )
 
 var AllParameterType = []ParameterType{
@@ -207,11 +208,12 @@ var AllParameterType = []ParameterType{
 	ParameterTypeTimezone,
 	ParameterTypeMetrics,
 	ParameterTypeAwsCloudwatchNamedField,
+	ParameterTypeFileLogSort,
 }
 
 func (e ParameterType) IsValid() bool {
 	switch e {
-	case ParameterTypeString, ParameterTypeStrings, ParameterTypeInt, ParameterTypeBool, ParameterTypeEnum, ParameterTypeEnums, ParameterTypeMap, ParameterTypeYaml, ParameterTypeTimezone, ParameterTypeMetrics, ParameterTypeAwsCloudwatchNamedField:
+	case ParameterTypeString, ParameterTypeStrings, ParameterTypeInt, ParameterTypeBool, ParameterTypeEnum, ParameterTypeEnums, ParameterTypeMap, ParameterTypeYaml, ParameterTypeTimezone, ParameterTypeMetrics, ParameterTypeAwsCloudwatchNamedField, ParameterTypeFileLogSort:
 		return true
 	}
 	return false

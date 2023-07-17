@@ -325,6 +325,9 @@ func (r *Resolver) Type(_ context.Context, obj *model.ParameterDefinition) (mode
 	case "awsCloudwatchNamedField":
 		return model1.ParameterTypeAwsCloudwatchNamedField, nil
 
+	case "fileLogSort":
+		return model1.ParameterTypeFileLogSort, nil
+
 	default:
 		return "", errors.New("unknown parameter type")
 	}

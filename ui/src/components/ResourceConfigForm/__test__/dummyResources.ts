@@ -244,6 +244,21 @@ export const awsCloudWatchFieldInputDef = {
   },
 };
 
+export const FileLogSort = {
+  name: "sort_rules",
+  label: "Sort Rules",
+  description:
+    "Configuration for Log Groups, by default all Log Groups and Log Streams will be collected.",
+  required: false,
+  type: ParameterType.FileLogSort,
+  default: [],
+  hidden: false,
+  advancedConfig: false,
+  options: {
+    creatable: false,
+  },
+};
+
 export const metricParamInput = {
   name: "process_metrics_filtering",
   label: "",

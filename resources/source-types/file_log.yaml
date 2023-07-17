@@ -375,6 +375,42 @@ spec:
           operator: equals
           value: true
 
+      # Enable file sorting to process only the first file
+    - name: enable_sorting
+      label: Enable File Sorting
+      description: When enabled, the files will be sorted before processing and only the first file will be processed.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: sorting_regex
+      label: Sorting Regex
+      description:
+      type: string
+      advancedConfig: true
+      required: true
+      relevantIf:
+        - name: enable_sorting
+          operator: equals
+          value: true
+
+    - name: sort_rules
+      label: Sort Rules
+      description: The rules to sort the files. They are applied in order.
+      type: fileLogSort
+      advancedConfig: true
+      default: []
+      relevantIf:
+        - name: enable_sorting
+          operator: equals
+          value: true
+
   logs:
     extensions: |
       {{ if .enable_offset_storage }}
@@ -404,6 +440,22 @@ spec:
             {{ end }}
             {{ if eq .multiline_parsing "specify line end" }}
             line_end_pattern: {{ .multiline_line_end_pattern | quote }}
+            {{ end }}
+          {{ end }}
+          {{ if .enable_sorting }}
+          ordering_criteria:
+            regex: {{ .sorting_regex | quote }}
+            sort_by: 
+            {{ range $s := .sort_rules }}
+            - sort_type: {{ $s.sortType }}
+              ascending: {{ $s.ascending }}
+              regex_key: {{ $s.regexKey }}
+              {{ if $s.location }}
+              location: {{ $s.location }}
+              {{ end }}
+              {{ if $s.layout}}
+              layout: {{ $s.layout | quote }}
+              {{ end }}
             {{ end }}
           {{ end }}
           fingerprint_size: {{ .fingerprint_size }}

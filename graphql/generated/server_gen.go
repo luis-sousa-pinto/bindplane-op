@@ -2724,6 +2724,7 @@ enum ParameterType {
   timezone
   metrics
   awsCloudwatchNamedField
+  fileLogSort
 }
 
 type ParameterDefinition {
