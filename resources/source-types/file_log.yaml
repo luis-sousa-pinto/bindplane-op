@@ -448,7 +448,7 @@ spec:
             sort_by: 
             {{ range $s := .sort_rules }}
             - sort_type: {{ $s.sortType }}
-              ascending: {{ $s.ascending }}
+              ascending: {{ if eq $s.sortDirection "ascending" }}true{{ else }}false{{ end }}
               regex_key: {{ $s.regexKey }}
               {{ if $s.location }}
               location: {{ $s.location }}

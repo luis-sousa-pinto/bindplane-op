@@ -6,6 +6,7 @@ import {
   IconButton,
   FormLabel,
   FormHelperText,
+  Grid,
 } from "@mui/material";
 import {
   ParameterDefinition,
@@ -20,14 +21,14 @@ import { useResourceFormValues } from "../ResourceFormContext";
 import { validateFileLogSortField } from "../validation-functions";
 import { StringParamInput } from "./StringParamInput";
 import { EnumParamInput } from "./EnumParamInput";
-import { BoolParamInput } from "./BoolParamInput";
+import { TimezoneParamInput } from "./TimezoneParamInput";
 
 export type InputValue = ItemValue[];
 
 interface ItemValue {
   regexKey: string;
   sortType: string;
-  ascending: boolean;
+  sortDirection: string;
   layout: string;
   location: string;
 }
@@ -45,7 +46,7 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
           {
             regexKey: "",
             sortType: "numeric",
-            ascending: false,
+            sortDirection: "descending",
             layout: "",
             location: "",
           },
@@ -62,11 +63,8 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
 
       field = field.replace(index.toString(), "");
       const fieldKey = field as keyof ItemValue;
-      if (fieldKey === "ascending") {
-        newValue[index][fieldKey] = v as boolean;
-      } else {
-        newValue[index][fieldKey] = v as string;
-      }
+
+      newValue[index][fieldKey] = v as string;
 
       if (fieldKey === "sortType" && v !== "timestamp") {
         newValue[index].layout = "";
@@ -85,7 +83,7 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
       layout: "",
       sortType: "numeric",
       location: "",
-      ascending: false,
+      sortDirection: "descending",
     };
 
     const curValue = cloneDeep(controlValue) ?? [];
@@ -122,7 +120,7 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
             label: "Regex Key",
             type: ParameterType.String,
             required: true,
-            description: "The Name of the Regex Key to use.",
+            description: "The name of the regex key to use.",
             default: itemValue.regexKey,
             options: {
               gridColumns: 12,
@@ -136,20 +134,21 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
             default: itemValue.sortType,
             description: "The type of sort to perform.",
             options: {
-              gridColumns: 12,
+              gridColumns: 6,
             },
             validValues: ["numeric", "alphabetical", "timestamp"],
           },
           {
-            name: "ascending" + index,
-            label: "Ascending",
-            type: ParameterType.Bool,
+            name: "sortDirection" + index,
+            label: "Sort Direction",
+            type: ParameterType.Enum,
             required: false,
             description: "",
-            default: itemValue.ascending,
+            default: itemValue.sortDirection,
             options: {
-              gridColumns: 12,
+              gridColumns: 6,
             },
+            validValues: ["descending", "ascending"],
           },
           {
             name: "layout" + index,
@@ -159,9 +158,15 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
             description:
               "Defines the strptime layout of the timestamp being sorted.",
             options: {
-              gridColumns: 12,
+              gridColumns: 6,
             },
             default: itemValue.layout,
+            documentation: [
+              {
+                text: "Supported Layout Directives",
+                url: "https://github.com/observiq/ctimefmt/blob/3e07deba22cf7a753f197ef33892023052f26614/ctimefmt.go#L63",
+              },
+            ],
             relevantIf: [
               {
                 operator: RelevantIfOperatorType.Equals,
@@ -173,12 +178,12 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
           },
           {
             name: "location" + index,
-            label: "Location",
-            type: ParameterType.String,
+            label: "Timezone",
+            type: ParameterType.Timezone,
             required: false,
             description: "The sort timezone location.",
             options: {
-              gridColumns: 12,
+              gridColumns: 6,
             },
             default: itemValue.location,
             relevantIf: [
@@ -207,76 +212,90 @@ export const FileLogSortInput: React.FC<ParamInputProps<InputValue>> = ({
               spacing={2}
               padding={2}
             >
-              {definitionsArray.map((p) => {
-                const itemValueKey = p.name.replace(index.toString(), "");
-                if (satisfiesRelevantIf(formValues, p)) {
-                  switch (itemValueKey) {
-                    case "regexKey":
-                      return (
-                        <StringParamInput
-                          key={p.name}
-                          readOnly={readOnly}
-                          definition={p}
-                          value={itemValue.regexKey || ""}
-                          onValueChange={(v) =>
-                            onFieldValueChange(v, index, "regexKey")
-                          }
-                        />
-                      );
-                    case "sortType":
-                      return (
-                        <EnumParamInput
-                          key={p.name}
-                          readOnly={readOnly}
-                          definition={p}
-                          value={itemValue.sortType || ""}
-                          onValueChange={(v) =>
-                            onFieldValueChange(v, index, "sortType")
-                          }
-                        />
-                      );
-                    case "ascending":
-                      return (
-                        <BoolParamInput
-                          key={p.name}
-                          readOnly={readOnly}
-                          definition={p}
-                          value={itemValue.ascending ?? false}
-                          onValueChange={(v) =>
-                            onFieldValueChange(v, index, "ascending")
-                          }
-                        />
-                      );
-                    case "layout":
-                      return (
-                        <StringParamInput
-                          key={p.name}
-                          readOnly={readOnly}
-                          definition={p}
-                          value={itemValue.layout || ""}
-                          onValueChange={(v) =>
-                            onFieldValueChange(v, index, "layout")
-                          }
-                        />
-                      );
-                    case "location":
-                      return (
-                        <StringParamInput
-                          key={p.name}
-                          readOnly={readOnly}
-                          definition={p}
-                          value={itemValue.location || ""}
-                          onValueChange={(v) =>
-                            onFieldValueChange(v, index, "location")
-                          }
-                        />
-                      );
-                    default:
-                      return "";
+              <Grid container spacing={3}>
+                {definitionsArray.map((p) => {
+                  const itemValueKey = p.name.replace(index.toString(), "");
+                  if (satisfiesRelevantIf(formValues, p)) {
+                    const renderSwitch = (itemValueKey: string) => {
+                      switch (itemValueKey) {
+                        case "regexKey":
+                          return (
+                            <StringParamInput
+                              key={p.name}
+                              readOnly={readOnly}
+                              definition={p}
+                              value={itemValue.regexKey || ""}
+                              onValueChange={(v) =>
+                                onFieldValueChange(v, index, "regexKey")
+                              }
+                            />
+                          );
+                        case "sortType":
+                          return (
+                            <EnumParamInput
+                              key={p.name}
+                              readOnly={readOnly}
+                              definition={p}
+                              value={itemValue.sortType || ""}
+                              onValueChange={(v) =>
+                                onFieldValueChange(v, index, "sortType")
+                              }
+                            />
+                          );
+                        case "sortDirection":
+                          return (
+                            <EnumParamInput
+                              key={p.name}
+                              readOnly={readOnly}
+                              definition={p}
+                              value={itemValue.sortDirection ?? ""}
+                              onValueChange={(v) =>
+                                onFieldValueChange(v, index, "sortDirection")
+                              }
+                            />
+                          );
+                        case "layout":
+                          return (
+                            <StringParamInput
+                              key={p.name}
+                              readOnly={readOnly}
+                              definition={p}
+                              value={itemValue.layout || ""}
+                              onValueChange={(v) =>
+                                onFieldValueChange(v, index, "layout")
+                              }
+                            />
+                          );
+                        case "location":
+                          return (
+                            <TimezoneParamInput
+                              key={p.name}
+                              readOnly={readOnly}
+                              definition={p}
+                              value={itemValue.location || "UTC"}
+                              onValueChange={(v) =>
+                                onFieldValueChange(v, index, "location")
+                              }
+                            />
+                          );
+                        default:
+                          return null;
+                      }
+                    };
+
+                    return (
+                      <Grid
+                        item
+                        xs={p.options.gridColumns || 12}
+                        key={"file-sort-grid" + p.name}
+                      >
+                        {renderSwitch(itemValueKey)}
+                      </Grid>
+                    );
                   }
-                }
-                return "";
-              })}
+                  return null;
+                })}
+              </Grid>
             </Stack>
             {!(index === 0 && controlValue.length === 1) && (
               <IconButton size={"small"} onClick={() => removeField(index)}>

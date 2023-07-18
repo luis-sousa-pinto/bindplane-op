@@ -689,7 +689,7 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 				_, ok := n.(string)
 				if !ok {
 					return stanzaerrors.NewError("incorrect type included in 'id' field",
-						"awsCloudwatchNamedField"+s+"should be of type string")
+						"awsCloudwatchNamedField "+s+" should be of type string")
 				}
 
 			case "names", "prefixes":
@@ -709,68 +709,37 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 	return nil
 }
 
+type fileLogSortField struct {
+	Layout        string `mapstructure:"layout"`
+	Location      string `mapstructure:"location"`
+	SortType      string `mapstructure:"sortType"`
+	SortDirection string `mapstructure:"sortDirection"`
+	RegexKey      string `mapstructure:"regexKey"`
+}
+
 func (p ParameterDefinition) validateFileLogSortType(_ parameterFieldType, value any) error {
 	switch v := value.(type) {
 	case []any:
-		for i := 0; i < len(v); i++ {
-			item := v[i]
-			result := map[string]any{}
+		for _, item := range v {
+			result := fileLogSortField{}
 			err := mapstructure.Decode(item, &result)
 			if err != nil {
-				return stanzaerrors.NewError("malformed value for parameter of type filelogsort",
-					"reference filelog docs for proper formatting",
-				)
-			}
-			err = p.validateFileLogSortTypeFields(result)
-			if err != nil {
-				return err
+				return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
 			}
 		}
 	case []map[string]any:
-		for i := 0; i < len(v); i++ {
-			item := v[i]
-			result := map[string]any{}
+		for _, item := range v {
+			result := fileLogSortField{}
 			err := mapstructure.Decode(item, &result)
 			if err != nil {
-				return stanzaerrors.NewError("malformed value for parameter of type filelogsort",
-					"reference filelog docs for proper formatting",
-				)
-			}
-			err = p.validateFileLogSortTypeFields(result)
-			if err != nil {
-				return err
+				return stanzaerrors.NewError(fmt.Sprintf("malformed value for parameter of type filelogsort: %s", err.Error()), "")
 			}
 		}
 
 	default:
-		return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "reference filelog docs for proper formatting")
+		return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
 	}
 
-	return nil
-}
-
-func (p ParameterDefinition) validateFileLogSortTypeFields(value map[string]any) error {
-	for s, n := range value {
-		switch strings.ToLower(s) {
-		case "layout", "location", "sorttype", "regexkey":
-			_, ok := n.(string)
-			if !ok {
-				return stanzaerrors.NewError("incorrect type included in 'sort_rules' field",
-					"filelog"+s+"should be of type string")
-			}
-
-		case "ascending":
-			_, ok := n.(bool)
-			if !ok {
-				return stanzaerrors.NewError("incorrect type included in "+s+" field",
-					"filelog"+s+"should be of type bool")
-			}
-		default:
-			return stanzaerrors.NewError("unexpected field "+s+" included in struct",
-				s+"should not be an included field in filelogsort")
-
-		}
-	}
 	return nil
 }
 
