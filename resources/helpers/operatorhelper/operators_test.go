@@ -50,7 +50,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			timestampField:       "timestamp",
 			timezone:             "UTC",
 			parseTimestampFormat: "ISO8601",
-			expected:             `{"parse_to":"body","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f%z","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
+			expected:             `{"parse_to":"body","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
 		},
 		{
 			name:                 "json + timestamp parsing (RFC3339)",
@@ -60,7 +60,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			timestampField:       "timestamp",
 			timezone:             "UTC",
 			parseTimestampFormat: "RFC3339",
-			expected:             `{"parse_to":"body","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
+			expected:             `{"parse_to":"body","timestamp":{"layout":"2006-01-02T15:04:05.999999999Z07:00","layout_type":"gotime","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
 		},
 		{
 			name:                  "json + timestamp parsing (manual)",
@@ -102,7 +102,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			parseTimestampFormat: "ISO8601",
 			parseSeverity:        true,
 			severityField:        "level",
-			expected:             `{"parse_to":"body","severity":{"parse_from":"body.level"},"timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f%z","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
+			expected:             `{"parse_to":"body","severity":{"parse_from":"body.level"},"timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"json_parser"}`,
 		},
 		// REGEXP
 		{
@@ -121,7 +121,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			timestampField:       "timestamp",
 			timezone:             "UTC",
 			parseTimestampFormat: "ISO8601",
-			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f%z","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
+			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
 		},
 		{
 			name:                 "regex + timestamp parsing (RFC3339)",
@@ -132,7 +132,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			timestampField:       "timestamp",
 			timezone:             "UTC",
 			parseTimestampFormat: "RFC3339",
-			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
+			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","timestamp":{"layout":"2006-01-02T15:04:05.999999999Z07:00","layout_type":"gotime","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
 		},
 		{
 			name:                  "regex + timestamp parsing (manual)",
@@ -178,7 +178,7 @@ func TestBpRenderStandardParsingOperator(t *testing.T) {
 			parseTimestampFormat: "ISO8601",
 			parseSeverity:        true,
 			severityField:        "level",
-			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","severity":{"parse_from":"body.level"},"timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f%z","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
+			expected:             `{"parse_to":"body","regex":"^(?P<timestamp>[^ ]*)","severity":{"parse_from":"body.level"},"timestamp":{"layout":"%Y-%m-%dT%H:%M:%S.%f","location":"UTC","parse_from":"body.timestamp"},"type":"regex_parser"}`,
 		},
 		{
 			name:         "regexp parsing (quote, single quote)",
