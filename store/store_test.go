@@ -2414,14 +2414,16 @@ func testUpdateRollout(ctx context.Context, t *testing.T, store Store) {
 		agents, err := store.Agents(ctx)
 		require.NoError(t, err)
 
+		agentIDs := make([]string, 0, len(agents))
 		for _, a := range agents {
-			_, err = store.UpsertAgent(ctx, a.ID, func(current *model.Agent) {
-				current.ConfigurationStatus.Future = "config-3:1"
-				current.ConfigurationStatus.Current = ""
-				current.ConfigurationStatus.Pending = ""
-			})
-			require.NoError(t, err)
+			agentIDs = append(agentIDs, a.ID)
 		}
+
+		_, err = store.UpsertAgents(ctx, agentIDs, func(current *model.Agent) {
+			current.ConfigurationStatus.Future = "config-3:1"
+			current.ConfigurationStatus.Current = ""
+			current.ConfigurationStatus.Pending = ""
+		})
 
 		config, err := store.UpdateRollout(ctx, "config-3")
 		assert.Equal(t, model.RolloutStatusStarted, config.Status.Rollout.Status)
@@ -2461,13 +2463,15 @@ func testUpdateRollout(ctx context.Context, t *testing.T, store Store) {
 		agents, err := store.Agents(ctx)
 		require.NoError(t, err)
 
+		agentIDs := make([]string, 0, len(agents))
 		for _, a := range agents {
-			_, err = store.UpsertAgent(ctx, a.ID, func(current *model.Agent) {
-				current.ConfigurationStatus.Future = "config-2:1"
-				current.ConfigurationStatus.Current = ""
-				current.ConfigurationStatus.Pending = ""
-			})
+			agentIDs = append(agentIDs, a.ID)
 		}
+		_, err = store.UpsertAgents(ctx, agentIDs, func(current *model.Agent) {
+			current.ConfigurationStatus.Future = "config-2:1"
+			current.ConfigurationStatus.Current = ""
+			current.ConfigurationStatus.Pending = ""
+		})
 		config, err := store.UpdateRollout(ctx, "config-2")
 		require.NoError(t, err)
 		assert.Equal(t, model.RolloutStatusPaused, config.Status.Rollout.Status)
