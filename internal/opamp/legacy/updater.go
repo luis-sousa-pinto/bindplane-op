@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package opamp
+package legacy
 
 import (
 	"context"
@@ -106,9 +106,6 @@ func (u *updater) handleUpdates(ctx context.Context, updates store.BasicEventUpd
 	defer span.End()
 
 	pending := pendingAgentUpdates{}
-
-	// remove sensitive parameter masking when rendering for the agent
-	ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
 
 	for _, change := range updates.Agents() {
 		// on delete, disconnect

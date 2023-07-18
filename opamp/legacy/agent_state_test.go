@@ -20,7 +20,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/model"
-	"github.com/open-telemetry/opamp-go/protobufs"
+	"github.com/observiq/opamp-go/protobufs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -77,7 +77,7 @@ func TestSerializeState(t *testing.T) {
 						},
 					},
 					RemoteConfigStatus: &protobufs.RemoteConfigStatus{
-						Status: protobufs.RemoteConfigStatuses_RemoteConfigStatuses_APPLIED,
+						Status: protobufs.RemoteConfigStatus_APPLIED,
 					},
 					PackageStatuses: &protobufs.PackageStatuses{},
 				},

@@ -18,8 +18,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	"github.com/observiq/opamp-go/protobufs"
+	opamp "github.com/observiq/opamp-go/server/types"
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/model"
@@ -117,7 +117,7 @@ func (s *agentDescriptionSyncer) message(msg *protobufs.AgentToServer) (result *
 func (s *agentDescriptionSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilities {
 	// TODO(andy): this flag is ok to check and should be true for all agents, but there should probably be a
 	// ReportsAgentDescription capability flag.
-	return protobufs.AgentCapabilities_AgentCapabilities_ReportsStatus
+	return protobufs.AgentCapabilities_ReportsStatus
 }
 
 func (s *agentDescriptionSyncer) update(_ context.Context, _ *zap.Logger, state *AgentState, conn opamp.Connection, agent *model.Agent, value *protobufs.AgentDescription) error {
@@ -141,7 +141,7 @@ func UpdateOpAmpAgentDetails(agent *model.Agent, conn opamp.Connection, desc *pr
 	agent.Labels = ad.labels()
 	agent.Version = ad.Version
 	agent.MacAddress = ad.MacAddress
-	if addr := conn.Connection().RemoteAddr(); addr != nil {
+	if addr := conn.RemoteAddr(); addr != nil {
 		agent.RemoteAddress = addr.String()
 	} else {
 		agent.RemoteAddress = ""

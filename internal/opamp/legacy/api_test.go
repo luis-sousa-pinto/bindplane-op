@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package opamp
+package legacy
 
 import (
 	"context"
@@ -27,21 +27,21 @@ import (
 	"github.com/observiq/bindplane-op/config"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
-	bpopamp "github.com/observiq/bindplane-op/opamp"
-	"github.com/observiq/bindplane-op/opamp/mocks"
+	bpopamp "github.com/observiq/bindplane-op/opamp/legacy"
+	"github.com/observiq/bindplane-op/opamp/legacy/mocks"
 	bpserver "github.com/observiq/bindplane-op/server"
 	serverMocks "github.com/observiq/bindplane-op/server/mocks"
 	"github.com/observiq/bindplane-op/store"
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	"github.com/observiq/opamp-go/protobufs"
+	opamp "github.com/observiq/opamp-go/server/types"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
-func testServer(manager bpserver.Manager) *opampServer {
-	return newServer(manager, zap.NewNop())
+func testServer(manager bpserver.Manager) *legacyOpampServer {
+	return newLegacyServer(manager, zap.NewNop())
 }
 
 func testResource[T model.Resource](t *testing.T, name string) T {
@@ -95,9 +95,7 @@ func (addr *TestAddr) String() string {
 func TestUpdateOpAmpAgentDetails(t *testing.T) {
 	agent := model.Agent{}
 	conn := mocks.NewMockConnection(t)
-	c := mocks.NewMockConn(t)
-	c.EXPECT().RemoteAddr().Return(&TestAddr{network: "tcp", address: "0.0.0.0:0"})
-	conn.EXPECT().Connection().Return(c)
+	conn.On("RemoteAddr").Return(&TestAddr{network: "tcp", address: "0.0.0.0:0"})
 
 	kv := func(key, value string) *protobufs.KeyValue {
 		return &protobufs.KeyValue{Key: key, Value: &protobufs.AnyValue{Value: &protobufs.AnyValue_StringValue{StringValue: value}}}
@@ -148,9 +146,7 @@ func TestUpdateOpAmpAgentDetails(t *testing.T) {
 func TestUpdateOpAmpAgentDetails2(t *testing.T) {
 	agent := model.Agent{}
 	conn := mocks.NewMockConnection(t)
-	c := mocks.NewMockConn(t)
-	c.EXPECT().RemoteAddr().Return(nil)
-	conn.EXPECT().Connection().Return(c)
+	conn.On("RemoteAddr").Return(nil)
 
 	kv := func(key, value string) *protobufs.KeyValue {
 		return &protobufs.KeyValue{Key: key, Value: &protobufs.AnyValue{Value: &protobufs.AnyValue_StringValue{StringValue: value}}}
@@ -201,9 +197,7 @@ func TestUpdateOpAmpAgentDetails2(t *testing.T) {
 func TestUpdateOpAmpAgentDetails3(t *testing.T) {
 	agent := model.Agent{}
 	conn := mocks.NewMockConnection(t)
-	c := mocks.NewMockConn(t)
-	c.EXPECT().RemoteAddr().Return(nil)
-	conn.EXPECT().Connection().Return(c)
+	conn.On("RemoteAddr").Return(nil)
 
 	kv := func(key, value string) *protobufs.KeyValue {
 		return &protobufs.KeyValue{Key: key, Value: &protobufs.AnyValue{Value: &protobufs.AnyValue_StringValue{StringValue: value}}}
@@ -334,8 +328,11 @@ func TestServerOnConnecting(t *testing.T) {
 			}
 			server := testServer(manager)
 			server.updater = updater
+			server.compatibleOpAMPVersions = []string{"v0.2.0"}
 			request := &http.Request{
-				Header: http.Header{},
+				Header: http.Header{
+					"Opamp-Version": []string{"v0.2.0"},
+				},
 			}
 
 			if tc.authorization != "" {
@@ -373,11 +370,11 @@ func makeAgentDescription(version string) *protobufs.AgentDescription {
 
 func TestServerOnMessage(t *testing.T) {
 	agentID := "a4013625-30f4-489e-a0ca-ef1c97d2ae3f"
-	agentCapabilities := protobufs.AgentCapabilities_AgentCapabilities_ReportsEffectiveConfig |
-		protobufs.AgentCapabilities_AgentCapabilities_ReportsPackageStatuses |
-		protobufs.AgentCapabilities_AgentCapabilities_AcceptsRemoteConfig |
-		protobufs.AgentCapabilities_AgentCapabilities_AcceptsPackages |
-		protobufs.AgentCapabilities_AgentCapabilities_ReportsStatus
+	agentCapabilities := protobufs.AgentCapabilities_ReportsEffectiveConfig |
+		protobufs.AgentCapabilities_ReportsPackageStatuses |
+		protobufs.AgentCapabilities_AcceptsRemoteConfig |
+		protobufs.AgentCapabilities_AcceptsPackages |
+		protobufs.AgentCapabilities_ReportsStatus
 
 	agentWithConfigurationRaw := &observiq.RawAgentConfiguration{
 		Collector: []byte(strings.TrimLeft(`
@@ -419,9 +416,7 @@ service:
 	)
 
 	conn := mocks.NewMockConnection(t)
-	c := mocks.NewMockConn(t)
-	c.EXPECT().RemoteAddr().Return(nil)
-	conn.EXPECT().Connection().Maybe().Return(c)
+	conn.On("RemoteAddr").Maybe().Return(nil)
 	server := testServer(testManager)
 	testManager.EnableProtocol(server)
 
@@ -440,21 +435,21 @@ service:
 		name    string
 		message *protobufs.AgentToServer
 		expect  *protobufs.ServerToAgent
-		verify  func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent)
+		verify  func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent)
 	}{
 		{
 			name: "status report with no contents, should request details",
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				require.ElementsMatch(t, []string{agentID}, server.connections.ConnectedAgentIDs(context.TODO()))
 				agent, err := server.manager.Agent(context.TODO(), agentID)
 				require.NoError(t, err)
@@ -466,7 +461,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -479,10 +474,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 				ErrorResponse: &protobufs.ServerErrorResponse{
-					Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
+					Type:         protobufs.ServerErrorResponse_Unknown,
 					ErrorMessage: "unable to parse the current agent configuration: unable to parse manager config: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into observiq.ManagerConfig",
 				},
 			},
@@ -492,7 +487,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -506,10 +501,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				agent, err := server.manager.Agent(context.TODO(), agentID)
 				require.NoError(t, err)
 				require.Equal(t, "a=b,c=d,configuration=api-test", agent.Labels.Custom().String())
@@ -520,12 +515,12 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
 		},
 		{
@@ -533,7 +528,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -547,10 +542,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				agent, err := server.manager.Agent(context.TODO(), agentID)
 				require.NoError(t, err)
 				require.Equal(t, "2.0", agent.Version)
@@ -561,7 +556,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -575,10 +570,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				// gross! inserting a new configuration here and making sure we get it in the next test
 				raw := testResource[*model.Configuration](t, "configuration-raw.yaml")
 				statuses, err := testMapStore.ApplyResources(context.Background(), []model.Resource{raw})
@@ -591,7 +586,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -605,8 +600,8 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 				RemoteConfig: &protobufs.AgentRemoteConfig{
 					Config: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -624,18 +619,18 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:      nextSequenceNum(),
 				InstanceUid:      agentID,
-				Capabilities:     uint64(agentCapabilities),
+				Capabilities:     agentCapabilities,
 				EffectiveConfig:  &protobufs.EffectiveConfig{},
 				AgentDescription: &protobufs.AgentDescription{},
 				RemoteConfigStatus: &protobufs.RemoteConfigStatus{
 					LastRemoteConfigHash: agentWithConfigurationRawHash,
-					Status:               protobufs.RemoteConfigStatuses_RemoteConfigStatuses_APPLIED,
+					Status:               protobufs.RemoteConfigStatus_APPLIED,
 				},
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
 		},
 		{
@@ -643,7 +638,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum(),
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -661,10 +656,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				agent, err := server.manager.Agent(context.Background(), agentID)
 				require.NoError(t, err)
 				require.Equal(t, "api-test:0", agent.ConfigurationStatus.Current)
@@ -675,7 +670,7 @@ service:
 			message: &protobufs.AgentToServer{
 				SequenceNum:  nextSequenceNum() + 1,
 				InstanceUid:  agentID,
-				Capabilities: uint64(agentCapabilities),
+				Capabilities: agentCapabilities,
 				EffectiveConfig: &protobufs.EffectiveConfig{
 					ConfigMap: &protobufs.AgentConfigMap{
 						ConfigMap: map[string]*protobufs.AgentConfigFile{
@@ -693,10 +688,10 @@ service:
 			},
 			expect: &protobufs.ServerToAgent{
 				InstanceUid:  agentID,
-				Capabilities: uint64(capabilities),
-				Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+				Capabilities: legacyCapabilities,
+				Flags:        protobufs.ServerToAgent_ReportFullState,
 			},
-			verify: func(t *testing.T, server *opampServer, result *protobufs.ServerToAgent) {
+			verify: func(t *testing.T, server *legacyOpampServer, result *protobufs.ServerToAgent) {
 				agent, err := server.manager.Agent(context.TODO(), agentID)
 				require.NoError(t, err)
 				require.Equal(t, "2.0", agent.Version)
@@ -748,7 +743,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 			initialStatus:       model.Error,
 			initialErrorMessage: "error",
 			remoteStatus: &protobufs.RemoteConfigStatus{
-				Status: protobufs.RemoteConfigStatuses_RemoteConfigStatuses_UNSET,
+				Status: protobufs.RemoteConfigStatus_UNSET,
 			},
 			expectStatus:       model.Error,
 			expectErrorMessage: "error",
@@ -758,7 +753,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 			initialStatus:       model.Connected,
 			initialErrorMessage: "",
 			remoteStatus: &protobufs.RemoteConfigStatus{
-				Status:       protobufs.RemoteConfigStatuses_RemoteConfigStatuses_FAILED,
+				Status:       protobufs.RemoteConfigStatus_FAILED,
 				ErrorMessage: "error",
 			},
 			expectStatus:       model.Error,
@@ -769,7 +764,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 			initialStatus:       model.Error,
 			initialErrorMessage: "old error",
 			remoteStatus: &protobufs.RemoteConfigStatus{
-				Status:       protobufs.RemoteConfigStatuses_RemoteConfigStatuses_FAILED,
+				Status:       protobufs.RemoteConfigStatus_FAILED,
 				ErrorMessage: "new error",
 			},
 			expectStatus:       model.Error,
@@ -780,7 +775,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 			initialStatus:       model.Error,
 			initialErrorMessage: "error",
 			remoteStatus: &protobufs.RemoteConfigStatus{
-				Status: protobufs.RemoteConfigStatuses_RemoteConfigStatuses_APPLIED,
+				Status: protobufs.RemoteConfigStatus_APPLIED,
 			},
 			expectStatus:       model.Connected,
 			expectErrorMessage: "",
@@ -795,6 +790,126 @@ func TestUpdateAgentStatus(t *testing.T) {
 			bpopamp.UpdateAgentStatus(zap.NewNop(), agent, test.remoteStatus)
 			require.Equal(t, test.expectStatus, agent.Status)
 			require.Equal(t, test.expectErrorMessage, agent.ErrorMessage)
+		})
+	}
+}
+
+func TestOnConnectingOpAMPCompatibility(t *testing.T) {
+	tests := []struct {
+		name    string
+		request http.Request
+		expect  opamp.ConnectionResponse
+	}{
+		{
+			name: "no version",
+			request: http.Request{
+				Header: http.Header{
+					"Authorization":         []string{"Secret-Key a0f1db77-818a-4f1a-81a3-7b6a9613ef41"},
+					"Connection":            []string{"Upgrade"},
+					"Sec-Websocket-Key":     []string{"xx=="},
+					"Sec-Websocket-Version": []string{"13"},
+					"Upgrade":               []string{"websocket"},
+					"User-Agent":            []string{"observiq-otel-collector/v1.2.0"}},
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         false,
+				HTTPStatusCode: http.StatusUpgradeRequired,
+				HTTPResponseHeader: map[string]string{
+					"Upgrade": "OpAMP/v0.2.0",
+				},
+			},
+		},
+		{
+			name: "ok version",
+			request: http.Request{
+				Header: http.Header{
+					"Agent-Hostname":        []string{"arm.localdomain"},
+					"Agent-Id":              []string{"4ec02b0f-3cb7-498d-9172-bfaa28718ee8"},
+					"Agent-Version":         []string{"v1.2.0"},
+					"Authorization":         []string{"Secret-Key a0f1db77-818a-4f1a-81a3-7b6a9613ef41"},
+					"Connection":            []string{"Upgrade"},
+					"Opamp-Version":         []string{"v0.2.0"},
+					"Sec-Websocket-Key":     []string{"xx=="},
+					"Sec-Websocket-Version": []string{"13"},
+					"Upgrade":               []string{"websocket"},
+					"User-Agent":            []string{"observiq-otel-collector/v1.2.0"},
+				},
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         true,
+				HTTPStatusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "ok version, bad secret key",
+			request: http.Request{
+				Header: http.Header{
+					"Agent-Hostname":        []string{"arm.localdomain"},
+					"Agent-Id":              []string{"4ec02b0f-3cb7-498d-9172-bfaa28718ee8"},
+					"Agent-Version":         []string{"v1.2.0"},
+					"Authorization":         []string{"Secret-Key 6afd5cf2-2c3f-44f7-a2f6-6fc310ad69b8"},
+					"Connection":            []string{"Upgrade"},
+					"Opamp-Version":         []string{"v0.2.0"},
+					"Sec-Websocket-Key":     []string{"xx=="},
+					"Sec-Websocket-Version": []string{"13"},
+					"Upgrade":               []string{"websocket"},
+					"User-Agent":            []string{"observiq-otel-collector/v1.2.0"},
+				},
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         false,
+				HTTPStatusCode: http.StatusUnauthorized,
+			},
+		},
+		{
+			name: "future version",
+			request: http.Request{
+				Header: http.Header{
+					"Agent-Hostname":        []string{"arm.localdomain"},
+					"Agent-Id":              []string{"4ec02b0f-3cb7-498d-9172-bfaa28718ee8"},
+					"Agent-Version":         []string{"v1.2.0"},
+					"Authorization":         []string{"Secret-Key a0f1db77-818a-4f1a-81a3-7b6a9613ef41"},
+					"Connection":            []string{"Upgrade"},
+					"Opamp-Version":         []string{"v0.3.0"},
+					"Sec-Websocket-Key":     []string{"xx=="},
+					"Sec-Websocket-Version": []string{"13"},
+					"Upgrade":               []string{"websocket"},
+					"User-Agent":            []string{"observiq-otel-collector/v1.2.0"},
+				},
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         false,
+				HTTPStatusCode: http.StatusUpgradeRequired,
+				HTTPResponseHeader: map[string]string{
+					"Upgrade": "OpAMP/v0.2.0",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		cfg := &config.Config{
+			Auth: config.Auth{
+				SecretKey: "a0f1db77-818a-4f1a-81a3-7b6a9613ef41",
+			},
+		}
+		testManager := bpserver.NewManager(cfg, nil, nil, zap.NewNop())
+		testServer := newLegacyServer(testManager, zap.NewNop())
+		testServer.compatibleOpAMPVersions = []string{"v0.2.0"}
+		updater := serverMocks.NewMockUpdater(t)
+		if test.expect.Accept {
+			updater.On("Start", mock.Anything).Return()
+		}
+		testServer.updater = updater
+
+		t.Run(test.name, func(t *testing.T) {
+			response := testServer.OnConnecting(&test.request)
+			require.Equal(t, test.expect.Accept, response.Accept)
+			require.Equal(t, test.expect.HTTPStatusCode, response.HTTPStatusCode)
+			require.Equal(t, test.expect.HTTPResponseHeader, response.HTTPResponseHeader)
+			require.Eventually(t, func() bool {
+				return updater.AssertExpectations(t)
+			}, 100*time.Millisecond, 10*time.Millisecond)
 		})
 	}
 }

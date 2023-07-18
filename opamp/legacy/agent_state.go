@@ -26,8 +26,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	"github.com/observiq/opamp-go/protobufs"
+	opamp "github.com/observiq/opamp-go/server/types"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/runtime/protoiface"
 )
@@ -172,7 +172,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 			zap.Bool("initialSyncRequired", initialSyncRequired),
 		)
 		if hasCapability(agentToServer, syncer.agentCapabilitiesFlag()) {
-			response.Flags = uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState)
+			response.Flags = protobufs.ServerToAgent_ReportFullState
 		}
 		return false
 	}
@@ -196,7 +196,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 			errorMessage = response.ErrorResponse.ErrorMessage + ", " + errorMessage
 		}
 		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
+			Type:         protobufs.ServerErrorResponse_Unknown,
 			ErrorMessage: errorMessage,
 		}
 	} else {
@@ -207,7 +207,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 }
 
 func hasCapability(agentToServer *protobufs.AgentToServer, capability protobufs.AgentCapabilities) bool {
-	return uint64(capability)&agentToServer.GetCapabilities() != 0
+	return capability&agentToServer.GetCapabilities() != 0
 }
 
 // ----------------------------------------------------------------------

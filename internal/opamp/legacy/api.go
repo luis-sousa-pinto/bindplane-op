@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package opamp implements the OpenTelemetry OpAMP protocol.
-package opamp
+// Package legacy implements the v0.2.0 OpenTelemetry OpAMP protocol.
+package legacy
 
 import (
 	"bytes"
@@ -24,30 +24,31 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	bpopamp "github.com/observiq/bindplane-op/opamp"
+	bpopamp "github.com/observiq/bindplane-op/opamp/legacy"
 	bpserver "github.com/observiq/bindplane-op/server"
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opampSvr "github.com/open-telemetry/opamp-go/server"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	legacyOpampProtobufs "github.com/observiq/opamp-go/protobufs"
+	legacyOpampSvr "github.com/observiq/opamp-go/server"
+	legacyOpamp "github.com/observiq/opamp-go/server/types"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 
-	"github.com/observiq/bindplane-op/internal/opamp/connections"
-	"github.com/observiq/bindplane-op/internal/opamp/legacy"
+	"github.com/observiq/bindplane-op/internal/opamp/legacy/connections"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/server/protocol"
 )
 
-var tracer = otel.Tracer("bindplane/opamp")
+var tracer = otel.Tracer("bindplane/opampLegacy")
 
-// ProtocolName is "opamp"
-const ProtocolName = "opamp"
+// ProtocolName is "opampLegacy"
+const ProtocolName = "opampLegacy"
+
+var compatibleOpAMPVersions = []string{"v0.2.0"}
 
 const (
 	headerAuthorization = "Authorization"
@@ -58,42 +59,17 @@ const (
 	headerAgentHostname = "Agent-Hostname"
 )
 
-// AddRoutes adds the routes used by opamp, currently /v1/opamp
-func AddRoutes(router gin.IRouter, bindplane exposedserver.BindPlane) error {
-	// legacy handler is used for v0.2.0 agents
-	legacyHandler, err := legacy.BuildLegacyHandler(bindplane)
-	if err != nil {
-		return err
-	}
-
-	// current handler is used for > v0.7.1 agents
-	currentHandler, err := buildCurrentHandler(bindplane)
-
-	multiVersionHandler := func(res http.ResponseWriter, req *http.Request) {
-		opampVersion := req.Header.Get(headerOpAMPVersion)
-		switch opampVersion {
-		case "v0.2.0":
-			legacyHandler(res, req)
-		default:
-			currentHandler(res, req)
-		}
-	}
-
-	router.Any("/opamp", gin.WrapF(http.HandlerFunc(multiVersionHandler)))
-
-	return nil
-}
-
-func buildCurrentHandler(bindplane exposedserver.BindPlane) (func(res http.ResponseWriter, req *http.Request), error) {
-	callbacks := newServer(bindplane.Manager(), bindplane.Logger())
-	server := opampSvr.New(bindplane.Logger().Sugar())
-	settings := opampSvr.Settings{
+// BuildLegacyHandler creates a new legacy opamp handler for communicating with agents using the v0.2.0 opamp-go library.
+func BuildLegacyHandler(bindplane exposedserver.BindPlane) (func(res http.ResponseWriter, req *http.Request), error) {
+	callbacks := newLegacyServer(bindplane.Manager(), bindplane.Logger())
+	server := legacyOpampSvr.New(bindplane.Logger().Sugar())
+	settings := legacyOpampSvr.Settings{
 		Callbacks: callbacks,
 	}
 
-	handler, _, err := server.Attach(settings)
+	handler, err := server.Attach(settings)
 	if err != nil {
-		return nil, fmt.Errorf("error attempting to attach the OpAMP v0.7.1 server: %w", err)
+		return nil, fmt.Errorf("error attempting to attach the OpAMP v0.2.0 server: %w", err)
 	}
 
 	bindplane.Manager().EnableProtocol(callbacks)
@@ -101,28 +77,26 @@ func buildCurrentHandler(bindplane exposedserver.BindPlane) (func(res http.Respo
 	return handler, nil
 }
 
-const (
-	capabilities = protobufs.ServerCapabilities_ServerCapabilities_AcceptsStatus |
-		protobufs.ServerCapabilities_ServerCapabilities_AcceptsEffectiveConfig |
-		protobufs.ServerCapabilities_ServerCapabilities_OffersRemoteConfig
-)
+const legacyCapabilities = legacyOpampProtobufs.ServerCapabilities_AcceptsStatus | legacyOpampProtobufs.ServerCapabilities_AcceptsEffectiveConfig | legacyOpampProtobufs.ServerCapabilities_OffersRemoteConfig
 
-type opampServer struct {
-	manager     bpserver.Manager
-	connections bpopamp.Connections[*bpopamp.AgentConnectionState]
-	logger      *zap.Logger
-	updater     bpserver.Updater
+type legacyOpampServer struct {
+	manager                 bpserver.Manager
+	connections             bpopamp.Connections[*bpopamp.AgentConnectionState]
+	compatibleOpAMPVersions []string
+	logger                  *zap.Logger
+	updater                 bpserver.Updater
 }
 
-var _ protocol.Protocol = (*opampServer)(nil)
-var _ opamp.Callbacks = (*opampServer)(nil)
+var _ protocol.Protocol = (*legacyOpampServer)(nil)
+var _ legacyOpamp.Callbacks = (*legacyOpampServer)(nil)
 
-func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
+func newLegacyServer(manager bpserver.Manager, logger *zap.Logger) *legacyOpampServer {
 	_, cancel := context.WithCancel(context.Background())
-	s := &opampServer{
-		manager:     manager,
-		connections: connections.NewConnections(),
-		logger:      logger,
+	s := &legacyOpampServer{
+		manager:                 manager,
+		connections:             connections.NewConnections(),
+		compatibleOpAMPVersions: compatibleOpAMPVersions,
+		logger:                  logger,
 	}
 	s.updater = newUpdater(
 		s,
@@ -149,7 +123,7 @@ func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
 //	Return ConnectionResponse with Accept=false. HTTPStatusCode MUST be set to
 //	non-zero value to indicate the rejection reason (typically 401, 429 or 503).
 //	HTTPResponseHeader may be optionally set (e.g. "Retry-After: 30").
-func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionResponse {
+func (s *legacyOpampServer) OnConnecting(request *http.Request) legacyOpamp.ConnectionResponse {
 	ctx, span := tracer.Start(request.Context(), "opamp/connecting")
 	defer span.End()
 
@@ -157,11 +131,27 @@ func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionRespon
 
 	// check for compatibility
 	headers := parseAgentHeaders(request)
+	if headers == nil || !slices.Contains(s.compatibleOpAMPVersions, headers.opampVersion) {
+		// no version header, agent version is <= 1.2.0 or OpAMP version incompatible
+		s.logger.Error("unable to connect to incompatible agent",
+			zap.Any("headers", request.Header),
+			zap.String("RemoteAddr", request.RemoteAddr),
+			zap.Strings("compatibleOpAMPVersions", s.compatibleOpAMPVersions),
+		)
+
+		return legacyOpamp.ConnectionResponse{
+			Accept:         false,
+			HTTPStatusCode: http.StatusUpgradeRequired,
+			HTTPResponseHeader: map[string]string{
+				"Upgrade": fmt.Sprintf("OpAMP/%s", s.compatibleOpAMPVersions[0]),
+			},
+		}
+	}
 
 	ctx, accept := s.manager.VerifySecretKey(ctx, headers.secretKey)
 	if !accept {
 		span.SetStatus(codes.Error, http.StatusText(http.StatusUnauthorized))
-		return opamp.ConnectionResponse{
+		return legacyOpamp.ConnectionResponse{
 			Accept:         false,
 			HTTPStatusCode: http.StatusUnauthorized,
 		}
@@ -171,10 +161,9 @@ func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionRespon
 
 	go s.updater.Start(context.Background())
 
-	return opamp.ConnectionResponse{
-		Accept:              true,
-		HTTPStatusCode:      http.StatusOK,
-		ConnectionCallbacks: s,
+	return legacyOpamp.ConnectionResponse{
+		Accept:         true,
+		HTTPStatusCode: http.StatusOK,
 	}
 }
 
@@ -206,27 +195,27 @@ func parseAgentHeaders(request *http.Request) *agentHeaders {
 // HTTP connection is upgraded to WebSocket.
 //
 // opamp.Connection doesn't have much information that we can use here
-func (s *opampServer) OnConnected(_ opamp.Connection) {
+func (s *legacyOpampServer) OnConnected(_ legacyOpamp.Connection) {
 	_, span := tracer.Start(context.TODO(), "opamp/connected")
 	defer span.End()
 }
 
 // OnMessage is called when a message is received from the connection. Can happen
 // only after OnConnected().
-func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentToServer) *protobufs.ServerToAgent {
+func (s *legacyOpampServer) OnMessage(conn legacyOpamp.Connection, message *legacyOpampProtobufs.AgentToServer) *legacyOpampProtobufs.ServerToAgent {
 	ctx, span := tracer.Start(context.Background(), "opamp/message")
 	defer span.End()
 
 	agentID := message.InstanceUid
-	response := &protobufs.ServerToAgent{
+	response := &legacyOpampProtobufs.ServerToAgent{
 		InstanceUid:  agentID,
-		Capabilities: uint64(capabilities),
+		Capabilities: legacyCapabilities,
 	}
 
 	if _, err := s.connections.OnMessage(agentID, conn); err != nil {
 		s.logger.Error("failed to verify the agent configuration", zap.Error(err))
-		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
+		response.ErrorResponse = &legacyOpampProtobufs.ServerErrorResponse{
+			Type:         legacyOpampProtobufs.ServerErrorResponse_Unknown,
 			ErrorMessage: err.Error(),
 		}
 		return response
@@ -247,8 +236,8 @@ func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentT
 		s.logger.Error("error verifying the agent configuration", zap.Error(err))
 		// send an error response
 		// TODO(andy): Ok to report the exact error?
-		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
+		response.ErrorResponse = &legacyOpampProtobufs.ServerErrorResponse{
+			Type:         legacyOpampProtobufs.ServerErrorResponse_Unknown,
 			ErrorMessage: err.Error(),
 		}
 	}
@@ -260,7 +249,7 @@ func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentT
 // OnConnectionClose is called when the WebSocket connection is closed.
 // Typically, preceded by OnDisconnect() unless the client misbehaves or the
 // connection is lost.
-func (s *opampServer) OnConnectionClose(conn opamp.Connection) {
+func (s *legacyOpampServer) OnConnectionClose(conn legacyOpamp.Connection) {
 	ctx, span := tracer.Start(context.Background(), "opamp/OnConnectionClose")
 	defer span.End()
 
@@ -288,19 +277,19 @@ func (s *opampServer) OnConnectionClose(conn opamp.Connection) {
 // ----------------------------------------------------------------------
 // Protocol implementation
 
-func (s *opampServer) Name() string {
+func (s *legacyOpampServer) Name() string {
 	return ProtocolName
 }
 
 // ConnectedAgentIDs should return a slice of the currently connected agent IDs
-func (s *opampServer) ConnectedAgentIDs(ctx context.Context) ([]string, error) {
+func (s *legacyOpampServer) ConnectedAgentIDs(ctx context.Context) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "opamp/ConnectedAgentIDs")
 	defer span.End()
 
 	return s.connections.ConnectedAgentIDs(ctx), nil
 }
 
-func (s *opampServer) Disconnect(agentID string) bool {
+func (s *legacyOpampServer) Disconnect(agentID string) bool {
 	state := s.connections.StateForAgentID(agentID)
 	if state == nil {
 		return false
@@ -313,7 +302,7 @@ func (s *opampServer) Disconnect(agentID string) bool {
 }
 
 // Connected returns true if the specified agent ID is connected
-func (s *opampServer) Connected(agentID string) bool {
+func (s *legacyOpampServer) Connected(agentID string) bool {
 	return s.connections.Connected(agentID)
 }
 
@@ -322,7 +311,7 @@ func (s *opampServer) Connected(agentID string) bool {
 //
 // This function is called when the agent configuration is updated in the Store and we want to PUSH the changes to a
 // connected agent.
-func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updates *protocol.AgentUpdates) error {
+func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updates *protocol.AgentUpdates) error {
 	state := s.connections.StateForAgentID(agent.ID)
 	if state == nil {
 		return fmt.Errorf("no connection state for agentID %s", agent.ID)
@@ -350,10 +339,10 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 		return fmt.Errorf("unable to get the new configuration for agent [%s]: %w", agent.ID, err)
 	}
 
-	serverToAgent := &protobufs.ServerToAgent{
+	serverToAgent := &legacyOpampProtobufs.ServerToAgent{
 		InstanceUid:  agent.ID,
-		Capabilities: uint64(capabilities),
-		Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
+		Capabilities: legacyCapabilities,
+		Flags:        legacyOpampProtobufs.ServerToAgent_ReportFullState,
 	}
 
 	if newConfiguration.Empty() {
@@ -363,7 +352,7 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 		agentRawConfiguration := agentConfiguration.Raw()
 		newRawConfiguration := newConfiguration.Raw()
 
-		serverToAgent.RemoteConfig = agentRemoteConfig(&newRawConfiguration, &agentRawConfiguration)
+		serverToAgent.RemoteConfig = legacyAgentRemoteConfig(&newRawConfiguration, &agentRawConfiguration)
 
 		// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not required to update the agent
 		_, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
@@ -379,11 +368,11 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 			})
 		} else {
 			allPackagesHash := []byte(updates.Version)
-			serverToAgent.PackagesAvailable = &protobufs.PackagesAvailable{
+			serverToAgent.PackagesAvailable = &legacyOpampProtobufs.PackagesAvailable{
 				AllPackagesHash: allPackagesHash,
-				Packages: map[string]*protobufs.PackageAvailable{
+				Packages: map[string]*legacyOpampProtobufs.PackageAvailable{
 					bpopamp.CollectorPackageName: {
-						Type:    protobufs.PackageType_PackageType_TopLevel,
+						Type:    legacyOpampProtobufs.PackageAvailable_TopLevelPackage,
 						Version: updates.Version,
 						File:    downloadableFile,
 						Hash:    []byte(updates.Version),
@@ -406,7 +395,7 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 	return s.send(ctx, conn, serverToAgent)
 }
 
-func (s *opampServer) getDownloadableFile(ctx context.Context, a *model.Agent, versionString string) (*protobufs.DownloadableFile, error) {
+func (s *legacyOpampServer) getDownloadableFile(ctx context.Context, a *model.Agent, versionString string) (*legacyOpampProtobufs.DownloadableFile, error) {
 	version, err := s.manager.AgentVersion(ctx, versionString)
 	if version == nil {
 		return nil, fmt.Errorf("agent version %s not found", versionString)
@@ -432,27 +421,27 @@ func (s *opampServer) getDownloadableFile(ctx context.Context, a *model.Agent, v
 		return nil, err
 	}
 
-	return &protobufs.DownloadableFile{
+	return &legacyOpampProtobufs.DownloadableFile{
 		DownloadUrl: url,
 		ContentHash: hashBytes,
 	}, nil
 }
 
 // SendHeartbeat sends a heartbeat to the agent to keep the websocket open
-func (s *opampServer) SendHeartbeat(agentID string) error {
+func (s *legacyOpampServer) SendHeartbeat(agentID string) error {
 	state := s.connections.StateForAgentID(agentID)
 	if state == nil {
 		return nil
 	}
 	conn := state.Conn
 	if conn != nil {
-		return s.send(context.Background(), conn, &protobufs.ServerToAgent{})
+		return s.send(context.Background(), conn, &legacyOpampProtobufs.ServerToAgent{})
 	}
 	return nil
 }
 
 // RequestReport sends report configuration to the specified agent
-func (s *opampServer) RequestReport(ctx context.Context, agentID string, configuration protocol.Report) error {
+func (s *legacyOpampServer) RequestReport(ctx context.Context, agentID string, configuration protocol.Report) error {
 	ctx, span := tracer.Start(ctx, "opamp/RequestReport", trace.WithAttributes(
 		attribute.String("bindplane.agent.id", agentID)),
 	)
@@ -470,11 +459,11 @@ func (s *opampServer) RequestReport(ctx context.Context, agentID string, configu
 			return err
 		}
 		s.logger.Info("RequestReport", zap.String(protocol.ReportName, string(body)))
-		return s.send(context.Background(), conn, &protobufs.ServerToAgent{
-			RemoteConfig: &protobufs.AgentRemoteConfig{
+		return s.send(context.Background(), conn, &legacyOpampProtobufs.ServerToAgent{
+			RemoteConfig: &legacyOpampProtobufs.AgentRemoteConfig{
 				ConfigHash: computeReportConfigurationHash(body),
-				Config: &protobufs.AgentConfigMap{
-					ConfigMap: map[string]*protobufs.AgentConfigFile{
+				Config: &legacyOpampProtobufs.AgentConfigMap{
+					ConfigMap: map[string]*legacyOpampProtobufs.AgentConfigFile{
 						protocol.ReportName: {
 							Body:        body,
 							ContentType: "text/yaml",
@@ -487,7 +476,7 @@ func (s *opampServer) RequestReport(ctx context.Context, agentID string, configu
 	return nil
 }
 
-func (s *opampServer) Shutdown(ctx context.Context) error {
+func (s *legacyOpampServer) Shutdown(ctx context.Context) error {
 	ctx, span := tracer.Start(ctx, "opamp/Shutdown")
 	defer span.End()
 
@@ -512,7 +501,7 @@ func computeReportConfigurationHash(contents ...[]byte) []byte {
 	return h.Sum(nil)
 }
 
-func (s *opampServer) send(ctx context.Context, conn opamp.Connection, msg *protobufs.ServerToAgent) error {
+func (s *legacyOpampServer) send(ctx context.Context, conn legacyOpamp.Connection, msg *legacyOpampProtobufs.ServerToAgent) error {
 	state := s.connections.StateForConnection(conn)
 	state.SendLock.Lock()
 	defer state.SendLock.Unlock()
@@ -521,7 +510,7 @@ func (s *opampServer) send(ctx context.Context, conn opamp.Connection, msg *prot
 
 // ----------------------------------------------------------------------
 
-func (s *opampServer) verifyAgentConfig(ctx context.Context, conn opamp.Connection, agentID string, message *protobufs.AgentToServer, response *protobufs.ServerToAgent) error {
+func (s *legacyOpampServer) verifyAgentConfig(ctx context.Context, conn legacyOpamp.Connection, agentID string, message *legacyOpampProtobufs.AgentToServer, response *legacyOpampProtobufs.ServerToAgent) error {
 	ctx, span := tracer.Start(ctx, "opamp/verifyAgentConfig")
 	defer span.End()
 
@@ -540,11 +529,11 @@ func (s *opampServer) verifyAgentConfig(ctx context.Context, conn opamp.Connecti
 // running the correct configuration. It gets the current Configuration for the Agent from the Manager.AgentUpdates
 // method (which uses Store.AgentConfiguration) and compares it to the configuration reported by the agent. This is a
 // PULL from the Agent.
-func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent, state *bpopamp.AgentState, response *protobufs.ServerToAgent) error {
+func (s *legacyOpampServer) updateAgentConfig(ctx context.Context, agent *model.Agent, state *bpopamp.AgentState, response *legacyOpampProtobufs.ServerToAgent) error {
 	agentRawConfiguration := state.Configuration()
 	if agentRawConfiguration == nil {
 		s.logger.Info("no configuration available to verify, requesting from agent")
-		response.Flags = uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState)
+		response.Flags = legacyOpampProtobufs.ServerToAgent_ReportFullState
 		return nil
 	}
 
@@ -553,9 +542,6 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 		// TODO(andy): ignore the current unparsable configuration and force new configuration?
 		return fmt.Errorf("unable to parse the current agent configuration: %w", err)
 	}
-
-	// remove sensitive parameter masking when rendering for the agent
-	ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
 
 	// check the manager for any updates that should be applied to this agent
 	updates, err := s.manager.AgentUpdates(ctx, agent)
@@ -579,7 +565,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 	}
 
 	rawNewConfiguration := newConfiguration.Raw()
-	remoteConfig := agentRemoteConfig(&rawNewConfiguration, agentRawConfiguration)
+	remoteConfig := legacyAgentRemoteConfig(&rawNewConfiguration, agentRawConfiguration)
 
 	// check to see if we already tried this and received an error
 	if bytes.Equal(state.Status.GetRemoteConfigStatus().GetLastRemoteConfigHash(), remoteConfig.GetConfigHash()) {
@@ -597,7 +583,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 	return nil
 }
 
-func (s *opampServer) updatedConfiguration(ctx context.Context, agent *model.Agent, agentConfiguration *observiq.AgentConfiguration, updates *protocol.AgentUpdates) (diff observiq.AgentConfiguration, err error) {
+func (s *legacyOpampServer) updatedConfiguration(ctx context.Context, agent *model.Agent, agentConfiguration *observiq.AgentConfiguration, updates *protocol.AgentUpdates) (diff observiq.AgentConfiguration, err error) {
 	// Configuration => collector.yaml
 	if updates.Configuration != nil {
 		newCollectorYAML, err := updates.Configuration.Render(ctx, agent, s.manager.BindPlaneURL(), s.manager.BindPlaneInsecureSkipVerify(), s.manager.ResourceStore(), model.GetOssOtelHeaders())
@@ -617,21 +603,21 @@ func (s *opampServer) updatedConfiguration(ctx context.Context, agent *model.Age
 }
 
 // agentRemoteConfig generates the protobuf for sending this Config to an agent using the OpAMP protocol
-func agentRemoteConfig(updates *observiq.RawAgentConfiguration, agentRaw *observiq.RawAgentConfiguration) *protobufs.AgentRemoteConfig {
+func legacyAgentRemoteConfig(updates *observiq.RawAgentConfiguration, agentRaw *observiq.RawAgentConfiguration) *legacyOpampProtobufs.AgentRemoteConfig {
 	// only store the configs that exist for the agent
-	configMap := map[string]*protobufs.AgentConfigFile{}
+	configMap := map[string]*legacyOpampProtobufs.AgentConfigFile{}
 	if updates.Collector != nil {
-		configMap[observiq.CollectorFilename] = &protobufs.AgentConfigFile{Body: updates.Collector}
+		configMap[observiq.CollectorFilename] = &legacyOpampProtobufs.AgentConfigFile{Body: updates.Collector}
 	}
 	if updates.Logging != nil {
-		configMap[observiq.LoggingFilename] = &protobufs.AgentConfigFile{Body: updates.Logging}
+		configMap[observiq.LoggingFilename] = &legacyOpampProtobufs.AgentConfigFile{Body: updates.Logging}
 	}
 	if updates.Manager != nil {
-		configMap[observiq.ManagerFilename] = &protobufs.AgentConfigFile{Body: updates.Manager}
+		configMap[observiq.ManagerFilename] = &legacyOpampProtobufs.AgentConfigFile{Body: updates.Manager}
 	}
 
-	return &protobufs.AgentRemoteConfig{
-		Config: &protobufs.AgentConfigMap{
+	return &legacyOpampProtobufs.AgentRemoteConfig{
+		Config: &legacyOpampProtobufs.AgentConfigMap{
 			ConfigMap: configMap,
 		},
 		ConfigHash: computeHash(updates, agentRaw),
@@ -643,7 +629,7 @@ func computeHash(updates *observiq.RawAgentConfiguration, agentRaw *observiq.Raw
 	return combined.Hash()
 }
 
-func (s *opampServer) updateAgentState(ctx context.Context, agentID string, conn opamp.Connection, msg *protobufs.AgentToServer, response *protobufs.ServerToAgent) (agent *model.Agent, state *bpopamp.AgentState, err error) {
+func (s *legacyOpampServer) updateAgentState(ctx context.Context, agentID string, conn legacyOpamp.Connection, msg *legacyOpampProtobufs.AgentToServer, response *legacyOpampProtobufs.ServerToAgent) (agent *model.Agent, state *bpopamp.AgentState, err error) {
 	agent, err = s.manager.UpsertAgent(ctx, agentID, func(agent *model.Agent) {
 		// we're using opamp
 		agent.Protocol = ProtocolName
@@ -654,10 +640,10 @@ func (s *opampServer) updateAgentState(ctx context.Context, agentID string, conn
 			s.logger.Error("error encountered while decoding agent state, starting with fresh state", zap.Error(err))
 		}
 
-		bpopamp.SyncOne[*protobufs.AgentDescription](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncAgentDescription)
-		bpopamp.SyncOne[*protobufs.EffectiveConfig](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncEffectiveConfig)
-		bpopamp.SyncOne[*protobufs.RemoteConfigStatus](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncRemoteConfigStatus)
-		bpopamp.SyncOne[*protobufs.PackageStatuses](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncPackageStatuses)
+		bpopamp.SyncOne[*legacyOpampProtobufs.AgentDescription](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncAgentDescription)
+		bpopamp.SyncOne[*legacyOpampProtobufs.EffectiveConfig](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncEffectiveConfig)
+		bpopamp.SyncOne[*legacyOpampProtobufs.RemoteConfigStatus](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncRemoteConfigStatus)
+		bpopamp.SyncOne[*legacyOpampProtobufs.PackageStatuses](ctx, s.logger, msg, state, conn, agent, response, &bpopamp.SyncPackageStatuses)
 
 		// after sync, update sequence number
 		state.SequenceNum = msg.GetSequenceNum()
@@ -679,7 +665,7 @@ func (s *opampServer) updateAgentState(ctx context.Context, agentID string, conn
 	return agent, state, err
 }
 
-func (s *opampServer) updateAgentCurrentConfiguration(ctx context.Context, agent *model.Agent, configuration *model.Configuration) {
+func (s *legacyOpampServer) updateAgentCurrentConfiguration(ctx context.Context, agent *model.Agent, configuration *model.Configuration) {
 	_, err := s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
 		current.SetCurrentConfiguration(configuration)
 	})

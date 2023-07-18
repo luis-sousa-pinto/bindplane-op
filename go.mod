@@ -42,7 +42,6 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/observiq/stanza v1.6.1
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/open-telemetry/opamp-go v0.2.0
 	github.com/testcontainers/testcontainers-go v0.21.0
 	go.opentelemetry.io/collector/pdata v0.66.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0
@@ -60,6 +59,8 @@ require (
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
 	github.com/creack/pty v1.1.18
+	github.com/observiq/opamp-go v0.2.1
+	github.com/open-telemetry/opamp-go v0.8.0
 )
 
 require (

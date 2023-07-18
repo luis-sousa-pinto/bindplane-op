@@ -20,8 +20,8 @@ import (
 
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	"github.com/observiq/opamp-go/protobufs"
+	opamp "github.com/observiq/opamp-go/server/types"
 	"go.uber.org/zap"
 )
 
@@ -40,7 +40,7 @@ func (s *effectiveConfigSyncer) message(msg *protobufs.AgentToServer) (result *p
 }
 
 func (s *effectiveConfigSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilities {
-	return protobufs.AgentCapabilities_AgentCapabilities_ReportsEffectiveConfig
+	return protobufs.AgentCapabilities_ReportsEffectiveConfig
 }
 
 func (s *effectiveConfigSyncer) update(_ context.Context, _ *zap.Logger, state *AgentState, _ opamp.Connection, agent *model.Agent, value *protobufs.EffectiveConfig) error {

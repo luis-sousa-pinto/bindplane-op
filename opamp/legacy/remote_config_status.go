@@ -18,8 +18,8 @@ import (
 	"context"
 
 	"github.com/observiq/bindplane-op/model"
-	"github.com/open-telemetry/opamp-go/protobufs"
-	opamp "github.com/open-telemetry/opamp-go/server/types"
+	"github.com/observiq/opamp-go/protobufs"
+	opamp "github.com/observiq/opamp-go/server/types"
 	"go.uber.org/zap"
 )
 
@@ -40,7 +40,7 @@ func (s *remoteConfigStatusSyncer) message(msg *protobufs.AgentToServer) (result
 }
 
 func (s *remoteConfigStatusSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilities {
-	return protobufs.AgentCapabilities_AgentCapabilities_AcceptsRemoteConfig
+	return protobufs.AgentCapabilities_AcceptsRemoteConfig
 }
 
 func (s *remoteConfigStatusSyncer) update(_ context.Context, _ *zap.Logger, state *AgentState, _ opamp.Connection, _ *model.Agent, value *protobufs.RemoteConfigStatus) error {
@@ -51,7 +51,7 @@ func (s *remoteConfigStatusSyncer) update(_ context.Context, _ *zap.Logger, stat
 // UpdateAgentStatus modifies the agent status based on the RemoteConfigStatus, if available
 func UpdateAgentStatus(logger *zap.Logger, agent *model.Agent, remoteStatus *protobufs.RemoteConfigStatus) {
 	// if we failed the apply, enter or update an error state
-	if remoteStatus.GetStatus() == protobufs.RemoteConfigStatuses_RemoteConfigStatuses_FAILED {
+	if remoteStatus.GetStatus() == protobufs.RemoteConfigStatus_FAILED {
 		logger.Info("got RemoteConfigStatus_FAILED", zap.String("ErrorMessage", remoteStatus.ErrorMessage))
 		agent.Status = model.Error
 		agent.ErrorMessage = remoteStatus.ErrorMessage
@@ -60,7 +60,7 @@ func UpdateAgentStatus(logger *zap.Logger, agent *model.Agent, remoteStatus *pro
 	switch agent.Status {
 	case model.Error:
 		// only way to clear the error is to have a successful apply
-		if remoteStatus.GetStatus() == protobufs.RemoteConfigStatuses_RemoteConfigStatuses_APPLIED {
+		if remoteStatus.GetStatus() == protobufs.RemoteConfigStatus_APPLIED {
 			agent.Status = model.Connected
 			agent.ErrorMessage = ""
 		}
