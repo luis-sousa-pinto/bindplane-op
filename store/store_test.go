@@ -2420,7 +2420,9 @@ func testUpdateRollout(ctx context.Context, t *testing.T, store Store) {
 				current.ConfigurationStatus.Current = ""
 				current.ConfigurationStatus.Pending = ""
 			})
+			require.NoError(t, err)
 		}
+
 		config, err := store.UpdateRollout(ctx, "config-3")
 		assert.Equal(t, model.RolloutStatusStarted, config.Status.Rollout.Status)
 		require.NoError(t, err)

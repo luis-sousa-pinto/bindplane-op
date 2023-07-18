@@ -17,6 +17,7 @@ package opamp
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/otel"
@@ -35,13 +36,20 @@ import (
 var logger = zap.NewNop()
 
 func TestUpdaterStop(t *testing.T) {
-	stopCalled := false
-	var stop context.CancelFunc = func() {
-		stopCalled = true
+	u, ok := newUpdater(protomocks.NewMockProtocol(t), servermocks.NewMockManager(t), logger).(*updater)
+	require.True(t, ok)
+
+	stopCalled := func() bool {
+		select {
+		case <-u.stop:
+			return true
+		default:
+			return false
+		}
 	}
-	updater := newUpdater(protomocks.NewMockProtocol(t), servermocks.NewMockManager(t), stop, logger)
-	updater.Stop(context.Background())
-	require.True(t, stopCalled)
+
+	u.Stop(context.Background())
+	require.Eventually(t, stopCalled, time.Second, 10*time.Millisecond)
 }
 
 func TestUpdaterHandleMessage(t *testing.T) {
@@ -97,7 +105,6 @@ func TestUpdaterHandleMessage(t *testing.T) {
 				manager:  manager,
 				logger:   logger,
 				protocol: proto,
-				stop:     func() {},
 			}
 			updater.handleMessage(context.Background(), tc.message)
 		})
@@ -111,7 +118,6 @@ func TestHandleUpdatesEmpty(t *testing.T) {
 		manager:  manager,
 		logger:   logger,
 		protocol: testProto,
-		stop:     func() {},
 	}
 	updates := store.NewEventUpdates()
 	updater.handleUpdates(context.Background(), updates)
@@ -141,7 +147,6 @@ func TestHandleUpdatesAgents(t *testing.T) {
 		manager:  manager,
 		logger:   logger,
 		protocol: testProto,
-		stop:     func() {},
 	}
 	updater.handleUpdates(context.Background(), updates)
 }
@@ -177,7 +182,6 @@ func TestHandleUpdatesTwoAgents(t *testing.T) {
 		manager:  manager,
 		logger:   logger,
 		protocol: testProto,
-		stop:     func() {},
 	}
 	updater.handleUpdates(context.Background(), updates)
 }
@@ -211,7 +215,6 @@ func TestHandleUpdatesAgentLabels(t *testing.T) {
 		manager:  manager,
 		logger:   logger,
 		protocol: testProto,
-		stop:     func() {},
 	}
 	updater.handleUpdates(context.Background(), updates)
 }

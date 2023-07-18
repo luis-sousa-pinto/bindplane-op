@@ -91,7 +91,6 @@ var _ protocol.Protocol = (*legacyOpampServer)(nil)
 var _ legacyOpamp.Callbacks = (*legacyOpampServer)(nil)
 
 func newLegacyServer(manager bpserver.Manager, logger *zap.Logger) *legacyOpampServer {
-	_, cancel := context.WithCancel(context.Background())
 	s := &legacyOpampServer{
 		manager:                 manager,
 		connections:             connections.NewConnections(),
@@ -101,7 +100,6 @@ func newLegacyServer(manager bpserver.Manager, logger *zap.Logger) *legacyOpampS
 	s.updater = newUpdater(
 		s,
 		s.manager,
-		cancel,
 		s.logger,
 	)
 	return s

@@ -118,7 +118,6 @@ var _ protocol.Protocol = (*opampServer)(nil)
 var _ opamp.Callbacks = (*opampServer)(nil)
 
 func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
-	_, cancel := context.WithCancel(context.Background())
 	s := &opampServer{
 		manager:     manager,
 		connections: connections.NewConnections(),
@@ -127,7 +126,6 @@ func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
 	s.updater = newUpdater(
 		s,
 		s.manager,
-		cancel,
 		s.logger,
 	)
 	return s
