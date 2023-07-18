@@ -7,6 +7,7 @@ import {
   Stack,
   Tab,
   Tabs,
+  Tooltip,
 } from "@mui/material";
 import { isEmpty } from "lodash";
 
@@ -32,6 +33,8 @@ interface ConfigurationVersionSwitcherProps {
   onEditNewVersion: () => void;
   allowEditPendingVersion?: boolean;
   onEditPendingVersion: () => void;
+  onCompareVersions?: () => void;
+  showCompareVersions: boolean;
 }
 
 export const ConfigurationVersionSwitcher: React.FC<
@@ -48,6 +51,8 @@ export const ConfigurationVersionSwitcher: React.FC<
   onEditPendingVersion,
   allowEditPendingVersion,
   onSelectedVersionHistoryChange,
+  onCompareVersions,
+  showCompareVersions,
 }) => {
   function handleChange(
     _e: React.SyntheticEvent,
@@ -109,6 +114,25 @@ export const ConfigurationVersionSwitcher: React.FC<
             }}
           />
         </Tabs>
+        {tab === "new" && (
+          <Tooltip
+            title={
+              showCompareVersions
+                ? ""
+                : "There's no previous version to compare to or you haven't yet made changes to the new version"
+            }
+          >
+            <span>
+              <Button
+                color="action-blue"
+                onClick={onCompareVersions}
+                disabled={!showCompareVersions}
+              >
+                Compare to Current Version
+              </Button>
+            </span>
+          </Tooltip>
+        )}
 
         {tab === "current" && (
           <Button color="action-blue" onClick={handleEditNewVersionClick}>

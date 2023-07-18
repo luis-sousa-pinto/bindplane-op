@@ -17,6 +17,7 @@ import { RolloutProgress } from "../RolloutProgress";
 import { OtelConfigEditor } from "../OtelConfigEditor/OtelConfigEditor";
 import { nameAndVersion } from "../../utils/version-helpers";
 import { useRefetchOnConfigurationChange } from "../../hooks/useRefetchOnConfigurationChanges";
+import { DiffDialog } from "../DiffDialog/DiffDialog";
 
 gql`
   query getConfigurationVersions($name: String!) {
@@ -73,6 +74,10 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
   const [editingCurrentVersion, setEditingCurrentVersion] =
     useState<boolean>(false);
   const [editingPendingVersion, setEditingPendingVersion] =
+    useState<boolean>(false);
+  const [diffDialogOpen, setDiffDialogOpen] = useState<boolean>(false);
+
+  const [showCompareVersions, setShowCompareVersions] =
     useState<boolean>(false);
 
   const { refetch } = useGetConfigurationVersionsQuery({
@@ -159,6 +164,8 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
         newVersion={editingVersion}
         currentVersion={currentVersion}
         pendingVersion={pendingVersion}
+        onCompareVersions={() => setDiffDialogOpen(true)}
+        showCompareVersions={showCompareVersions}
       />
       {!isOtel && (
         <MeasurementControlBar
@@ -211,8 +218,15 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
           configurationName={configurationName}
           configurationVersion={tab === "new" ? "latest" : tab}
           hideActions={hideRolloutActions}
+          setShowCompareVersions={setShowCompareVersions}
         />
       )}
+
+      <DiffDialog
+        onClose={() => setDiffDialogOpen(false)}
+        configurationName={configurationName}
+        open={diffDialogOpen}
+      />
     </>
   );
 };

@@ -682,20 +682,6 @@ export type UpdateProcessorsInput = {
   resourceType: ResourceTypeKind;
 };
 
-export type GetLatestConfigVersionQueryVariables = Exact<{
-  name: Scalars['String']['input'];
-}>;
-
-
-export type GetLatestConfigVersionQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', id: string, name: string, version: number } } | null };
-
-export type GetRenderedConfigQueryVariables = Exact<{
-  name: Scalars['String']['input'];
-}>;
-
-
-export type GetRenderedConfigQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
-
 export type SourceTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
@@ -737,6 +723,13 @@ export type GetConfigurationVersionsQueryVariables = Exact<{
 
 
 export type GetConfigurationVersionsQuery = { __typename?: 'Query', configurationHistory: Array<{ __typename?: 'Configuration', activeTypes?: Array<string> | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', current: boolean, pending: boolean, latest: boolean } }> };
+
+export type GetRenderedConfigQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+
+export type GetRenderedConfigQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', rendered?: string | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number } } | null };
 
 export type RemoveAgentConfigurationMutationVariables = Exact<{
   input: RemoveAgentConfigurationInput;
@@ -978,85 +971,6 @@ export type OverviewPageMetricsSubscriptionVariables = Exact<{
 export type OverviewPageMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
 
 
-export const GetLatestConfigVersionDocument = gql`
-    query getLatestConfigVersion($name: String!) {
-  configuration(name: $name) {
-    metadata {
-      id
-      name
-      version
-    }
-  }
-}
-    `;
-
-/**
- * __useGetLatestConfigVersionQuery__
- *
- * To run a query within a React component, call `useGetLatestConfigVersionQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetLatestConfigVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetLatestConfigVersionQuery({
- *   variables: {
- *      name: // value for 'name'
- *   },
- * });
- */
-export function useGetLatestConfigVersionQuery(baseOptions: Apollo.QueryHookOptions<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>(GetLatestConfigVersionDocument, options);
-      }
-export function useGetLatestConfigVersionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>(GetLatestConfigVersionDocument, options);
-        }
-export type GetLatestConfigVersionQueryHookResult = ReturnType<typeof useGetLatestConfigVersionQuery>;
-export type GetLatestConfigVersionLazyQueryHookResult = ReturnType<typeof useGetLatestConfigVersionLazyQuery>;
-export type GetLatestConfigVersionQueryResult = Apollo.QueryResult<GetLatestConfigVersionQuery, GetLatestConfigVersionQueryVariables>;
-export const GetRenderedConfigDocument = gql`
-    query getRenderedConfig($name: String!) {
-  configuration(name: $name) {
-    metadata {
-      name
-      id
-      version
-    }
-    rendered
-  }
-}
-    `;
-
-/**
- * __useGetRenderedConfigQuery__
- *
- * To run a query within a React component, call `useGetRenderedConfigQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetRenderedConfigQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetRenderedConfigQuery({
- *   variables: {
- *      name: // value for 'name'
- *   },
- * });
- */
-export function useGetRenderedConfigQuery(baseOptions: Apollo.QueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
-      }
-export function useGetRenderedConfigLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
-        }
-export type GetRenderedConfigQueryHookResult = ReturnType<typeof useGetRenderedConfigQuery>;
-export type GetRenderedConfigLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigLazyQuery>;
-export type GetRenderedConfigQueryResult = Apollo.QueryResult<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>;
 export const SourceTypeDocument = gql`
     query SourceType($name: String!) {
   sourceType(name: $name) {
@@ -1396,6 +1310,46 @@ export function useGetConfigurationVersionsLazyQuery(baseOptions?: Apollo.LazyQu
 export type GetConfigurationVersionsQueryHookResult = ReturnType<typeof useGetConfigurationVersionsQuery>;
 export type GetConfigurationVersionsLazyQueryHookResult = ReturnType<typeof useGetConfigurationVersionsLazyQuery>;
 export type GetConfigurationVersionsQueryResult = Apollo.QueryResult<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>;
+export const GetRenderedConfigDocument = gql`
+    query getRenderedConfig($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    rendered
+  }
+}
+    `;
+
+/**
+ * __useGetRenderedConfigQuery__
+ *
+ * To run a query within a React component, call `useGetRenderedConfigQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRenderedConfigQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRenderedConfigQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetRenderedConfigQuery(baseOptions: Apollo.QueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
+      }
+export function useGetRenderedConfigLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>(GetRenderedConfigDocument, options);
+        }
+export type GetRenderedConfigQueryHookResult = ReturnType<typeof useGetRenderedConfigQuery>;
+export type GetRenderedConfigLazyQueryHookResult = ReturnType<typeof useGetRenderedConfigLazyQuery>;
+export type GetRenderedConfigQueryResult = Apollo.QueryResult<GetRenderedConfigQuery, GetRenderedConfigQueryVariables>;
 export const RemoveAgentConfigurationDocument = gql`
     mutation removeAgentConfiguration($input: RemoveAgentConfigurationInput!) {
   removeAgentConfiguration(input: $input) {
