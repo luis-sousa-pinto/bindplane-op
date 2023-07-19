@@ -53,6 +53,16 @@ const EnumsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
           fontSize="0.75rem"
         >
           {definition.description}
+
+          {definition.documentation && (
+            <Stack component={"span"}>
+              {definition.documentation.map((d) => (
+                <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
+                  {d.text}
+                </a>
+              ))}
+            </Stack>
+          )}
         </Typography>
       </FormHelperText>
       <Stack marginLeft={2}>

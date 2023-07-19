@@ -31,7 +31,7 @@ spec:
 You can deploy the source type with:
 
 ```bash
-bindplanectl apply -f ./mysourcetype.yaml
+bindplane apply -f ./mysourcetype.yaml
 ```
 
 > **_NOTE:_**  Refresh the browser in order to see the new source type.
@@ -80,7 +80,7 @@ spec:
 You can update the source type with:
 
 ```bash
-bindplanectl apply -f ./mysourcetype.yaml
+bindplane apply -f ./mysourcetype.yaml
 ```
 
 > **_NOTE:_**  Refresh the browser in order to see changes.

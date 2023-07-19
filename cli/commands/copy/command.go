@@ -28,7 +28,7 @@ func Command(builder Builder) *cobra.Command {
 		Use:     "copy",
 		Aliases: []string{"cp"},
 		Short:   "Make a copy of a resource",
-		Example: "bindplanectl copy config my-config my-config-copy",
+		Example: "bindplane copy config my-config my-config-copy",
 	}
 
 	cmd.AddCommand(

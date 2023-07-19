@@ -16,7 +16,7 @@ The web interface is intended to be fully featured. Users can install agents and
 
 ## BindPlane CLI
 
-BindPlane OP provides a cli, `bindplanectl`. See the [client install doc](./install.md#client) for installation details.
+BindPlane OP provides a cli, `bindplane`. See the [client install doc](./install.md#client) for installation details.
 
 Documented in this section are several usage examples. Use the `help` command or `--help` flag for detailed output for all available commands and flags.
 
@@ -25,7 +25,7 @@ Documented in this section are several usage examples. Use the `help` command or
 Generate an agent installation command using the `install agent` command.
 
 ```bash
-bindplanectl install agent --platform linux
+bindplane install agent --platform linux
 ```
 ```bash
 sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/releases/latest/download/install_unix.sh)" install_unix.sh -e wss://bindplane.mydomain.net:3001/v1/opamp -s 000000-0000-0000-0000-000000
@@ -36,7 +36,7 @@ sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/re
 Agents can be listed with the `get agents` command
 
 ```bash
-bindplanectl get agent
+bindplane get agent
 ```
 ```
 ID                                  	NAME       	VERSION	STATUS      	CONNECTED 	DISCONNECTED	LABELS
@@ -49,7 +49,7 @@ e224f18f-a394-41d3-9767-1f8f423ecbeb	demo	    v1.3.0 	Connected   	24h53m42s 	- 
 You can get detailed information about a specific agent with the `output` flag
 
 ```bash
-bindplanectl get agent ecbfee94-b0d7-4d0c-9a7c-8bc29d537fa7 -o yaml
+bindplane get agent ecbfee94-b0d7-4d0c-9a7c-8bc29d537fa7 -o yaml
 ```
 ```yaml
 id: ecbfee94-b0d7-4d0c-9a7c-8bc29d537fa7
@@ -79,7 +79,7 @@ remoteAddress: 69.176.133.154:6332
 You apply a configuration to an agent by setting the `configuration` label.
 
 ```bash
-bindplanectl label agent 3efd687e-0caf-4757-b0cc-16f65d2f45b4 configuration=otlp --overwrite
+bindplane label agent 3efd687e-0caf-4757-b0cc-16f65d2f45b4 configuration=otlp --overwrite
 ```
 
 The `configuration` label determines which configuration is bound to the agent.
@@ -89,13 +89,13 @@ The `configuration` label determines which configuration is bound to the agent.
 Download a configuration with the `get config <config name> -o yaml` command
 
 ```bash
-bindplanectl get config host -o yaml > host.yaml
+bindplane get config host -o yaml > host.yaml
 ```
 
 Modify `host.yaml` and then apply the config
 
 ```bash
-bindplanectl apply -f host.yaml
+bindplane apply -f host.yaml
 ```
 ```
 Configuration host configured
@@ -106,14 +106,14 @@ Configuration host configured
 You can backup all of your destinations and configurations easily
 
 ```bash
-bindplanectl get destination -o yaml > destinations.yaml
-bindplanectl get config -o yaml > config.yaml
+bindplane get destination -o yaml > destinations.yaml
+bindplane get config -o yaml > config.yaml
 ```
 
 These resources can be restored to a BindPlane instance with
 
 ```bash
-bindplanectl apply -f destinations.yaml
+bindplane apply -f destinations.yaml
 ```
 ```
 Destination aggregator unchanged
@@ -122,7 +122,7 @@ Destination platformX unchanged
 Destination prom unchanged
 ```
 ```bash
-bindplanectl apply -f config.yaml
+bindplane apply -f config.yaml
 ```
 ```
 Configuration aggregator unchanged
@@ -152,7 +152,7 @@ curl -v -u admin:admin http://localhost:3001/v1/agents | jq .
 
 ## Go Client
 
-BindPlane OP has a `client` package used by `bindplanectl` for interacting with
+BindPlane OP has a `client` package used by `bindplane` for interacting with
 the REST API. This client can be consumed by custom tooling.
 
 See the [Go docs](https://pkg.go.dev/github.com/observiq/bindplane-op/client) for available

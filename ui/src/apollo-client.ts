@@ -91,6 +91,11 @@ export const typePolicies: InMemoryCacheConfig["typePolicies"] = {
   },
   Destination: {
     keyFields: ["metadata"],
+    fields: {
+      spec: {
+        merge,
+      },
+    },
   },
   Metadata: {
     keyFields: ["id", "name", "version"],

@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import {
+  FileLogSort,
   awsCloudWatchFieldInputDef,
   enumDef,
   enumsDef,
@@ -22,6 +23,7 @@ import { StringParamInput } from "./StringParamInput";
 import { StringsParamInput } from "./StringsParamInput";
 import { TimezoneParamInput } from "./TimezoneParamInput";
 import { YamlParamInput } from "./YamlParamInput";
+import { FileLogSortInput } from "./FileLogSortInput";
 
 describe("ParameterInput supports readOnly", () => {
   it("StringParamInput editable", () => {
@@ -192,6 +194,26 @@ describe("ParameterInput supports readOnly", () => {
     expect(button).toBeDisabled();
   });
 
+  it("fileLogSort editable", () => {
+    render(<FileLogSortInput definition={FileLogSort} readOnly={false} />);
+    const inputs = screen.getAllByRole("textbox");
+    for (const textbox of inputs) {
+      expect(textbox).not.toBeDisabled();
+    }
+    const button = screen.getByRole("button", { name: "New field" });
+    expect(button).not.toBeDisabled();
+  });
+
+  it("fileLogSort readonly", () => {
+    render(<FileLogSortInput definition={FileLogSort} readOnly={true} />);
+    const inputs = screen.getAllByRole("textbox");
+    for (const textbox of inputs) {
+      expect(textbox).toBeDisabled();
+    }
+    const button = screen.getByRole("button", { name: "New field" });
+    expect(button).toBeDisabled();
+  });
+
   it("MetricsParamInput editable", () => {
     render(<MetricsParamInput definition={metricParamInput} />);
 
@@ -207,4 +229,28 @@ describe("ParameterInput supports readOnly", () => {
     expect(screen.queryByText("Disable All")).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox")).toBeDisabled();
   });
+});
+
+describe("StringsParamInput trims whitespace", () => {
+  var gotValue: string[] = [];
+
+  const onValueChange = (value: string[]) => {
+    gotValue = value;
+  };
+
+  render(
+    <StringsParamInput definition={stringsDef} onValueChange={onValueChange} />
+  );
+
+  const autocomplete = screen.getByRole("combobox");
+
+  fireEvent.change(autocomplete, { target: { value: "  test  " } });
+  fireEvent.blur(autocomplete);
+
+  expect(gotValue).toEqual(["test"]);
+
+  fireEvent.change(autocomplete, { target: { value: "internal space" } });
+  fireEvent.blur(autocomplete);
+
+  expect(gotValue).toEqual(["internal space"]);
 });

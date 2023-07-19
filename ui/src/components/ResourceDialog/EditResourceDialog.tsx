@@ -41,7 +41,17 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
   ...dialogProps
 }) => {
   return (
-    <Dialog {...dialogProps} onClose={onCancel} fullWidth maxWidth="md">
+    <Dialog
+      {...dialogProps}
+      onClose={onCancel}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        style: {
+          height: "85vh",
+        },
+      }}
+    >
       <ResourceConfigForm
         includeNameField={includeNameField}
         resourceTypeDisplayName={resourceTypeDisplayName}

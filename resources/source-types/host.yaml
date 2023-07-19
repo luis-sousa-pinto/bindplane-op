@@ -120,6 +120,8 @@ spec:
                 defaultDisabled: true
               - name: process.threads
                 defaultDisabled: true
+              - name: process.handles
+                defaultDisabled: true
       default:
         - process.context_switches
         - process.cpu.utilization
@@ -129,6 +131,7 @@ spec:
         - process.paging.faults
         - process.signals_pending
         - process.threads
+        - process.handles
       relevantIf:
         - name: enable_process
           operator: equals

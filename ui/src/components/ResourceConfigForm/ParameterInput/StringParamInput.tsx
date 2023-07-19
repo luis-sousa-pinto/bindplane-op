@@ -55,7 +55,7 @@ const StringParamInputComponent: React.FC<ParamInputProps<string>> = ({
         ),
         autoComplete: isPasswordField ? "new-password" : "off",
       }}
-      value={value}
+      value={value || ""}
       onChange={handleValueChange}
       disabled={readOnly}
       onBlur={() => touch(definition.name)}

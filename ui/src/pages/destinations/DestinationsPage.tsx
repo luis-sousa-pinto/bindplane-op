@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { Typography, Button, Stack } from "@mui/material";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
+import { DataGridProps, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
 import { debounce } from "lodash";
@@ -45,7 +45,8 @@ gql`
   }
 `;
 
-export interface DestinationsPageContentProps {
+export interface DestinationsPageContentProps
+  extends Omit<DataGridProps, "rows" | "columns"> {
   destinationsPage: boolean;
   // grid selection model
   selected: GridRowSelectionModel;
@@ -71,6 +72,7 @@ export const DestinationsPageSubContent: React.FC<
   editingDestination,
   setEditingDestination,
   allowSelection,
+  ...dataGridProps
 }) => {
   // Used to control the delete confirmation modal.
   const [open, setOpen] = useState<boolean>(false);
@@ -166,6 +168,7 @@ export const DestinationsPageSubContent: React.FC<
           placeholder={"Filter by destination name"}
         />
         <DestinationsDataGrid
+          {...dataGridProps}
           loading={data == null}
           setSelectionModel={setSelected}
           selectionModel={selected}

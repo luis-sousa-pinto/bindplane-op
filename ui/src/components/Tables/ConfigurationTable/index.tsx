@@ -22,6 +22,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { Link } from "react-router-dom";
 import { PlusCircleIcon } from "../../Icons";
 import { RBACWrapper } from "../../RBACWrapper/RBACWrapper";
+import { DEFAULT_CONFIGURATION_TABLE_PERIOD } from "../../MeasurementControlBar/MeasurementControlBar";
 
 gql`
   query GetConfigurationTable(
@@ -153,7 +154,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 
   const { data: configurationMetrics } =
     useConfigurationTableMetricsSubscription({
-      variables: { period: "1m" },
+      variables: { period: DEFAULT_CONFIGURATION_TABLE_PERIOD },
     });
 
   // Used to control the delete confirmation modal.

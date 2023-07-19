@@ -46,6 +46,8 @@ const (
 )
 
 // Server is an interface for serving BindPlane.
+//
+//go:generate mockery --inpackage --with-expecter --name Server --filename mock_server.go --structname MockServer
 type Server interface {
 	// Seed will seed the BindPlane server.
 	Seed(ctx context.Context) error
@@ -55,9 +57,15 @@ type Server interface {
 }
 
 // Builder is an interface for building a Server.
+//
+//go:generate mockery --inpackage --with-expecter --name Builder --filename mock_builder.go --structname MockBuilder
 type Builder interface {
 	// Build returns a new Server.
 	BuildServer(ctx context.Context) (Server, error)
+
+	// SupportsServer returns true if the OS supports the serve command.
+	// i.e. its not windows.
+	SupportsServer() bool
 }
 
 // NewServer returns a new Server.

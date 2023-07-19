@@ -6,7 +6,7 @@ metadata:
   icon: /icons/sources/file.svg
   description: Collect logs from generic log files.
 spec:
-  version: 0.0.2
+  version: 0.1.0
   supportedPlatforms:
     - macos
     - linux
@@ -106,6 +106,19 @@ spec:
       type: string
       default: timestamp
       required: true
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+
+    - name: timezone
+      label: Timezone
+      description: The timezone to use if Timestamp Format doesn't include a timezone. Otherwise, the timezone in Timestamp Format will be respected.
+      type: timezone
+      default: "UTC"
       relevantIf:
         - name: parse_timestamp
           operator: equals
@@ -362,6 +375,42 @@ spec:
           operator: equals
           value: true
 
+      # Enable file sorting to process only the first file
+    - name: enable_sorting
+      label: Enable File Sorting
+      description: When enabled, the files will be sorted before processing and only the first file will be processed.
+      type: bool
+      documentation:
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver
+      default: false
+      options:
+        sectionHeader: true
+      advancedConfig: true
+      required: false
+
+    - name: sorting_regex
+      label: Sorting Regex
+      description:
+      type: string
+      advancedConfig: true
+      required: true
+      relevantIf:
+        - name: enable_sorting
+          operator: equals
+          value: true
+
+    - name: sort_rules
+      label: Sort Rules
+      description: The rules to sort the files. They are applied in order.
+      type: fileLogSort
+      advancedConfig: true
+      default: []
+      relevantIf:
+        - name: enable_sorting
+          operator: equals
+          value: true
+
   logs:
     extensions: |
       {{ if .enable_offset_storage }}
@@ -393,6 +442,22 @@ spec:
             line_end_pattern: {{ .multiline_line_end_pattern | quote }}
             {{ end }}
           {{ end }}
+          {{ if .enable_sorting }}
+          ordering_criteria:
+            regex: {{ .sorting_regex | quote }}
+            sort_by: 
+            {{ range $s := .sort_rules }}
+            - sort_type: {{ $s.sortType }}
+              ascending: {{ if eq $s.sortDirection "ascending" }}true{{ else }}false{{ end }}
+              regex_key: {{ $s.regexKey }}
+              {{ if $s.location }}
+              location: {{ $s.location }}
+              {{ end }}
+              {{ if $s.layout}}
+              layout: {{ $s.layout | quote }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
           fingerprint_size: {{ .fingerprint_size }}
           encoding: {{ .encoding }}
           include_file_name: {{ .include_file_name_attribute }}
@@ -407,44 +472,8 @@ spec:
           max_concurrent_files: {{ .max_concurrent_files }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           operators:
-            {{ if eq .parse_format "json" }}
-            - type: json_parser
-              parse_to: {{ .parse_to }}
-            {{ if .parse_timestamp }}
-              timestamp:
-                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
-                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
-                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
-                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
-                {{ if eq .parse_timestamp_format "Epoch" }}
-                layout_type: epoch
-                layout: {{ .epoch_timestamp_format }}
-                {{ end }}
-            {{ end }}
-            {{ if .parse_severity }}
-              severity:
-                parse_from: {{ .parse_to }}.{{ .severity_field }}
-            {{ end }}
-            {{ end }}
-            {{ if eq .parse_format "regex" }}
-            - type: regex_parser
-              regex: {{ .regex_pattern | quote }}
-              parse_to: {{ .parse_to }}
-            {{ if .parse_timestamp }}
-              timestamp:
-                parse_from: {{ .parse_to }}.{{ .timestamp_field }}
-                {{ if eq .parse_timestamp_format "ISO8601" }}layout: '%Y-%m-%dT%H:%M:%S.%f%z'{{ end }}
-                {{ if eq .parse_timestamp_format "RFC3339" }}layout: '%Y-%m-%dT%H:%M:%S.%f'{{ end }}
-                {{ if eq .parse_timestamp_format "Manual" }}layout: '{{ .manual_timestamp_format }}'{{ end }}
-                {{ if eq .parse_timestamp_format "Epoch" }}
-                layout_type: epoch
-                layout: {{ .epoch_timestamp_format }}
-                {{ end }}
-            {{ end }}
-            {{ if .parse_severity }}
-              severity:
-                parse_from: {{ .parse_to }}.{{ .severity_field }}
-            {{ end }}
+            {{ if ne .parse_format "none" }}
+            - {{ bpRenderStandardParsingOperator .parse_format .parse_to .regex_pattern .parse_timestamp .timestamp_field .timezone .parse_timestamp_format .epoch_timestamp_format .manual_timestamp_format .parse_severity .severity_field }}
             {{ end }}
             - type: add
               field: attributes.log_type

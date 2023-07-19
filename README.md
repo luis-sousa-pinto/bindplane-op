@@ -85,7 +85,7 @@ See the [installation documentation](./docs/install.md#client) for client instal
 BindPlane OP utilizes the [observIQ Distro for OpenTelemetry Collector](https://github.com/observIQ/observiq-otel-collector). To install using BindPlane CLI, run the following command on a server or client system to generate the agent install command.
 
 ```bash
-bindplanectl install agent
+bindplane install agent
 ```
 
 The generated command can then be copied and run on the agent host. To tailor the install command for a specific operating system, use the `--platform` flag. Valid values include:
@@ -98,7 +98,7 @@ The generated command can then be copied and run on the agent host. To tailor th
 
 To see additional flags and options for the agent install, use the `--help` flag.
 ```bash
-bindplanectl install agent --help
+bindplane install agent --help
 ```
 
 ## Configuration

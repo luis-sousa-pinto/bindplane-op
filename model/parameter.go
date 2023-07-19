@@ -41,6 +41,7 @@ const (
 	timezoneType                = "timezone"
 	metricsType                 = "metrics"
 	awsCloudwatchNamedFieldType = "awsCloudwatchNamedField"
+	fileLogSortType             = "fileLogSort"
 )
 
 // ParameterDefinition is a basic description of a definition's parameter. This implementation comes directly from
@@ -263,7 +264,7 @@ func (p ParameterDefinition) validateType() error {
 		)
 	}
 	switch p.Type {
-	case stringType, intType, boolType, stringsType, enumType, enumsType, mapType, yamlType, timezoneType, metricsType, awsCloudwatchNamedFieldType: // ok
+	case stringType, intType, boolType, stringsType, enumType, enumsType, mapType, yamlType, timezoneType, metricsType, awsCloudwatchNamedFieldType, fileLogSortType: // ok
 	default:
 		return stanzaerrors.NewError(
 			fmt.Sprintf("invalid type '%s' for '%s'", p.Type, p.Name),
@@ -445,6 +446,8 @@ func (p ParameterDefinition) validateValueType(fieldType parameterFieldType, val
 		return p.validateMetricsType(fieldType, value)
 	case awsCloudwatchNamedFieldType:
 		return p.validateAwsCloudwatchNamedFieldType(fieldType, value)
+	case fileLogSortType:
+		return p.validateFileLogSortType(fieldType, value)
 	default:
 		return stanzaerrors.NewError(
 			"invalid type for parameter",
@@ -686,7 +689,7 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 				_, ok := n.(string)
 				if !ok {
 					return stanzaerrors.NewError("incorrect type included in 'id' field",
-						"awsCloudwatchNamedField"+s+"should be of type string")
+						"awsCloudwatchNamedField "+s+" should be of type string")
 				}
 
 			case "names", "prefixes":
@@ -701,6 +704,40 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 
 			}
 		}
+	}
+
+	return nil
+}
+
+type fileLogSortField struct {
+	Layout        string `mapstructure:"layout"`
+	Location      string `mapstructure:"location"`
+	SortType      string `mapstructure:"sortType"`
+	SortDirection string `mapstructure:"sortDirection"`
+	RegexKey      string `mapstructure:"regexKey"`
+}
+
+func (p ParameterDefinition) validateFileLogSortType(_ parameterFieldType, value any) error {
+	switch v := value.(type) {
+	case []any:
+		for _, item := range v {
+			result := fileLogSortField{}
+			err := mapstructure.Decode(item, &result)
+			if err != nil {
+				return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
+			}
+		}
+	case []map[string]any:
+		for _, item := range v {
+			result := fileLogSortField{}
+			err := mapstructure.Decode(item, &result)
+			if err != nil {
+				return stanzaerrors.NewError(fmt.Sprintf("malformed value for parameter of type filelogsort: %s", err.Error()), "")
+			}
+		}
+
+	default:
+		return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
 	}
 
 	return nil

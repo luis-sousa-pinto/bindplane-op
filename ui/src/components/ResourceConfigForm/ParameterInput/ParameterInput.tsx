@@ -11,6 +11,7 @@ import {
   StringsParamInput,
   TimezoneParamInput,
   YamlParamInput,
+  FileLogSortInput,
 } from ".";
 import { ParameterDefinition, ParameterType } from "../../../graphql/generated";
 import { useResourceFormValues } from "../ResourceFormContext";
@@ -139,14 +140,21 @@ export const ParameterInput: React.FC<{
 
       case ParameterType.AwsCloudwatchNamedField:
         return (
-          <>
-            <AWSCloudwatchInput
-              definition={definition}
-              value={formValues[definition.name]}
-              onValueChange={onValueChange}
-              readOnly={readOnly}
-            />
-          </>
+          <AWSCloudwatchInput
+            definition={definition}
+            value={formValues[definition.name]}
+            onValueChange={onValueChange}
+            readOnly={readOnly}
+          />
+        );
+      case ParameterType.FileLogSort:
+        return (
+          <FileLogSortInput
+            definition={definition}
+            value={formValues[definition.name]}
+            onValueChange={onValueChange}
+            readOnly={readOnly}
+          />
         );
     }
   }, [definition, formValues, onValueChange, readOnly]);
@@ -165,6 +173,10 @@ export const ParameterInput: React.FC<{
     }
 
     if (isAWSCloudwatch(definition)) {
+      return 12;
+    }
+
+    if (isFileLogSort(definition)) {
       return 12;
     }
 
@@ -194,4 +206,8 @@ function isMetricsType(definition: ParameterDefinition) {
 
 function isAWSCloudwatch(definition: ParameterDefinition) {
   return definition.type === "awsCloudwatchNamedField";
+}
+
+function isFileLogSort(definition: ParameterDefinition) {
+  return definition.type === "fileLogSort";
 }

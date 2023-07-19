@@ -79,6 +79,28 @@ export function validateAWSNamedField(value: any): string | null {
   return null;
 }
 
+export function validateFileLogSortField(value: any): string | null {
+  if (value?.length < 1) {
+    return "At least one sort rule must be specified.";
+  }
+
+  for (const subField of value) {
+    if (isEmpty(subField.regexKey)) {
+      return "All regex keys must be set.";
+    }
+    // Check if sortType is set to "timestamp" and if so, check that layout is set
+    if (subField.sortType === "timestamp" && isEmpty(subField.layout)) {
+      return "Layout must be set for timestamp sort.";
+    }
+
+    if (subField.sortType !== "timestamp" && !isEmpty(subField.layout)) {
+      return "Layout should only be set for timestamp sort.";
+    }
+  }
+
+  return null;
+}
+
 export function validateIntField(
   definition: ParameterDefinition,
   value?: number

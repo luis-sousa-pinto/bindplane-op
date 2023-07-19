@@ -1,16 +1,9 @@
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  Chip,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Chip, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { truncateLabel } from "../../utils/graph/utils";
+
 import { CardMeasurementContent } from "../CardMeasurementContent/CardMeasurementContent";
-import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
 import { SlidersIcon } from "../Icons";
+import { ResourceCard } from "./ResourceCard";
 
 import styles from "./cards.module.scss";
 
@@ -39,37 +32,29 @@ export const ConfigurationCard: React.FC<ConfigurationCardProps> = ({
 
   return (
     <div className={disabled ? styles.disabled : undefined}>
-      <Card className={styles["resource-card"]}>
-        <CardActionArea
-          classes={{ root: styles.action }}
-          onClick={() =>
-            navigate({ pathname: configurationURL, search: location.search })
-          }
-        >
-          <NoMaxWidthTooltip title={label.length > 20 ? label : ""}>
-            <CardContent>
-              <Stack justifyContent="center" alignItems="center" spacing={2}>
-                {isEverything ? (
-                  <Stack direction="row" spacing={2}>
-                    <SlidersIcon height="20px" width="20px" />
-                    <SlidersIcon height="20px" width="20px" />
-                    <SlidersIcon height="20px" width="20px" />
-                  </Stack>
-                ) : (
-                  <SlidersIcon height="40px" width="40px" />
-                )}
-                <Typography
-                  align="center"
-                  fontWeight={600}
-                  fontSize={label.length > 15 ? 11 : 16}
-                >
-                  {truncateLabel(label, 20)}
-                </Typography>
+      <ResourceCard
+        name={label}
+        disabled={disabled}
+        altIcon={
+          isEverything ? (
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1}>
+                <SlidersIcon height="20px" width="20px" />
+                <SlidersIcon height="20px" width="20px" />
               </Stack>
-            </CardContent>
-          </NoMaxWidthTooltip>
-        </CardActionArea>
-      </Card>
+              <Stack direction="row" spacing={1}>
+                <SlidersIcon height="20px" width="20px" />
+                <SlidersIcon height="20px" width="20px" />
+              </Stack>
+            </Stack>
+          ) : (
+            <SlidersIcon height="40px" width="40px" />
+          )
+        }
+        onClick={() =>
+          navigate({ pathname: configurationURL, search: location.search })
+        }
+      />
       <Chip
         classes={{
           root: styles["overview-count-chip"],

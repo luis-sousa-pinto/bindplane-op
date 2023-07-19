@@ -16,6 +16,7 @@ interface ResourceCardProps {
   name: string;
   displayName?: string;
   icon?: string | null;
+  altIcon?: React.ReactNode;
   paused?: boolean;
   disabled?: boolean;
   onClick: () => void;
@@ -26,6 +27,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   name,
   displayName,
   icon,
+  altIcon,
   paused,
   disabled,
   onClick,
@@ -50,12 +52,17 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
                 justifyContent="space-between"
                 spacing={1}
               >
-                <Box
-                  className={styles.icon}
-                  style={{
-                    backgroundImage: `url(${icon})`,
-                  }}
-                />
+                {icon ? (
+                  <Box
+                    className={styles.icon}
+                    style={{
+                      backgroundImage: `url(${icon})`,
+                    }}
+                  />
+                ) : (
+                  altIcon
+                )}
+
                 <Stack flexGrow={1} alignItems={"center"} width="100%">
                   <Typography
                     fontWeight={600}

@@ -149,6 +149,11 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
       maxWidth="md"
       data-testid="resource-dialog"
       onClose={onClose}
+      PaperProps={{
+        style: {
+          height: "85vh",
+        },
+      }}
     >
       {View}
     </Dialog>

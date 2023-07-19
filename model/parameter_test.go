@@ -774,7 +774,76 @@ func TestValidateAwsCloudwatchNamedFieldType(t *testing.T) {
 			} else {
 				require.NoError(t, gotErr)
 			}
+		})
+	}
+}
 
+func TestValidateFileLogSortingType(t *testing.T) {
+	tests := []struct {
+		description   string
+		parameterType ParameterDefinition
+		value         any
+		wantErr       string
+	}{
+		{
+			"bad value type int",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			4,
+			"malformed value for parameter of type filelogsort",
+		},
+		{
+			"bad value type bad map",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[int]string{{1: "one", 2: "two"}},
+			"malformed value for parameter of type filelogsort",
+		},
+		{
+			"bad string value",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":      1,
+					"sortDirection": "ascending",
+					"regexKey":      "regexKey",
+					"layout":        "layout",
+					"location":      "location",
+				},
+			},
+			"malformed value for parameter of type filelogsort: 1 error(s) decoding:\n\n* 'sortType' expected type 'string', got unconvertible type 'int', value: '1'",
+		},
+		{
+			"ok value",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]map[string]interface{}{
+				{
+					"sortType":      "sortType",
+					"sortDirection": "ascending",
+					"regexKey":      "regexKey",
+					"layout":        "layout",
+					"location":      "location",
+				},
+			},
+			"",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			gotErr := test.parameterType.validateFileLogSortType(fileLogSortType, test.value)
+			if test.wantErr != "" {
+				require.Error(t, gotErr)
+				require.Equal(t, test.wantErr, gotErr.Error())
+			} else {
+				require.NoError(t, gotErr)
+			}
 		})
 	}
 }

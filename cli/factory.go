@@ -22,6 +22,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -271,6 +272,11 @@ func (f *Factory) BuildServer(ctx context.Context) (serve.Server, error) {
 	}
 
 	return serve.NewServer(f.cfg, st, tr, logger, f.routeBuilder), nil
+}
+
+// SupportsServer returns true if the OS is not windows.
+func (f *Factory) SupportsServer() bool {
+	return runtime.GOOS != "windows"
 }
 
 // BuildLogger builds a logger, if it doesn't already exist.

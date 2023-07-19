@@ -18,15 +18,17 @@ package helpers
 import (
 	"github.com/observiq/bindplane-op/resources/helpers/exporterhelper"
 	"github.com/observiq/bindplane-op/resources/helpers/masksensitivedatahelper"
+	"github.com/observiq/bindplane-op/resources/helpers/operatorhelper"
 
 	"text/template"
 )
 
 // ResourceHelperFuncMap returns a map of helper functions for use in templates.
 func ResourceHelperFuncMap() template.FuncMap {
-	return map[string]interface{}{
+	return map[string]any{
 		"bpRenderOtelRetryOnFailureConfig": exporterhelper.BPRenderOtelRetryOnFailureConfig,
 		"bpRenderOtelSendingQueueConfig":   exporterhelper.BPRenderOtelSendingQueueConfig,
 		"bpRenderMaskRules":                masksensitivedatahelper.BPRenderMaskRules,
+		"bpRenderStandardParsingOperator":  operatorhelper.BpRenderStandardParsingOperator,
 	}
 }

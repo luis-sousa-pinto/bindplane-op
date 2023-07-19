@@ -7,7 +7,7 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
-import { isArray, isFunction, isEmpty } from "lodash";
+import { isArray, isFunction, isEmpty, trim } from "lodash";
 import { memo, useState } from "react";
 import { validateStringsField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
@@ -50,6 +50,11 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
   }
 
   function handleValueChange(newValue: string[]) {
+    // Trim whitespace before setting the value
+    for (let i = 0; i < newValue.length; i++) {
+      newValue[i] = trim(newValue[i]);
+    }
+
     onValueChange && onValueChange(newValue);
 
     setInputValue("");
@@ -76,7 +81,7 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
         onChange={(e, v: string[]) => handleValueChange(v)}
         // inputValue and onInputChange refer to the latest string value being entered
         inputValue={inputValue}
-        onInputChange={(e, newValue) => setInputValue(newValue)}
+        onInputChange={(_e, newValue) => setInputValue(newValue)}
         onBlur={handleBlur}
         renderTags={(value: readonly string[], getTagProps) =>
           value.map((option: string, index: number) => (
@@ -110,7 +115,9 @@ const StringsParamInputComponent: React.FC<ParamInputProps<string[]>> = ({
                 {definition.documentation && (
                   <Stack component={"span"}>
                     {definition.documentation?.map((d) => (
-                      <a href={d.url} key={d.url}>{d.text}</a>
+                      <a href={d.url} key={d.url}>
+                        {d.text}
+                      </a>
                     ))}
                   </Stack>
                 )}

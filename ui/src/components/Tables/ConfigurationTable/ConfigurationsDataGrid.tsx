@@ -105,11 +105,26 @@ const ConfigurationsDataGridComponent: React.FC<
           },
         };
       case ConfigurationsTableField.LOGS:
-        return createMetricRateColumn(field, "logs", configurationMetrics);
+        return createMetricRateColumn(
+          "configuration",
+          field,
+          "logs",
+          configurationMetrics
+        );
       case ConfigurationsTableField.METRICS:
-        return createMetricRateColumn(field, "metrics", configurationMetrics);
+        return createMetricRateColumn(
+          "configuration",
+          field,
+          "metrics",
+          configurationMetrics
+        );
       case ConfigurationsTableField.TRACES:
-        return createMetricRateColumn(field, "traces", configurationMetrics);
+        return createMetricRateColumn(
+          "configuration",
+          field,
+          "traces",
+          configurationMetrics
+        );
       default:
         return {
           field: ConfigurationsTableField.NAME,
@@ -202,10 +217,12 @@ function renderAgentCountCell(
   return <span style={{ margin: "auto" }}>{cellParams.value}</span>;
 }
 
-function createMetricRateColumn(
+export function createMetricRateColumn(
+  resourceType: "configuration" | "destination",
   field: string,
   telemetryType: string,
-  configurationMetrics?: ConfigurationTableMetricsSubscription
+  configurationMetrics?: ConfigurationTableMetricsSubscription,
+  period?: string
 ): GridColDef[][0] {
   return {
     field,
@@ -221,21 +238,30 @@ function createMetricRateColumn(
       const metric = configurationMetrics.overviewMetrics.metrics.find(
         (m) =>
           m.name === metricName &&
-          m.nodeID === `configuration/${configurationName}`
+          m.nodeID === `${resourceType}/${configurationName}`
       );
-      if (metric == null) {
-        return 0;
-      }
       // to make this sortable, we use the raw value and provide a valueFormatter implementation to show units
-      return metric.value;
+      return { name: configurationName, value: metric?.value ?? 0 };
     },
-    valueFormatter: (params: GridValueFormatterParams<number>): string => {
-      if (params.value === 0) {
+    sortComparator: (v1, v2: { name: string; value: number }) => {
+      const valueDiff = v1.value - v2.value;
+      if (valueDiff !== 0) {
+        return valueDiff;
+      }
+      return v2.name.localeCompare(v1.name, "en", {
+        sensitivity: "base",
+      });
+    },
+    valueFormatter: (
+      params: GridValueFormatterParams<{ name: string; value: number }>
+    ): string => {
+      const { value } = params.value;
+      if (value === 0) {
         return "";
       }
       return formatMetric(
-        { value: params.value, unit: "B/s" },
-        DEFAULT_CONFIGURATION_TABLE_PERIOD
+        { value: value, unit: "B/s" },
+        period || DEFAULT_CONFIGURATION_TABLE_PERIOD
       );
     },
   };

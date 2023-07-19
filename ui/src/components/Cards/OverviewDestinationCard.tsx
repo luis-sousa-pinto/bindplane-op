@@ -1,23 +1,14 @@
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  Stack,
-  Typography,
-} from "@mui/material";
 import { useSnackbar } from "notistack";
 import { memo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import React from "react";
 
 import { useGetDestinationWithTypeQuery } from "../../graphql/generated";
 import { useOverviewPage } from "../../pages/overview/OverviewPageContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import React from "react";
 import { SquareIcon } from "../Icons";
+import { ResourceCard } from "./ResourceCard";
 
-import { classes } from "../../utils/styles";
 import styles from "./cards.module.scss";
-import { NoMaxWidthTooltip } from "../Custom/NoMaxWidthTooltip";
-import { truncateLabel } from "../../utils/graph/utils";
 
 interface ResourceDestinationCardProps {
   id: string;
@@ -68,72 +59,23 @@ const OverviewDestinationCardComponent: React.FC<
   }
 
   return (
-    <div
-      className={classes([
-        disabled ? styles.disabled : undefined,
-        data.destinationWithType.destination?.spec.disabled
-          ? styles.paused
-          : undefined,
-      ])}
-    >
-      <Card
-        className={classes([
-          styles["resource-card"],
-          disabled ? styles.disabled : undefined,
-          data.destinationWithType.destination?.spec.disabled
-            ? styles.paused
-            : undefined,
-        ])}
-        onClick={() => {
-          if (isEverythingDestination) {
-            navigate({
-              pathname: "/destinations",
-              search: location.search,
-            });
-          } else {
-            setEditingDestination(id);
-          }
-        }}
-      >
-        <CardActionArea className={styles.action}>
-          <NoMaxWidthTooltip title={label.length > 20 ? label : ""}>
-            <CardContent>
-              <Stack alignItems="center" spacing={1}>
-                {isEverythingDestination ? (
-                  <SquareIcon className={styles["destination-icon"]} />
-                ) : (
-                  <span
-                    className={styles.icon}
-                    style={{
-                      backgroundImage: `url(${data?.destinationWithType?.destinationType?.metadata.icon})`,
-                    }}
-                  />
-                )}
-                <Typography
-                  align="center"
-                  component="div"
-                  fontWeight={600}
-                  gutterBottom
-                  fontSize={label.length > 15 ? 11 : 16}
-                >
-                  {truncateLabel(label, 20)}
-                </Typography>
-                {data.destinationWithType.destination?.spec.disabled && (
-                  <Typography
-                    component="div"
-                    fontWeight={400}
-                    fontSize={14}
-                    variant="overline"
-                  >
-                    Paused
-                  </Typography>
-                )}
-              </Stack>
-            </CardContent>
-          </NoMaxWidthTooltip>
-        </CardActionArea>
-      </Card>
-    </div>
+    <ResourceCard
+      name={label}
+      onClick={() => {
+        if (isEverythingDestination) {
+          navigate({
+            pathname: "/destinations",
+            search: location.search,
+          });
+        } else {
+          setEditingDestination(id);
+        }
+      }}
+      icon={data?.destinationWithType?.destinationType?.metadata.icon}
+      altIcon={<SquareIcon className={styles["destination-icon"]} />}
+      paused={data.destinationWithType.destination?.spec.disabled}
+      disabled={disabled}
+    />
   );
 };
 

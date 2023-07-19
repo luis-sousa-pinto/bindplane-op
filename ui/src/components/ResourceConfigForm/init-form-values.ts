@@ -7,6 +7,7 @@ import {
 import { validateNameField } from "../../utils/forms/validate-name-field";
 import {
   validateAWSNamedField,
+  validateFileLogSortField,
   validateIntField,
   validateMapField,
   validateStringField,
@@ -100,7 +101,12 @@ export function initFormErrors(
         initErrors[definition.name] = validateAWSNamedField(
           initValues[definition.name]
         );
+        break;
 
+      case ParameterType.FileLogSort:
+        initErrors[definition.name] = validateFileLogSortField(
+          initValues[definition.name]
+        );
         break;
 
       default:

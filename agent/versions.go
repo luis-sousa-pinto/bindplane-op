@@ -55,7 +55,7 @@ type VersionsSettings struct {
 	SyncAgentVersionsInterval time.Duration
 
 	// Offline is true if the server is in offline mode and should not contact GitHub automatically. Sync methods called
-	// by 'bindplanectl sync' commands will still attempt to contact GitHub.
+	// by 'bindplane sync' commands will still attempt to contact GitHub.
 	Offline bool
 }
 

@@ -11,12 +11,20 @@ import { isFunction } from "lodash";
 import { memo } from "react";
 import { DestinationTypeCell } from "./cells";
 
+import { createMetricRateColumn } from "../ConfigurationTable/ConfigurationsDataGrid";
+import { useConfigurationTableMetricsSubscription } from "../../../graphql/generated";
+import { useOverviewPage } from "../../../pages/overview/OverviewPageContext";
+import { DEFAULT_DESTINATIONS_TABLE_PERIOD } from "../../MeasurementControlBar/MeasurementControlBar";
+
 import styles from "./cells.module.scss";
 
 export enum DestinationsTableField {
   NAME = "name",
   TYPE = "type",
   ICON_AND_NAME = "icon",
+  LOGS = "logs",
+  METRICS = "metrics",
+  TRACES = "traces",
 }
 
 interface DestinationsDataGridProps extends Omit<DataGridProps, "columns"> {
@@ -43,6 +51,15 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
     allowSelection,
     ...dataGridProps
   }) => {
+    const { selectedPeriod } = useOverviewPage();
+    const period = selectedPeriod || DEFAULT_DESTINATIONS_TABLE_PERIOD;
+    const { data: configurationMetrics } =
+      useConfigurationTableMetricsSubscription({
+        variables: {
+          period: period,
+        },
+      });
+
     function renderNameCell(
       cellParams: GridCellParams<any, string>
     ): JSX.Element {
@@ -113,6 +130,30 @@ export const DestinationsDataGrid: React.FC<DestinationsDataGridProps> = memo(
             },
             renderCell: renderNameAndIconCell,
           };
+        case DestinationsTableField.LOGS:
+          return createMetricRateColumn(
+            "destination",
+            field,
+            "logs",
+            configurationMetrics,
+            period
+          );
+        case DestinationsTableField.METRICS:
+          return createMetricRateColumn(
+            "destination",
+            field,
+            "metrics",
+            configurationMetrics,
+            period
+          );
+        case DestinationsTableField.TRACES:
+          return createMetricRateColumn(
+            "destination",
+            field,
+            "traces",
+            configurationMetrics,
+            period
+          );
         default:
           return { field: DestinationsTableField.TYPE };
       }
@@ -152,5 +193,11 @@ function renderStringCell(
 
 DestinationsDataGrid.defaultProps = {
   minHeight: "calc(100vh - 250px)",
-  columnFields: [DestinationsTableField.NAME, DestinationsTableField.TYPE],
+  columnFields: [
+    DestinationsTableField.NAME,
+    DestinationsTableField.TYPE,
+    DestinationsTableField.LOGS,
+    DestinationsTableField.METRICS,
+    DestinationsTableField.TRACES,
+  ],
 };

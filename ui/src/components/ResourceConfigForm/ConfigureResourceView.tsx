@@ -23,7 +23,7 @@ export interface ParameterGroup {
   parameters: ParameterDefinition[];
 }
 
-function groupParameters(parameters: ParameterDefinition[]): ParameterGroup[] {
+export function groupParameters(parameters: ParameterDefinition[]): ParameterGroup[] {
   const groups: ParameterGroup[] = [];
   let group: ParameterGroup | undefined;
 
