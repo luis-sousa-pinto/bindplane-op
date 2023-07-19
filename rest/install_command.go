@@ -174,13 +174,13 @@ func (p *installCommandParameters) installCommand() (string, error) {
 			p.args(),
 		), nil
 	case kubernetesDaemonset:
-		return containerInstallCommand(p, k8sDaemonsetChart)
+		return containerInstallCommand(p, K8sDaemonSetConfig)
 	case kubernetesDeployment:
-		return containerInstallCommand(p, k8sDeploymentChart)
+		return containerInstallCommand(p, K8sDeploymentConfig)
 	case openshiftDaemonset:
-		return containerInstallCommand(p, openshiftDaemonsetChart)
+		return containerInstallCommand(p, OpenshiftDaemonSetConfig)
 	case openshiftDeployment:
-		return containerInstallCommand(p, openshiftDeploymentChart)
+		return containerInstallCommand(p, OpenshiftDeploymentConfig)
 
 	default:
 		return fmt.Sprintf(`sudo sh -c "$(curl -fsSlL %s)" %s%s`,

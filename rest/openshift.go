@@ -14,7 +14,9 @@
 
 package rest
 
-const openshiftDaemonsetChart = `---
+// OpenshiftDaemonSetConfig represents the OpenShift DaemonSet
+// manifest for the bindplane-agent.
+const OpenshiftDaemonSetConfig = `---
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
@@ -327,7 +329,9 @@ spec:
             path: /var/lib/observiq/otelcol/container
 `
 
-const openshiftDeploymentChart = `---
+// OpenshiftDeploymentConfig represents the OpenShift Deployment
+// manifest for the bindplane-agent.
+const OpenshiftDeploymentConfig = `---
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:

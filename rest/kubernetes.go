@@ -14,7 +14,9 @@
 
 package rest
 
-const k8sDaemonsetChart = `apiVersion: v1
+// K8sDaemonSetConfig represents the Kubernetes DaemonSet
+// manifest for the bindplane-agent.
+const K8sDaemonSetConfig = `apiVersion: v1
 kind: Namespace
 metadata:
   labels:
@@ -284,7 +286,9 @@ spec:
             path: /var/lib/observiq/otelcol/container
 `
 
-const k8sDeploymentChart = `apiVersion: v1
+// K8sDeploymentConfig represents the Kubernetes Deployment
+// manifest for the bindplane-agent.
+const K8sDeploymentConfig = `apiVersion: v1
 kind: Namespace
 metadata:
   labels:
