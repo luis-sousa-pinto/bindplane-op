@@ -285,24 +285,7 @@ func (r *queryResolver) ProcessorType(ctx context.Context, name string) (*model.
 
 // Destinations is the resolver for the destinations field.
 func (r *queryResolver) Destinations(ctx context.Context, query *string, filterUnused *bool) ([]*model.Destination, error) {
-	if filterUnused != nil && *filterUnused {
-		return destinationsInConfigs(ctx, r.Bindplane.Store(), query)
-	}
-
-	dests, err := r.Bindplane.Store().Destinations(ctx)
-	if err != nil {
-		return dests, errors.Join(errors.New("queryResolver.Destinations failed to get Destinations from store"), err)
-	}
-	if query == nil {
-		return dests, nil
-	}
-	destinations := []*model.Destination{}
-	for _, dest := range dests {
-		if matchSubsequence(*query, dest.Name()) {
-			destinations = append(destinations, dest)
-		}
-	}
-	return destinations, nil
+	return Destinations(ctx, r.Bindplane.Store(), query, filterUnused)
 }
 
 // Destination is the resolver for the destination field.

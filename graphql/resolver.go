@@ -738,6 +738,28 @@ func destinationsInConfigs(ctx context.Context, store store.Store, query *string
 	return destinations, nil
 }
 
+// Destinations is the resolver for the destinations field.
+func Destinations(ctx context.Context, store store.Store, query *string, filterUnused *bool) ([]*model.Destination, error) {
+	if filterUnused != nil && *filterUnused {
+		return destinationsInConfigs(ctx, store, query)
+	}
+
+	dests, err := store.Destinations(ctx)
+	if err != nil {
+		return dests, errors.Join(errors.New("queryResolver.Destinations failed to get Destinations from store"), err)
+	}
+	if query == nil {
+		return dests, nil
+	}
+	destinations := []*model.Destination{}
+	for _, dest := range dests {
+		if matchSubsequence(*query, dest.Name()) {
+			destinations = append(destinations, dest)
+		}
+	}
+	return destinations, nil
+}
+
 // OverviewMetrics returns a list of metrics for the overview page
 func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period string, configIDs []string, destinationIDs []string) (*model1.GraphMetrics, error) {
 	if period == "" {
