@@ -541,6 +541,9 @@ func (s *legacyOpampServer) updateAgentConfig(ctx context.Context, agent *model.
 		return fmt.Errorf("unable to parse the current agent configuration: %w", err)
 	}
 
+	// remove sensitive parameter masking when rendering for the agent
+	ctx = model.ContextWithoutSensitiveParameterMasking(ctx)
+
 	// check the manager for any updates that should be applied to this agent
 	updates, err := s.manager.AgentUpdates(ctx, agent)
 	if err != nil {

@@ -93,7 +93,7 @@ func buildCurrentHandler(bindplane exposedserver.BindPlane) (func(res http.Respo
 
 	handler, _, err := server.Attach(settings)
 	if err != nil {
-		return nil, fmt.Errorf("error attempting to attach the OpAMP v0.7.1 server: %w", err)
+		return nil, fmt.Errorf("error attempting to attach the current OpAMP server: %w", err)
 	}
 
 	bindplane.Manager().EnableProtocol(callbacks)
