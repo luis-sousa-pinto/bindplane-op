@@ -1,4 +1,6 @@
 import {
+  Alert,
+  AlertTitle,
   Box,
   CircularProgress,
   Dialog,
@@ -116,13 +118,14 @@ export const DiffDialog: React.FC<DiffDialogProps> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <TitleSection onClose={onClose} title="Compare Versions" />
       <ContentSection>
-        <Stack>
+        <Stack spacing={1}>
           {noChanges && (
-            <Typography color="error" variant="body1">
+            <Alert severity="info">
+              <AlertTitle>Identical Rendered Configurations</AlertTitle>
               There are no differences between the New Version and the Current
               Version. This is most likely because the changes you've made
               result in the same rendered OTEL configuration.
-            </Typography>
+            </Alert>
           )}
           <Stack direction="row" justifyContent="space-around" width="100%">
             <Typography fontWeight={600}>
