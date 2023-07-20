@@ -18,7 +18,6 @@ package operatorhelper
 import (
 	"bytes"
 	"fmt"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -128,10 +127,9 @@ func addTimestampParsingConfig(
 	}
 	switch parseTimestampFormat {
 	case iso8601TimestampFormat:
-		timestampConfig["layout"] = "%Y-%m-%dT%H:%M:%S.%f"
+		timestampConfig["layout"] = "%Y-%m-%dT%H:%M:%S.%f%z"
 	case rfc3339TimestampFormat:
-		timestampConfig["layout"] = time.RFC3339Nano
-		timestampConfig["layout_type"] = "gotime"
+		timestampConfig["layout"] = "%Y-%m-%dT%H:%M:%S.%f"
 	case manualTimestampFormat:
 		timestampConfig["layout"] = manualFormat
 	case epochTimestampFormat:
