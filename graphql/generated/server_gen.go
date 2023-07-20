@@ -67,6 +67,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AdditionalInfo struct {
+		Documentation func(childComplexity int) int
+		Message       func(childComplexity int) int
+	}
+
 	Agent struct {
 		Architecture          func(childComplexity int) int
 		Configuration         func(childComplexity int) int
@@ -221,14 +226,15 @@ type ComplexityRoot struct {
 	}
 
 	Metadata struct {
-		DateModified func(childComplexity int) int
-		Description  func(childComplexity int) int
-		DisplayName  func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Icon         func(childComplexity int) int
-		Labels       func(childComplexity int) int
-		Name         func(childComplexity int) int
-		Version      func(childComplexity int) int
+		AdditionalInfo func(childComplexity int) int
+		DateModified   func(childComplexity int) int
+		Description    func(childComplexity int) int
+		DisplayName    func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Icon           func(childComplexity int) int
+		Labels         func(childComplexity int) int
+		Name           func(childComplexity int) int
+		Version        func(childComplexity int) int
 	}
 
 	Metric struct {
@@ -556,6 +562,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AdditionalInfo.documentation":
+		if e.complexity.AdditionalInfo.Documentation == nil {
+			break
+		}
+
+		return e.complexity.AdditionalInfo.Documentation(childComplexity), true
+
+	case "AdditionalInfo.message":
+		if e.complexity.AdditionalInfo.Message == nil {
+			break
+		}
+
+		return e.complexity.AdditionalInfo.Message(childComplexity), true
 
 	case "Agent.architecture":
 		if e.complexity.Agent.Architecture == nil {
@@ -1207,6 +1227,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Log.Timestamp(childComplexity), true
+
+	case "Metadata.additionalInfo":
+		if e.complexity.Metadata.AdditionalInfo == nil {
+			break
+		}
+
+		return e.complexity.Metadata.AdditionalInfo(childComplexity), true
 
 	case "Metadata.dateModified":
 		if e.complexity.Metadata.DateModified == nil {
@@ -2507,6 +2534,12 @@ type Metadata {
   labels: Map
   version: Version!
   dateModified: Time
+  additionalInfo: AdditionalInfo
+}
+
+type AdditionalInfo {
+  message: String!
+  documentation: [DocumentationLink!]!
 }
 
 type AgentSelector {
@@ -3683,6 +3716,100 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AdditionalInfo_message(ctx context.Context, field graphql.CollectedField, obj *model1.AdditionalInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AdditionalInfo_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AdditionalInfo_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdditionalInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AdditionalInfo_documentation(ctx context.Context, field graphql.CollectedField, obj *model1.AdditionalInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AdditionalInfo_documentation(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Documentation, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]model1.DocumentationLink)
+	fc.Result = res
+	return ec.marshalNDocumentationLink2ᚕgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐDocumentationLinkᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AdditionalInfo_documentation(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AdditionalInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "text":
+				return ec.fieldContext_DocumentationLink_text(ctx, field)
+			case "url":
+				return ec.fieldContext_DocumentationLink_url(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DocumentationLink", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Agent_id(ctx context.Context, field graphql.CollectedField, obj *model1.Agent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Agent_id(ctx, field)
@@ -5381,6 +5508,8 @@ func (ec *executionContext) fieldContext_Configuration_metadata(ctx context.Cont
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -6556,6 +6685,8 @@ func (ec *executionContext) fieldContext_Destination_metadata(ctx context.Contex
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -6716,6 +6847,8 @@ func (ec *executionContext) fieldContext_DestinationType_metadata(ctx context.Co
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -8389,6 +8522,53 @@ func (ec *executionContext) fieldContext_Metadata_dateModified(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metadata_additionalInfo(ctx context.Context, field graphql.CollectedField, obj *model1.Metadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metadata_additionalInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AdditionalInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.AdditionalInfo)
+	fc.Result = res
+	return ec.marshalOAdditionalInfo2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐAdditionalInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metadata_additionalInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "message":
+				return ec.fieldContext_AdditionalInfo_message(ctx, field)
+			case "documentation":
+				return ec.fieldContext_AdditionalInfo_documentation(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AdditionalInfo", field.Name)
 		},
 	}
 	return fc, nil
@@ -10952,6 +11132,8 @@ func (ec *executionContext) fieldContext_Processor_metadata(ctx context.Context,
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -11112,6 +11294,8 @@ func (ec *executionContext) fieldContext_ProcessorType_metadata(ctx context.Cont
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -14265,6 +14449,8 @@ func (ec *executionContext) fieldContext_Source_metadata(ctx context.Context, fi
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -14425,6 +14611,8 @@ func (ec *executionContext) fieldContext_SourceType_metadata(ctx context.Context
 				return ec.fieldContext_Metadata_version(ctx, field)
 			case "dateModified":
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
+			case "additionalInfo":
+				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -17362,6 +17550,41 @@ func (ec *executionContext) unmarshalInputUpdateProcessorsInput(ctx context.Cont
 
 // region    **************************** object.gotpl ****************************
 
+var additionalInfoImplementors = []string{"AdditionalInfo"}
+
+func (ec *executionContext) _AdditionalInfo(ctx context.Context, sel ast.SelectionSet, obj *model1.AdditionalInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, additionalInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AdditionalInfo")
+		case "message":
+
+			out.Values[i] = ec._AdditionalInfo_message(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "documentation":
+
+			out.Values[i] = ec._AdditionalInfo_documentation(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var agentImplementors = []string{"Agent"}
 
 func (ec *executionContext) _Agent(ctx context.Context, sel ast.SelectionSet, obj *model1.Agent) graphql.Marshaler {
@@ -18562,6 +18785,10 @@ func (ec *executionContext) _Metadata(ctx context.Context, sel ast.SelectionSet,
 		case "dateModified":
 
 			out.Values[i] = ec._Metadata_dateModified(ctx, field, obj)
+
+		case "additionalInfo":
+
+			out.Values[i] = ec._Metadata_additionalInfo(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -21147,6 +21374,50 @@ func (ec *executionContext) marshalNDocumentationLink2githubᚗcomᚋobserviqᚋ
 	return ec._DocumentationLink(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNDocumentationLink2ᚕgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐDocumentationLinkᚄ(ctx context.Context, sel ast.SelectionSet, v []model1.DocumentationLink) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDocumentationLink2githubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐDocumentationLink(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNEdge2ᚕᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚋgraphᚐEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*graph.Edge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -22419,6 +22690,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAdditionalInfo2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐAdditionalInfo(ctx context.Context, sel ast.SelectionSet, v *model1.AdditionalInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AdditionalInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOAgent2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐAgent(ctx context.Context, sel ast.SelectionSet, v *model1.Agent) graphql.Marshaler {

@@ -200,7 +200,7 @@ export const ConfigPageContent: React.FC = () => {
                   variant={"contained"}
                   startIcon={<PlusCircleIcon />}
                 >
-                  Apply configuration
+                  Apply Configuration
                 </Button>
               </RBACWrapper>
             )}

@@ -5,14 +5,18 @@ metadata:
   displayName: Microsoft 365
   icon: /icons/sources/microsoft_iis.svg
   description: Collect metrics and logs from Microsoft 365.
+  additionalInfo:
+    message: You must configure your tenant for logs, which can take 1 hour to be enabled and then up to 12 hours to become available. Metrics are reported once per day, but a report contains the metrics that were generated two days prior.
+    documentation:
+      - text: Read More
+        url: https://docs.bindplane.observiq.com/docs/microsoft-365
 spec:
   version: 0.0.1
   supportedPlatforms:
-  - macos
-  - linux
-  - windows
+    - macos
+    - linux
+    - windows
   parameters:
-
     - name: tenant_id
       label: Tenant ID
       description: Identifies the instance of Microsoft 365 to be monitored.
@@ -87,9 +91,9 @@ spec:
 
     - name: collection_interval
       label: Collection Interval
-      description: How often (hours) to scrape for metrics. This receiver only scrapes once every 24 hours.
+      description: How often (hours) to scrape for metrics.
       type: int
-      default: 24
+      default: 1
       advancedConfig: true
       relevantIf:
         - name: enable_metrics
@@ -184,29 +188,29 @@ spec:
 
   logs:
     extensions: |
-     {{ if .enable_logs }}
-      - file_storage:
-          directory: $OIQ_OTEL_COLLECTOR_HOME/storage
-          compaction:
-            on_rebound: true
-            directory: $OIQ_OTEL_COLLECTOR_HOME/storage
-     {{ end }}
+      {{ if .enable_logs }}
+       - file_storage:
+           directory: $OIQ_OTEL_COLLECTOR_HOME/storage
+           compaction:
+             on_rebound: true
+             directory: $OIQ_OTEL_COLLECTOR_HOME/storage
+      {{ end }}
 
     receivers: |
-     {{ if .enable_logs }}
-      - m365/logs:
-          tenant_id: {{ .tenant_id }}
-          client_id: {{ .client_id }}
-          client_secret: {{ .client_secret }}
-          logs:
-            poll_interval: {{  .poll_interval  }}m
-            general: {{ .enable_general_logs }}
-            exchange: {{ .enable_exchange_logs }}
-            sharepoint: {{ .enable_sharepoint_logs }}
-            azureAD: {{ .enable_azuread_logs }}
-            dlp: {{ .enable_dlp_logs }}
-          storage: {{ bpComponentID "file_storage" }}
-     {{ end }}
+      {{ if .enable_logs }}
+       - m365/logs:
+           tenant_id: {{ .tenant_id }}
+           client_id: {{ .client_id }}
+           client_secret: {{ .client_secret }}
+           logs:
+             poll_interval: {{  .poll_interval  }}m
+             general: {{ .enable_general_logs }}
+             exchange: {{ .enable_exchange_logs }}
+             sharepoint: {{ .enable_sharepoint_logs }}
+             azureAD: {{ .enable_azuread_logs }}
+             dlp: {{ .enable_dlp_logs }}
+           storage: {{ bpComponentID "file_storage" }}
+      {{ end }}
 
     processors: |
       {{ if .enable_logs }}
@@ -215,4 +219,3 @@ spec:
           system:
             hostname_sources: ["os"]
       {{ end }}
-

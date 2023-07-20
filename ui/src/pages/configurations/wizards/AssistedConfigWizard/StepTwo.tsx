@@ -46,6 +46,13 @@ gql`
         displayName
         description
         icon
+        additionalInfo {
+          message
+          documentation {
+            text
+            url
+          }
+        }
       }
       spec {
         parameters {
@@ -295,6 +302,7 @@ export const StepTwo: React.FC = (props) => {
         resourceTypeDisplayName={editingSourceType?.metadata.displayName ?? ""}
         description={editingSourceType?.metadata.displayName ?? ""}
         parameterDefinitions={editingSourceType?.spec.parameters ?? []}
+        additionalInfo={editingSourceType?.metadata.additionalInfo}
         fullWidth
         maxWidth="sm"
         parameters={formValues.sources[editingSourceIx]?.parameters ?? []}

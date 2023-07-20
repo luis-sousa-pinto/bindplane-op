@@ -70,6 +70,12 @@ type Metadata {
   labels: Map
   version: Version!
   dateModified: Time
+  additionalInfo: AdditionalInfo
+}
+
+type AdditionalInfo {
+  message: String!
+  documentation: [DocumentationLink!]!
 }
 
 type AgentSelector {

@@ -178,8 +178,8 @@ func (p ParameterDefinition) validateSpecialParameters(kind Kind, errs validatio
 			})
 		case "collection_interval":
 			// special case for vmware_vcenter which needs a longer collection interval
-			// special case for microsoft 365 receiver which scrapes every 24 hours
-			if p.Description != "How often (minutes) to scrape for metrics." && p.Description != "How often (hours) to scrape for metrics. This receiver only scrapes once every 24 hours." {
+			// special case for microsoft 365 receiver which scrapes every hour because the api only reports once every 24 hours
+			if p.Description != "How often (minutes) to scrape for metrics." && p.Description != "How often (hours) to scrape for metrics." {
 				p.validateSpecialParameter(errs, ParameterDefinition{
 					Name:           "collection_interval",
 					Label:          "Collection Interval",

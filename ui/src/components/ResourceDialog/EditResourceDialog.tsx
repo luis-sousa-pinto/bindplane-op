@@ -1,5 +1,9 @@
 import { Dialog, DialogProps } from "@mui/material";
-import { Parameter, ParameterDefinition } from "../../graphql/generated";
+import {
+  AdditionalInfo,
+  Parameter,
+  ParameterDefinition,
+} from "../../graphql/generated";
 import { ResourceConfigForm } from "../ResourceConfigForm";
 import { ResourceDialogContextProvider } from "./ResourceDialogContext";
 import { isFunction } from "lodash";
@@ -8,6 +12,7 @@ interface EditResourceDialogProps extends DialogProps {
   resourceTypeDisplayName: string;
   displayName?: string;
   description: string;
+  additionalInfo?: AdditionalInfo | null;
   onSave: (values: { [key: string]: any }) => void;
   onDelete?: () => void;
   onCancel: () => void;
@@ -31,6 +36,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
   onCancel,
   resourceTypeDisplayName,
   description,
+  additionalInfo,
   parameters,
   parameterDefinitions,
   kind,
@@ -56,6 +62,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
         includeNameField={includeNameField}
         resourceTypeDisplayName={resourceTypeDisplayName}
         displayName={displayName}
+        additionalInfo={additionalInfo}
         description={description}
         kind={kind}
         parameterDefinitions={parameterDefinitions}

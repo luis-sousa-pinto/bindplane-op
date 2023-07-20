@@ -308,6 +308,14 @@ type Metadata struct {
 	// Version is a 1-based integer that is incremented each time the spec is changed.
 	Version      Version    `yaml:"version,omitempty" json:"version,omitempty" mapstructure:"version"`
 	DateModified *time.Time `yaml:"dateModified,omitempty" json:"dateModified,omitempty" mapstructure:"dateModified"`
+
+	AdditionalInfo *AdditionalInfo `yaml:"additionalInfo,omitempty" json:"additionalInfo,omitempty" mapstructure:"additionalInfo"`
+}
+
+// AdditionalInfo configures a mui alert that gets placed under a resource title description to make important info clearly visible.
+type AdditionalInfo struct {
+	Message       string              `json:"message" yaml:"message" mapstructure:"message"`
+	Documentation []DocumentationLink `json:"documentation" yaml:"documentation"`
 }
 
 // VersionStatus indicates if the resource is the latest version

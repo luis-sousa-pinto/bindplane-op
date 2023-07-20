@@ -11,6 +11,7 @@ import {
   Parameter,
   ResourceConfiguration,
   GetProcessorTypesQuery,
+  AdditionalInfo,
 } from "../../graphql/generated";
 import { initFormErrors } from "./init-form-values";
 import {
@@ -36,6 +37,8 @@ interface ResourceConfigurationViewProps {
   resourceTypeDisplayName: string;
 
   description: string;
+
+  additionalInfo?: AdditionalInfo | null;
 
   heading?: string;
   subHeading?: string;
@@ -95,6 +98,7 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   resourceTypeDisplayName,
   description,
+  additionalInfo,
   heading,
   subHeading,
   parameters,
@@ -123,6 +127,7 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
     <ConfigureResourceView
       resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
+      additionalInfo={additionalInfo}
       heading={heading}
       subHeading={subHeading}
       kind={kind}

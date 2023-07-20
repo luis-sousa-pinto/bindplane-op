@@ -1,6 +1,6 @@
 import { DialogActions, Grid, Button, Stack, Typography } from "@mui/material";
 import { isFunction } from "lodash";
-import { ParameterDefinition } from "../../graphql/generated";
+import { AdditionalInfo, ParameterDefinition } from "../../graphql/generated";
 import { ResourceNameInput, useValidationContext, isValid } from ".";
 import { useResourceFormValues } from "./ResourceFormContext";
 import { useResourceDialog } from "../ResourceDialog/ResourceDialogContext";
@@ -23,7 +23,9 @@ export interface ParameterGroup {
   parameters: ParameterDefinition[];
 }
 
-export function groupParameters(parameters: ParameterDefinition[]): ParameterGroup[] {
+export function groupParameters(
+  parameters: ParameterDefinition[]
+): ParameterGroup[] {
   const groups: ParameterGroup[] = [];
   let group: ParameterGroup | undefined;
 
@@ -47,6 +49,7 @@ interface ConfigureResourceViewProps {
   kind: "source" | "destination" | "processor";
   resourceTypeDisplayName: string;
   description: string;
+  additionalInfo?: AdditionalInfo | null;
   heading?: string;
   subHeading?: string;
   formValues: { [key: string]: any };
@@ -69,6 +72,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   kind,
   resourceTypeDisplayName,
   description,
+  additionalInfo,
   heading,
   subHeading,
   formValues,
@@ -254,6 +258,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
         <TitleSection
           title={title}
           description={description}
+          additionalInfo={additionalInfo}
           onClose={onClose}
         />
       )}
