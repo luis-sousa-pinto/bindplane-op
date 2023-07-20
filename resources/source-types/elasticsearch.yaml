@@ -80,7 +80,7 @@ spec:
       label: Collection Scope
       documentation:
         - text: Read more
-          url: https://www.elastic.co/guide/en/elasticsearch/reference/7.9/cluster.html#cluster-nodes.
+          url: https://www.elastic.co/guide/en/elasticsearch/reference/7.9/cluster.html#cluster-nodes
       description: |
         Filters that define which nodes are scraped for node-level metrics.
       type: strings
