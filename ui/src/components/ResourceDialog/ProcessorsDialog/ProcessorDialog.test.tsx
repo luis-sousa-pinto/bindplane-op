@@ -224,7 +224,7 @@ const CUSTOM_PROCESSOR = {
         documentation: [
           {
             text: "Processor Syntax",
-            url: "https://github.com/observIQ/observiq-otel-collector/blob/main/docs/processors.md",
+            url: "https://github.com/observIQ/bindplane-agent/blob/main/docs/processors.md",
           },
         ],
       },

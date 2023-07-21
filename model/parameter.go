@@ -598,7 +598,7 @@ func (p ParameterDefinition) validateEnumsValue(fieldType parameterFieldType, va
 
 func (p ParameterDefinition) validateTimezoneType(_ parameterFieldType, value any) error {
 	tzErr := stanzaerrors.NewError(fmt.Sprintf("invalid value for timezone for parameter %s", p.Name),
-		"ensure that the value is one of the possible timezone values found here: https://github.com/observIQ/observiq-otel-collector/blob/main/receiver/pluginreceiver/timezone.go",
+		"ensure that the value is one of the possible timezone values found here: https://github.com/observIQ/bindplane-agent/blob/main/receiver/pluginreceiver/timezone.go",
 	)
 
 	str, ok := value.(string)

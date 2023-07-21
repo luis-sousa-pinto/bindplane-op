@@ -28,7 +28,7 @@ Generate an agent installation command using the `install agent` command.
 bindplane install agent --platform linux
 ```
 ```bash
-sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/releases/latest/download/install_unix.sh)" install_unix.sh -e wss://bindplane.mydomain.net:3001/v1/opamp -s 000000-0000-0000-0000-000000
+sudo sh -c "$(curl -fsSlL https://github.com/observiq/bindplane-agent/releases/latest/download/install_unix.sh)" install_unix.sh -e wss://bindplane.mydomain.net:3001/v1/opamp -s 000000-0000-0000-0000-000000
 ```
 
 **Manage Agents**

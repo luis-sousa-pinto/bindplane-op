@@ -171,7 +171,7 @@ describe("RawConfigForm", () => {
 
     expect(screen.getByText("sample files")).toHaveAttribute(
       "href",
-      "https://github.com/observIQ/observiq-otel-collector/tree/main/config/google_cloud_exporter"
+      "https://github.com/observIQ/bindplane-agent/tree/main/config/google_cloud_exporter"
     );
     expect(screen.getByText("OpenTelemetry documentation")).toHaveAttribute(
       "href",

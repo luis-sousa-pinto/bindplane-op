@@ -609,7 +609,7 @@ export const CUSTOM_DESTINATION_TYPE_MOCK: MockedResponse = {
                 documentation: [
                   {
                     text: "Exporter Syntax",
-                    url: "https://github.com/observIQ/observiq-otel-collector/blob/main/docs/exporters.md",
+                    url: "https://github.com/observIQ/bindplane-agent/blob/main/docs/exporters.md",
                   },
                 ],
                 advancedConfig: false,

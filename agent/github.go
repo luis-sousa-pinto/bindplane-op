@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	// oldestReleaseDate represents the oldest release of the observiq-otel-collector agent that supports upgrade. when we
+	// oldestReleaseDate represents the oldest release of the bindplane agent that supports upgrade. when we
 	// sync, we only include agents after this date to avoid adding a bunch of outdated agent versions.
 	oldestReleaseDate = time.Date(2022, time.August, 1, 0, 0, 0, 0, time.UTC)
 )
@@ -67,7 +67,7 @@ type githubRelease struct {
 }
 
 const owner = "observIQ"
-const repo = "observiq-otel-collector"
+const repo = "bindplane-agent"
 
 func releasesURL() string {
 	return fmt.Sprintf("/repos/%s/%s/releases", owner, repo)

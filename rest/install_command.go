@@ -156,11 +156,11 @@ func (p *installCommandParameters) installerFilename() string {
 
 func (p *installCommandParameters) installerURL() string {
 	if p.version == "latest" {
-		return fmt.Sprintf("https://github.com/observiq/observiq-otel-collector/releases/latest/download/%s",
+		return fmt.Sprintf("https://github.com/observiq/bindplane-agent/releases/latest/download/%s",
 			p.installerFilename(),
 		)
 	}
-	return fmt.Sprintf("https://github.com/observiq/observiq-otel-collector/releases/download/%s/%s",
+	return fmt.Sprintf("https://github.com/observiq/bindplane-agent/releases/download/%s/%s",
 		p.versionWithV(),
 		p.installerFilename(),
 	)
@@ -224,12 +224,12 @@ func configurationFromLabels(labels string) string {
 
 // Windows:
 //
-// msiexec /i "https://github.com/observiq/observiq-otel-collector/releases/latest/download/observiq-otel-collector.msi" /quiet ENABLEMANAGEMENT=1 OPAMPENDPOINT=<your-endpoint> OPAMPSECRETKEY=<secret-key> OPAMPLABELS=<comma-separated-labels>
+// msiexec /i "https://github.com/observiq/bindplane-agent/releases/latest/download/observiq-otel-collector.msi" /quiet ENABLEMANAGEMENT=1 OPAMPENDPOINT=<your-endpoint> OPAMPSECRETKEY=<secret-key> OPAMPLABELS=<comma-separated-labels>
 //
 // Linux:
 //
-// sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/releases/latest/download/install_unix.sh)" install_unix.sh -e=<your-endpoint> -k=<comma-separated-labels> -s=<secret-key> -v <collector-version>
+// sudo sh -c "$(curl -fsSlL https://github.com/observiq/bindplane-agent/releases/latest/download/install_unix.sh)" install_unix.sh -e=<your-endpoint> -k=<comma-separated-labels> -s=<secret-key> -v <collector-version>
 //
 // macOS:
 //
-// sudo sh -c "$(curl -fsSlL https://github.com/observiq/observiq-otel-collector/releases/latest/download/install_macos.sh)" install_macos.sh -e=<your-endpoint> -k=<comma-separated-labels> -s=<secret-key>
+// sudo sh -c "$(curl -fsSlL https://github.com/observiq/bindplane-agent/releases/latest/download/install_macos.sh)" install_macos.sh -e=<your-endpoint> -k=<comma-separated-labels> -s=<secret-key>
