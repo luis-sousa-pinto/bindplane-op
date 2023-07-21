@@ -403,6 +403,12 @@ export type ProcessorType = {
   spec: ResourceTypeSpec;
 };
 
+export type ProcessorWithType = {
+  __typename?: 'ProcessorWithType';
+  processor?: Maybe<Processor>;
+  processorType?: Maybe<ProcessorType>;
+};
+
 export type Query = {
   __typename?: 'Query';
   agent?: Maybe<Agent>;
@@ -422,11 +428,13 @@ export type Query = {
   processor?: Maybe<Processor>;
   processorType?: Maybe<ProcessorType>;
   processorTypes: Array<ProcessorType>;
+  processorWithType: ProcessorWithType;
   processors: Array<Processor>;
   snapshot: Snapshot;
   source?: Maybe<Source>;
   sourceType?: Maybe<SourceType>;
   sourceTypes: Array<SourceType>;
+  sourceWithType: SourceWithType;
   sources: Array<Source>;
 };
 
@@ -517,6 +525,11 @@ export type QueryProcessorTypeArgs = {
 };
 
 
+export type QueryProcessorWithTypeArgs = {
+  name: Scalars['String']['input'];
+};
+
+
 export type QuerySnapshotArgs = {
   agentID: Scalars['String']['input'];
   pipelineType: PipelineType;
@@ -531,6 +544,11 @@ export type QuerySourceArgs = {
 
 
 export type QuerySourceTypeArgs = {
+  name: Scalars['String']['input'];
+};
+
+
+export type QuerySourceWithTypeArgs = {
   name: Scalars['String']['input'];
 };
 
@@ -623,6 +641,12 @@ export type SourceType = {
   spec: ResourceTypeSpec;
 };
 
+export type SourceWithType = {
+  __typename?: 'SourceWithType';
+  source?: Maybe<Source>;
+  sourceType?: Maybe<SourceType>;
+};
+
 export type Subscription = {
   __typename?: 'Subscription';
   agentChanges: Array<AgentChange>;
@@ -703,6 +727,13 @@ export type GetDestinationWithTypeQueryVariables = Exact<{
 
 export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
+export type GetSourceWithTypeQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+
+export type GetSourceWithTypeQuery = { __typename?: 'Query', sourceWithType: { __typename?: 'SourceWithType', source?: { __typename?: 'Source', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+
 export type GetCurrentConfigVersionQueryVariables = Exact<{
   configurationName: Scalars['String']['input'];
 }>;
@@ -759,12 +790,12 @@ export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
-export type GetProcessorTypeQueryVariables = Exact<{
-  type: Scalars['String']['input'];
+export type GetProcessorWithTypeQueryVariables = Exact<{
+  name: Scalars['String']['input'];
 }>;
 
 
-export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetProcessorWithTypeQuery = { __typename?: 'Query', processorWithType: { __typename?: 'ProcessorWithType', processor?: { __typename?: 'Processor', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null, displayName?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -786,6 +817,13 @@ export type UpdateProcessorsMutationVariables = Exact<{
 
 
 export type UpdateProcessorsMutation = { __typename?: 'Mutation', updateProcessors?: boolean | null };
+
+export type GetProcessorTypeQueryVariables = Exact<{
+  type: Scalars['String']['input'];
+}>;
+
+
+export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetRolloutHistoryQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -1167,6 +1205,106 @@ export function useGetDestinationWithTypeLazyQuery(baseOptions?: Apollo.LazyQuer
 export type GetDestinationWithTypeQueryHookResult = ReturnType<typeof useGetDestinationWithTypeQuery>;
 export type GetDestinationWithTypeLazyQueryHookResult = ReturnType<typeof useGetDestinationWithTypeLazyQuery>;
 export type GetDestinationWithTypeQueryResult = Apollo.QueryResult<GetDestinationWithTypeQuery, GetDestinationWithTypeQueryVariables>;
+export const GetSourceWithTypeDocument = gql`
+    query getSourceWithType($name: String!) {
+  sourceWithType(name: $name) {
+    source {
+      metadata {
+        name
+        version
+        id
+        labels
+        version
+      }
+      spec {
+        type
+        parameters {
+          name
+          value
+        }
+        disabled
+      }
+    }
+    sourceType {
+      metadata {
+        id
+        name
+        version
+        icon
+        description
+      }
+      spec {
+        parameters {
+          label
+          name
+          description
+          required
+          type
+          default
+          relevantIf {
+            name
+            operator
+            value
+          }
+          documentation {
+            text
+            url
+          }
+          advancedConfig
+          validValues
+          options {
+            multiline
+            creatable
+            trackUnchecked
+            sectionHeader
+            gridColumns
+            labels
+            metricCategories {
+              label
+              column
+              metrics {
+                name
+                description
+                kpi
+              }
+            }
+            password
+            sensitive
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetSourceWithTypeQuery__
+ *
+ * To run a query within a React component, call `useGetSourceWithTypeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSourceWithTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSourceWithTypeQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetSourceWithTypeQuery(baseOptions: Apollo.QueryHookOptions<GetSourceWithTypeQuery, GetSourceWithTypeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSourceWithTypeQuery, GetSourceWithTypeQueryVariables>(GetSourceWithTypeDocument, options);
+      }
+export function useGetSourceWithTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSourceWithTypeQuery, GetSourceWithTypeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSourceWithTypeQuery, GetSourceWithTypeQueryVariables>(GetSourceWithTypeDocument, options);
+        }
+export type GetSourceWithTypeQueryHookResult = ReturnType<typeof useGetSourceWithTypeQuery>;
+export type GetSourceWithTypeLazyQueryHookResult = ReturnType<typeof useGetSourceWithTypeLazyQuery>;
+export type GetSourceWithTypeQueryResult = Apollo.QueryResult<GetSourceWithTypeQuery, GetSourceWithTypeQueryVariables>;
 export const GetCurrentConfigVersionDocument = gql`
     query getCurrentConfigVersion($configurationName: String!) {
   configuration(name: $configurationName) {
@@ -1527,58 +1665,73 @@ export function useGetProcessorTypesLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type GetProcessorTypesQueryHookResult = ReturnType<typeof useGetProcessorTypesQuery>;
 export type GetProcessorTypesLazyQueryHookResult = ReturnType<typeof useGetProcessorTypesLazyQuery>;
 export type GetProcessorTypesQueryResult = Apollo.QueryResult<GetProcessorTypesQuery, GetProcessorTypesQueryVariables>;
-export const GetProcessorTypeDocument = gql`
-    query getProcessorType($type: String!) {
-  processorType(name: $type) {
-    metadata {
-      displayName
-      name
-      version
-      id
-      description
-    }
-    spec {
-      parameters {
-        label
+export const GetProcessorWithTypeDocument = gql`
+    query getProcessorWithType($name: String!) {
+  processorWithType(name: $name) {
+    processor {
+      metadata {
         name
-        description
-        required
+        version
+        id
+        labels
+        version
+      }
+      spec {
         type
-        default
-        relevantIf {
+        parameters {
           name
-          operator
           value
         }
-        documentation {
-          text
-          url
-        }
-        advancedConfig
-        options {
-          creatable
-          trackUnchecked
-          gridColumns
-          sectionHeader
-          multiline
-          labels
-          metricCategories {
-            label
-            column
-            metrics {
-              name
-              description
-              kpi
-            }
+        disabled
+      }
+    }
+    processorType {
+      metadata {
+        id
+        name
+        version
+        description
+        displayName
+      }
+      spec {
+        parameters {
+          label
+          name
+          description
+          required
+          type
+          default
+          relevantIf {
+            name
+            operator
+            value
           }
-          password
-          sensitive
+          documentation {
+            text
+            url
+          }
+          advancedConfig
+          validValues
+          options {
+            multiline
+            creatable
+            trackUnchecked
+            sectionHeader
+            gridColumns
+            labels
+            metricCategories {
+              label
+              column
+              metrics {
+                name
+                description
+                kpi
+              }
+            }
+            password
+            sensitive
+          }
         }
-        documentation {
-          text
-          url
-        }
-        validValues
       }
     }
   }
@@ -1586,32 +1739,32 @@ export const GetProcessorTypeDocument = gql`
     `;
 
 /**
- * __useGetProcessorTypeQuery__
+ * __useGetProcessorWithTypeQuery__
  *
- * To run a query within a React component, call `useGetProcessorTypeQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetProcessorTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetProcessorWithTypeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetProcessorWithTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetProcessorTypeQuery({
+ * const { data, loading, error } = useGetProcessorWithTypeQuery({
  *   variables: {
- *      type: // value for 'type'
+ *      name: // value for 'name'
  *   },
  * });
  */
-export function useGetProcessorTypeQuery(baseOptions: Apollo.QueryHookOptions<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>) {
+export function useGetProcessorWithTypeQuery(baseOptions: Apollo.QueryHookOptions<GetProcessorWithTypeQuery, GetProcessorWithTypeQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>(GetProcessorTypeDocument, options);
+        return Apollo.useQuery<GetProcessorWithTypeQuery, GetProcessorWithTypeQueryVariables>(GetProcessorWithTypeDocument, options);
       }
-export function useGetProcessorTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>) {
+export function useGetProcessorWithTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetProcessorWithTypeQuery, GetProcessorWithTypeQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>(GetProcessorTypeDocument, options);
+          return Apollo.useLazyQuery<GetProcessorWithTypeQuery, GetProcessorWithTypeQueryVariables>(GetProcessorWithTypeDocument, options);
         }
-export type GetProcessorTypeQueryHookResult = ReturnType<typeof useGetProcessorTypeQuery>;
-export type GetProcessorTypeLazyQueryHookResult = ReturnType<typeof useGetProcessorTypeLazyQuery>;
-export type GetProcessorTypeQueryResult = Apollo.QueryResult<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>;
+export type GetProcessorWithTypeQueryHookResult = ReturnType<typeof useGetProcessorWithTypeQuery>;
+export type GetProcessorWithTypeLazyQueryHookResult = ReturnType<typeof useGetProcessorWithTypeLazyQuery>;
+export type GetProcessorWithTypeQueryResult = Apollo.QueryResult<GetProcessorWithTypeQuery, GetProcessorWithTypeQueryVariables>;
 export const ProcessorDialogSourceTypeDocument = gql`
     query processorDialogSourceType($name: String!) {
   sourceType(name: $name) {
@@ -1733,6 +1886,91 @@ export function useUpdateProcessorsMutation(baseOptions?: Apollo.MutationHookOpt
 export type UpdateProcessorsMutationHookResult = ReturnType<typeof useUpdateProcessorsMutation>;
 export type UpdateProcessorsMutationResult = Apollo.MutationResult<UpdateProcessorsMutation>;
 export type UpdateProcessorsMutationOptions = Apollo.BaseMutationOptions<UpdateProcessorsMutation, UpdateProcessorsMutationVariables>;
+export const GetProcessorTypeDocument = gql`
+    query getProcessorType($type: String!) {
+  processorType(name: $type) {
+    metadata {
+      displayName
+      name
+      version
+      id
+      description
+    }
+    spec {
+      parameters {
+        label
+        name
+        description
+        required
+        type
+        default
+        relevantIf {
+          name
+          operator
+          value
+        }
+        documentation {
+          text
+          url
+        }
+        advancedConfig
+        options {
+          creatable
+          trackUnchecked
+          gridColumns
+          sectionHeader
+          multiline
+          labels
+          metricCategories {
+            label
+            column
+            metrics {
+              name
+              description
+              kpi
+            }
+          }
+          password
+          sensitive
+        }
+        documentation {
+          text
+          url
+        }
+        validValues
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetProcessorTypeQuery__
+ *
+ * To run a query within a React component, call `useGetProcessorTypeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetProcessorTypeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetProcessorTypeQuery({
+ *   variables: {
+ *      type: // value for 'type'
+ *   },
+ * });
+ */
+export function useGetProcessorTypeQuery(baseOptions: Apollo.QueryHookOptions<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>(GetProcessorTypeDocument, options);
+      }
+export function useGetProcessorTypeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>(GetProcessorTypeDocument, options);
+        }
+export type GetProcessorTypeQueryHookResult = ReturnType<typeof useGetProcessorTypeQuery>;
+export type GetProcessorTypeLazyQueryHookResult = ReturnType<typeof useGetProcessorTypeLazyQuery>;
+export type GetProcessorTypeQueryResult = Apollo.QueryResult<GetProcessorTypeQuery, GetProcessorTypeQueryVariables>;
 export const GetRolloutHistoryDocument = gql`
     query getRolloutHistory($name: String!) {
   configurationHistory(name: $name) {

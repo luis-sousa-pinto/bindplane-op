@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import {
   Maybe,
   Parameter,
@@ -23,7 +24,7 @@ export class BPResourceConfiguration implements ResourceConfiguration {
   }
 
   isInline(): boolean {
-    return this.name == null;
+    return isEmpty(this.name);
   }
 
   hasConfigurationParameters(): boolean {

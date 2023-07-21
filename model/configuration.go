@@ -1124,6 +1124,7 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		attributes := graph.MakeAttributes(string(KindSource), sourceName)
 		attributes["activeTypeFlags"] = usage.active
 		attributes["supportedTypeFlags"] = usage.supported
+		attributes["sourceIndex"] = i
 		s := &graph.Node{
 			ID:         fmt.Sprintf("source/%s", sourceName),
 			Type:       "sourceNode",
@@ -1141,6 +1142,7 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 			Attributes: map[string]any{
 				"activeTypeFlags":    usage.active,
 				"supportedTypeFlags": usage.supported,
+				"sourceIndex":        i,
 			},
 		}
 		g.AddIntermediate(p)

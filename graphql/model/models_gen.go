@@ -76,6 +76,11 @@ type OverviewPage struct {
 	Graph *graph.Graph `json:"graph"`
 }
 
+type ProcessorWithType struct {
+	Processor     *model.Processor     `json:"processor"`
+	ProcessorType *model.ProcessorType `json:"processorType"`
+}
+
 type RemoveAgentConfigurationInput struct {
 	AgentID string `json:"agentId"`
 }
@@ -84,6 +89,11 @@ type Snapshot struct {
 	Logs    []*record.Log    `json:"logs"`
 	Metrics []*record.Metric `json:"metrics"`
 	Traces  []*record.Trace  `json:"traces"`
+}
+
+type SourceWithType struct {
+	Source     *model.Source     `json:"source"`
+	SourceType *model.SourceType `json:"sourceType"`
 }
 
 type UpdateProcessorsInput struct {

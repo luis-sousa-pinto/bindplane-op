@@ -1,7 +1,7 @@
 import { Button, Stack } from "@mui/material";
 import { ResourceConfiguration, Role } from "../../../graphql/generated";
 import { ActionsSection } from "../../DialogComponents";
-import { InlineProcessorContainer } from "./InlineProcessorContainer";
+import { ProcessorsContainer } from "./ProcessorContainer";
 import { ViewHeading } from "./ViewHeading";
 import { RBACWrapper } from "../../RBACWrapper/RBACWrapper";
 
@@ -31,7 +31,7 @@ export const AllProcessorsView: React.FC<AllProcessorsProps> = ({
   return (
     <Stack className={mixins["flex-grow"]}>
       <ViewHeading heading="Processors" />
-      <InlineProcessorContainer
+      <ProcessorsContainer
         processors={processors}
         onAddProcessor={onAddProcessor}
         onEditProcessor={onEditProcessor}

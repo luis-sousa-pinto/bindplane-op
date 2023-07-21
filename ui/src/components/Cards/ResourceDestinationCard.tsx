@@ -14,10 +14,9 @@ import { trimVersion } from "../../utils/version-helpers";
 import { ResourceCard } from "./ResourceCard";
 import { hasPermission } from "../../utils/has-permission";
 import { useRole } from "../../hooks/useRole";
+import { onDeleteFunc } from "./types";
 
 import styles from "./cards.module.scss";
-
-type onDeleteFunc = () => Promise<void>;
 
 gql`
   query getDestinationWithType($name: String!) {
@@ -123,10 +122,6 @@ const ResourceDestinationCardComponent: React.FC<
     fetchPolicy: "cache-and-network",
   });
 
-  function closeEditDialog() {
-    setEditing(false);
-  }
-
   async function onSave(formValues: FormValues) {
     const updatedDestination = new BPDestination(
       data!.destinationWithType!.destination!
@@ -170,13 +165,13 @@ const ResourceDestinationCardComponent: React.FC<
     try {
       const update = await updatedDestination.apply();
       if (update.status === UpdateStatus.INVALID) {
-        console.error("Update: ", update);
+        console.error("Invalid Update: ", update);
         throw new Error(
           `failed to apply destination, got status ${update.status}`
         );
       }
 
-      enqueueSnackbar("Successfully saved destination.", {
+      enqueueSnackbar("Saved Destination! 🎉", {
         variant: "success",
       });
       setEditing(false);
@@ -199,17 +194,18 @@ const ResourceDestinationCardComponent: React.FC<
       try {
         const update = await updatedConfig.apply();
         if (update.status === UpdateStatus.INVALID) {
-          console.error("Update: ", update);
+          console.error("Invalid Update: ", update);
           throw new Error(
             `failed to remove destination from configuration, configuration invalid`
           );
         }
 
-        closeEditDialog();
-        closeDeleteDialog();
+        setEditing(false);
+        setDeleteOpen(false);
         refetchConfiguration();
         refetchDestination();
       } catch (err) {
+        console.error(err);
         enqueueSnackbar("Failed to remove destination.", {
           variant: "error",
         });
@@ -227,41 +223,20 @@ const ResourceDestinationCardComponent: React.FC<
    * Toggle `disabled` on the destination spec, replace it in the configuration, and save
    */
   async function onTogglePause() {
-    const updatedConfig = new BPConfiguration(configuration);
+    if (data?.destinationWithType?.destination == null) {
+      enqueueSnackbar("Oops! Something went wrong.", { variant: "error" });
+      console.error(
+        "could not toggle destination disabled, no destination returned in data"
+      );
+      return;
+    }
+
     const updatedDestination = new BPDestination(
-      data!.destinationWithType!.destination!
+      data.destinationWithType.destination
     );
     updatedDestination.toggleDisabled();
 
     const action = updatedDestination.spec.disabled ? "pause" : "resume";
-    if (destinationIndex != null) {
-      updatedConfig.replaceDestination(
-        {
-          name: updatedDestination.name(),
-          processors:
-            configuration?.spec?.destinations![destinationIndex].processors ??
-            [],
-          parameters: updatedDestination.spec.parameters,
-          type: updatedDestination.spec.type,
-          disabled: updatedDestination.spec.disabled,
-        },
-        destinationIndex
-      );
-
-      try {
-        const update = await updatedConfig.apply();
-        if (update.status === UpdateStatus.INVALID) {
-          throw new Error(
-            `failed to ${action} destination, got status ${update.status}`
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        enqueueSnackbar("Failed to update configuration.", {
-          variant: "error",
-        });
-      }
-    }
 
     try {
       const { status, reason } = await updatedDestination.apply();
@@ -271,10 +246,11 @@ const ResourceDestinationCardComponent: React.FC<
         );
       }
 
-      enqueueSnackbar(`Successfully ${action}d destination.`, {
+      enqueueSnackbar(`Destination ${action}d! 🎉`, {
         variant: "success",
       });
-      closeEditDialog();
+
+      setEditing(false);
       refetchConfiguration();
       refetchDestination();
     } catch (err) {
@@ -284,15 +260,6 @@ const ResourceDestinationCardComponent: React.FC<
       console.error(err);
     }
   }
-
-  function closeDeleteDialog() {
-    setDeleteOpen(false);
-  }
-
-  function openDeleteDialog() {
-    setDeleteOpen(true);
-  }
-
   // Loading
   if (data === undefined) {
     return null;
@@ -342,9 +309,9 @@ const ResourceDestinationCardComponent: React.FC<
           data.destinationWithType.destinationType.spec.parameters
         }
         open={editing}
-        onClose={closeEditDialog}
-        onCancel={closeEditDialog}
-        onDelete={onDelete && openDeleteDialog}
+        onClose={() => setEditing(false)}
+        onCancel={() => setEditing(false)}
+        onDelete={onDelete && (() => setDeleteOpen(true))}
         onSave={onSave}
         paused={data.destinationWithType.destination?.spec.disabled ?? false}
         onTogglePause={onTogglePause}
@@ -354,8 +321,8 @@ const ResourceDestinationCardComponent: React.FC<
       {onDelete && (
         <ConfirmDeleteResourceDialog
           open={confirmDeleteOpen}
-          onClose={closeDeleteDialog}
-          onCancel={closeDeleteDialog}
+          onClose={() => setDeleteOpen(false)}
+          onCancel={() => setDeleteOpen(false)}
           onDelete={onDelete}
           action={"remove"}
         >

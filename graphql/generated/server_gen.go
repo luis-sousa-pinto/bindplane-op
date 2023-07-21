@@ -337,6 +337,11 @@ type ComplexityRoot struct {
 		Spec       func(childComplexity int) int
 	}
 
+	ProcessorWithType struct {
+		Processor     func(childComplexity int) int
+		ProcessorType func(childComplexity int) int
+	}
+
 	Query struct {
 		Agent                func(childComplexity int, id string) int
 		AgentMetrics         func(childComplexity int, period string, ids []string) int
@@ -355,11 +360,13 @@ type ComplexityRoot struct {
 		Processor            func(childComplexity int, name string) int
 		ProcessorType        func(childComplexity int, name string) int
 		ProcessorTypes       func(childComplexity int) int
+		ProcessorWithType    func(childComplexity int, name string) int
 		Processors           func(childComplexity int) int
 		Snapshot             func(childComplexity int, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) int
 		Source               func(childComplexity int, name string) int
 		SourceType           func(childComplexity int, name string) int
 		SourceTypes          func(childComplexity int) int
+		SourceWithType       func(childComplexity int, name string) int
 		Sources              func(childComplexity int) int
 	}
 
@@ -421,6 +428,11 @@ type ComplexityRoot struct {
 		Kind       func(childComplexity int) int
 		Metadata   func(childComplexity int) int
 		Spec       func(childComplexity int) int
+	}
+
+	SourceWithType struct {
+		Source     func(childComplexity int) int
+		SourceType func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -511,8 +523,10 @@ type QueryResolver interface {
 	Source(ctx context.Context, name string) (*model1.Source, error)
 	SourceTypes(ctx context.Context) ([]*model1.SourceType, error)
 	SourceType(ctx context.Context, name string) (*model1.SourceType, error)
+	SourceWithType(ctx context.Context, name string) (*model.SourceWithType, error)
 	Processors(ctx context.Context) ([]*model1.Processor, error)
 	Processor(ctx context.Context, name string) (*model1.Processor, error)
+	ProcessorWithType(ctx context.Context, name string) (*model.ProcessorWithType, error)
 	ProcessorTypes(ctx context.Context) ([]*model1.ProcessorType, error)
 	ProcessorType(ctx context.Context, name string) (*model1.ProcessorType, error)
 	Destinations(ctx context.Context, query *string, filterUnused *bool) ([]*model1.Destination, error)
@@ -1738,6 +1752,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ProcessorType.Spec(childComplexity), true
 
+	case "ProcessorWithType.processor":
+		if e.complexity.ProcessorWithType.Processor == nil {
+			break
+		}
+
+		return e.complexity.ProcessorWithType.Processor(childComplexity), true
+
+	case "ProcessorWithType.processorType":
+		if e.complexity.ProcessorWithType.ProcessorType == nil {
+			break
+		}
+
+		return e.complexity.ProcessorWithType.ProcessorType(childComplexity), true
+
 	case "Query.agent":
 		if e.complexity.Query.Agent == nil {
 			break
@@ -1932,6 +1960,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ProcessorTypes(childComplexity), true
 
+	case "Query.processorWithType":
+		if e.complexity.Query.ProcessorWithType == nil {
+			break
+		}
+
+		args, err := ec.field_Query_processorWithType_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ProcessorWithType(childComplexity, args["name"].(string)), true
+
 	case "Query.processors":
 		if e.complexity.Query.Processors == nil {
 			break
@@ -1981,6 +2021,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.SourceTypes(childComplexity), true
+
+	case "Query.sourceWithType":
+		if e.complexity.Query.SourceWithType == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sourceWithType_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SourceWithType(childComplexity, args["name"].(string)), true
 
 	case "Query.sources":
 		if e.complexity.Query.Sources == nil {
@@ -2240,6 +2292,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SourceType.Spec(childComplexity), true
+
+	case "SourceWithType.source":
+		if e.complexity.SourceWithType.Source == nil {
+			break
+		}
+
+		return e.complexity.SourceWithType.Source(childComplexity), true
+
+	case "SourceWithType.sourceType":
+		if e.complexity.SourceWithType.SourceType == nil {
+			break
+		}
+
+		return e.complexity.SourceWithType.SourceType(childComplexity), true
 
 	case "Subscription.agentChanges":
 		if e.complexity.Subscription.AgentChanges == nil {
@@ -2831,11 +2897,21 @@ type Source {
   spec: ParameterizedSpec!
 }
 
+type SourceWithType {
+  source: Source
+  sourceType: SourceType
+}
+
 type Processor {
   apiVersion: String!
   kind: String!
   metadata: Metadata!
   spec: ParameterizedSpec!
+}
+
+type ProcessorWithType {
+  processor: Processor
+  processorType: ProcessorType
 }
 
 type Destination {
@@ -2952,9 +3028,11 @@ type Query {
 
   sourceTypes: [SourceType!]!
   sourceType(name: String!): SourceType
+  sourceWithType(name: String!): SourceWithType!
 
   processors: [Processor!]!
   processor(name: String!): Processor
+  processorWithType(name: String!): ProcessorWithType!
 
   processorTypes: [ProcessorType!]!
   processorType(name: String!): ProcessorType
@@ -3454,6 +3532,21 @@ func (ec *executionContext) field_Query_processorType_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_processorWithType_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_processor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3512,6 +3605,21 @@ func (ec *executionContext) field_Query_snapshot_args(ctx context.Context, rawAr
 }
 
 func (ec *executionContext) field_Query_sourceType_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sourceWithType_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -11401,6 +11509,108 @@ func (ec *executionContext) fieldContext_ProcessorType_spec(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _ProcessorWithType_processor(ctx context.Context, field graphql.CollectedField, obj *model.ProcessorWithType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProcessorWithType_processor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Processor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.Processor)
+	fc.Result = res
+	return ec.marshalOProcessor2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐProcessor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProcessorWithType_processor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProcessorWithType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "apiVersion":
+				return ec.fieldContext_Processor_apiVersion(ctx, field)
+			case "kind":
+				return ec.fieldContext_Processor_kind(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Processor_metadata(ctx, field)
+			case "spec":
+				return ec.fieldContext_Processor_spec(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Processor", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProcessorWithType_processorType(ctx context.Context, field graphql.CollectedField, obj *model.ProcessorWithType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProcessorWithType_processorType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProcessorType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.ProcessorType)
+	fc.Result = res
+	return ec.marshalOProcessorType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐProcessorType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProcessorWithType_processorType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProcessorWithType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "apiVersion":
+				return ec.fieldContext_ProcessorType_apiVersion(ctx, field)
+			case "metadata":
+				return ec.fieldContext_ProcessorType_metadata(ctx, field)
+			case "kind":
+				return ec.fieldContext_ProcessorType_kind(ctx, field)
+			case "spec":
+				return ec.fieldContext_ProcessorType_spec(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProcessorType", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_overviewPage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_overviewPage(ctx, field)
 	if err != nil {
@@ -12063,6 +12273,67 @@ func (ec *executionContext) fieldContext_Query_sourceType(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_sourceWithType(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_sourceWithType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SourceWithType(rctx, fc.Args["name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.SourceWithType)
+	fc.Result = res
+	return ec.marshalNSourceWithType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐSourceWithType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_sourceWithType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "source":
+				return ec.fieldContext_SourceWithType_source(ctx, field)
+			case "sourceType":
+				return ec.fieldContext_SourceWithType_sourceType(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SourceWithType", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_sourceWithType_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_processors(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_processors(ctx, field)
 	if err != nil {
@@ -12173,6 +12444,67 @@ func (ec *executionContext) fieldContext_Query_processor(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_processor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_processorWithType(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_processorWithType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ProcessorWithType(rctx, fc.Args["name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ProcessorWithType)
+	fc.Result = res
+	return ec.marshalNProcessorWithType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐProcessorWithType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_processorWithType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "processor":
+				return ec.fieldContext_ProcessorWithType_processor(ctx, field)
+			case "processorType":
+				return ec.fieldContext_ProcessorWithType_processorType(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProcessorWithType", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_processorWithType_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -14713,6 +15045,108 @@ func (ec *executionContext) fieldContext_SourceType_spec(ctx context.Context, fi
 				return ec.fieldContext_ResourceTypeSpec_telemetryTypes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ResourceTypeSpec", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SourceWithType_source(ctx context.Context, field graphql.CollectedField, obj *model.SourceWithType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceWithType_source(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Source, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.Source)
+	fc.Result = res
+	return ec.marshalOSource2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐSource(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SourceWithType_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SourceWithType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "apiVersion":
+				return ec.fieldContext_Source_apiVersion(ctx, field)
+			case "kind":
+				return ec.fieldContext_Source_kind(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Source_metadata(ctx, field)
+			case "spec":
+				return ec.fieldContext_Source_spec(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Source", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SourceWithType_sourceType(ctx context.Context, field graphql.CollectedField, obj *model.SourceWithType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceWithType_sourceType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SourceType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model1.SourceType)
+	fc.Result = res
+	return ec.marshalOSourceType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐSourceType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SourceWithType_sourceType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SourceWithType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "apiVersion":
+				return ec.fieldContext_SourceType_apiVersion(ctx, field)
+			case "metadata":
+				return ec.fieldContext_SourceType_metadata(ctx, field)
+			case "kind":
+				return ec.fieldContext_SourceType_kind(ctx, field)
+			case "spec":
+				return ec.fieldContext_SourceType_spec(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SourceType", field.Name)
 		},
 	}
 	return fc, nil
@@ -19477,6 +19911,35 @@ func (ec *executionContext) _ProcessorType(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var processorWithTypeImplementors = []string{"ProcessorWithType"}
+
+func (ec *executionContext) _ProcessorWithType(ctx context.Context, sel ast.SelectionSet, obj *model.ProcessorWithType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, processorWithTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProcessorWithType")
+		case "processor":
+
+			out.Values[i] = ec._ProcessorWithType_processor(ctx, field, obj)
+
+		case "processorType":
+
+			out.Values[i] = ec._ProcessorWithType_processorType(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -19714,6 +20177,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "sourceWithType":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sourceWithType(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "processors":
 			field := field
 
@@ -19747,6 +20233,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_processor(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "processorWithType":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_processorWithType(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -20500,6 +21009,35 @@ func (ec *executionContext) _SourceType(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sourceWithTypeImplementors = []string{"SourceWithType"}
+
+func (ec *executionContext) _SourceWithType(ctx context.Context, sel ast.SelectionSet, obj *model.SourceWithType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sourceWithTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SourceWithType")
+		case "source":
+
+			out.Values[i] = ec._SourceWithType_source(ctx, field, obj)
+
+		case "sourceType":
+
+			out.Values[i] = ec._SourceWithType_sourceType(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22145,6 +22683,20 @@ func (ec *executionContext) marshalNProcessorType2ᚖgithubᚗcomᚋobserviqᚋb
 	return ec._ProcessorType(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNProcessorWithType2githubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐProcessorWithType(ctx context.Context, sel ast.SelectionSet, v model.ProcessorWithType) graphql.Marshaler {
+	return ec._ProcessorWithType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProcessorWithType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐProcessorWithType(ctx context.Context, sel ast.SelectionSet, v *model.ProcessorWithType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ProcessorWithType(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNRelevantIfCondition2githubᚗcomᚋobserviqᚋbindplaneᚑopᚋmodelᚐRelevantIfCondition(ctx context.Context, sel ast.SelectionSet, v model1.RelevantIfCondition) graphql.Marshaler {
 	return ec._RelevantIfCondition(ctx, sel, &v)
 }
@@ -22311,6 +22863,20 @@ func (ec *executionContext) marshalNSourceType2ᚖgithubᚗcomᚋobserviqᚋbind
 		return graphql.Null
 	}
 	return ec._SourceType(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSourceWithType2githubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐSourceWithType(ctx context.Context, sel ast.SelectionSet, v model.SourceWithType) graphql.Marshaler {
+	return ec._SourceWithType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSourceWithType2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐSourceWithType(ctx context.Context, sel ast.SelectionSet, v *model.SourceWithType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SourceWithType(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

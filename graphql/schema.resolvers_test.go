@@ -726,3 +726,344 @@ func Test_queryResolver_Destination(t *testing.T) {
 		})
 	}
 }
+
+func Test_queryResolver_DestinationWithType(t *testing.T) {
+	destinationErr := errors.New("destination error")
+	destinationTypeErr := errors.New("destination type error")
+
+	destinationName := "destination-name"
+	destinationTypeName := "custom"
+
+	destination := model.NewDestination(destinationName, destinationTypeName, nil)
+	destinationType := model.NewDestinationType(destinationTypeName, nil)
+
+	updates := sourceMocks.NewMockSource[store.BasicEventUpdates](t)
+	updates.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	tests := []struct {
+		name      string
+		store     func(t *testing.T) any
+		expect    *model1.DestinationWithType
+		expectErr error
+	}{
+		{
+			name: "error on Destination error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Destination(mock.Anything, destinationName).Return(nil, destinationErr)
+
+				return store
+			},
+			expect:    &model1.DestinationWithType{},
+			expectErr: destinationErr,
+		},
+		{
+			name: "destination not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Destination(mock.Anything, destinationName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.DestinationWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "error on DestinationType error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Destination(mock.Anything, destinationName).Return(destination, nil)
+				store.EXPECT().DestinationType(mock.Anything, destinationTypeName).Return(nil, destinationTypeErr)
+
+				return store
+			},
+			expect:    &model1.DestinationWithType{},
+			expectErr: destinationTypeErr,
+		},
+		{
+			name: "destination type not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Destination(mock.Anything, destinationName).Return(destination, nil)
+				store.EXPECT().DestinationType(mock.Anything, destinationTypeName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.DestinationWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "success",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Destination(mock.Anything, destinationName).Return(destination, nil)
+				store.EXPECT().DestinationType(mock.Anything, destinationTypeName).Return(destinationType, nil)
+
+				return store
+			},
+			expect: &model1.DestinationWithType{
+				Destination:     destination,
+				DestinationType: destinationType,
+			},
+			expectErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindplane := server.NewBindPlane(
+				&config.Config{},
+				zap.NewNop(),
+				tt.store(t).(store.Store),
+				mockVersions(),
+			)
+
+			resolver := NewResolver(bindplane)
+			r := &queryResolver{
+				Resolver: resolver,
+			}
+			got, err := r.DestinationWithType(context.Background(), destinationName)
+
+			if tt.expectErr != nil {
+				require.Error(t, err)
+				require.Equal(t, tt.expectErr.Error(), err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.expect, got)
+		})
+	}
+
+}
+
+func Test_queryResolver_SourceWithType(t *testing.T) {
+	sourceErr := errors.New("source error")
+	sourceTypeErr := errors.New("source type error")
+
+	sourceName := "source-name"
+	sourceTypeName := "host"
+
+	source := model.NewSource(sourceName, sourceTypeName, nil)
+	sourceType := model.NewSourceType(sourceTypeName, nil, nil)
+
+	updates := sourceMocks.NewMockSource[store.BasicEventUpdates](t)
+	updates.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	tests := []struct {
+		name      string
+		store     func(t *testing.T) any
+		expect    *model1.SourceWithType
+		expectErr error
+	}{
+		{
+			name: "error on Source error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Source(mock.Anything, sourceName).Return(nil, sourceErr)
+
+				return store
+			},
+			expect:    &model1.SourceWithType{},
+			expectErr: sourceErr,
+		},
+		{
+			name: "source not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Source(mock.Anything, sourceName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.SourceWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "error on SourceType error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Source(mock.Anything, sourceName).Return(source, nil)
+				store.EXPECT().SourceType(mock.Anything, sourceTypeName).Return(nil, sourceTypeErr)
+
+				return store
+			},
+			expect:    &model1.SourceWithType{},
+			expectErr: sourceTypeErr,
+		},
+		{
+			name: "source type not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Source(mock.Anything, sourceName).Return(source, nil)
+				store.EXPECT().SourceType(mock.Anything, sourceTypeName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.SourceWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "success",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Source(mock.Anything, sourceName).Return(source, nil)
+				store.EXPECT().SourceType(mock.Anything, sourceTypeName).Return(sourceType, nil)
+
+				return store
+			},
+			expect: &model1.SourceWithType{
+				Source:     source,
+				SourceType: sourceType,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindplane := server.NewBindPlane(
+				&config.Config{},
+				zap.NewNop(),
+				tt.store(t).(store.Store),
+				mockVersions(),
+			)
+
+			resolver := NewResolver(bindplane)
+			r := &queryResolver{
+				Resolver: resolver,
+			}
+			got, err := r.SourceWithType(context.Background(), sourceName)
+
+			if tt.expectErr != nil {
+				require.Error(t, err)
+				require.Equal(t, tt.expectErr, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.expect, got)
+		})
+	}
+}
+
+func Test_queryResolver_ProcessorWithType(t *testing.T) {
+	processorErr := errors.New("processor error")
+	processorTypeErr := errors.New("processor type error")
+
+	processorName := "processor-name"
+	processorTypeName := "batch"
+
+	processor := model.NewProcessor(processorName, processorTypeName, nil)
+	processorType := model.NewProcessorType(processorTypeName, nil)
+
+	updates := sourceMocks.NewMockSource[store.BasicEventUpdates](t)
+	updates.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	tests := []struct {
+		name      string
+		store     func(t *testing.T) any
+		expect    *model1.ProcessorWithType
+		expectErr error
+	}{
+		{
+			name: "error on Processor error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Processor(mock.Anything, processorName).Return(nil, processorErr)
+
+				return store
+			},
+			expect:    &model1.ProcessorWithType{},
+			expectErr: processorErr,
+		},
+		{
+			name: "processor not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Processor(mock.Anything, processorName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.ProcessorWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "error on ProcessorType error",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Processor(mock.Anything, processorName).Return(processor, nil)
+				store.EXPECT().ProcessorType(mock.Anything, processorTypeName).Return(nil, processorTypeErr)
+
+				return store
+			},
+			expect:    &model1.ProcessorWithType{},
+			expectErr: processorTypeErr,
+		},
+		{
+			name: "source type not found",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Processor(mock.Anything, processorName).Return(processor, nil)
+				store.EXPECT().ProcessorType(mock.Anything, processorTypeName).Return(nil, nil)
+
+				return store
+			},
+			expect:    &model1.ProcessorWithType{},
+			expectErr: nil,
+		},
+		{
+			name: "success",
+			store: func(t *testing.T) any {
+				store := mocks.NewMockStore(t)
+				store.EXPECT().Updates(mock.Anything).Return(updates)
+				store.EXPECT().Processor(mock.Anything, processorName).Return(processor, nil)
+				store.EXPECT().ProcessorType(mock.Anything, processorTypeName).Return(processorType, nil)
+
+				return store
+			},
+			expect: &model1.ProcessorWithType{
+				Processor:     processor,
+				ProcessorType: processorType,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindplane := server.NewBindPlane(
+				&config.Config{},
+				zap.NewNop(),
+				tt.store(t).(store.Store),
+				mockVersions(),
+			)
+
+			resolver := NewResolver(bindplane)
+			r := &queryResolver{
+				Resolver: resolver,
+			}
+			got, err := r.ProcessorWithType(context.Background(), processorName)
+
+			if tt.expectErr != nil {
+				require.Error(t, err)
+				require.Equal(t, tt.expectErr, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.expect, got)
+		})
+	}
+}

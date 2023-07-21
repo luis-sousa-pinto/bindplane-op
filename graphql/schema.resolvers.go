@@ -263,6 +263,11 @@ func (r *queryResolver) SourceType(ctx context.Context, name string) (*model.Sou
 	return r.Bindplane.Store().SourceType(ctx, name)
 }
 
+// SourceWithType is the resolver for the sourceWithType field.
+func (r *queryResolver) SourceWithType(ctx context.Context, name string) (*model1.SourceWithType, error) {
+	return r.Resolver.SourceWithType(ctx, name)
+}
+
 // Processors is the resolver for the processors field.
 func (r *queryResolver) Processors(ctx context.Context) ([]*model.Processor, error) {
 	return r.Bindplane.Store().Processors(ctx)
@@ -271,6 +276,11 @@ func (r *queryResolver) Processors(ctx context.Context) ([]*model.Processor, err
 // Processor is the resolver for the processor field.
 func (r *queryResolver) Processor(ctx context.Context, name string) (*model.Processor, error) {
 	return r.Bindplane.Store().Processor(ctx, name)
+}
+
+// ProcessorWithType is the resolver for the processorWithType field.
+func (r *queryResolver) ProcessorWithType(ctx context.Context, name string) (*model1.ProcessorWithType, error) {
+	return r.Resolver.ProcessorWithType(ctx, name)
 }
 
 // ProcessorTypes is the resolver for the processorTypes field.

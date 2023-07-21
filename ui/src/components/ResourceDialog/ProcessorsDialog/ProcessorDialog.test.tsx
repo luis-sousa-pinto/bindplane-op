@@ -10,12 +10,22 @@ import { SnackbarProvider } from "notistack";
 import {
   GetProcessorTypeDocument,
   GetProcessorTypesDocument,
+  GetProcessorTypesQuery,
+  GetProcessorWithTypeDocument,
+  GetProcessorWithTypeQuery,
+  ParameterType,
+  PipelineType,
+  Processor,
   ProcessorDialogDestinationTypeDocument,
   ProcessorDialogSourceTypeDocument,
   UpdateProcessorsDocument,
 } from "../../../graphql/generated";
 import { PipelineContext } from "../../PipelineGraph/PipelineGraphContext";
 import { ProcessorDialogComponent } from "./ProcessorDialog";
+import { MinimumRequiredConfig } from "../../PipelineGraph/PipelineGraph";
+import nock from "nock";
+import { ApplyPayload } from "../../../types/rest";
+import { UpdateStatus } from "../../../types/resources";
 
 const DEFAULT_PARAMETER_OPTIONS = {
   creatable: false,
@@ -96,14 +106,104 @@ const CONFIG_NO_PROCESSORS = {
   },
 };
 
-const CONFIG_WITH_PROCESSORS = {
+const CONFIG_WITH_RESOURCE_PROCESSORS: MinimumRequiredConfig = {
   metadata: {
     id: "test",
     name: "test",
     labels: {
       platform: "macos",
     },
-    version: 0,
+    version: 1,
+  },
+  spec: {
+    sources: [
+      {
+        type: "file",
+        processors: [
+          {
+            name: "my-custom-processor",
+            type: "",
+            parameters: [],
+            disabled: false,
+          },
+        ],
+        parameters: [
+          {
+            name: "file_path",
+            value: ["/tmp/log.log"],
+          },
+          {
+            name: "exclude_file_path",
+            value: [],
+          },
+          {
+            name: "log_type",
+            value: "file",
+          },
+          {
+            name: "parse_format",
+            value: "none",
+          },
+          {
+            name: "regex_pattern",
+            value: "",
+          },
+          {
+            name: "multiline_line_start_pattern",
+            value: "",
+          },
+          {
+            name: "encoding",
+            value: "utf-8",
+          },
+          {
+            name: "start_at",
+            value: "end",
+          },
+        ],
+        disabled: false,
+      },
+    ],
+    destinations: [
+      {
+        name: "google-cloud-dest",
+        type: "",
+        parameters: null,
+        disabled: false,
+        processors: [
+          {
+            type: "custom",
+            disabled: false,
+            parameters: [
+              { name: "telemetry_types", value: [] },
+              { name: "configuration", value: "blah" },
+            ],
+          },
+          {
+            name: "my-custom-processor",
+            type: "",
+            parameters: [],
+            disabled: false,
+          },
+        ],
+      },
+    ],
+    selector: {
+      matchLabels: {
+        configuration: "test",
+      },
+    },
+  },
+};
+
+const CONFIG_WITH_INLINE_PROCESSORS = {
+  metadata: {
+    id: "test",
+    name: "test",
+    labels: {
+      platform: "macos",
+    },
+    version: 1,
   },
   spec: {
     contentType: "",
@@ -183,24 +283,28 @@ const CONFIG_WITH_PROCESSORS = {
   },
 };
 
-const CUSTOM_PROCESSOR = {
+const CUSTOM_PROCESSOR_TYPE: GetProcessorTypesQuery["processorTypes"][0] = {
   metadata: {
     name: "custom",
     id: "custom-id",
     displayName: "Custom",
-    description: "Enter any supported Processor and the YAML will be inserted into the configuration. OpenTelemetry processor configuration.",
+    description:
+      "Enter any supported Processor and the YAML will be inserted into the configuration. OpenTelemetry processor configuration.",
     version: 0,
-    labels: [],
+    labels: {},
   },
   spec: {
-    telemetryTypes: ["metrics", "logs", "traces"],
-    version: "0.0.1",
+    telemetryTypes: [
+      PipelineType.Metrics,
+      PipelineType.Logs,
+      PipelineType.Traces,
+    ],
     parameters: [
       {
         name: "telemetry_types",
         label: "Telemetry Types",
         description: "Select which types of telemetry the processor supports.",
-        type: "enums",
+        type: ParameterType.Enums,
         validValues: ["Metrics", "Logs", "Traces"],
         relevantIf: null,
         documentation: null,
@@ -219,7 +323,7 @@ const CUSTOM_PROCESSOR = {
         description:
           "Enter any supported Processor and the YAML will be inserted into the configuration.",
         required: true,
-        type: "yaml",
+        type: ParameterType.Yaml,
         options: DEFAULT_PARAMETER_OPTIONS,
         documentation: [
           {
@@ -231,6 +335,30 @@ const CUSTOM_PROCESSOR = {
     ],
   },
 };
+
+const CUSTOM_RESOURCE_PROCESSOR: GetProcessorWithTypeQuery["processorWithType"]["processor"] =
+  {
+    metadata: {
+      name: "my-custom-processor",
+      id: "my-custom-processor-id",
+      version: 1,
+      labels: {},
+    },
+    spec: {
+      disabled: false,
+      type: "custom",
+      parameters: [
+        {
+          name: "telemetry_types",
+          value: ["Metrics", "Logs", "Traces"],
+        },
+        {
+          name: "configuration",
+          value: "yaml: value1",
+        },
+      ],
+    },
+  };
 
 const SOURCE_TYPE_MOCK: MockedResponse = {
   request: {
@@ -292,7 +420,7 @@ const PROCESSOR_TYPES_MOCK: MockedResponse = {
   result: () => {
     return {
       data: {
-        processorTypes: [CUSTOM_PROCESSOR],
+        processorTypes: [CUSTOM_PROCESSOR_TYPE],
       },
     };
   },
@@ -308,11 +436,31 @@ const GET_PROCESSOR_TYPE_MOCK: MockedResponse = {
   result: () => {
     return {
       data: {
-        processorType: CUSTOM_PROCESSOR,
+        processorType: CUSTOM_PROCESSOR_TYPE,
       },
     };
   },
 };
+
+const GET_PROCESSOR_WITH_TYPE_MOCK: MockedResponse<GetProcessorWithTypeQuery> =
+  {
+    request: {
+      query: GetProcessorWithTypeDocument,
+      variables: {
+        name: "my-custom-processor",
+      },
+    },
+    result: () => {
+      return {
+        data: {
+          processorWithType: {
+            processor: CUSTOM_RESOURCE_PROCESSOR,
+            processorType: CUSTOM_PROCESSOR_TYPE,
+          },
+        },
+      };
+    },
+  };
 
 describe("ProcessorDialogComponent", () => {
   it("renders", async () => {
@@ -512,7 +660,7 @@ describe("ProcessorDialogComponent", () => {
     await waitFor(() => expect(updateProcessorsCalled).toBe(true));
   });
 
-  it("Can edit a source processor", async () => {
+  it("Can edit an inline source processor", async () => {
     var saveCalled: boolean = false;
 
     const mutationMock: MockedResponse = {
@@ -558,6 +706,7 @@ describe("ProcessorDialogComponent", () => {
         mocks={[
           SOURCE_TYPE_MOCK,
           PROCESSOR_TYPES_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
           GET_PROCESSOR_TYPE_MOCK,
           mutationMock,
         ]}
@@ -620,7 +769,94 @@ describe("ProcessorDialogComponent", () => {
     await waitFor(() => expect(saveCalled).toBe(true));
   });
 
-  it("can edit a destination processor", async () => {
+  it("can edit a resource source processor", async () => {
+    nock("http://localhost:80")
+      .post("/v1/apply")
+      .once()
+      .reply(202, (_url, body) => {
+        const payload = JSON.parse(body.toString()) as ApplyPayload;
+        expect(payload.resources.length).toBe(1);
+
+        const payloadProcessor = payload.resources[0] as Processor;
+
+        const editedField = payloadProcessor.spec.parameters!.find(
+          (p) => p.name === "configuration"
+        );
+        expect(editedField?.value).toBe("edited");
+
+        return {
+          updates: [
+            {
+              resource: {},
+              status: UpdateStatus.CONFIGURED,
+            },
+          ],
+        };
+      });
+
+    render(
+      <MockedProvider
+        mocks={[
+          PROCESSOR_TYPES_MOCK,
+          GET_PROCESSOR_WITH_TYPE_MOCK,
+          GET_PROCESSOR_WITH_TYPE_MOCK,
+          SOURCE_TYPE_MOCK,
+        ]}
+      >
+        <SnackbarProvider>
+          <PipelineContext.Provider
+            value={{
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              refetchConfiguration: () => {},
+              configuration: CONFIG_WITH_RESOURCE_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "source", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
+            <ProcessorDialogComponent
+              open={true}
+              processors={[{ name: "my-custom-processor", disabled: false }]}
+            />
+          </PipelineContext.Provider>
+        </SnackbarProvider>
+      </MockedProvider>
+    );
+
+    await screen.findByText("Custom:");
+    await screen.findByText("my-custom-processor");
+
+    screen.getByTestId("edit-processor-0").click();
+
+    // Edit screen
+    await screen.findByText("Custom");
+
+    // Change the value of the textbox
+    fireEvent.change(screen.getByTestId("yaml-editor"), {
+      target: { value: "edited" },
+    });
+
+    // Save it
+    screen.getByText("Done").click();
+    const saveBtn = await screen.findByText("Save");
+    saveBtn.click();
+
+    await waitFor(() => expect(nock.isDone()).toBe(true));
+  });
+
+  it("can edit a destination inline processor", async () => {
     var saveCalled: boolean = false;
 
     const mutationMock: MockedResponse = {
@@ -666,6 +902,7 @@ describe("ProcessorDialogComponent", () => {
         mocks={[
           PROCESSOR_TYPES_MOCK,
           GET_PROCESSOR_TYPE_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
           DESTINATION_TYPE_MOCK,
           mutationMock,
         ]}
@@ -704,7 +941,8 @@ describe("ProcessorDialogComponent", () => {
     const editButton = await screen.findByTestId("edit-processor-0");
     editButton.click();
 
-    fireEvent.change(screen.getByTestId("yaml-editor"), {
+    const yamlEditor = await screen.findByTestId("yaml-editor");
+    fireEvent.change(yamlEditor, {
       target: { value: "edited" },
     });
 
@@ -718,6 +956,91 @@ describe("ProcessorDialogComponent", () => {
     screen.getByText("Save").click();
 
     await waitFor(() => expect(saveCalled).toBe(true));
+  });
+
+  it("can edit a resource destination processor", async () => {
+    nock("http://localhost:80")
+      .post("/v1/apply")
+      .once()
+      .reply(202, (_url, body) => {
+        const payload = JSON.parse(body.toString()) as ApplyPayload;
+        expect(payload.resources.length).toBe(1);
+
+        const payloadProcessor = payload.resources[0] as Processor;
+
+        const editedField = payloadProcessor.spec.parameters!.find(
+          (p) => p.name === "configuration"
+        );
+        expect(editedField?.value).toBe("edited");
+
+        return {
+          updates: [
+            {
+              resource: {},
+              status: UpdateStatus.CONFIGURED,
+            },
+          ],
+        };
+      });
+
+    render(
+      <MockedProvider
+        mocks={[
+          PROCESSOR_TYPES_MOCK,
+          GET_PROCESSOR_WITH_TYPE_MOCK,
+          GET_PROCESSOR_WITH_TYPE_MOCK,
+          DESTINATION_TYPE_MOCK,
+        ]}
+      >
+        <SnackbarProvider>
+          <PipelineContext.Provider
+            value={{
+              selectedTelemetryType: "logs",
+              hoveredSet: [],
+              setHoveredNodeAndEdgeSet: () => {},
+              refetchConfiguration: () => {},
+              configuration: CONFIG_WITH_RESOURCE_PROCESSORS,
+              editProcessors: () => {},
+              closeProcessorDialog: () => {},
+              editProcessorsInfo: { resourceType: "destination", index: 0 },
+              editProcessorsOpen: true,
+              addDestinationOpen: false,
+              addSourceOpen: false,
+              setAddSourceOpen: () => {},
+              setAddDestinationOpen: () => {},
+              maxValues: {
+                maxMetricValue: 0,
+                maxLogValue: 0,
+                maxTraceValue: 0,
+              },
+            }}
+          >
+            <ProcessorDialogComponent
+              open={true}
+              processors={[{ name: "my-custom-processor", disabled: false }]}
+            />
+          </PipelineContext.Provider>
+        </SnackbarProvider>
+      </MockedProvider>
+    );
+
+    await screen.findByText("my-custom-processor");
+    screen.getByTestId("edit-processor-0").click();
+
+    // Edit screen
+    await screen.findByText("Custom");
+
+    // Change the value of the textbox
+    fireEvent.change(screen.getByTestId("yaml-editor"), {
+      target: { value: "edited" },
+    });
+
+    // Save it
+    screen.getByText("Done").click();
+    const saveBtn = await screen.findByText("Save");
+    saveBtn.click();
+
+    await waitFor(() => expect(nock.isDone()).toBe(true));
   });
 
   it("can delete a source processor", async () => {
@@ -751,6 +1074,7 @@ describe("ProcessorDialogComponent", () => {
           SOURCE_TYPE_MOCK,
           PROCESSOR_TYPES_MOCK,
           GET_PROCESSOR_TYPE_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
           mutationMock,
         ]}
       >
@@ -761,7 +1085,7 @@ describe("ProcessorDialogComponent", () => {
               selectedTelemetryType: "logs",
               hoveredSet: [],
               setHoveredNodeAndEdgeSet: () => {},
-              configuration: CONFIG_WITH_PROCESSORS,
+              configuration: CONFIG_WITH_INLINE_PROCESSORS,
               editProcessors: () => {},
               closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "source", index: 0 },
@@ -837,6 +1161,7 @@ describe("ProcessorDialogComponent", () => {
         mocks={[
           PROCESSOR_TYPES_MOCK,
           GET_PROCESSOR_TYPE_MOCK,
+          GET_PROCESSOR_TYPE_MOCK,
           DESTINATION_TYPE_MOCK,
           mutationMock,
         ]}
@@ -848,7 +1173,7 @@ describe("ProcessorDialogComponent", () => {
               selectedTelemetryType: "logs",
               hoveredSet: [],
               setHoveredNodeAndEdgeSet: () => {},
-              configuration: CONFIG_WITH_PROCESSORS,
+              configuration: CONFIG_WITH_INLINE_PROCESSORS,
               editProcessors: () => {},
               closeProcessorDialog: () => {},
               editProcessorsInfo: { resourceType: "destination", index: 0 },

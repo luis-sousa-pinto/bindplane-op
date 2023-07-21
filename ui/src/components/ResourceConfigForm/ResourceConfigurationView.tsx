@@ -40,9 +40,6 @@ interface ResourceConfigurationViewProps {
 
   additionalInfo?: AdditionalInfo | null;
 
-  heading?: string;
-  subHeading?: string;
-
   // Used to determine some form values.
   kind: "destination" | "source" | "processor";
 
@@ -58,6 +55,10 @@ interface ResourceConfigurationViewProps {
   // If present the form will have a name field at the top and will be sent
   // as the formValues["name"] key.
   includeNameField?: boolean;
+
+  // If present the form will have a display name field at the top and
+  // will be sent as the formValues["displayName"] key.
+  includeDisplayNameField?: boolean;
 
   // The initial display name, saved as as the formValues["displayName"] key.
   displayName?: string;
@@ -99,11 +100,10 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   resourceTypeDisplayName,
   description,
   additionalInfo,
-  heading,
-  subHeading,
   parameters,
   parameterDefinitions,
   includeNameField,
+  includeDisplayNameField,
   displayName,
   existingResourceNames,
   kind,
@@ -128,11 +128,10 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
       resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
       additionalInfo={additionalInfo}
-      heading={heading}
-      subHeading={subHeading}
       kind={kind}
       formValues={formValues}
       includeNameField={includeNameField}
+      includeDisplayNameField={includeDisplayNameField}
       displayName={displayName}
       existingResourceNames={existingResourceNames}
       parameterDefinitions={parameterDefinitions}

@@ -50,10 +50,9 @@ interface ConfigureResourceViewProps {
   resourceTypeDisplayName: string;
   description: string;
   additionalInfo?: AdditionalInfo | null;
-  heading?: string;
-  subHeading?: string;
   formValues: { [key: string]: any };
   includeNameField?: boolean;
+  includeDisplayNameField?: boolean;
   displayName?: string;
   existingResourceNames?: string[];
   parameterDefinitions: ParameterDefinition[];
@@ -73,10 +72,9 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   resourceTypeDisplayName,
   description,
   additionalInfo,
-  heading,
-  subHeading,
   formValues,
   includeNameField,
+  includeDisplayNameField,
   displayName,
   existingResourceNames,
   parameterDefinitions,
@@ -157,11 +155,6 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
     return `${action} ${capitalizedResource}: ${resourceTypeDisplayName}`;
   }, [resourceTypeDisplayName, kind, purpose]);
 
-  if (embedded) {
-    // embedded doesn't have a title section so we use the heading and subheading instead
-    heading = title;
-    subHeading = description;
-  }
   const ActionsContainer = embedded ? ActionsSection : DialogActions;
 
   const playPauseButtons =
@@ -222,7 +215,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
           )}
         </Grid>
 
-        {kind !== "destination" && (
+        {includeDisplayNameField && (
           <Grid item xs={7}>
             <ResourceDisplayNameInput
               readOnly={readOnly}

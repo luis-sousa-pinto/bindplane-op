@@ -403,6 +403,69 @@ func (r *Resolver) Configurations(ctx context.Context, selector *string, query *
 	}, nil
 }
 
+// ProcessorWithType is the resolver for the processorWithType field.
+func (r *Resolver) ProcessorWithType(ctx context.Context, name string) (*model1.ProcessorWithType, error) {
+	ctx, span := tracer.Start(ctx, "graphql/ProcessorWithType",
+		trace.WithAttributes(attribute.String("bindplane.processor.name", name)))
+	defer span.End()
+	resp := &model1.ProcessorWithType{}
+
+	processor, err := r.Bindplane.Store().Processor(ctx, name)
+	if err != nil {
+		return resp, err
+	}
+
+	if processor == nil {
+		return resp, err
+	}
+
+	processorType, err := r.Bindplane.Store().ProcessorType(ctx, processor.Spec.Type)
+	if err != nil {
+		return resp, err
+	}
+
+	if processorType == nil {
+		return resp, err
+	}
+
+	return &model1.ProcessorWithType{
+		Processor:     processor,
+		ProcessorType: processorType,
+	}, nil
+}
+
+// SourceWithType is the resolver for the sourceWithType field.
+func (r *Resolver) SourceWithType(ctx context.Context, name string) (*model1.SourceWithType, error) {
+	ctx, span := tracer.Start(ctx, "graphql/SourceWithType",
+		trace.WithAttributes(attribute.String("bindplane.source.name", name)))
+	defer span.End()
+
+	resp := &model1.SourceWithType{}
+
+	source, err := r.Bindplane.Store().Source(ctx, name)
+	if err != nil {
+		return resp, err
+	}
+
+	if source == nil {
+		return resp, err
+	}
+
+	sourceType, err := r.Bindplane.Store().SourceType(ctx, source.Spec.Type)
+	if err != nil {
+		return resp, err
+	}
+
+	if sourceType == nil {
+		return resp, err
+	}
+
+	return &model1.SourceWithType{
+		Source:     source,
+		SourceType: sourceType,
+	}, nil
+}
+
 // DestinationWithType is the resolver for the destinationWithType field.
 func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model1.DestinationWithType, error) {
 	resp := &model1.DestinationWithType{}
@@ -419,6 +482,10 @@ func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model
 	destinationType, err := r.Bindplane.Store().DestinationType(ctx, dest.Spec.Type)
 	if err != nil {
 		return resp, err
+	}
+
+	if destinationType == nil {
+		return resp, nil
 	}
 
 	return &model1.DestinationWithType{

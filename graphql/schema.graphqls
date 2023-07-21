@@ -367,11 +367,21 @@ type Source {
   spec: ParameterizedSpec!
 }
 
+type SourceWithType {
+  source: Source
+  sourceType: SourceType
+}
+
 type Processor {
   apiVersion: String!
   kind: String!
   metadata: Metadata!
   spec: ParameterizedSpec!
+}
+
+type ProcessorWithType {
+  processor: Processor
+  processorType: ProcessorType
 }
 
 type Destination {
@@ -488,9 +498,11 @@ type Query {
 
   sourceTypes: [SourceType!]!
   sourceType(name: String!): SourceType
+  sourceWithType(name: String!): SourceWithType!
 
   processors: [Processor!]!
   processor(name: String!): Processor
+  processorWithType(name: String!): ProcessorWithType!
 
   processorTypes: [ProcessorType!]!
   processorType(name: String!): ProcessorType

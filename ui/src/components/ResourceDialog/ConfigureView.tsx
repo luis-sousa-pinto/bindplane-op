@@ -29,6 +29,7 @@ export const ConfigureView: React.FC<ConfigureViewProps> = ({
     <ResourceConfigForm
       kind={kind}
       includeNameField={kind === "destination" && createNew}
+      includeDisplayNameField={kind === "source"}
       existingResourceNames={resources?.map((r) => r.metadata.name)}
       onBack={clearResource}
       onSave={(fv) => handleSaveNew(fv, selected)}

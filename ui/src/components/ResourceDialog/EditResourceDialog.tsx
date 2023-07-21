@@ -60,6 +60,7 @@ const EditResourceDialogComponent: React.FC<EditResourceDialogProps> = ({
     >
       <ResourceConfigForm
         includeNameField={includeNameField}
+        includeDisplayNameField={kind === "source"}
         resourceTypeDisplayName={resourceTypeDisplayName}
         displayName={displayName}
         additionalInfo={additionalInfo}
