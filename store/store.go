@@ -185,6 +185,8 @@ type Store interface {
 	// UpdateAllRollouts updates all active rollouts. The error returned is not intended to be returned to a client but can
 	// be logged.
 	UpdateAllRollouts(ctx context.Context) error
+
+	ArchiveStore
 }
 
 // ArchiveStore provides access to archived resources for version history.

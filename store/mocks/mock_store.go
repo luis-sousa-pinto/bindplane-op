@@ -896,6 +896,32 @@ func (_m *MockStore) Processors(ctx context.Context) ([]*model.Processor, error)
 	return r0, r1
 }
 
+// ResourceHistory provides a mock function with given fields: ctx, resourceKind, resourceName
+func (_m *MockStore) ResourceHistory(ctx context.Context, resourceKind model.Kind, resourceName string) ([]*model.AnyResource, error) {
+	ret := _m.Called(ctx, resourceKind, resourceName)
+
+	var r0 []*model.AnyResource
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.Kind, string) ([]*model.AnyResource, error)); ok {
+		return rf(ctx, resourceKind, resourceName)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, model.Kind, string) []*model.AnyResource); ok {
+		r0 = rf(ctx, resourceKind, resourceName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.AnyResource)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, model.Kind, string) error); ok {
+		r1 = rf(ctx, resourceKind, resourceName)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ResumeRollout provides a mock function with given fields: ctx, configurationName
 func (_m *MockStore) ResumeRollout(ctx context.Context, configurationName string) (*model.Configuration, error) {
 	ret := _m.Called(ctx, configurationName)

@@ -259,46 +259,25 @@ func TestConfigForAgent(t *testing.T) {
 	require.Equal(t, mockLatestVersion, resp.Agents.LatestVersion)
 }
 
-type testStore struct {
-	store.Store
-	store.ArchiveStore
-}
-
 func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 	updates := sourceMocks.NewMockSource[store.BasicEventUpdates](t)
 	updates.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	tests := []struct {
 		name           string
-		store          func(t *testing.T) any
+		store          func(t *testing.T) store.Store
 		want           []*model.Configuration
 		wantErr        bool
 		wantErrMessage string
 	}{
 		{
-			"not an archive store",
-			func(t *testing.T) any {
+			"ResourceHistory fails",
+			func(t *testing.T) store.Store {
 				s := mocks.NewMockStore(t)
 				s.On("Updates", mock.Anything).Return(updates)
-				return s
-			},
-			nil,
-			true,
-			"cannot get configuration history from non-archive store",
-		},
-		{
-			"ResourceHistory fails",
-			func(t *testing.T) any {
-				s := &mocks.MockStore{}
-				s.On("Updates", mock.Anything).Return(updates)
 
-				as := mocks.NewMockArchiveStore(t)
-				as.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(nil, errors.New("error"))
-				store := &testStore{
-					Store:        s,
-					ArchiveStore: as,
-				}
-				return store
+				s.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(nil, errors.New("error"))
+				return s
 			},
 			nil,
 			true,
@@ -306,12 +285,11 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 		},
 		{
 			"error parsing",
-			func(t *testing.T) any {
-				s := &mocks.MockStore{}
+			func(t *testing.T) store.Store {
+				s := mocks.NewMockStore(t)
 				s.On("Updates", mock.Anything).Return(updates)
 
-				as := mocks.NewMockArchiveStore(t)
-				as.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
+				s.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
 					[]*model.AnyResource{
 						{
 							ResourceMeta: model.ResourceMeta{
@@ -320,11 +298,7 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 							},
 						},
 					}, nil)
-				store := &testStore{
-					Store:        s,
-					ArchiveStore: as,
-				}
-				return store
+				return s
 			},
 			nil,
 			true,
@@ -332,12 +306,11 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 		},
 		{
 			"error not a configuration",
-			func(t *testing.T) any {
-				s := &mocks.MockStore{}
+			func(t *testing.T) store.Store {
+				s := mocks.NewMockStore(t)
 				s.On("Updates", mock.Anything).Return(updates)
 
-				as := mocks.NewMockArchiveStore(t)
-				as.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
+				s.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
 					[]*model.AnyResource{
 						{
 							ResourceMeta: model.ResourceMeta{
@@ -346,11 +319,7 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 							},
 						},
 					}, nil)
-				store := &testStore{
-					Store:        s,
-					ArchiveStore: as,
-				}
-				return store
+				return s
 			},
 			nil,
 			true,
@@ -358,12 +327,11 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 		},
 		{
 			"returns configurations",
-			func(t *testing.T) any {
-				s := &mocks.MockStore{}
+			func(t *testing.T) store.Store {
+				s := mocks.NewMockStore(t)
 				s.On("Updates", mock.Anything).Return(updates)
 
-				as := mocks.NewMockArchiveStore(t)
-				as.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
+				s.On("ResourceHistory", mock.Anything, model.KindConfiguration, "name").Return(
 					[]*model.AnyResource{
 						{
 							ResourceMeta: model.ResourceMeta{
@@ -382,11 +350,7 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 							},
 						},
 					}, nil)
-				store := &testStore{
-					Store:        s,
-					ArchiveStore: as,
-				}
-				return store
+				return s
 			},
 			[]*model.Configuration{
 				{
@@ -418,7 +382,7 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
-				tt.store(t).(store.Store),
+				tt.store(t),
 				mockVersions(),
 			)
 
@@ -623,7 +587,7 @@ func Test_queryResolver_Destination(t *testing.T) {
 		{
 			"Destinations fails",
 			func(t *testing.T) any {
-				store := &mocks.MockStore{}
+				store := mocks.NewMockStore(t)
 				store.On("Updates", mock.Anything).Return(updates)
 				store.On("Destinations", mock.Anything).Return(nil, errors.New("error"))
 
