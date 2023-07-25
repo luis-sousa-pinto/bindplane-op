@@ -4747,3 +4747,186 @@ func runTestMaskSensitiveParameters(ctx context.Context, t *testing.T, store Sto
 		require.Equal(t, model.SensitiveParameterPlaceholder, config.Spec.Sources[0].Parameters[1].Value)
 	})
 }
+func runRolloutToDisconnectedAgentsTest(ctx context.Context, t *testing.T, store Store) {
+	c1 := model.NewConfigurationWithSpec("c1", model.ConfigurationSpec{
+		Raw: "service:",
+		Selector: model.AgentSelector{
+			MatchLabels: model.MatchLabels{
+				"configuration": "c1",
+			},
+		},
+	})
+
+	c1agentIDs := []string{}
+	for i := 0; i < 10; i++ {
+		c1agentIDs = append(c1agentIDs, fmt.Sprintf("c1agent-%d", i))
+	}
+
+	simulateAgentConfiguration := func(configurationName string, expectAgents int) {
+		agents, err := store.Agents(ctx, WithQuery(search.ParseQuery("rollout-pending:"+configurationName)))
+		require.NoError(t, err)
+		require.Len(t, agents, expectAgents)
+		configuration, err := store.Configuration(ctx, configurationName)
+		require.NoError(t, err)
+		for _, agent := range agents {
+			_, err = store.UpsertAgent(ctx, agent.ID, func(agent *model.Agent) {
+				agent.SetCurrentConfiguration(configuration)
+			})
+		}
+	}
+
+	seq := util.NewTestSequence(t)
+	// these tests are run in order, so we can use the same config for each test
+	seq.Run("setup: new configurations", func(t *testing.T) {
+		config, err := model.Clone(c1)
+		require.NoError(t, err)
+		status, err := store.ApplyResources(ctx, []model.Resource{config})
+		require.NoError(t, err)
+		require.Len(t, status, 1)
+		require.Equal(t, model.StatusCreated, status[0].Status)
+
+		config, err = store.Configuration(ctx, c1.Name())
+		require.NoError(t, err)
+		require.Equal(t, config.Status.Rollout.Status, model.RolloutStatusPending)
+		require.False(t, config.IsCurrent())
+		require.False(t, config.IsPending())
+		require.True(t, config.IsLatest())
+	})
+	seq.Run("setup: create 10 agents for each config", func(t *testing.T) {
+		for i, id := range c1agentIDs {
+			agent, err := store.UpsertAgent(ctx, id, func(current *model.Agent) {
+				current.Status = model.Connected
+				if i%2 == 0 {
+					current.Status = model.Disconnected
+				}
+			})
+			require.NoError(t, err)
+			require.Equal(t, id, agent.ID)
+		}
+	})
+	seq.Run("assign configuration to agents", func(t *testing.T) {
+		_, err := store.UpsertAgents(ctx, c1agentIDs, func(agent *model.Agent) {
+			agent.Labels = model.LabelsFromValidatedMap(map[string]string{
+				"configuration": "c1",
+			})
+		})
+		require.NoError(t, err)
+	})
+	seq.Run("agents are assigned a future configuration", func(t *testing.T) {
+		agents, err := store.Agents(ctx)
+		require.NoError(t, err)
+		for _, agent := range agents {
+			if strings.HasPrefix(agent.ID, "c1") {
+				require.Equal(t, "c1", agent.Labels.Set["configuration"])
+				require.Equal(t, "", agent.ConfigurationStatus.Current)
+				require.Equal(t, "", agent.ConfigurationStatus.Pending)
+				require.Equal(t, "c1:1", agent.ConfigurationStatus.Future)
+			}
+		}
+	})
+	seq.Run("update rollout does nothing because the rollout is pending", func(t *testing.T) {
+		configuration, err := store.UpdateRollout(ctx, "c1")
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusPending, configuration.Status.Rollout.Status)
+		require.False(t, configuration.IsCurrent())
+		require.False(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+	seq.Run("start the rollout", func(t *testing.T) {
+		configuration, err := store.StartRollout(ctx, "c1", &model.RolloutOptions{
+			PhaseAgentCount: model.PhaseAgentCount{
+				Initial:    3,
+				Multiplier: 2,
+				Maximum:    5,
+			},
+			MaxErrors: 1,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusStarted, configuration.Status.Rollout.Status)
+		require.Equal(t, model.RolloutProgress{
+			Pending:   3,
+			Completed: 0,
+			Errors:    0,
+			Waiting:   2,
+		}, configuration.Status.Rollout.Progress)
+		require.False(t, configuration.IsCurrent())
+		require.True(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+	seq.Run("get the rollout status", func(t *testing.T) {
+		configuration, err := store.Configuration(ctx, "c1")
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusStarted, configuration.Status.Rollout.Status)
+		require.False(t, configuration.IsCurrent())
+		require.True(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+	seq.Run("update the rollout again but no progress because the agents haven't been configured", func(t *testing.T) {
+		c1, err := store.Configuration(ctx, "c1:1")
+		require.NoError(t, err)
+		require.NotNil(t, c1)
+		require.Equal(t, model.RolloutStatusStarted, c1.Status.Rollout.Status)
+		require.False(t, c1.IsCurrent())
+		require.True(t, c1.IsPending())
+		require.True(t, c1.IsLatest())
+
+		configuration, err := store.UpdateRollout(ctx, "c1:1")
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusStarted, configuration.Status.Rollout.Status)
+		require.Equal(t, model.RolloutProgress{
+			Pending:   3,
+			Completed: 0,
+			Errors:    0,
+			Waiting:   2,
+		}, configuration.Status.Rollout.Progress)
+		require.Equal(t, model.Version(1), configuration.Version())
+		require.False(t, configuration.IsCurrent())
+		require.True(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+	seq.Run("find the agents pending and move them to current, simulating successful configuration", func(t *testing.T) {
+		simulateAgentConfiguration("c1:1", 3)
+	})
+	seq.Run("update the rollout again and make progress", func(t *testing.T) {
+		configuration, err := store.UpdateRollout(ctx, "c1:1")
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusStarted, configuration.Status.Rollout.Status)
+		require.Equal(t, model.RolloutProgress{
+			Pending:   2,
+			Completed: 3,
+			Errors:    0,
+			Waiting:   0,
+		}, configuration.Status.Rollout.Progress)
+		require.Equal(t, 2, configuration.Status.Rollout.Phase)
+		require.Equal(t, model.Version(1), configuration.Version())
+		require.False(t, configuration.IsCurrent())
+		require.True(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+	seq.Run("find the agents pending and move them to current, simulating successful configuration", func(t *testing.T) {
+		simulateAgentConfiguration("c1:1", 2)
+	})
+	seq.Run("update the rollout again and make progress", func(t *testing.T) {
+		configuration, err := store.UpdateRollout(ctx, "c1:1")
+		require.NoError(t, err)
+		require.NotNil(t, configuration)
+		require.Equal(t, model.RolloutStatusStable, configuration.Status.Rollout.Status)
+		require.Equal(t, model.RolloutProgress{
+			Pending:   0,
+			Completed: 5,
+			Errors:    0,
+			Waiting:   0,
+		}, configuration.Status.Rollout.Progress)
+		require.Equal(t, 2, configuration.Status.Rollout.Phase)
+		require.Equal(t, model.Version(1), configuration.Version())
+		require.True(t, configuration.IsCurrent())
+		require.True(t, configuration.IsPending())
+		require.True(t, configuration.IsLatest())
+	})
+
+}

@@ -709,6 +709,18 @@ func TestMaskSensitiveParameters(t *testing.T) {
 	runTestMaskSensitiveParameters(ctx, t, store)
 }
 
+func TestRolloutToDisconnectedAgents(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runRolloutToDisconnectedAgentsTest(ctx, t, store)
+}
+
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 
 var testOptions = Options{
