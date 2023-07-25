@@ -51,6 +51,7 @@ spec:
       type: strings
       default:
         - "/var/log/containers/observiq-*-collector-*"
+        - "/var/log/containers/bindplane-*-agent-*"
       relevantIf:
         - name: log_source
           operator: equals
