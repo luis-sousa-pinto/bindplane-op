@@ -104,7 +104,7 @@ func AddRestRoutes(router gin.IRouter, bindplane exposedserver.BindPlane) {
 // Agents returns a list of agents
 // @Summary List Agents
 // @Produce json
-// @Router /Agents [get]
+// @Router /agents [get]
 // @Success 200 {object} model.AgentsResponse
 // @Failure 500 {object} ErrorResponse
 func Agents(c *gin.Context, bindplane exposedserver.BindPlane) {
@@ -161,7 +161,7 @@ func Agents(c *gin.Context, bindplane exposedserver.BindPlane) {
 }
 
 // DeleteAgents deletes agents by id
-// @Summary delete agents by ids
+// @Summary Delete agents by ids
 // @Produce json
 // @Router /agents [delete]
 // @Param 	id	body	[]string	true "list of agent ids to delete"
@@ -582,7 +582,7 @@ func DeleteAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
 // Configurations returns a list of configurations
 // @Summary List Configurations
 // @Produce json
-// @Router /Configurations [get]
+// @Router /configurations [get]
 // @Success 200 {object} model.ConfigurationsResponse
 // @Failure 500 {object} ErrorResponse
 func Configurations(c *gin.Context, bindplane exposedserver.BindPlane) {
@@ -723,7 +723,7 @@ func CopyConfig(c *gin.Context, bindplane exposedserver.BindPlane) {
 // Sources returns a list of sources
 // @Summary List Sources
 // @Produce json
-// @Router /Sources [get]
+// @Router /sources [get]
 // @Success 200 {object} model.SourcesResponse
 // @Failure 500 {object} ErrorResponse
 func Sources(c *gin.Context, bindplane exposedserver.BindPlane) {
@@ -826,7 +826,7 @@ func DeleteSourceType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // Processors returns a list of processors
 // @Summary List Processors
 // @Produce json
-// @Router /Processors [get]
+// @Router /processors [get]
 // @Success 200 {object} model.ProcessorsResponse
 // @Failure 500 {object} ErrorResponse
 func Processors(c *gin.Context, bindplane exposedserver.BindPlane) {
@@ -928,7 +928,7 @@ func DeleteProcessorType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // Destinations returns a list of destinations
 // @Summary List Destinations
 // @Produce json
-// @Router /Destinations [get]
+// @Router /destinations [get]
 // @Success 200 {object} model.DestinationsResponse
 // @Failure 500 {object} ErrorResponse
 func Destinations(c *gin.Context, bindplane exposedserver.BindPlane) {
