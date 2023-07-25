@@ -210,8 +210,9 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
     <>
       <Stack
         direction="row"
-        alignItems="center"
         justifyContent="space-between"
+        alignItems="center"
+        height="48px"
         marginBottom={3}
       >
         <Typography variant="h5">Configurations</Typography>

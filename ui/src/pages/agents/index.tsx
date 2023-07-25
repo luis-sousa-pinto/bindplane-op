@@ -1,4 +1,4 @@
-import { Button, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -122,11 +122,15 @@ export const AgentsPageContent: React.FC = () => {
             {updatable.length > 1 && "s"}
           </Button>
         )}
-
-        <Typography variant="h5" className={mixins["mb-5"]}>
-          Agents
-        </Typography>
-
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          height="48px"
+          marginBottom={3}
+        >
+          <Typography variant="h5">Agents</Typography>
+        </Stack>
         <AgentsTable
           allowSelection={hasPermission(Role.User, role)}
           onDeletableAgentsSelected={handleSelectDeletable}

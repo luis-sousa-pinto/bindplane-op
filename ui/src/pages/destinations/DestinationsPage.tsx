@@ -143,7 +143,7 @@ export const DestinationsPageSubContent: React.FC<
         justifyContent="space-between"
         alignItems="center"
         height="48px"
-        marginBottom={2}
+        marginBottom={3}
       >
         <Typography variant="h5">Destinations</Typography>
         {destinationsPage && selected.length > 0 && (
@@ -237,8 +237,8 @@ export const DestinationsPageContent: React.FC = () => {
         setSelected={setSelected}
         editingDestination={editingDestination}
         setEditingDestination={setEditingDestination}
-        maxHeight="70vh"
-        minHeight="70vh"
+        maxHeight="65vh"
+        minHeight="65vh"
       />
     </CardContainer>
   );
