@@ -28,7 +28,7 @@ spec:
 
     # TLS
     - name: configure_tls
-      label: Configure TLS
+      label: Enable TLS
       description: Configure advanced TLS settings.
       type: bool
       default: false
@@ -76,7 +76,7 @@ spec:
       advancedConfig: true
 
     - name: cert_file
-      label: Mutual TLS Client Certificate File
+      label: TLS Client Certificate File
       description: A TLS certificate used for client authentication.
       type: string
       required: false
@@ -91,7 +91,7 @@ spec:
       advancedConfig: true
 
     - name: key_file
-      label: Mutual TLS Client Private Key File
+      label: TLS Client Private Key File
       description: A TLS private key used for client authentication.
       type: string
       required: false

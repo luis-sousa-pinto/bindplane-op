@@ -104,7 +104,7 @@ spec:
       advancedConfig: true
 
     - name: cert_file
-      label: Client Certificate File
+      label: TLS Client Certificate File
       description: A path to the client certificate to be used for mutual TLS.
       type: string
       required: true
@@ -119,7 +119,7 @@ spec:
       advancedConfig: true
 
     - name: key_file
-      label: Client Private Key
+      label: TLS Client Private Key
       description: A path to the client private key to be used for mutual TLS.
       type: string
       required: true

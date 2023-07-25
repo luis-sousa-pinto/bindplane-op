@@ -99,6 +99,16 @@ func (s *ResourceTypeSpec) ParameterDefinition(name string) *ParameterDefinition
 	return nil
 }
 
+// ParameterDefinitionWithLabel returns the first ParameterDefinition with the specified label or nil if no such parameter exists
+func (s *ResourceTypeSpec) ParameterDefinitionWithLabel(label string) *ParameterDefinition {
+	for _, p := range s.Parameters {
+		if label == p.Label {
+			return &p
+		}
+	}
+	return nil
+}
+
 // ----------------------------------------------------------------------
 
 // eval executes all of the templates associated with this resource type, returning a partial configuration for each
@@ -331,6 +341,12 @@ func (rt *ResourceType) Validate() (warnings string, errors error) {
 
 	rt.ResourceMeta.validate(errs)
 	rt.Spec.validate(rt.Kind, errs)
+	if rt.Kind == KindSourceType {
+		rt.validateRequiredSourceTypeTLS(errs)
+	}
+	if rt.Kind == KindDestinationType {
+		rt.validateRequiredDestinationTypeTLS(errs)
+	}
 
 	return errs.Warnings(), errs.Result()
 }
@@ -338,6 +354,52 @@ func (rt *ResourceType) Validate() (warnings string, errors error) {
 // ValidateWithStore returns an error if any part of the ResourceType is invalid
 func (rt *ResourceType) ValidateWithStore(_ context.Context, _ ResourceStore) (warnings string, errors error) {
 	return rt.Validate()
+}
+
+var errMissingTLSParam = errors.New("tls parameter missing from resource type")
+
+func (rt *ResourceType) validateRequiredSourceTypeTLS(errs validation.Errors) {
+	if exempt, ok := sourceTypeTLSExemptions[rt.Metadata.Name]; ok && exempt {
+		return
+	}
+
+	if p := rt.Spec.ParameterDefinitionWithLabel("Enable TLS"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "Enable TLS"))
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("TLS Certificate Authority File"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "TLS Certificate Authority File"))
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("Skip TLS Certificate Verification"); p == nil {
+		// Some existing SourceTypes invert the `insecure_skip_verify` parameter, that's allowed
+		if p := rt.Spec.ParameterDefinitionWithLabel("Strict TLS Certificate Verification"); p == nil {
+			errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "Skip TLS Certificate Verification"))
+		}
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("TLS Client Certificate File"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "TLS Client Certificate File"))
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("TLS Client Private Key File"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "TLS Client Private Key File"))
+	}
+}
+
+func (rt *ResourceType) validateRequiredDestinationTypeTLS(errs validation.Errors) {
+	if exempt, ok := destinationTypeTLSExemptions[rt.Metadata.Name]; ok && exempt {
+		return
+	}
+
+	if p := rt.Spec.ParameterDefinitionWithLabel("Enable TLS"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "Enable TLS"))
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("TLS Certificate Authority File"); p == nil {
+		errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "TLS Certificate Authority File"))
+	}
+	if p := rt.Spec.ParameterDefinitionWithLabel("Skip TLS Certificate Verification"); p == nil {
+		// Some existing DestinationTypes invert the `insecure_skip_verify` parameter, that's allowed
+		if p := rt.Spec.ParameterDefinitionWithLabel("Strict TLS Certificate Verification"); p == nil {
+			errs.Warn(fmt.Errorf("%w: %s: %s", errMissingTLSParam, rt.Metadata.Name, "Skip TLS Certificate Verification"))
+		}
+	}
 }
 
 func (s *ResourceTypeSpec) validate(kind Kind, errs validation.Errors) {

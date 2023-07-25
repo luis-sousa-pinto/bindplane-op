@@ -157,7 +157,7 @@ spec:
       advancedConfig: true
 
     - name: cert_file
-      label: Mutual TLS Client Certificate File
+      label: TLS Client Certificate File
       description: A TLS certificate used for client authentication.
       type: string
       required: false

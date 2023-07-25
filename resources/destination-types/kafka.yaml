@@ -209,7 +209,7 @@ spec:
           value: true
 
     - name: tls_ca_file
-      label: Certificate Authority File
+      label: TLS Certificate Authority File
       description: Certificate authority used to validate TLS certificates.
       type: string
       required: false
@@ -224,7 +224,7 @@ spec:
           value: true
 
     - name: tls_cert_file
-      label: Mutual TLS Client Certificate File
+      label: TLS Client Certificate File
       description: A TLS certificate used for client authentication.
       type: string
       required: true
@@ -236,7 +236,7 @@ spec:
           value: true
 
     - name: tls_key_file
-      label: Mutual TLS Client Private Key File
+      label: TLS Client Private Key File
       description: A TLS private key used for client authentication.
       type: string
       required: true

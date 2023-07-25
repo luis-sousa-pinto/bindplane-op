@@ -80,7 +80,7 @@ spec:
       advancedConfig: true
 
     - name: ca_file
-      label: Certificate Authority
+      label: TLS Certificate Authority File
       description: A path to the certificate authority to use for authenticating client certificates.
       type: string
       required: true

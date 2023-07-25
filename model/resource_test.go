@@ -266,6 +266,7 @@ func TestParseSourceType(t *testing.T) {
 // Below tests confirm that all seed resources are valid
 
 func fileResource[T Resource](t *testing.T, path string) T {
+	t.Helper()
 	resources, err := ResourcesFromFile(path)
 	require.NoError(t, err)
 
@@ -284,6 +285,7 @@ func fileResource[T Resource](t *testing.T, path string) T {
 }
 
 func resourcePaths(t *testing.T, folder string) []string {
+	t.Helper()
 	files, err := ioutil.ReadDir(folder)
 	require.NoError(t, err)
 
