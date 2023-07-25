@@ -34,6 +34,11 @@ export class BPBaseResource {
   setParamsFromMap(values: Record<string, any>) {
     const params: ParameterizedSpec["parameters"] = [];
     for (const [k, v] of Object.entries(values)) {
+      // Ignore values that are not set
+      if (v == null) {
+        continue;
+      }
+
       switch (k) {
         case "name": // read-only
           break;
