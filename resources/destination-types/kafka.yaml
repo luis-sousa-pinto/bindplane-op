@@ -34,6 +34,57 @@ spec:
       type: int
       default: 5
 
+    - name: enable_metrics
+      label: Enable Metrics
+      type: bool
+      default: true
+
+    - name: metric_topic
+      label: Metric Topic
+      description: The name of the topic to publish metrics to.
+      type: string
+      options:
+        gridColumns: 12
+      default: otlp_metrics
+      relevantIf:
+        - name: enable_metrics
+          operator: equals
+          value: true
+
+    - name: enable_logs
+      label: Enable Logs
+      type: bool
+      default: true
+
+    - name: log_topic
+      label: Log Topic
+      description: The name of the topic to publish logs to.
+      type: string
+      options:
+        gridColumns: 12
+      default: otlp_logs
+      relevantIf:
+        - name: enable_logs
+          operator: equals
+          value: true
+
+    - name: enable_traces
+      label: Enable Traces
+      type: bool
+      default: true
+
+    - name: trace_topic
+      label: Trace Topic
+      description: The name of the topic to publish traces to.
+      type: string
+      options:
+        gridColumns: 12
+      default: otlp_spans
+      relevantIf:
+        - name: enable_traces
+          operator: equals
+          value: true
+
     - name: enable_auth
       label: Enable Authentication
       type: bool
@@ -48,7 +99,6 @@ spec:
       validValues:
         - basic
         - sasl
-        - tls
         - kerberos
       default: basic
       advancedConfig: true
@@ -136,6 +186,15 @@ spec:
           operator: equals
           value: sasl
 
+    - name: enable_tls
+      label: Enable TLS
+      description: Whether or not to use TLS.
+      type: bool
+      default: false
+      advancedConfig: true
+      options:
+        sectionHeader: true
+
     - name: tls_insecure
       label: Skip TLS Certificate Verification
       description: Enable to skip TLS certificate verification.
@@ -145,9 +204,9 @@ spec:
         sectionHeader: true
       advancedConfig: true
       relevantIf:
-        - name: auth_type
+        - name: enable_tls
           operator: equals
-          value: tls
+          value: true
 
     - name: tls_ca_file
       label: Certificate Authority File
@@ -160,9 +219,9 @@ spec:
         - name: tls_insecure
           operator: equals
           value: false
-        - name: auth_type
+        - name: enable_tls
           operator: equals
-          value: tls
+          value: true
 
     - name: tls_cert_file
       label: Mutual TLS Client Certificate File
@@ -172,9 +231,9 @@ spec:
       advancedConfig: true
       default: ""
       relevantIf:
-        - name: auth_type
+        - name: enable_tls
           operator: equals
-          value: tls
+          value: true
 
     - name: tls_key_file
       label: Mutual TLS Client Private Key File
@@ -184,9 +243,9 @@ spec:
       advancedConfig: true
       default: ""
       relevantIf:
-        - name: auth_type
+        - name: enable_tls
           operator: equals
-          value: tls
+          value: true
 
     - name: tls_server_name_override
       label: Server Name Override
@@ -196,9 +255,9 @@ spec:
       advancedConfig: true
       default: ""
       relevantIf:
-        - name: auth_type
+        - name: enable_tls
           operator: equals
-          value: tls
+          value: true
 
     - name: kerberos_service_name
       label: Service Name
@@ -310,57 +369,6 @@ spec:
           value: basic
       options:
         sensitive: true
-
-    - name: enable_metrics
-      label: Enable Metrics
-      type: bool
-      default: true
-
-    - name: metric_topic
-      label: Metric Topic
-      description: The name of the topic to publish metrics to.
-      type: string
-      options:
-        gridColumns: 12
-      default: otlp_metrics
-      relevantIf:
-        - name: enable_metrics
-          operator: equals
-          value: true
-
-    - name: enable_logs
-      label: Enable Logs
-      type: bool
-      default: true
-
-    - name: log_topic
-      label: Log Topic
-      description: The name of the topic to publish logs to.
-      type: string
-      options:
-        gridColumns: 12
-      default: otlp_logs
-      relevantIf:
-        - name: enable_logs
-          operator: equals
-          value: true
-
-    - name: enable_traces
-      label: Enable Traces
-      type: bool
-      default: true
-
-    - name: trace_topic
-      label: Trace Topic
-      description: The name of the topic to publish traces to.
-      type: string
-      options:
-        gridColumns: 12
-      default: otlp_spans
-      relevantIf:
-        - name: enable_traces
-          operator: equals
-          value: true
 
     # Retry on failure
     - name: retry_on_failure_enabled
@@ -512,6 +520,16 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
+            {{ if .enable_tls }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}
+            {{ end }}
             {{ if eq .auth_type "basic" }}
             plain_text:
               username: "{{ .basic_username }}"
@@ -521,15 +539,6 @@ spec:
               username: "{{ .sasl_username }}"
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
-            {{ else if eq .auth_type "tls" }}
-            tls:
-              insecure: {{ .tls_insecure }}
-              ca_file: {{ .tls_ca_file | quote }}
-              cert_file: {{ .tls_cert_file | quote }}
-              key_file: {{ .tls_key_file | quote }}
-              {{ if .tls_server_name_override }}
-              server_name_override: {{ .tls_server_name_override | quote }}
-              {{ end }}
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
@@ -568,6 +577,16 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
+            {{ if .enable_tls }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}
+            {{ end }}
             {{ if eq .auth_type "basic" }}
             plain_text:
               username: "{{ .basic_username }}"
@@ -577,15 +596,6 @@ spec:
               username: "{{ .sasl_username }}"
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
-            {{ else if eq .auth_type "tls" }}
-            tls:
-              insecure: {{ .tls_insecure }}
-              ca_file: {{ .tls_ca_file | quote }}
-              cert_file: {{ .tls_cert_file | quote }}
-              key_file: {{ .tls_key_file | quote }}
-              {{ if .tls_server_name_override }}
-              server_name_override: {{ .tls_server_name_override | quote }}
-              {{ end }}
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
@@ -624,6 +634,16 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
+            {{ if .enable_tls }}
+            tls:
+              insecure: {{ .tls_insecure }}
+              ca_file: {{ .tls_ca_file | quote }}
+              cert_file: {{ .tls_cert_file | quote }}
+              key_file: {{ .tls_key_file | quote }}
+              {{ if .tls_server_name_override }}
+              server_name_override: {{ .tls_server_name_override | quote }}
+              {{ end }}
+            {{ end }}
             {{ if eq .auth_type "basic" }}
             plain_text:
               username: "{{ .basic_username }}"
@@ -634,14 +654,7 @@ spec:
               password: "{{ .sasl_password }}"
               mechanism: {{ .sasl_mechanism }}
             {{ else if eq .auth_type "tls" }}
-            tls:
-              insecure: {{ .tls_insecure }}
-              ca_file: {{ .tls_ca_file | quote }}
-              cert_file: {{ .tls_cert_file | quote }}
-              key_file: {{ .tls_key_file | quote }}
-              {{ if .tls_server_name_override }}
-              server_name_override: {{ .tls_server_name_override | quote }}
-              {{ end }}              
+          
             {{ else if eq .auth_type "kerberos" }}
             kerberos:
               service_name: {{ .kerberos_service_name }}
