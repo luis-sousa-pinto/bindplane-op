@@ -10,6 +10,7 @@ import {
   EventType,
   GetConfigurationTableQuery,
   Role,
+  Suggestion,
   useConfigurationTableMetricsSubscription,
   useGetConfigurationTableQuery,
 } from "../../../graphql/generated";
@@ -127,6 +128,13 @@ interface ConfigurationTableProps
   overviewPage?: boolean;
 }
 
+const CONFIGURATIONS_TABLE_FILTER_OPTIONS: Suggestion[] = [
+  { label: "Rollout Pending", query: "rollout-status:pending" },
+  { label: "Rollout Started", query: "rollout-status:started" },
+  { label: "Rollout Paused", query: "rollout-status:paused" },
+  { label: "Rollout Complete", query: "rollout-status:stable" },
+];
+
 export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
   initQuery = "",
   selector,
@@ -242,6 +250,7 @@ export const ConfigurationsTable: React.FC<ConfigurationTableProps> = ({
 
       <Stack spacing={1}>
         <SearchBar
+          filterOptions={CONFIGURATIONS_TABLE_FILTER_OPTIONS}
           suggestions={data?.configurations.suggestions}
           onQueryChange={onQueryChange}
           suggestionQuery={data?.configurations.query}
