@@ -32,6 +32,9 @@ import {
 import { hasPermission } from "../../../utils/has-permission";
 import { useRole } from "../../../hooks/useRole";
 import { TitleSection } from "../../DialogComponents";
+import { BPProcessor } from "../../../utils/classes/processor";
+import { applyResources } from "../../../utils/rest/apply-resources";
+import { UpdateStatus } from "../../../types/resources";
 
 import styles from "./processor-dialog.module.scss";
 import mixins from "../../../styles/mixins.module.scss";
@@ -147,6 +150,7 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
     useState<ProcessorType | null>(null);
   const [editingProcessorIndex, setEditingProcessorIndex] =
     useState<number>(-1);
+  const [applyQueue, setApplyQueue] = useState<BPProcessor[]>([]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -173,23 +177,7 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
   ]);
 
   /* ------------------------ GQL Mutations and Queries ----------------------- */
-  const [updateProcessors] = useUpdateProcessorsMutation({
-    onCompleted: () => {
-      refetchConfiguration();
-      enqueueSnackbar("Processors saved", {
-        variant: "success",
-        key: "save-processors-success",
-      });
-      closeProcessorDialog();
-    },
-    onError: (error) => {
-      console.error(error);
-      enqueueSnackbar("Failed to save processors", {
-        variant: "error",
-        key: "save-processors-error",
-      });
-    },
-  });
+  const [updateProcessors] = useUpdateProcessorsMutation({});
 
   const [fetchSourceType, { data: sourceTypeData }] =
     useProcessorDialogSourceTypeLazyQuery({
@@ -281,8 +269,8 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
     handleReturnToAll();
   }
 
-  // handleSaveExisting saves changes to an existing processor in the list
-  async function handleSaveExisting(formValues: FormValues) {
+  // handleSaveExistingInlineProcessor saves changes to an existing processor in the list
+  function handleSaveExistingInlineProcessor(formValues: FormValues) {
     const processorConfig = new BPResourceConfiguration();
     processorConfig.setParamsFromMap(formValues);
     processorConfig.type = processors[editingProcessorIndex].type;
@@ -290,6 +278,22 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
     const newProcessors = [...processors];
     newProcessors[editingProcessorIndex] = processorConfig;
     setProcessors(newProcessors);
+
+    handleReturnToAll();
+  }
+
+  // handleSaveExistingResourceProcessor adds a processor to the apply queue
+  function handleSaveExistingResourceProcessor(processor: BPProcessor) {
+    const foundIndex = applyQueue.findIndex(
+      (p) => p.name() === processor.name()
+    );
+    if (foundIndex !== -1) {
+      const newApplyQueue = [...applyQueue];
+      newApplyQueue[foundIndex] = processor;
+      setApplyQueue(newApplyQueue);
+    } else {
+      setApplyQueue([...applyQueue, processor]);
+    }
 
     handleReturnToAll();
   }
@@ -311,23 +315,54 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
 
   // handleSave saves the processors to the backend and closes the dialog.
   async function handleSave() {
-    if (isEqual(processorsProp, processors)) {
+    const inlineChange = !isEqual(processorsProp, processors);
+    const resourceChange = applyQueue.length > 0;
+    var closeDialog = true;
+
+    if (!inlineChange && !resourceChange) {
       closeProcessorDialog();
     }
 
-    await updateProcessors({
-      variables: {
-        input: {
-          configuration: configuration?.metadata?.name!,
-          resourceType:
-            editProcessorsInfo?.resourceType === "source"
-              ? ResourceTypeKind.Source
-              : ResourceTypeKind.Destination,
-          resourceIndex: editProcessorsInfo?.index!,
-          processors: processors,
+    if (resourceChange) {
+      const { updates } = await applyResources(applyQueue);
+      if (updates.some((u) => u.status === UpdateStatus.INVALID)) {
+        enqueueSnackbar("Failed to save processors", {
+          variant: "error",
+          key: "save-processors-error",
+        });
+        closeDialog = false;
+      }
+    }
+
+    if (inlineChange) {
+      await updateProcessors({
+        variables: {
+          input: {
+            configuration: configuration?.metadata?.name!,
+            resourceType:
+              editProcessorsInfo?.resourceType === "source"
+                ? ResourceTypeKind.Source
+                : ResourceTypeKind.Destination,
+            resourceIndex: editProcessorsInfo?.index!,
+            processors: processors,
+          },
         },
-      },
-    });
+        onError(error) {
+          closeDialog = false;
+          console.error(error);
+          enqueueSnackbar("Failed to save processors", {
+            variant: "error",
+            key: "save-processors-error",
+          });
+        },
+      });
+    }
+
+    if (closeDialog) {
+      closeProcessorDialog();
+      refetchConfiguration();
+      enqueueSnackbar("Saved Processors! 🎉", { variant: "success" });
+    }
   }
 
   // displayName for sources is the sourceType name, for destinations it's the destination name
@@ -409,7 +444,9 @@ export const ProcessorDialogComponent: React.FC<ProcessorDialogProps> = ({
         <EditProcessorView
           processors={processors}
           editingIndex={editingProcessorIndex}
-          onEditProcessorSave={handleSaveExisting}
+          applyQueue={applyQueue}
+          onEditInlineProcessorSave={handleSaveExistingInlineProcessor}
+          onEditResourceProcessorSave={handleSaveExistingResourceProcessor}
           onBack={handleReturnToAll}
           onRemove={handleRemoveProcessor}
           readOnly={readOnly}

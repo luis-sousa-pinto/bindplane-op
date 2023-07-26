@@ -128,6 +128,7 @@ export const ResourceDialogComponent: React.FC<ResourceDialogProps> = ({
           clearResource={clearResource}
           handleSaveNew={handleSaveNew}
           resources={resources ?? []}
+          additionalInfo={selected.metadata.additionalInfo}
         />
       );
     }

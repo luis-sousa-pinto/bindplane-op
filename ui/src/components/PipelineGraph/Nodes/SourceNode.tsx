@@ -5,6 +5,8 @@ import { InlineSourceCard } from "../../Cards/InlineSourceCard";
 import { MinimumRequiredConfig } from "../PipelineGraph";
 import { usePipelineGraph } from "../PipelineGraphContext";
 import { isNodeDisabled } from "./nodeUtils";
+import { BPResourceConfiguration } from "../../../utils/classes";
+import { ResourceSourceCard } from "../../Cards/ResourceSourceCard";
 
 function SourceNode({
   data,
@@ -20,6 +22,15 @@ function SourceNode({
 }) {
   const { id, metric, attributes, configuration, refetchConfiguration } = data;
 
+  var sourceIndex = attributes["sourceIndex"];
+  if (typeof sourceIndex !== "number") {
+    sourceIndex = -1;
+  }
+
+  const resourceConfig = new BPResourceConfiguration(
+    configuration!.spec!.sources![sourceIndex]
+  );
+
   const { hoveredSet, setHoveredNodeAndEdgeSet, selectedTelemetryType } =
     usePipelineGraph();
 
@@ -34,12 +45,20 @@ function SourceNode({
       }}
       onMouseLeave={() => setHoveredNodeAndEdgeSet([])}
     >
-      <InlineSourceCard
-        id={id.replace("source/", "")}
-        disabled={isDisabled || isNotInHoverSet}
-        configuration={configuration}
-        refetchConfiguration={refetchConfiguration}
-      />
+      {resourceConfig.isInline() ? (
+        <InlineSourceCard
+          id={id.replace("source/", "")}
+          disabled={isDisabled || isNotInHoverSet}
+          configuration={configuration}
+          refetchConfiguration={refetchConfiguration}
+        />
+      ) : (
+        <ResourceSourceCard
+          name={resourceConfig.name!}
+          disabled={isDisabled || isNotInHoverSet}
+          sourceIndex={sourceIndex}
+        />
+      )}
       <CardMeasurementContent>{metric}</CardMeasurementContent>
 
       <Handle type="source" position={Position.Right} />

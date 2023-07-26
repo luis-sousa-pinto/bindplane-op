@@ -1,13 +1,5 @@
-import { Card, IconButton, Stack, Typography } from "@mui/material";
-import { useSnackbar } from "notistack";
-import { useEffect } from "react";
-import {
-  ResourceConfiguration,
-  useGetProcessorTypeQuery,
-} from "../../../graphql/generated";
-import { MenuIcon, EditIcon } from "../../Icons";
-
-import styles from "./inline-processor-label.module.scss";
+import { ResourceConfiguration } from "../../../graphql/generated";
+import { ProcessorLabelCard } from "./ProcessorLabelCard";
 
 interface Props {
   index: number;
@@ -20,45 +12,7 @@ export const ViewOnlyProcessorLabel: React.FC<Props> = ({
   processor,
   onEdit,
 }) => {
-  const { data, error } = useGetProcessorTypeQuery({
-    variables: { type: processor.type! },
-  });
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (error != null) {
-      console.error(error);
-      enqueueSnackbar("Error retrieving Processor Type", {
-        variant: "error",
-        key: "Error retrieving Processor Type",
-      });
-    }
-  }, [enqueueSnackbar, error]);
-
   return (
-    <Card variant="outlined" classes={{ root: styles.card }}>
-      <Stack
-        direction="row"
-        alignItems={"center"}
-        spacing={1}
-        justifyContent={"space-between"}
-      >
-        <Stack direction={"row"} spacing={1}>
-          <MenuIcon />
-          <Typography fontWeight={600}>
-            {data?.processorType?.metadata.displayName}
-            {processor.displayName && ":"}
-          </Typography>
-          {processor.displayName && (
-            <Typography>{processor.displayName}</Typography>
-          )}
-        </Stack>
-
-        <IconButton onClick={onEdit} data-testid={`edit-processor-${index}`}>
-          <EditIcon width={15} height={15} style={{ float: "right" }} />
-        </IconButton>
-      </Stack>
-    </Card>
+    <ProcessorLabelCard index={index} processor={processor} onEdit={onEdit} />
   );
 };

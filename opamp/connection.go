@@ -15,11 +15,20 @@
 // Package opamp provides interfaces for managing agents' OpAMP connections
 package opamp
 
-import opamp "github.com/open-telemetry/opamp-go/server/types"
+import (
+	"net"
+
+	opamp "github.com/open-telemetry/opamp-go/server/types"
+)
 
 // Connection is an interface that wraps the opamp.Connection interface
 //
-//go:generate mockery --name Connection --filename mock_connection.go --structname MockConnection
+//go:generate mockery --name Connection --with-expecter --filename mock_connection.go --structname MockConnection
 type Connection interface {
 	opamp.Connection
+}
+
+//go:generate mockery --name conn --with-expecter --filename mock_conn.go --structname MockConn
+type conn interface {
+	net.Conn
 }

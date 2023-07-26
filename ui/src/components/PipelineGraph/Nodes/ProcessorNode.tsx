@@ -1,4 +1,3 @@
-import { isNumber } from "lodash";
 import { Handle, Position } from "reactflow";
 import { CardMeasurementContent } from "../../CardMeasurementContent/CardMeasurementContent";
 import { ProcessorCard } from "../../Cards/ProcessorCard";
@@ -22,9 +21,11 @@ export function ProcessorNode({
   let processorCount = 0;
   let resourceIndex = -1;
   if (isSource) {
-    resourceIndex = getSourceIndex(id);
-    const source = configuration?.spec?.sources![getSourceIndex(id)];
-    processorCount = source?.processors?.length ?? 0;
+    if (typeof attributes["sourceIndex"] === "number") {
+      resourceIndex = attributes["sourceIndex"];
+    }
+    processorCount =
+      configuration?.spec?.sources![resourceIndex]?.processors?.length ?? 0;
   } else {
     if (typeof attributes["destinationIndex"] === "number") {
       resourceIndex = attributes["destinationIndex"];
@@ -49,18 +50,6 @@ export function ProcessorNode({
 
 export function isSourceID(id: string): boolean {
   return id.startsWith("source/");
-}
-
-export function getSourceIndex(id: string): number {
-  const REGEX = /^source\/source(?<sourceNum>[0-9]+)\/processors$/;
-  const match = id.match(REGEX);
-  if (match?.groups != null) {
-    const index = Number(match.groups["sourceNum"]);
-    if (isNumber(index)) {
-      return index;
-    }
-  }
-  return -1;
 }
 
 export function getDestinationName(id: string): string {

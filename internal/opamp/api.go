@@ -35,9 +35,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 
 	"github.com/observiq/bindplane-op/internal/opamp/connections"
+	"github.com/observiq/bindplane-op/internal/opamp/legacy"
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/model/observiq"
 	exposedserver "github.com/observiq/bindplane-op/server"
@@ -48,8 +48,6 @@ var tracer = otel.Tracer("bindplane/opamp")
 
 // ProtocolName is "opamp"
 const ProtocolName = "opamp"
-
-var compatibleOpAMPVersions = []string{"v0.2.0"}
 
 const (
 	headerAuthorization = "Authorization"
@@ -62,52 +60,72 @@ const (
 
 // AddRoutes adds the routes used by opamp, currently /v1/opamp
 func AddRoutes(router gin.IRouter, bindplane exposedserver.BindPlane) error {
-	server := opampSvr.New(bindplane.Logger().Sugar())
-
-	callbacks := newServer(bindplane.Manager(), bindplane.Logger())
-	settings := opampSvr.Settings{
-		Callbacks: callbacks,
-	}
-
-	handler, err := server.Attach(settings)
+	// legacy handler is used for v0.2.0 agents
+	legacyHandler, err := legacy.BuildLegacyHandler(bindplane)
 	if err != nil {
-		return fmt.Errorf("error attempting to attach the OpAMP server: %w", err)
+		return err
 	}
 
-	router.Any("/opamp", gin.WrapF(http.HandlerFunc(handler)))
+	// current handler is used for > v0.7.1 agents
+	currentHandler, err := buildCurrentHandler(bindplane)
 
-	bindplane.Manager().EnableProtocol(callbacks)
+	multiVersionHandler := func(res http.ResponseWriter, req *http.Request) {
+		opampVersion := req.Header.Get(headerOpAMPVersion)
+		switch opampVersion {
+		case "v0.2.0":
+			legacyHandler(res, req)
+		default:
+			currentHandler(res, req)
+		}
+	}
+
+	router.Any("/opamp", gin.WrapF(http.HandlerFunc(multiVersionHandler)))
 
 	return nil
 }
 
+func buildCurrentHandler(bindplane exposedserver.BindPlane) (func(res http.ResponseWriter, req *http.Request), error) {
+	callbacks := newServer(bindplane.Manager(), bindplane.Logger())
+	server := opampSvr.New(bindplane.Logger().Sugar())
+	settings := opampSvr.Settings{
+		Callbacks: callbacks,
+	}
+
+	handler, _, err := server.Attach(settings)
+	if err != nil {
+		return nil, fmt.Errorf("error attempting to attach the current OpAMP server: %w", err)
+	}
+
+	bindplane.Manager().EnableProtocol(callbacks)
+
+	return handler, nil
+}
+
 const (
-	capabilities = protobufs.ServerCapabilities_AcceptsStatus | protobufs.ServerCapabilities_AcceptsEffectiveConfig | protobufs.ServerCapabilities_OffersRemoteConfig
+	capabilities = protobufs.ServerCapabilities_ServerCapabilities_AcceptsStatus |
+		protobufs.ServerCapabilities_ServerCapabilities_AcceptsEffectiveConfig |
+		protobufs.ServerCapabilities_ServerCapabilities_OffersRemoteConfig
 )
 
 type opampServer struct {
-	manager                 bpserver.Manager
-	connections             bpopamp.Connections[*bpopamp.AgentConnectionState]
-	compatibleOpAMPVersions []string
-	logger                  *zap.Logger
-	updater                 bpserver.Updater
+	manager     bpserver.Manager
+	connections bpopamp.Connections[*bpopamp.AgentConnectionState]
+	logger      *zap.Logger
+	updater     bpserver.Updater
 }
 
 var _ protocol.Protocol = (*opampServer)(nil)
 var _ opamp.Callbacks = (*opampServer)(nil)
 
 func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
-	_, cancel := context.WithCancel(context.Background())
 	s := &opampServer{
-		manager:                 manager,
-		connections:             connections.NewConnections(),
-		compatibleOpAMPVersions: compatibleOpAMPVersions,
-		logger:                  logger,
+		manager:     manager,
+		connections: connections.NewConnections(),
+		logger:      logger,
 	}
 	s.updater = newUpdater(
 		s,
 		s.manager,
-		cancel,
 		s.logger,
 	)
 	return s
@@ -137,22 +155,6 @@ func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionRespon
 
 	// check for compatibility
 	headers := parseAgentHeaders(request)
-	if headers == nil || !slices.Contains(s.compatibleOpAMPVersions, headers.opampVersion) {
-		// no version header, agent version is <= 1.2.0 or OpAMP version incompatible
-		s.logger.Error("unable to connect to incompatible agent",
-			zap.Any("headers", request.Header),
-			zap.String("RemoteAddr", request.RemoteAddr),
-			zap.Strings("compatibleOpAMPVersions", s.compatibleOpAMPVersions),
-		)
-
-		return opamp.ConnectionResponse{
-			Accept:         false,
-			HTTPStatusCode: http.StatusUpgradeRequired,
-			HTTPResponseHeader: map[string]string{
-				"Upgrade": fmt.Sprintf("OpAMP/%s", s.compatibleOpAMPVersions[0]),
-			},
-		}
-	}
 
 	ctx, accept := s.manager.VerifySecretKey(ctx, headers.secretKey)
 	if !accept {
@@ -168,8 +170,9 @@ func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionRespon
 	go s.updater.Start(context.Background())
 
 	return opamp.ConnectionResponse{
-		Accept:         true,
-		HTTPStatusCode: http.StatusOK,
+		Accept:              true,
+		HTTPStatusCode:      http.StatusOK,
+		ConnectionCallbacks: s,
 	}
 }
 
@@ -215,13 +218,13 @@ func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentT
 	agentID := message.InstanceUid
 	response := &protobufs.ServerToAgent{
 		InstanceUid:  agentID,
-		Capabilities: capabilities,
+		Capabilities: uint64(capabilities),
 	}
 
 	if _, err := s.connections.OnMessage(agentID, conn); err != nil {
 		s.logger.Error("failed to verify the agent configuration", zap.Error(err))
 		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponse_Unknown,
+			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
 			ErrorMessage: err.Error(),
 		}
 		return response
@@ -243,7 +246,7 @@ func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentT
 		// send an error response
 		// TODO(andy): Ok to report the exact error?
 		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponse_Unknown,
+			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
 			ErrorMessage: err.Error(),
 		}
 	}
@@ -347,8 +350,8 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 
 	serverToAgent := &protobufs.ServerToAgent{
 		InstanceUid:  agent.ID,
-		Capabilities: capabilities,
-		Flags:        protobufs.ServerToAgent_ReportFullState,
+		Capabilities: uint64(capabilities),
+		Flags:        uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState),
 	}
 
 	if newConfiguration.Empty() {
@@ -378,7 +381,7 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 				AllPackagesHash: allPackagesHash,
 				Packages: map[string]*protobufs.PackageAvailable{
 					bpopamp.CollectorPackageName: {
-						Type:    protobufs.PackageAvailable_TopLevelPackage,
+						Type:    protobufs.PackageType_PackageType_TopLevel,
 						Version: updates.Version,
 						File:    downloadableFile,
 						Hash:    []byte(updates.Version),
@@ -539,7 +542,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 	agentRawConfiguration := state.Configuration()
 	if agentRawConfiguration == nil {
 		s.logger.Info("no configuration available to verify, requesting from agent")
-		response.Flags = protobufs.ServerToAgent_ReportFullState
+		response.Flags = uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState)
 		return nil
 	}
 

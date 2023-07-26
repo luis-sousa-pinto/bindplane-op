@@ -1,18 +1,27 @@
-import { DialogTitle, IconButton, Stack, Typography } from "@mui/material";
+import {
+  DialogTitle,
+  IconButton,
+  Stack,
+  Typography,
+  Alert,
+} from "@mui/material";
 import { memo } from "react";
 import { XIcon } from "../Icons";
+import { AdditionalInfo } from "../../graphql/generated";
 
 import styles from "./dialog-components.module.scss";
 
 interface Props {
   description?: string;
   title?: string;
+  additionalInfo?: AdditionalInfo | null;
   onClose: () => void;
 }
 
 const TitleSectionComponent: React.FC<Props> = ({
   description,
   title,
+  additionalInfo,
   onClose,
 }) => {
   return (
@@ -34,6 +43,24 @@ const TitleSectionComponent: React.FC<Props> = ({
           <XIcon strokeWidth={"3"} width={"28"} />
         </IconButton>
       </Stack>
+      {additionalInfo && (
+        <Alert
+          severity="info"
+          className={styles["info"]}
+          data-testid="info-alert"
+        >
+          <Typography>
+            {additionalInfo.message}
+            {additionalInfo.documentation?.map((d) => (
+              <div key={d.url}>
+                <a href={d.url} rel="noreferrer" target="_blank">
+                  {d.text}
+                </a>
+              </div>
+            ))}
+          </Typography>
+        </Alert>
+      )}
     </DialogTitle>
   );
 };

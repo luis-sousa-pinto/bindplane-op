@@ -77,7 +77,7 @@ func TestSerializeState(t *testing.T) {
 						},
 					},
 					RemoteConfigStatus: &protobufs.RemoteConfigStatus{
-						Status: protobufs.RemoteConfigStatus_APPLIED,
+						Status: protobufs.RemoteConfigStatuses_RemoteConfigStatuses_APPLIED,
 					},
 					PackageStatuses: &protobufs.PackageStatuses{},
 				},

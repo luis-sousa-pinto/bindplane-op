@@ -1,4 +1,13 @@
 definitions:
+  model.AdditionalInfo:
+    properties:
+      documentation:
+        items:
+          $ref: '#/definitions/model.DocumentationLink'
+        type: array
+      message:
+        type: string
+    type: object
   model.Agent:
     properties:
       arch:
@@ -444,6 +453,8 @@ definitions:
     type: object
   model.Metadata:
     properties:
+      additionalInfo:
+        $ref: '#/definitions/model.AdditionalInfo'
       dateModified:
         type: string
       description:

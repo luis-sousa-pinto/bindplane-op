@@ -13,7 +13,7 @@ spec:
     - name: enable_logs
       label: Enable Logs
       type: bool
-      default: true
+      default: false
 
     - name: log_condition
       label: Log Condition
@@ -120,7 +120,7 @@ spec:
     - name: enable_metrics
       label: Enable Metrics
       type: bool
-      default: true
+      default: false
 
     - name: datapoint_condition
       label: Datapoint Condition
@@ -199,7 +199,7 @@ spec:
     - name: enable_traces
       label: Enable Traces
       type: bool
-      default: true
+      default: false
 
     - name: span_condition
       label: Spans Condition

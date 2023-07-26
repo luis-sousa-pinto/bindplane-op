@@ -29,7 +29,7 @@ spec:
       required: true
       documentation:
         - text: Receiver Syntax
-          url: https://github.com/observIQ/observiq-otel-collector/blob/main/docs/receivers.md
+          url: https://github.com/observIQ/bindplane-agent/blob/main/docs/receivers.md
 
   logs:
     receivers: |

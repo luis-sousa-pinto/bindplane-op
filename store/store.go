@@ -54,7 +54,7 @@ type Options struct {
 
 // Store handles interacting with a storage backend,
 //
-//go:generate mockery --name=Store --filename=mock_store.go --structname=MockStore
+//go:generate mockery --name=Store --filename=mock_store.go --structname=MockStore --with-expecter
 type Store interface {
 	Clear()
 

@@ -40,10 +40,10 @@ type AgentInstallOptions struct {
 	// Platform is the platform the agent will run on, e.g. "linux"
 	Platform string
 
-	// Version is the agent release version to install. Available release versions of the observiq-otel-collector are
-	// available at [observiq-otel-collector Releases]
+	// Version is the agent release version to install. Available release versions of the BindPlane Agent are
+	// available at [bindplane-agent Releases]
 	//
-	// [observiq-otel-collector Releases]: https://github.com/observIQ/observiq-otel-collector/releases
+	// [bindplane-agent Releases]: https://github.com/observIQ/bindplane-agent/releases
 	Version string
 
 	// Labels is a string representation of the agents labels, e.g. "platform=dev,os=windows,app=nginx"

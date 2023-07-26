@@ -11,6 +11,7 @@ import {
   Parameter,
   ResourceConfiguration,
   GetProcessorTypesQuery,
+  AdditionalInfo,
 } from "../../graphql/generated";
 import { initFormErrors } from "./init-form-values";
 import {
@@ -37,8 +38,7 @@ interface ResourceConfigurationViewProps {
 
   description: string;
 
-  heading?: string;
-  subHeading?: string;
+  additionalInfo?: AdditionalInfo | null;
 
   // Used to determine some form values.
   kind: "destination" | "source" | "processor";
@@ -55,6 +55,10 @@ interface ResourceConfigurationViewProps {
   // If present the form will have a name field at the top and will be sent
   // as the formValues["name"] key.
   includeNameField?: boolean;
+
+  // If present the form will have a display name field at the top and
+  // will be sent as the formValues["displayName"] key.
+  includeDisplayNameField?: boolean;
 
   // The initial display name, saved as as the formValues["displayName"] key.
   displayName?: string;
@@ -95,11 +99,11 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   resourceTypeDisplayName,
   description,
-  heading,
-  subHeading,
+  additionalInfo,
   parameters,
   parameterDefinitions,
   includeNameField,
+  includeDisplayNameField,
   displayName,
   existingResourceNames,
   kind,
@@ -123,11 +127,11 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
     <ConfigureResourceView
       resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
-      heading={heading}
-      subHeading={subHeading}
+      additionalInfo={additionalInfo}
       kind={kind}
       formValues={formValues}
       includeNameField={includeNameField}
+      includeDisplayNameField={includeDisplayNameField}
       displayName={displayName}
       existingResourceNames={existingResourceNames}
       parameterDefinitions={parameterDefinitions}

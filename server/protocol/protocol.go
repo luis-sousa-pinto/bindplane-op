@@ -23,7 +23,7 @@ import (
 
 // Protocol represents a communication protocol for managing agents
 //
-//go:generate mockery --name Protocol --filename mock_protocol.go --structname MockProtocol
+//go:generate mockery --name Protocol --with-expecter --filename mock_protocol.go --structname MockProtocol
 type Protocol interface {
 	// Name is the name for the protocol use mostly for logging
 	Name() string

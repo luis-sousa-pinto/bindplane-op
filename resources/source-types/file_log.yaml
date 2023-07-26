@@ -114,27 +114,14 @@ spec:
           operator: notEquals
           value: none
 
-    - name: timezone
-      label: Timezone
-      description: The timezone to use if Timestamp Format doesn't include a timezone. Otherwise, the timezone in Timestamp Format will be respected.
-      type: timezone
-      default: "UTC"
-      relevantIf:
-        - name: parse_timestamp
-          operator: equals
-          value: true
-        - name: parse_format
-          operator: notEquals
-          value: none
-
     - name: parse_timestamp_format
       label: Timestamp Format
       description: The format of the timestamp in the log entry. Choose a common format, or specify a custom format.
       type: enum
-      default: ISO8601
+      default: RFC3339
       validValues:
-        - ISO8601
         - RFC3339
+        - ISO8601
         - Epoch
         - Manual
       relevantIf:
@@ -192,6 +179,25 @@ spec:
       documentation:
         - text: Supported Layout Directives
           url: https://github.com/observiq/ctimefmt/blob/3e07deba22cf7a753f197ef33892023052f26614/ctimefmt.go#L63
+
+    - name: timezone
+      label: Timezone
+      description: The timezone to use if Timestamp Format doesn't include a timezone. Otherwise, the timezone in Timestamp Format will be respected.
+      type: timezone
+      default: "UTC"
+      relevantIf:
+        - name: parse_timestamp
+          operator: equals
+          value: true
+        - name: parse_format
+          operator: notEquals
+          value: none
+        - name: parse_timestamp_format
+          operator: notEquals
+          value: RFC3339
+        - name: parse_timestamp_format
+          operator: notEquals
+          value: Epoch
 
     - name: parse_severity
       label: Parse Severity

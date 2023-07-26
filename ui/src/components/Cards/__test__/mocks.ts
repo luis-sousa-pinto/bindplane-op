@@ -1,6 +1,22 @@
 import { MockedResponse } from "@apollo/client/testing";
-import { SourceTypeDocument } from "../../../graphql/generated";
+import {
+  GetDestinationWithTypeDocument,
+  GetDestinationWithTypeQuery,
+  GetSourceWithTypeDocument,
+  GetSourceWithTypeQuery,
+  SourceTypeDocument,
+} from "../../../graphql/generated";
 import { MinimumRequiredConfig } from "../../PipelineGraph/PipelineGraph";
+import {
+  destination0,
+  destination0Type,
+  destination0Name,
+  destination0_PAUSED,
+  source1Name,
+  source1,
+  source1Type,
+  source1_PAUSED,
+} from "./test-resources";
 
 const DEFAULT_PARAMETER_OPTIONS = {
   creatable: false,
@@ -1350,3 +1366,75 @@ export const testConfig: MinimumRequiredConfig = {
   },
   __typename: "Configuration",
 };
+
+export const mockedDestinationAndTypeResponse: MockedResponse<GetDestinationWithTypeQuery> =
+  {
+    request: {
+      query: GetDestinationWithTypeDocument,
+      variables: {
+        name: destination0Name,
+      },
+    },
+    result: {
+      data: {
+        destinationWithType: {
+          destination: destination0,
+          destinationType: destination0Type,
+        },
+      },
+    },
+  };
+
+export const mockedDestationAndTypeResponse_PAUSED: MockedResponse<GetDestinationWithTypeQuery> =
+  {
+    request: {
+      query: GetDestinationWithTypeDocument,
+      variables: {
+        name: destination0Name,
+      },
+    },
+    result: {
+      data: {
+        destinationWithType: {
+          destination: destination0_PAUSED,
+          destinationType: destination0Type,
+        },
+      },
+    },
+  };
+
+export const mockedSourceAndTypeResponse: MockedResponse<GetSourceWithTypeQuery> =
+  {
+    request: {
+      query: GetSourceWithTypeDocument,
+      variables: {
+        name: source1Name,
+      },
+    },
+    result: {
+      data: {
+        sourceWithType: {
+          source: source1,
+          sourceType: source1Type,
+        },
+      },
+    },
+  };
+
+export const mockedSourceAndTypeResponse_PAUSED: MockedResponse<GetSourceWithTypeQuery> =
+  {
+    request: {
+      query: GetSourceWithTypeDocument,
+      variables: {
+        name: source1Name,
+      },
+    },
+    result: {
+      data: {
+        sourceWithType: {
+          source: source1_PAUSED,
+          sourceType: source1Type,
+        },
+      },
+    },
+  };

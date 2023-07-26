@@ -29,9 +29,9 @@ func TestGithubVersion(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "v1.4.0", version.Version())
 	require.True(t, version.Public(), "should be public")
-	require.Equal(t, "https://github.com/observIQ/observiq-otel-collector/releases/download/v1.4.0/observiq-otel-collector-v1.4.0-darwin-amd64.tar.gz", version.Download("darwin/amd64").URL)
+	require.Equal(t, "https://github.com/observIQ/bindplane-agent/releases/download/v1.4.0/observiq-otel-collector-v1.4.0-darwin-amd64.tar.gz", version.Download("darwin/amd64").URL)
 	require.Equal(t, "c7129c5dc69ec9c3fe3ae6864ff3e9960ae69ccf86f1cd5bcdacff5cf107ab87", version.Download("darwin/amd64").Hash)
-	require.Equal(t, "https://github.com/observIQ/observiq-otel-collector/releases/download/v1.4.0/install_macos.sh", version.Installer("darwin/amd64").URL)
+	require.Equal(t, "https://github.com/observIQ/bindplane-agent/releases/download/v1.4.0/install_macos.sh", version.Installer("darwin/amd64").URL)
 }
 
 func TestGithubLatestVersion(t *testing.T) {
@@ -42,6 +42,6 @@ func TestGithubLatestVersion(t *testing.T) {
 	version, err := github.LatestVersion()
 	require.NoError(t, err)
 	require.Contains(t, version.Version(), "v")
-	require.Contains(t, version.Download("darwin/amd64").URL, "https://github.com/observIQ/observiq-otel-collector/releases/download/")
-	require.Contains(t, version.Installer("darwin/amd64").URL, "https://github.com/observIQ/observiq-otel-collector/releases/download/")
+	require.Contains(t, version.Download("darwin/amd64").URL, "https://github.com/observIQ/bindplane-agent/releases/download/")
+	require.Contains(t, version.Installer("darwin/amd64").URL, "https://github.com/observIQ/bindplane-agent/releases/download/")
 }

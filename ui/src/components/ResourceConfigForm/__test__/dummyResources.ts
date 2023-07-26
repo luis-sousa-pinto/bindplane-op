@@ -7,6 +7,7 @@ import {
   PipelineType,
   ProcessorType,
   Configuration,
+  AdditionalInfo,
 } from "../../../graphql/generated";
 import { APIVersion } from "../../../types/resources";
 
@@ -315,6 +316,16 @@ export const relevantIfNotEqualDef: ParameterDefinition = {
 
   documentation: null,
   validValues: null,
+};
+
+export const additionalInfo: AdditionalInfo = {
+  message: "test message",
+  documentation: [
+    {
+      text: "test text",
+      url: "test url",
+    },
+  ],
 };
 
 /* ----------------------------- Resource Types ----------------------------- */

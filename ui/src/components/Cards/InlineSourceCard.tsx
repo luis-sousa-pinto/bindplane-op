@@ -25,6 +25,13 @@ gql`
         icon
         displayName
         description
+        additionalInfo {
+          message
+          documentation {
+            text
+            url
+          }
+        }
       }
       spec {
         parameters {
@@ -94,6 +101,7 @@ export const InlineSourceCard: React.FC<{
 
   const icon = data?.sourceType?.metadata.icon;
   const resourceTypeDisplayName = data?.sourceType?.metadata.displayName ?? "";
+  const additionalInfo = data?.sourceType?.metadata?.additionalInfo;
 
   function closeEditDialog() {
     setEditing(false);
@@ -203,6 +211,7 @@ export const InlineSourceCard: React.FC<{
       <EditResourceDialog
         resourceTypeDisplayName={resourceTypeDisplayName}
         description={data?.sourceType?.metadata.description ?? ""}
+        additionalInfo={additionalInfo}
         displayName={source?.displayName ?? ""}
         kind="source"
         parameters={source?.parameters ?? []}

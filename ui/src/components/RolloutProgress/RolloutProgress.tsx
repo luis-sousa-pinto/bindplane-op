@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { useSnackbar } from "notistack";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetConfigRolloutStatusQuery } from "../../graphql/generated";
 import {
   pauseRollout,
@@ -9,7 +9,6 @@ import {
 } from "../../utils/rest/rollouts-rest-fns";
 import { RolloutProgressBar } from "../RolloutProgressBar";
 import { RolloutProgressData } from "./rollout-progress-data";
-import { BuildRolloutDialog } from "../BuildRolloutDialog";
 import { nameAndVersion } from "../../utils/version-helpers";
 import { useRefetchOnConfigurationChange } from "../../hooks/useRefetchOnConfigurationChanges";
 
@@ -44,6 +43,7 @@ interface RolloutProgressProps {
   configurationName: string;
   configurationVersion: string;
   hideActions?: boolean;
+  setShowCompareVersions: (show: boolean) => void;
 }
 
 /**
@@ -59,12 +59,12 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
   configurationName,
   configurationVersion,
   hideActions,
+  setShowCompareVersions,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [progressData, setProgressData] = useState<RolloutProgressData>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [buildRolloutOpen, setBuildRolloutOpen] = useState<boolean>(false);
 
   const versionedName = nameAndVersion(configurationName, configurationVersion);
 
@@ -98,14 +98,6 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
     } finally {
       setLoading(false);
     }
-    setBuildRolloutOpen(false);
-  }
-
-  /**
-   * handleStartRolloutClick is called when the user clicks the "Start Rollout" button.
-   */
-  async function handleStartRolloutClick() {
-    setBuildRolloutOpen(true);
   }
 
   /**
@@ -146,6 +138,18 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
     }
   }
 
+  useEffect(() => {
+    if (progressData?.configuration.metadata.version === 1) {
+      setShowCompareVersions(false);
+      return;
+    }
+    if (progressData?.rolloutStatus() === 4) {
+      setShowCompareVersions(false);
+      return;
+    }
+    setShowCompareVersions(true);
+  }, [progressData, setShowCompareVersions]);
+
   if (progressData == null) {
     // TODO(dsvanlani): Show a loading indicator
     return null;
@@ -169,17 +173,10 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
           paused={!progressData.rolloutIsStarted()}
           loading={loading}
           onPause={handlePauseRollout}
-          onStart={handleStartRolloutClick}
+          onStart={handleStartRollout}
           onResume={handleResumeRollout}
         />
       )}
-
-      <BuildRolloutDialog
-        onClose={() => setBuildRolloutOpen(false)}
-        onStartRollout={handleStartRollout}
-        configurationName={configurationName}
-        open={buildRolloutOpen}
-      />
     </>
   );
 };

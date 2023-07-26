@@ -18,7 +18,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/observiq/bindplane-op/internal/opamp/connections/mocks"
+	"github.com/observiq/bindplane-op/opamp/mocks"
 	"github.com/stretchr/testify/require"
 )
 

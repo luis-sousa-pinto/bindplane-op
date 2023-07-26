@@ -1,6 +1,6 @@
 import { DialogActions, Grid, Button, Stack, Typography } from "@mui/material";
 import { isFunction } from "lodash";
-import { ParameterDefinition } from "../../graphql/generated";
+import { AdditionalInfo, ParameterDefinition } from "../../graphql/generated";
 import { ResourceNameInput, useValidationContext, isValid } from ".";
 import { useResourceFormValues } from "./ResourceFormContext";
 import { useResourceDialog } from "../ResourceDialog/ResourceDialogContext";
@@ -23,7 +23,9 @@ export interface ParameterGroup {
   parameters: ParameterDefinition[];
 }
 
-export function groupParameters(parameters: ParameterDefinition[]): ParameterGroup[] {
+export function groupParameters(
+  parameters: ParameterDefinition[]
+): ParameterGroup[] {
   const groups: ParameterGroup[] = [];
   let group: ParameterGroup | undefined;
 
@@ -47,10 +49,10 @@ interface ConfigureResourceViewProps {
   kind: "source" | "destination" | "processor";
   resourceTypeDisplayName: string;
   description: string;
-  heading?: string;
-  subHeading?: string;
+  additionalInfo?: AdditionalInfo | null;
   formValues: { [key: string]: any };
   includeNameField?: boolean;
+  includeDisplayNameField?: boolean;
   displayName?: string;
   existingResourceNames?: string[];
   parameterDefinitions: ParameterDefinition[];
@@ -69,10 +71,10 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   kind,
   resourceTypeDisplayName,
   description,
-  heading,
-  subHeading,
+  additionalInfo,
   formValues,
   includeNameField,
+  includeDisplayNameField,
   displayName,
   existingResourceNames,
   parameterDefinitions,
@@ -153,11 +155,6 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
     return `${action} ${capitalizedResource}: ${resourceTypeDisplayName}`;
   }, [resourceTypeDisplayName, kind, purpose]);
 
-  if (embedded) {
-    // embedded doesn't have a title section so we use the heading and subheading instead
-    heading = title;
-    subHeading = description;
-  }
   const ActionsContainer = embedded ? ActionsSection : DialogActions;
 
   const playPauseButtons =
@@ -218,7 +215,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
           )}
         </Grid>
 
-        {kind !== "destination" && (
+        {includeDisplayNameField && (
           <Grid item xs={7}>
             <ResourceDisplayNameInput
               readOnly={readOnly}
@@ -254,6 +251,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
         <TitleSection
           title={title}
           description={description}
+          additionalInfo={additionalInfo}
           onClose={onClose}
         />
       )}

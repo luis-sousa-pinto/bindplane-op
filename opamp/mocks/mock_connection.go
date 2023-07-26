@@ -16,20 +16,96 @@ type MockConnection struct {
 	mock.Mock
 }
 
-// RemoteAddr provides a mock function with given fields:
-func (_m *MockConnection) RemoteAddr() net.Addr {
+type MockConnection_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockConnection) EXPECT() *MockConnection_Expecter {
+	return &MockConnection_Expecter{mock: &_m.Mock}
+}
+
+// Connection provides a mock function with given fields:
+func (_m *MockConnection) Connection() net.Conn {
 	ret := _m.Called()
 
-	var r0 net.Addr
-	if rf, ok := ret.Get(0).(func() net.Addr); ok {
+	var r0 net.Conn
+	if rf, ok := ret.Get(0).(func() net.Conn); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(net.Addr)
+			r0 = ret.Get(0).(net.Conn)
 		}
 	}
 
 	return r0
+}
+
+// MockConnection_Connection_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Connection'
+type MockConnection_Connection_Call struct {
+	*mock.Call
+}
+
+// Connection is a helper method to define mock.On call
+func (_e *MockConnection_Expecter) Connection() *MockConnection_Connection_Call {
+	return &MockConnection_Connection_Call{Call: _e.mock.On("Connection")}
+}
+
+func (_c *MockConnection_Connection_Call) Run(run func()) *MockConnection_Connection_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockConnection_Connection_Call) Return(_a0 net.Conn) *MockConnection_Connection_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockConnection_Connection_Call) RunAndReturn(run func() net.Conn) *MockConnection_Connection_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Disconnect provides a mock function with given fields:
+func (_m *MockConnection) Disconnect() error {
+	ret := _m.Called()
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockConnection_Disconnect_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Disconnect'
+type MockConnection_Disconnect_Call struct {
+	*mock.Call
+}
+
+// Disconnect is a helper method to define mock.On call
+func (_e *MockConnection_Expecter) Disconnect() *MockConnection_Disconnect_Call {
+	return &MockConnection_Disconnect_Call{Call: _e.mock.On("Disconnect")}
+}
+
+func (_c *MockConnection_Disconnect_Call) Run(run func()) *MockConnection_Disconnect_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockConnection_Disconnect_Call) Return(_a0 error) *MockConnection_Disconnect_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockConnection_Disconnect_Call) RunAndReturn(run func() error) *MockConnection_Disconnect_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Send provides a mock function with given fields: ctx, message
@@ -44,6 +120,35 @@ func (_m *MockConnection) Send(ctx context.Context, message *protobufs.ServerToA
 	}
 
 	return r0
+}
+
+// MockConnection_Send_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Send'
+type MockConnection_Send_Call struct {
+	*mock.Call
+}
+
+// Send is a helper method to define mock.On call
+//   - ctx context.Context
+//   - message *protobufs.ServerToAgent
+func (_e *MockConnection_Expecter) Send(ctx interface{}, message interface{}) *MockConnection_Send_Call {
+	return &MockConnection_Send_Call{Call: _e.mock.On("Send", ctx, message)}
+}
+
+func (_c *MockConnection_Send_Call) Run(run func(ctx context.Context, message *protobufs.ServerToAgent)) *MockConnection_Send_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*protobufs.ServerToAgent))
+	})
+	return _c
+}
+
+func (_c *MockConnection_Send_Call) Return(_a0 error) *MockConnection_Send_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockConnection_Send_Call) RunAndReturn(run func(context.Context, *protobufs.ServerToAgent) error) *MockConnection_Send_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewMockConnection creates a new instance of MockConnection. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

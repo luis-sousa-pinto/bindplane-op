@@ -1,7 +1,7 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { ResourceConfiguration } from "../../../graphql/generated";
 import { PlusCircleIcon } from "../../Icons";
-import { InlineProcessorLabel } from "./InlineProcessorLabel";
+import { ProcessorLabel } from "./ProcessorLabel";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useCallback, useState } from "react";
@@ -17,7 +17,7 @@ interface Props {
   disableEdit?: boolean;
 }
 
-export const InlineProcessorContainer: React.FC<Props> = ({
+export const ProcessorsContainer: React.FC<Props> = ({
   processors: processorsProp,
   onProcessorsChange,
   onAddProcessor,
@@ -73,7 +73,7 @@ export const InlineProcessorContainer: React.FC<Props> = ({
               onEdit={() => onEditProcessor(ix)}
             />
           ) : (
-            <InlineProcessorLabel
+            <ProcessorLabel
               moveProcessor={moveProcessor}
               key={`${p.name}-${ix}`}
               processor={p}

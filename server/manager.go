@@ -224,6 +224,10 @@ func (m *DefaultManager) RequestReport(ctx context.Context, agentID string, conf
 	defer span.End()
 
 	for _, p := range m.Protocols {
+		// only request the report from the protocol that is connected to the agent
+		if !p.Connected(agentID) {
+			continue
+		}
 		err := p.RequestReport(ctx, agentID, configuration)
 		if err != nil {
 			return err

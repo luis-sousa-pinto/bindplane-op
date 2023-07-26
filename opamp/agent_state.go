@@ -172,7 +172,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 			zap.Bool("initialSyncRequired", initialSyncRequired),
 		)
 		if hasCapability(agentToServer, syncer.agentCapabilitiesFlag()) {
-			response.Flags = protobufs.ServerToAgent_ReportFullState
+			response.Flags = uint64(protobufs.ServerToAgentFlags_ServerToAgentFlags_ReportFullState)
 		}
 		return false
 	}
@@ -196,7 +196,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 			errorMessage = response.ErrorResponse.ErrorMessage + ", " + errorMessage
 		}
 		response.ErrorResponse = &protobufs.ServerErrorResponse{
-			Type:         protobufs.ServerErrorResponse_Unknown,
+			Type:         protobufs.ServerErrorResponseType_ServerErrorResponseType_Unknown,
 			ErrorMessage: errorMessage,
 		}
 	} else {
@@ -207,7 +207,7 @@ func SyncOne[T protoiface.MessageV1](ctx context.Context, logger *zap.Logger, ag
 }
 
 func hasCapability(agentToServer *protobufs.AgentToServer, capability protobufs.AgentCapabilities) bool {
-	return capability&agentToServer.GetCapabilities() != 0
+	return uint64(capability)&agentToServer.GetCapabilities() != 0
 }
 
 // ----------------------------------------------------------------------

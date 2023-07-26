@@ -244,6 +244,7 @@ func TestREST(t *testing.T) {
 		require.NoError(t, err)
 		_, err = bindplane.Store().UpsertAgents(ctx, []string{"a1", "a2", "a3", "a4", "a5"}, func(a *model.Agent) {
 			a.SetFutureConfiguration(config1)
+			a.Status = model.Connected
 		})
 		require.NoError(t, err)
 	})

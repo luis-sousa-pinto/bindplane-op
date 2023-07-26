@@ -1,4 +1,4 @@
-@use '../../styles/colors';
+@use "../../styles/colors";
 
 .ui-control-card {
   cursor: pointer;
@@ -37,8 +37,8 @@
   background-position: center;
   background-size: 50px;
 
-  width: 70px;
-  height: 70px;
+  width: 75px;
+  height: 75px;
 }
 
 .destination-icon {

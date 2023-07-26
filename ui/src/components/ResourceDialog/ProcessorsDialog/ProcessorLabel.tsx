@@ -1,15 +1,8 @@
 import { gql } from "@apollo/client";
-import { Card, IconButton, Stack, Typography } from "@mui/material";
-import { useSnackbar } from "notistack";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import {
-  ResourceConfiguration,
-  useGetProcessorTypeQuery,
-} from "../../../graphql/generated";
-import { MenuIcon, EditIcon } from "../../Icons";
-
-import styles from "./inline-processor-label.module.scss";
+import { ResourceConfiguration } from "../../../graphql/generated";
+import { ProcessorLabelCard } from "./ProcessorLabelCard";
 
 interface Props {
   index: number;
@@ -19,6 +12,8 @@ interface Props {
   moveProcessor: (dragIndex: number, dropIndex: number) => void;
 
   onDrop: () => void;
+
+  viewOnly?: boolean;
 }
 
 gql`
@@ -83,30 +78,13 @@ type Item = {
   index: number;
 };
 
-export const InlineProcessorLabel: React.FC<Props> = ({
+export const ProcessorLabel: React.FC<Props> = ({
   index,
   processor,
   onEdit,
   moveProcessor,
   onDrop,
 }) => {
-  // TODO (dsvanlani) handle loading and error
-  const { data, error } = useGetProcessorTypeQuery({
-    variables: { type: processor.type! },
-  });
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (error != null) {
-      console.error(error);
-      enqueueSnackbar("Error retrieving Processor Type", {
-        variant: "error",
-        key: "Error retrieving Processor Type",
-      });
-    }
-  }, [enqueueSnackbar, error]);
-
   const [, dragRef] = useDrag({
     type: "inline-processor",
     item: { index },
@@ -150,35 +128,12 @@ export const InlineProcessorLabel: React.FC<Props> = ({
   const dragDropRef = dragRef(dropRef(ref)) as any;
 
   return (
-    <Card
-      variant="outlined"
-      ref={dragDropRef}
-      style={{
-        border: isHovered ? "1px solid #4abaeb" : undefined,
-      }}
-      classes={{ root: styles.card }}
-    >
-      <Stack
-        direction="row"
-        alignItems={"center"}
-        spacing={1}
-        justifyContent={"space-between"}
-      >
-        <Stack direction={"row"} spacing={1}>
-          <MenuIcon className={styles["hover-icon"]} />
-          <Typography fontWeight={600}>
-            {data?.processorType?.metadata.displayName}
-            {processor.displayName && ":"}
-          </Typography>
-          {processor.displayName && (
-            <Typography>{processor.displayName}</Typography>
-          )}
-        </Stack>
-
-        <IconButton onClick={onEdit} data-testid={`edit-processor-${index}`}>
-          <EditIcon width={15} height={15} style={{ float: "right" }} />
-        </IconButton>
-      </Stack>
-    </Card>
+    <ProcessorLabelCard
+      index={index}
+      processor={processor}
+      dragDropRef={dragDropRef}
+      isHovered={isHovered}
+      onEdit={onEdit}
+    />
   );
 };

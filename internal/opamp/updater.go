@@ -33,16 +33,18 @@ import (
 type updater struct {
 	protocol protocol.Protocol
 	manager  bpserver.Manager
-	stop     context.CancelFunc
+	stop     chan struct{}
+	stopOnce *sync.Once
 	logger   *zap.Logger
 }
 
 // newUpdater returns a new updater with the specified components
-func newUpdater(protocol protocol.Protocol, manager bpserver.Manager, stop context.CancelFunc, logger *zap.Logger) bpserver.Updater {
+func newUpdater(protocol protocol.Protocol, manager bpserver.Manager, logger *zap.Logger) bpserver.Updater {
 	return &updater{
 		protocol: protocol,
 		manager:  manager,
-		stop:     stop,
+		stop:     make(chan struct{}),
+		stopOnce: &sync.Once{},
 		logger:   logger,
 	}
 }
@@ -51,7 +53,8 @@ func (u *updater) store() store.Store {
 	return u.manager.Store()
 }
 
-// Start subscribes to store updates and agent messages
+// Start subscribes to store updates and agent messages.
+// It will handle updates and messages until the context is canceled or Stop is called.
 func (u *updater) Start(ctx context.Context) {
 	u.logger.Info("updater subscribing to updates")
 	updatesChannel, unsubscribe := eventbus.Subscribe(ctx, u.store().Updates(ctx), eventbus.WithChannel(make(chan store.BasicEventUpdates, 10_000)))
@@ -63,11 +66,13 @@ func (u *updater) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			u.logger.Info("context canceled", zap.Error(ctx.Err()))
+			u.logger.Info("Context canceled", zap.Error(ctx.Err()))
 			// m.agentCleanupTicker.Stop()
 			// m.agentHeartbeatTicker.Stop()
 			return
-
+		case <-u.stop:
+			u.logger.Info("Stop requested")
+			return
 		case updates := <-updatesChannel:
 			u.logger.Info("Received configuration updates",
 				zap.Int("size", updates.Size()),
@@ -92,9 +97,12 @@ func (u *updater) Start(ctx context.Context) {
 	}
 }
 
-// Stop calls the stop function
+// Stop calls the stop function.
+// Concurrent calls to Stop will only call the stop function once.
 func (u *updater) Stop(_ context.Context) {
-	u.stop()
+	u.stopOnce.Do(func() {
+		close(u.stop)
+	})
 }
 
 // TODO: maybe pass in pendingAgentUpdates so the contents can be tested after
@@ -156,6 +164,11 @@ func (u *updater) handleUpdates(ctx context.Context, updates store.BasicEventUpd
 }
 
 func (u *updater) updateAgent(ctx context.Context, agent *model.Agent, updates *protocol.AgentUpdates) {
+	// if not connected to this agent, ignore the request
+	if !u.protocol.Connected(agent.ID) {
+		return
+	}
+
 	ctx, span := tracer.Start(ctx, "updater/updateAgent", trace.WithAttributes(attribute.String("agentID", agent.ID)))
 	defer span.End()
 
@@ -166,6 +179,11 @@ func (u *updater) updateAgent(ctx context.Context, agent *model.Agent, updates *
 }
 
 func (u *updater) handleMessage(ctx context.Context, message bpserver.Message) {
+	// if not connected to this agent, ignore the message
+	if !u.protocol.Connected(message.AgentID()) {
+		return
+	}
+
 	ctx, span := tracer.Start(ctx, "updater/handleMessage", trace.WithAttributes(
 		attribute.String("agentID", message.AgentID()), attribute.String("type", message.Type())))
 	defer span.End()

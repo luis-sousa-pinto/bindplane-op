@@ -83,7 +83,7 @@ func (raw *RawAgentConfiguration) Scan(value interface{}) error {
 }
 
 // ManagerConfig is the unmarshaled contents of manager.yaml
-// This comes from https://github.com/observIQ/observiq-otel-collector/blob/main/opamp/config.go
+// This comes from https://github.com/observIQ/bindplane-agent/blob/main/opamp/config.go
 type ManagerConfig struct {
 	Endpoint  string            `mapstructure:"endpoint" json:"endpoint" yaml:"endpoint,omitempty"`
 	SecretKey string            `mapstructure:"secret_key" json:"secret_key" yaml:"secret_key,omitempty"`

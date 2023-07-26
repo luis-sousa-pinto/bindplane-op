@@ -1616,6 +1616,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.AdditionalInfo": {
+            "type": "object",
+            "properties": {
+                "documentation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DocumentationLink"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Agent": {
             "type": "object",
             "properties": {
@@ -2274,6 +2288,9 @@ const docTemplate = `{
         "model.Metadata": {
             "type": "object",
             "properties": {
+                "additionalInfo": {
+                    "$ref": "#/definitions/model.AdditionalInfo"
+                },
                 "dateModified": {
                     "type": "string"
                 },

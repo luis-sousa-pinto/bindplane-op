@@ -40,7 +40,7 @@ func (s *effectiveConfigSyncer) message(msg *protobufs.AgentToServer) (result *p
 }
 
 func (s *effectiveConfigSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilities {
-	return protobufs.AgentCapabilities_ReportsEffectiveConfig
+	return protobufs.AgentCapabilities_AgentCapabilities_ReportsEffectiveConfig
 }
 
 func (s *effectiveConfigSyncer) update(_ context.Context, _ *zap.Logger, state *AgentState, _ opamp.Connection, agent *model.Agent, value *protobufs.EffectiveConfig) error {

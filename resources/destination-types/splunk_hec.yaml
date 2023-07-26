@@ -12,7 +12,7 @@ spec:
       description: Authentication token used when connecting to the HTTP Event Collector.
       documentation:
         - text: Read more
-          url: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector.
+          url: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector
       type: string
       default: ""
       required: true

@@ -17,7 +17,7 @@ BindPlane OP is an open source observability pipeline that gives you the ability
 
 ## Features
 
-  * Manage the lifecycle of telemetry agents, starting with the [observIQ Collector](https://github.com/observIQ/observiq-otel-collector)
+  * Manage the lifecycle of telemetry agents, starting with the [BindPlane Agent](https://github.com/observIQ/bindplane-agent)
   * Build, deploy, and manage telemetry configurations for different Sources and deploy them to your agents
   * Ship metric, log, and trace data to one or many Destinations
   * Utilize flow controls to adjust the flow of your data in realtime
@@ -82,7 +82,7 @@ See the [installation documentation](./docs/install.md#client) for client instal
 
 ## Agent
 
-BindPlane OP utilizes the [observIQ Distro for OpenTelemetry Collector](https://github.com/observIQ/observiq-otel-collector). To install using BindPlane CLI, run the following command on a server or client system to generate the agent install command.
+BindPlane OP utilizes the [BindPlane Agent](https://github.com/observIQ/bindplane-agent). To install using BindPlane CLI, run the following command on a server or client system to generate the agent install command.
 
 ```bash
 bindplane install agent

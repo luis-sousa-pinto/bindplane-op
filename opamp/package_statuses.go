@@ -44,7 +44,7 @@ func (s *packageStatusesSyncer) message(msg *protobufs.AgentToServer) (result *p
 }
 
 func (s *packageStatusesSyncer) agentCapabilitiesFlag() protobufs.AgentCapabilities {
-	return protobufs.AgentCapabilities_ReportsPackageStatuses
+	return protobufs.AgentCapabilities_AgentCapabilities_ReportsPackageStatuses
 }
 
 func (s *packageStatusesSyncer) update(_ context.Context, _ *zap.Logger, state *AgentState, _ opamp.Connection, agent *model.Agent, value *protobufs.PackageStatuses) error {
@@ -66,7 +66,7 @@ func (s *packageStatusesSyncer) update(_ context.Context, _ *zap.Logger, state *
 
 	if packages := value.GetPackages(); packages != nil {
 		if collector := packages[CollectorPackageName]; collector != nil {
-			upgradeComplete = collector.Status == protobufs.PackageStatus_InstallFailed || collector.Status == protobufs.PackageStatus_Installed
+			upgradeComplete = collector.Status == protobufs.PackageStatusEnum_PackageStatusEnum_InstallFailed || collector.Status == protobufs.PackageStatusEnum_PackageStatusEnum_Installed
 			agentVersion = collector.AgentHasVersion
 			if collector.ErrorMessage != "" {
 				errorMessage = collector.ErrorMessage

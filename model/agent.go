@@ -580,15 +580,16 @@ func (a *Agent) IndexFields(index modelSearch.Indexer) {
 		// do nothing
 	case Error:
 		index(FieldRolloutError, a.ConfigurationStatus.Pending)
+		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 	default:
 		// removing this from the index in the case of an error allows the
 		// user to find the agents when moving them back to their original config
 		configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
 		index("configuration", configuration)
 		index(FieldRolloutPending, a.ConfigurationStatus.Pending)
+		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 	}
 	index(FieldRolloutComplete, a.ConfigurationStatus.Current)
-	index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 }
 
 // IndexLabels returns a map of label name to label value to be stored in the index

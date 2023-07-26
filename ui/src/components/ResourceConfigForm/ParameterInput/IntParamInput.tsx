@@ -45,6 +45,9 @@ const IntParamInputComponent: React.FC<ParamInputProps<number>> = ({
               {errors[definition.name]}
             </FormHelperText>
           )}
+          <FormHelperText sx={{ marginLeft: 0 }} component="span">
+            {definition.description}
+          </FormHelperText>
           {definition.documentation && (
             <Stack component={"span"}>
               {definition.documentation.map((d) => (
@@ -54,9 +57,6 @@ const IntParamInputComponent: React.FC<ParamInputProps<number>> = ({
               ))}
             </Stack>
           )}
-          <FormHelperText sx={{ marginLeft: 0 }} component="span">
-            {definition.description}
-          </FormHelperText>
         </>
       }
       required={definition.required}

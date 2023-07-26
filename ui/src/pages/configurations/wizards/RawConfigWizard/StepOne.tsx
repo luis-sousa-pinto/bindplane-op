@@ -50,7 +50,7 @@ export const StepOne: React.FC<StepOneProps> = ({ fromImport }) => {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://github.com/observIQ/observiq-otel-collector/tree/main/config/google_cloud_exporter"
+            href="https://github.com/observIQ/bindplane-agent/tree/main/config/google_cloud_exporter"
           >
             sample files
           </a>{" "}

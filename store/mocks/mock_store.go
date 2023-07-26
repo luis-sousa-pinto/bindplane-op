@@ -26,6 +26,14 @@ type MockStore struct {
 	mock.Mock
 }
 
+type MockStore_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockStore) EXPECT() *MockStore_Expecter {
+	return &MockStore_Expecter{mock: &_m.Mock}
+}
+
 // Agent provides a mock function with given fields: ctx, id
 func (_m *MockStore) Agent(ctx context.Context, id string) (*model.Agent, error) {
 	ret := _m.Called(ctx, id)
@@ -50,6 +58,35 @@ func (_m *MockStore) Agent(ctx context.Context, id string) (*model.Agent, error)
 	}
 
 	return r0, r1
+}
+
+// MockStore_Agent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Agent'
+type MockStore_Agent_Call struct {
+	*mock.Call
+}
+
+// Agent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockStore_Expecter) Agent(ctx interface{}, id interface{}) *MockStore_Agent_Call {
+	return &MockStore_Agent_Call{Call: _e.mock.On("Agent", ctx, id)}
+}
+
+func (_c *MockStore_Agent_Call) Run(run func(ctx context.Context, id string)) *MockStore_Agent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_Agent_Call) Return(_a0 *model.Agent, _a1 error) *MockStore_Agent_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Agent_Call) RunAndReturn(run func(context.Context, string) (*model.Agent, error)) *MockStore_Agent_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // AgentConfiguration provides a mock function with given fields: ctx, agent
@@ -78,6 +115,35 @@ func (_m *MockStore) AgentConfiguration(ctx context.Context, agent *model.Agent)
 	return r0, r1
 }
 
+// MockStore_AgentConfiguration_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentConfiguration'
+type MockStore_AgentConfiguration_Call struct {
+	*mock.Call
+}
+
+// AgentConfiguration is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agent *model.Agent
+func (_e *MockStore_Expecter) AgentConfiguration(ctx interface{}, agent interface{}) *MockStore_AgentConfiguration_Call {
+	return &MockStore_AgentConfiguration_Call{Call: _e.mock.On("AgentConfiguration", ctx, agent)}
+}
+
+func (_c *MockStore_AgentConfiguration_Call) Run(run func(ctx context.Context, agent *model.Agent)) *MockStore_AgentConfiguration_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*model.Agent))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentConfiguration_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_AgentConfiguration_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_AgentConfiguration_Call) RunAndReturn(run func(context.Context, *model.Agent) (*model.Configuration, error)) *MockStore_AgentConfiguration_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AgentIndex provides a mock function with given fields: ctx
 func (_m *MockStore) AgentIndex(ctx context.Context) search.Index {
 	ret := _m.Called(ctx)
@@ -94,6 +160,34 @@ func (_m *MockStore) AgentIndex(ctx context.Context) search.Index {
 	return r0
 }
 
+// MockStore_AgentIndex_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentIndex'
+type MockStore_AgentIndex_Call struct {
+	*mock.Call
+}
+
+// AgentIndex is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) AgentIndex(ctx interface{}) *MockStore_AgentIndex_Call {
+	return &MockStore_AgentIndex_Call{Call: _e.mock.On("AgentIndex", ctx)}
+}
+
+func (_c *MockStore_AgentIndex_Call) Run(run func(ctx context.Context)) *MockStore_AgentIndex_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentIndex_Call) Return(_a0 search.Index) *MockStore_AgentIndex_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_AgentIndex_Call) RunAndReturn(run func(context.Context) search.Index) *MockStore_AgentIndex_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AgentRolloutUpdates provides a mock function with given fields: ctx
 func (_m *MockStore) AgentRolloutUpdates(ctx context.Context) eventbus.Source[store.RolloutEventUpdates] {
 	ret := _m.Called(ctx)
@@ -108,6 +202,34 @@ func (_m *MockStore) AgentRolloutUpdates(ctx context.Context) eventbus.Source[st
 	}
 
 	return r0
+}
+
+// MockStore_AgentRolloutUpdates_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentRolloutUpdates'
+type MockStore_AgentRolloutUpdates_Call struct {
+	*mock.Call
+}
+
+// AgentRolloutUpdates is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) AgentRolloutUpdates(ctx interface{}) *MockStore_AgentRolloutUpdates_Call {
+	return &MockStore_AgentRolloutUpdates_Call{Call: _e.mock.On("AgentRolloutUpdates", ctx)}
+}
+
+func (_c *MockStore_AgentRolloutUpdates_Call) Run(run func(ctx context.Context)) *MockStore_AgentRolloutUpdates_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentRolloutUpdates_Call) Return(_a0 eventbus.Source[store.RolloutEventUpdates]) *MockStore_AgentRolloutUpdates_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_AgentRolloutUpdates_Call) RunAndReturn(run func(context.Context) eventbus.Source[store.RolloutEventUpdates]) *MockStore_AgentRolloutUpdates_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // AgentVersion provides a mock function with given fields: ctx, name
@@ -136,6 +258,35 @@ func (_m *MockStore) AgentVersion(ctx context.Context, name string) (*model.Agen
 	return r0, r1
 }
 
+// MockStore_AgentVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentVersion'
+type MockStore_AgentVersion_Call struct {
+	*mock.Call
+}
+
+// AgentVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) AgentVersion(ctx interface{}, name interface{}) *MockStore_AgentVersion_Call {
+	return &MockStore_AgentVersion_Call{Call: _e.mock.On("AgentVersion", ctx, name)}
+}
+
+func (_c *MockStore_AgentVersion_Call) Run(run func(ctx context.Context, name string)) *MockStore_AgentVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentVersion_Call) Return(_a0 *model.AgentVersion, _a1 error) *MockStore_AgentVersion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_AgentVersion_Call) RunAndReturn(run func(context.Context, string) (*model.AgentVersion, error)) *MockStore_AgentVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AgentVersions provides a mock function with given fields: ctx
 func (_m *MockStore) AgentVersions(ctx context.Context) ([]*model.AgentVersion, error) {
 	ret := _m.Called(ctx)
@@ -160,6 +311,34 @@ func (_m *MockStore) AgentVersions(ctx context.Context) ([]*model.AgentVersion, 
 	}
 
 	return r0, r1
+}
+
+// MockStore_AgentVersions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentVersions'
+type MockStore_AgentVersions_Call struct {
+	*mock.Call
+}
+
+// AgentVersions is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) AgentVersions(ctx interface{}) *MockStore_AgentVersions_Call {
+	return &MockStore_AgentVersions_Call{Call: _e.mock.On("AgentVersions", ctx)}
+}
+
+func (_c *MockStore_AgentVersions_Call) Run(run func(ctx context.Context)) *MockStore_AgentVersions_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentVersions_Call) Return(_a0 []*model.AgentVersion, _a1 error) *MockStore_AgentVersions_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_AgentVersions_Call) RunAndReturn(run func(context.Context) ([]*model.AgentVersion, error)) *MockStore_AgentVersions_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Agents provides a mock function with given fields: ctx, options
@@ -195,6 +374,42 @@ func (_m *MockStore) Agents(ctx context.Context, options ...store.QueryOption) (
 	return r0, r1
 }
 
+// MockStore_Agents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Agents'
+type MockStore_Agents_Call struct {
+	*mock.Call
+}
+
+// Agents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - options ...store.QueryOption
+func (_e *MockStore_Expecter) Agents(ctx interface{}, options ...interface{}) *MockStore_Agents_Call {
+	return &MockStore_Agents_Call{Call: _e.mock.On("Agents",
+		append([]interface{}{ctx}, options...)...)}
+}
+
+func (_c *MockStore_Agents_Call) Run(run func(ctx context.Context, options ...store.QueryOption)) *MockStore_Agents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]store.QueryOption, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(store.QueryOption)
+			}
+		}
+		run(args[0].(context.Context), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *MockStore_Agents_Call) Return(_a0 []*model.Agent, _a1 error) *MockStore_Agents_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Agents_Call) RunAndReturn(run func(context.Context, ...store.QueryOption) ([]*model.Agent, error)) *MockStore_Agents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AgentsCount provides a mock function with given fields: _a0, _a1
 func (_m *MockStore) AgentsCount(_a0 context.Context, _a1 ...store.QueryOption) (int, error) {
 	_va := make([]interface{}, len(_a1))
@@ -226,6 +441,42 @@ func (_m *MockStore) AgentsCount(_a0 context.Context, _a1 ...store.QueryOption) 
 	return r0, r1
 }
 
+// MockStore_AgentsCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentsCount'
+type MockStore_AgentsCount_Call struct {
+	*mock.Call
+}
+
+// AgentsCount is a helper method to define mock.On call
+//   - _a0 context.Context
+//   - _a1 ...store.QueryOption
+func (_e *MockStore_Expecter) AgentsCount(_a0 interface{}, _a1 ...interface{}) *MockStore_AgentsCount_Call {
+	return &MockStore_AgentsCount_Call{Call: _e.mock.On("AgentsCount",
+		append([]interface{}{_a0}, _a1...)...)}
+}
+
+func (_c *MockStore_AgentsCount_Call) Run(run func(_a0 context.Context, _a1 ...store.QueryOption)) *MockStore_AgentsCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]store.QueryOption, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(store.QueryOption)
+			}
+		}
+		run(args[0].(context.Context), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentsCount_Call) Return(_a0 int, _a1 error) *MockStore_AgentsCount_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_AgentsCount_Call) RunAndReturn(run func(context.Context, ...store.QueryOption) (int, error)) *MockStore_AgentsCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AgentsIDsMatchingConfiguration provides a mock function with given fields: ctx, conf
 func (_m *MockStore) AgentsIDsMatchingConfiguration(ctx context.Context, conf *model.Configuration) ([]string, error) {
 	ret := _m.Called(ctx, conf)
@@ -250,6 +501,35 @@ func (_m *MockStore) AgentsIDsMatchingConfiguration(ctx context.Context, conf *m
 	}
 
 	return r0, r1
+}
+
+// MockStore_AgentsIDsMatchingConfiguration_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentsIDsMatchingConfiguration'
+type MockStore_AgentsIDsMatchingConfiguration_Call struct {
+	*mock.Call
+}
+
+// AgentsIDsMatchingConfiguration is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conf *model.Configuration
+func (_e *MockStore_Expecter) AgentsIDsMatchingConfiguration(ctx interface{}, conf interface{}) *MockStore_AgentsIDsMatchingConfiguration_Call {
+	return &MockStore_AgentsIDsMatchingConfiguration_Call{Call: _e.mock.On("AgentsIDsMatchingConfiguration", ctx, conf)}
+}
+
+func (_c *MockStore_AgentsIDsMatchingConfiguration_Call) Run(run func(ctx context.Context, conf *model.Configuration)) *MockStore_AgentsIDsMatchingConfiguration_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*model.Configuration))
+	})
+	return _c
+}
+
+func (_c *MockStore_AgentsIDsMatchingConfiguration_Call) Return(_a0 []string, _a1 error) *MockStore_AgentsIDsMatchingConfiguration_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_AgentsIDsMatchingConfiguration_Call) RunAndReturn(run func(context.Context, *model.Configuration) ([]string, error)) *MockStore_AgentsIDsMatchingConfiguration_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // ApplyResources provides a mock function with given fields: ctx, resources
@@ -278,6 +558,35 @@ func (_m *MockStore) ApplyResources(ctx context.Context, resources []model.Resou
 	return r0, r1
 }
 
+// MockStore_ApplyResources_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApplyResources'
+type MockStore_ApplyResources_Call struct {
+	*mock.Call
+}
+
+// ApplyResources is a helper method to define mock.On call
+//   - ctx context.Context
+//   - resources []model.Resource
+func (_e *MockStore_Expecter) ApplyResources(ctx interface{}, resources interface{}) *MockStore_ApplyResources_Call {
+	return &MockStore_ApplyResources_Call{Call: _e.mock.On("ApplyResources", ctx, resources)}
+}
+
+func (_c *MockStore_ApplyResources_Call) Run(run func(ctx context.Context, resources []model.Resource)) *MockStore_ApplyResources_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]model.Resource))
+	})
+	return _c
+}
+
+func (_c *MockStore_ApplyResources_Call) Return(_a0 []model.ResourceStatus, _a1 error) *MockStore_ApplyResources_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_ApplyResources_Call) RunAndReturn(run func(context.Context, []model.Resource) ([]model.ResourceStatus, error)) *MockStore_ApplyResources_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CleanupDisconnectedAgents provides a mock function with given fields: ctx, since
 func (_m *MockStore) CleanupDisconnectedAgents(ctx context.Context, since time.Time) error {
 	ret := _m.Called(ctx, since)
@@ -292,9 +601,65 @@ func (_m *MockStore) CleanupDisconnectedAgents(ctx context.Context, since time.T
 	return r0
 }
 
+// MockStore_CleanupDisconnectedAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CleanupDisconnectedAgents'
+type MockStore_CleanupDisconnectedAgents_Call struct {
+	*mock.Call
+}
+
+// CleanupDisconnectedAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - since time.Time
+func (_e *MockStore_Expecter) CleanupDisconnectedAgents(ctx interface{}, since interface{}) *MockStore_CleanupDisconnectedAgents_Call {
+	return &MockStore_CleanupDisconnectedAgents_Call{Call: _e.mock.On("CleanupDisconnectedAgents", ctx, since)}
+}
+
+func (_c *MockStore_CleanupDisconnectedAgents_Call) Run(run func(ctx context.Context, since time.Time)) *MockStore_CleanupDisconnectedAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(time.Time))
+	})
+	return _c
+}
+
+func (_c *MockStore_CleanupDisconnectedAgents_Call) Return(_a0 error) *MockStore_CleanupDisconnectedAgents_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_CleanupDisconnectedAgents_Call) RunAndReturn(run func(context.Context, time.Time) error) *MockStore_CleanupDisconnectedAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Clear provides a mock function with given fields:
 func (_m *MockStore) Clear() {
 	_m.Called()
+}
+
+// MockStore_Clear_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Clear'
+type MockStore_Clear_Call struct {
+	*mock.Call
+}
+
+// Clear is a helper method to define mock.On call
+func (_e *MockStore_Expecter) Clear() *MockStore_Clear_Call {
+	return &MockStore_Clear_Call{Call: _e.mock.On("Clear")}
+}
+
+func (_c *MockStore_Clear_Call) Run(run func()) *MockStore_Clear_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockStore_Clear_Call) Return() *MockStore_Clear_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockStore_Clear_Call) RunAndReturn(run func()) *MockStore_Clear_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Close provides a mock function with given fields:
@@ -309,6 +674,33 @@ func (_m *MockStore) Close() error {
 	}
 
 	return r0
+}
+
+// MockStore_Close_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Close'
+type MockStore_Close_Call struct {
+	*mock.Call
+}
+
+// Close is a helper method to define mock.On call
+func (_e *MockStore_Expecter) Close() *MockStore_Close_Call {
+	return &MockStore_Close_Call{Call: _e.mock.On("Close")}
+}
+
+func (_c *MockStore_Close_Call) Run(run func()) *MockStore_Close_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockStore_Close_Call) Return(_a0 error) *MockStore_Close_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_Close_Call) RunAndReturn(run func() error) *MockStore_Close_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Configuration provides a mock function with given fields: ctx, name
@@ -337,6 +729,35 @@ func (_m *MockStore) Configuration(ctx context.Context, name string) (*model.Con
 	return r0, r1
 }
 
+// MockStore_Configuration_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Configuration'
+type MockStore_Configuration_Call struct {
+	*mock.Call
+}
+
+// Configuration is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) Configuration(ctx interface{}, name interface{}) *MockStore_Configuration_Call {
+	return &MockStore_Configuration_Call{Call: _e.mock.On("Configuration", ctx, name)}
+}
+
+func (_c *MockStore_Configuration_Call) Run(run func(ctx context.Context, name string)) *MockStore_Configuration_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_Configuration_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_Configuration_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Configuration_Call) RunAndReturn(run func(context.Context, string) (*model.Configuration, error)) *MockStore_Configuration_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ConfigurationIndex provides a mock function with given fields: ctx
 func (_m *MockStore) ConfigurationIndex(ctx context.Context) search.Index {
 	ret := _m.Called(ctx)
@@ -351,6 +772,34 @@ func (_m *MockStore) ConfigurationIndex(ctx context.Context) search.Index {
 	}
 
 	return r0
+}
+
+// MockStore_ConfigurationIndex_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ConfigurationIndex'
+type MockStore_ConfigurationIndex_Call struct {
+	*mock.Call
+}
+
+// ConfigurationIndex is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) ConfigurationIndex(ctx interface{}) *MockStore_ConfigurationIndex_Call {
+	return &MockStore_ConfigurationIndex_Call{Call: _e.mock.On("ConfigurationIndex", ctx)}
+}
+
+func (_c *MockStore_ConfigurationIndex_Call) Run(run func(ctx context.Context)) *MockStore_ConfigurationIndex_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_ConfigurationIndex_Call) Return(_a0 search.Index) *MockStore_ConfigurationIndex_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_ConfigurationIndex_Call) RunAndReturn(run func(context.Context) search.Index) *MockStore_ConfigurationIndex_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Configurations provides a mock function with given fields: ctx, options
@@ -386,6 +835,42 @@ func (_m *MockStore) Configurations(ctx context.Context, options ...store.QueryO
 	return r0, r1
 }
 
+// MockStore_Configurations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Configurations'
+type MockStore_Configurations_Call struct {
+	*mock.Call
+}
+
+// Configurations is a helper method to define mock.On call
+//   - ctx context.Context
+//   - options ...store.QueryOption
+func (_e *MockStore_Expecter) Configurations(ctx interface{}, options ...interface{}) *MockStore_Configurations_Call {
+	return &MockStore_Configurations_Call{Call: _e.mock.On("Configurations",
+		append([]interface{}{ctx}, options...)...)}
+}
+
+func (_c *MockStore_Configurations_Call) Run(run func(ctx context.Context, options ...store.QueryOption)) *MockStore_Configurations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]store.QueryOption, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(store.QueryOption)
+			}
+		}
+		run(args[0].(context.Context), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *MockStore_Configurations_Call) Return(_a0 []*model.Configuration, _a1 error) *MockStore_Configurations_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Configurations_Call) RunAndReturn(run func(context.Context, ...store.QueryOption) ([]*model.Configuration, error)) *MockStore_Configurations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteAgentVersion provides a mock function with given fields: ctx, name
 func (_m *MockStore) DeleteAgentVersion(ctx context.Context, name string) (*model.AgentVersion, error) {
 	ret := _m.Called(ctx, name)
@@ -410,6 +895,35 @@ func (_m *MockStore) DeleteAgentVersion(ctx context.Context, name string) (*mode
 	}
 
 	return r0, r1
+}
+
+// MockStore_DeleteAgentVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteAgentVersion'
+type MockStore_DeleteAgentVersion_Call struct {
+	*mock.Call
+}
+
+// DeleteAgentVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteAgentVersion(ctx interface{}, name interface{}) *MockStore_DeleteAgentVersion_Call {
+	return &MockStore_DeleteAgentVersion_Call{Call: _e.mock.On("DeleteAgentVersion", ctx, name)}
+}
+
+func (_c *MockStore_DeleteAgentVersion_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteAgentVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteAgentVersion_Call) Return(_a0 *model.AgentVersion, _a1 error) *MockStore_DeleteAgentVersion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteAgentVersion_Call) RunAndReturn(run func(context.Context, string) (*model.AgentVersion, error)) *MockStore_DeleteAgentVersion_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DeleteAgents provides a mock function with given fields: ctx, agentIDs
@@ -438,6 +952,35 @@ func (_m *MockStore) DeleteAgents(ctx context.Context, agentIDs []string) ([]*mo
 	return r0, r1
 }
 
+// MockStore_DeleteAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteAgents'
+type MockStore_DeleteAgents_Call struct {
+	*mock.Call
+}
+
+// DeleteAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentIDs []string
+func (_e *MockStore_Expecter) DeleteAgents(ctx interface{}, agentIDs interface{}) *MockStore_DeleteAgents_Call {
+	return &MockStore_DeleteAgents_Call{Call: _e.mock.On("DeleteAgents", ctx, agentIDs)}
+}
+
+func (_c *MockStore_DeleteAgents_Call) Run(run func(ctx context.Context, agentIDs []string)) *MockStore_DeleteAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteAgents_Call) Return(_a0 []*model.Agent, _a1 error) *MockStore_DeleteAgents_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteAgents_Call) RunAndReturn(run func(context.Context, []string) ([]*model.Agent, error)) *MockStore_DeleteAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteConfiguration provides a mock function with given fields: ctx, name
 func (_m *MockStore) DeleteConfiguration(ctx context.Context, name string) (*model.Configuration, error) {
 	ret := _m.Called(ctx, name)
@@ -462,6 +1005,35 @@ func (_m *MockStore) DeleteConfiguration(ctx context.Context, name string) (*mod
 	}
 
 	return r0, r1
+}
+
+// MockStore_DeleteConfiguration_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteConfiguration'
+type MockStore_DeleteConfiguration_Call struct {
+	*mock.Call
+}
+
+// DeleteConfiguration is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteConfiguration(ctx interface{}, name interface{}) *MockStore_DeleteConfiguration_Call {
+	return &MockStore_DeleteConfiguration_Call{Call: _e.mock.On("DeleteConfiguration", ctx, name)}
+}
+
+func (_c *MockStore_DeleteConfiguration_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteConfiguration_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteConfiguration_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_DeleteConfiguration_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteConfiguration_Call) RunAndReturn(run func(context.Context, string) (*model.Configuration, error)) *MockStore_DeleteConfiguration_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DeleteDestination provides a mock function with given fields: ctx, name
@@ -490,6 +1062,35 @@ func (_m *MockStore) DeleteDestination(ctx context.Context, name string) (*model
 	return r0, r1
 }
 
+// MockStore_DeleteDestination_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteDestination'
+type MockStore_DeleteDestination_Call struct {
+	*mock.Call
+}
+
+// DeleteDestination is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteDestination(ctx interface{}, name interface{}) *MockStore_DeleteDestination_Call {
+	return &MockStore_DeleteDestination_Call{Call: _e.mock.On("DeleteDestination", ctx, name)}
+}
+
+func (_c *MockStore_DeleteDestination_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteDestination_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteDestination_Call) Return(_a0 *model.Destination, _a1 error) *MockStore_DeleteDestination_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteDestination_Call) RunAndReturn(run func(context.Context, string) (*model.Destination, error)) *MockStore_DeleteDestination_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteDestinationType provides a mock function with given fields: ctx, name
 func (_m *MockStore) DeleteDestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
 	ret := _m.Called(ctx, name)
@@ -514,6 +1115,35 @@ func (_m *MockStore) DeleteDestinationType(ctx context.Context, name string) (*m
 	}
 
 	return r0, r1
+}
+
+// MockStore_DeleteDestinationType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteDestinationType'
+type MockStore_DeleteDestinationType_Call struct {
+	*mock.Call
+}
+
+// DeleteDestinationType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteDestinationType(ctx interface{}, name interface{}) *MockStore_DeleteDestinationType_Call {
+	return &MockStore_DeleteDestinationType_Call{Call: _e.mock.On("DeleteDestinationType", ctx, name)}
+}
+
+func (_c *MockStore_DeleteDestinationType_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteDestinationType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteDestinationType_Call) Return(_a0 *model.DestinationType, _a1 error) *MockStore_DeleteDestinationType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteDestinationType_Call) RunAndReturn(run func(context.Context, string) (*model.DestinationType, error)) *MockStore_DeleteDestinationType_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DeleteProcessor provides a mock function with given fields: ctx, name
@@ -542,6 +1172,35 @@ func (_m *MockStore) DeleteProcessor(ctx context.Context, name string) (*model.P
 	return r0, r1
 }
 
+// MockStore_DeleteProcessor_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteProcessor'
+type MockStore_DeleteProcessor_Call struct {
+	*mock.Call
+}
+
+// DeleteProcessor is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteProcessor(ctx interface{}, name interface{}) *MockStore_DeleteProcessor_Call {
+	return &MockStore_DeleteProcessor_Call{Call: _e.mock.On("DeleteProcessor", ctx, name)}
+}
+
+func (_c *MockStore_DeleteProcessor_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteProcessor_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteProcessor_Call) Return(_a0 *model.Processor, _a1 error) *MockStore_DeleteProcessor_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteProcessor_Call) RunAndReturn(run func(context.Context, string) (*model.Processor, error)) *MockStore_DeleteProcessor_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteProcessorType provides a mock function with given fields: ctx, name
 func (_m *MockStore) DeleteProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
 	ret := _m.Called(ctx, name)
@@ -566,6 +1225,35 @@ func (_m *MockStore) DeleteProcessorType(ctx context.Context, name string) (*mod
 	}
 
 	return r0, r1
+}
+
+// MockStore_DeleteProcessorType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteProcessorType'
+type MockStore_DeleteProcessorType_Call struct {
+	*mock.Call
+}
+
+// DeleteProcessorType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteProcessorType(ctx interface{}, name interface{}) *MockStore_DeleteProcessorType_Call {
+	return &MockStore_DeleteProcessorType_Call{Call: _e.mock.On("DeleteProcessorType", ctx, name)}
+}
+
+func (_c *MockStore_DeleteProcessorType_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteProcessorType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteProcessorType_Call) Return(_a0 *model.ProcessorType, _a1 error) *MockStore_DeleteProcessorType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteProcessorType_Call) RunAndReturn(run func(context.Context, string) (*model.ProcessorType, error)) *MockStore_DeleteProcessorType_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DeleteResources provides a mock function with given fields: ctx, resources
@@ -594,6 +1282,35 @@ func (_m *MockStore) DeleteResources(ctx context.Context, resources []model.Reso
 	return r0, r1
 }
 
+// MockStore_DeleteResources_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteResources'
+type MockStore_DeleteResources_Call struct {
+	*mock.Call
+}
+
+// DeleteResources is a helper method to define mock.On call
+//   - ctx context.Context
+//   - resources []model.Resource
+func (_e *MockStore_Expecter) DeleteResources(ctx interface{}, resources interface{}) *MockStore_DeleteResources_Call {
+	return &MockStore_DeleteResources_Call{Call: _e.mock.On("DeleteResources", ctx, resources)}
+}
+
+func (_c *MockStore_DeleteResources_Call) Run(run func(ctx context.Context, resources []model.Resource)) *MockStore_DeleteResources_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]model.Resource))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteResources_Call) Return(_a0 []model.ResourceStatus, _a1 error) *MockStore_DeleteResources_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteResources_Call) RunAndReturn(run func(context.Context, []model.Resource) ([]model.ResourceStatus, error)) *MockStore_DeleteResources_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteSource provides a mock function with given fields: ctx, name
 func (_m *MockStore) DeleteSource(ctx context.Context, name string) (*model.Source, error) {
 	ret := _m.Called(ctx, name)
@@ -618,6 +1335,35 @@ func (_m *MockStore) DeleteSource(ctx context.Context, name string) (*model.Sour
 	}
 
 	return r0, r1
+}
+
+// MockStore_DeleteSource_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteSource'
+type MockStore_DeleteSource_Call struct {
+	*mock.Call
+}
+
+// DeleteSource is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteSource(ctx interface{}, name interface{}) *MockStore_DeleteSource_Call {
+	return &MockStore_DeleteSource_Call{Call: _e.mock.On("DeleteSource", ctx, name)}
+}
+
+func (_c *MockStore_DeleteSource_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteSource_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteSource_Call) Return(_a0 *model.Source, _a1 error) *MockStore_DeleteSource_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteSource_Call) RunAndReturn(run func(context.Context, string) (*model.Source, error)) *MockStore_DeleteSource_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DeleteSourceType provides a mock function with given fields: ctx, name
@@ -646,6 +1392,35 @@ func (_m *MockStore) DeleteSourceType(ctx context.Context, name string) (*model.
 	return r0, r1
 }
 
+// MockStore_DeleteSourceType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteSourceType'
+type MockStore_DeleteSourceType_Call struct {
+	*mock.Call
+}
+
+// DeleteSourceType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DeleteSourceType(ctx interface{}, name interface{}) *MockStore_DeleteSourceType_Call {
+	return &MockStore_DeleteSourceType_Call{Call: _e.mock.On("DeleteSourceType", ctx, name)}
+}
+
+func (_c *MockStore_DeleteSourceType_Call) Run(run func(ctx context.Context, name string)) *MockStore_DeleteSourceType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DeleteSourceType_Call) Return(_a0 *model.SourceType, _a1 error) *MockStore_DeleteSourceType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DeleteSourceType_Call) RunAndReturn(run func(context.Context, string) (*model.SourceType, error)) *MockStore_DeleteSourceType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Destination provides a mock function with given fields: ctx, name
 func (_m *MockStore) Destination(ctx context.Context, name string) (*model.Destination, error) {
 	ret := _m.Called(ctx, name)
@@ -670,6 +1445,35 @@ func (_m *MockStore) Destination(ctx context.Context, name string) (*model.Desti
 	}
 
 	return r0, r1
+}
+
+// MockStore_Destination_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Destination'
+type MockStore_Destination_Call struct {
+	*mock.Call
+}
+
+// Destination is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) Destination(ctx interface{}, name interface{}) *MockStore_Destination_Call {
+	return &MockStore_Destination_Call{Call: _e.mock.On("Destination", ctx, name)}
+}
+
+func (_c *MockStore_Destination_Call) Run(run func(ctx context.Context, name string)) *MockStore_Destination_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_Destination_Call) Return(_a0 *model.Destination, _a1 error) *MockStore_Destination_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Destination_Call) RunAndReturn(run func(context.Context, string) (*model.Destination, error)) *MockStore_Destination_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DestinationType provides a mock function with given fields: ctx, name
@@ -698,6 +1502,35 @@ func (_m *MockStore) DestinationType(ctx context.Context, name string) (*model.D
 	return r0, r1
 }
 
+// MockStore_DestinationType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DestinationType'
+type MockStore_DestinationType_Call struct {
+	*mock.Call
+}
+
+// DestinationType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) DestinationType(ctx interface{}, name interface{}) *MockStore_DestinationType_Call {
+	return &MockStore_DestinationType_Call{Call: _e.mock.On("DestinationType", ctx, name)}
+}
+
+func (_c *MockStore_DestinationType_Call) Run(run func(ctx context.Context, name string)) *MockStore_DestinationType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_DestinationType_Call) Return(_a0 *model.DestinationType, _a1 error) *MockStore_DestinationType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DestinationType_Call) RunAndReturn(run func(context.Context, string) (*model.DestinationType, error)) *MockStore_DestinationType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DestinationTypes provides a mock function with given fields: ctx
 func (_m *MockStore) DestinationTypes(ctx context.Context) ([]*model.DestinationType, error) {
 	ret := _m.Called(ctx)
@@ -722,6 +1555,34 @@ func (_m *MockStore) DestinationTypes(ctx context.Context) ([]*model.Destination
 	}
 
 	return r0, r1
+}
+
+// MockStore_DestinationTypes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DestinationTypes'
+type MockStore_DestinationTypes_Call struct {
+	*mock.Call
+}
+
+// DestinationTypes is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) DestinationTypes(ctx interface{}) *MockStore_DestinationTypes_Call {
+	return &MockStore_DestinationTypes_Call{Call: _e.mock.On("DestinationTypes", ctx)}
+}
+
+func (_c *MockStore_DestinationTypes_Call) Run(run func(ctx context.Context)) *MockStore_DestinationTypes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_DestinationTypes_Call) Return(_a0 []*model.DestinationType, _a1 error) *MockStore_DestinationTypes_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_DestinationTypes_Call) RunAndReturn(run func(context.Context) ([]*model.DestinationType, error)) *MockStore_DestinationTypes_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Destinations provides a mock function with given fields: ctx
@@ -750,6 +1611,34 @@ func (_m *MockStore) Destinations(ctx context.Context) ([]*model.Destination, er
 	return r0, r1
 }
 
+// MockStore_Destinations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Destinations'
+type MockStore_Destinations_Call struct {
+	*mock.Call
+}
+
+// Destinations is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) Destinations(ctx interface{}) *MockStore_Destinations_Call {
+	return &MockStore_Destinations_Call{Call: _e.mock.On("Destinations", ctx)}
+}
+
+func (_c *MockStore_Destinations_Call) Run(run func(ctx context.Context)) *MockStore_Destinations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_Destinations_Call) Return(_a0 []*model.Destination, _a1 error) *MockStore_Destinations_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Destinations_Call) RunAndReturn(run func(context.Context) ([]*model.Destination, error)) *MockStore_Destinations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Measurements provides a mock function with given fields:
 func (_m *MockStore) Measurements() stats.Measurements {
 	ret := _m.Called()
@@ -764,6 +1653,33 @@ func (_m *MockStore) Measurements() stats.Measurements {
 	}
 
 	return r0
+}
+
+// MockStore_Measurements_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Measurements'
+type MockStore_Measurements_Call struct {
+	*mock.Call
+}
+
+// Measurements is a helper method to define mock.On call
+func (_e *MockStore_Expecter) Measurements() *MockStore_Measurements_Call {
+	return &MockStore_Measurements_Call{Call: _e.mock.On("Measurements")}
+}
+
+func (_c *MockStore_Measurements_Call) Run(run func()) *MockStore_Measurements_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockStore_Measurements_Call) Return(_a0 stats.Measurements) *MockStore_Measurements_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_Measurements_Call) RunAndReturn(run func() stats.Measurements) *MockStore_Measurements_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // PauseRollout provides a mock function with given fields: ctx, configurationName
@@ -792,6 +1708,35 @@ func (_m *MockStore) PauseRollout(ctx context.Context, configurationName string)
 	return r0, r1
 }
 
+// MockStore_PauseRollout_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PauseRollout'
+type MockStore_PauseRollout_Call struct {
+	*mock.Call
+}
+
+// PauseRollout is a helper method to define mock.On call
+//   - ctx context.Context
+//   - configurationName string
+func (_e *MockStore_Expecter) PauseRollout(ctx interface{}, configurationName interface{}) *MockStore_PauseRollout_Call {
+	return &MockStore_PauseRollout_Call{Call: _e.mock.On("PauseRollout", ctx, configurationName)}
+}
+
+func (_c *MockStore_PauseRollout_Call) Run(run func(ctx context.Context, configurationName string)) *MockStore_PauseRollout_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_PauseRollout_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_PauseRollout_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_PauseRollout_Call) RunAndReturn(run func(context.Context, string) (*model.Configuration, error)) *MockStore_PauseRollout_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Processor provides a mock function with given fields: ctx, name
 func (_m *MockStore) Processor(ctx context.Context, name string) (*model.Processor, error) {
 	ret := _m.Called(ctx, name)
@@ -816,6 +1761,35 @@ func (_m *MockStore) Processor(ctx context.Context, name string) (*model.Process
 	}
 
 	return r0, r1
+}
+
+// MockStore_Processor_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Processor'
+type MockStore_Processor_Call struct {
+	*mock.Call
+}
+
+// Processor is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) Processor(ctx interface{}, name interface{}) *MockStore_Processor_Call {
+	return &MockStore_Processor_Call{Call: _e.mock.On("Processor", ctx, name)}
+}
+
+func (_c *MockStore_Processor_Call) Run(run func(ctx context.Context, name string)) *MockStore_Processor_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_Processor_Call) Return(_a0 *model.Processor, _a1 error) *MockStore_Processor_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Processor_Call) RunAndReturn(run func(context.Context, string) (*model.Processor, error)) *MockStore_Processor_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // ProcessorType provides a mock function with given fields: ctx, name
@@ -844,6 +1818,35 @@ func (_m *MockStore) ProcessorType(ctx context.Context, name string) (*model.Pro
 	return r0, r1
 }
 
+// MockStore_ProcessorType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ProcessorType'
+type MockStore_ProcessorType_Call struct {
+	*mock.Call
+}
+
+// ProcessorType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) ProcessorType(ctx interface{}, name interface{}) *MockStore_ProcessorType_Call {
+	return &MockStore_ProcessorType_Call{Call: _e.mock.On("ProcessorType", ctx, name)}
+}
+
+func (_c *MockStore_ProcessorType_Call) Run(run func(ctx context.Context, name string)) *MockStore_ProcessorType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_ProcessorType_Call) Return(_a0 *model.ProcessorType, _a1 error) *MockStore_ProcessorType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_ProcessorType_Call) RunAndReturn(run func(context.Context, string) (*model.ProcessorType, error)) *MockStore_ProcessorType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ProcessorTypes provides a mock function with given fields: ctx
 func (_m *MockStore) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType, error) {
 	ret := _m.Called(ctx)
@@ -868,6 +1871,34 @@ func (_m *MockStore) ProcessorTypes(ctx context.Context) ([]*model.ProcessorType
 	}
 
 	return r0, r1
+}
+
+// MockStore_ProcessorTypes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ProcessorTypes'
+type MockStore_ProcessorTypes_Call struct {
+	*mock.Call
+}
+
+// ProcessorTypes is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) ProcessorTypes(ctx interface{}) *MockStore_ProcessorTypes_Call {
+	return &MockStore_ProcessorTypes_Call{Call: _e.mock.On("ProcessorTypes", ctx)}
+}
+
+func (_c *MockStore_ProcessorTypes_Call) Run(run func(ctx context.Context)) *MockStore_ProcessorTypes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_ProcessorTypes_Call) Return(_a0 []*model.ProcessorType, _a1 error) *MockStore_ProcessorTypes_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_ProcessorTypes_Call) RunAndReturn(run func(context.Context) ([]*model.ProcessorType, error)) *MockStore_ProcessorTypes_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Processors provides a mock function with given fields: ctx
@@ -896,6 +1927,34 @@ func (_m *MockStore) Processors(ctx context.Context) ([]*model.Processor, error)
 	return r0, r1
 }
 
+// MockStore_Processors_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Processors'
+type MockStore_Processors_Call struct {
+	*mock.Call
+}
+
+// Processors is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) Processors(ctx interface{}) *MockStore_Processors_Call {
+	return &MockStore_Processors_Call{Call: _e.mock.On("Processors", ctx)}
+}
+
+func (_c *MockStore_Processors_Call) Run(run func(ctx context.Context)) *MockStore_Processors_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_Processors_Call) Return(_a0 []*model.Processor, _a1 error) *MockStore_Processors_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Processors_Call) RunAndReturn(run func(context.Context) ([]*model.Processor, error)) *MockStore_Processors_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResourceHistory provides a mock function with given fields: ctx, resourceKind, resourceName
 func (_m *MockStore) ResourceHistory(ctx context.Context, resourceKind model.Kind, resourceName string) ([]*model.AnyResource, error) {
 	ret := _m.Called(ctx, resourceKind, resourceName)
@@ -920,6 +1979,36 @@ func (_m *MockStore) ResourceHistory(ctx context.Context, resourceKind model.Kin
 	}
 
 	return r0, r1
+}
+
+// MockStore_ResourceHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResourceHistory'
+type MockStore_ResourceHistory_Call struct {
+	*mock.Call
+}
+
+// ResourceHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - resourceKind model.Kind
+//   - resourceName string
+func (_e *MockStore_Expecter) ResourceHistory(ctx interface{}, resourceKind interface{}, resourceName interface{}) *MockStore_ResourceHistory_Call {
+	return &MockStore_ResourceHistory_Call{Call: _e.mock.On("ResourceHistory", ctx, resourceKind, resourceName)}
+}
+
+func (_c *MockStore_ResourceHistory_Call) Run(run func(ctx context.Context, resourceKind model.Kind, resourceName string)) *MockStore_ResourceHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(model.Kind), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_ResourceHistory_Call) Return(_a0 []*model.AnyResource, _a1 error) *MockStore_ResourceHistory_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_ResourceHistory_Call) RunAndReturn(run func(context.Context, model.Kind, string) ([]*model.AnyResource, error)) *MockStore_ResourceHistory_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // ResumeRollout provides a mock function with given fields: ctx, configurationName
@@ -948,6 +2037,35 @@ func (_m *MockStore) ResumeRollout(ctx context.Context, configurationName string
 	return r0, r1
 }
 
+// MockStore_ResumeRollout_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResumeRollout'
+type MockStore_ResumeRollout_Call struct {
+	*mock.Call
+}
+
+// ResumeRollout is a helper method to define mock.On call
+//   - ctx context.Context
+//   - configurationName string
+func (_e *MockStore_Expecter) ResumeRollout(ctx interface{}, configurationName interface{}) *MockStore_ResumeRollout_Call {
+	return &MockStore_ResumeRollout_Call{Call: _e.mock.On("ResumeRollout", ctx, configurationName)}
+}
+
+func (_c *MockStore_ResumeRollout_Call) Run(run func(ctx context.Context, configurationName string)) *MockStore_ResumeRollout_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_ResumeRollout_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_ResumeRollout_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_ResumeRollout_Call) RunAndReturn(run func(context.Context, string) (*model.Configuration, error)) *MockStore_ResumeRollout_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Source provides a mock function with given fields: ctx, name
 func (_m *MockStore) Source(ctx context.Context, name string) (*model.Source, error) {
 	ret := _m.Called(ctx, name)
@@ -972,6 +2090,35 @@ func (_m *MockStore) Source(ctx context.Context, name string) (*model.Source, er
 	}
 
 	return r0, r1
+}
+
+// MockStore_Source_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Source'
+type MockStore_Source_Call struct {
+	*mock.Call
+}
+
+// Source is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) Source(ctx interface{}, name interface{}) *MockStore_Source_Call {
+	return &MockStore_Source_Call{Call: _e.mock.On("Source", ctx, name)}
+}
+
+func (_c *MockStore_Source_Call) Run(run func(ctx context.Context, name string)) *MockStore_Source_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_Source_Call) Return(_a0 *model.Source, _a1 error) *MockStore_Source_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Source_Call) RunAndReturn(run func(context.Context, string) (*model.Source, error)) *MockStore_Source_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // SourceType provides a mock function with given fields: ctx, name
@@ -1000,6 +2147,35 @@ func (_m *MockStore) SourceType(ctx context.Context, name string) (*model.Source
 	return r0, r1
 }
 
+// MockStore_SourceType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SourceType'
+type MockStore_SourceType_Call struct {
+	*mock.Call
+}
+
+// SourceType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockStore_Expecter) SourceType(ctx interface{}, name interface{}) *MockStore_SourceType_Call {
+	return &MockStore_SourceType_Call{Call: _e.mock.On("SourceType", ctx, name)}
+}
+
+func (_c *MockStore_SourceType_Call) Run(run func(ctx context.Context, name string)) *MockStore_SourceType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_SourceType_Call) Return(_a0 *model.SourceType, _a1 error) *MockStore_SourceType_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_SourceType_Call) RunAndReturn(run func(context.Context, string) (*model.SourceType, error)) *MockStore_SourceType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SourceTypes provides a mock function with given fields: ctx
 func (_m *MockStore) SourceTypes(ctx context.Context) ([]*model.SourceType, error) {
 	ret := _m.Called(ctx)
@@ -1024,6 +2200,34 @@ func (_m *MockStore) SourceTypes(ctx context.Context) ([]*model.SourceType, erro
 	}
 
 	return r0, r1
+}
+
+// MockStore_SourceTypes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SourceTypes'
+type MockStore_SourceTypes_Call struct {
+	*mock.Call
+}
+
+// SourceTypes is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) SourceTypes(ctx interface{}) *MockStore_SourceTypes_Call {
+	return &MockStore_SourceTypes_Call{Call: _e.mock.On("SourceTypes", ctx)}
+}
+
+func (_c *MockStore_SourceTypes_Call) Run(run func(ctx context.Context)) *MockStore_SourceTypes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_SourceTypes_Call) Return(_a0 []*model.SourceType, _a1 error) *MockStore_SourceTypes_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_SourceTypes_Call) RunAndReturn(run func(context.Context) ([]*model.SourceType, error)) *MockStore_SourceTypes_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Sources provides a mock function with given fields: ctx
@@ -1052,6 +2256,34 @@ func (_m *MockStore) Sources(ctx context.Context) ([]*model.Source, error) {
 	return r0, r1
 }
 
+// MockStore_Sources_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Sources'
+type MockStore_Sources_Call struct {
+	*mock.Call
+}
+
+// Sources is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) Sources(ctx interface{}) *MockStore_Sources_Call {
+	return &MockStore_Sources_Call{Call: _e.mock.On("Sources", ctx)}
+}
+
+func (_c *MockStore_Sources_Call) Run(run func(ctx context.Context)) *MockStore_Sources_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_Sources_Call) Return(_a0 []*model.Source, _a1 error) *MockStore_Sources_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_Sources_Call) RunAndReturn(run func(context.Context) ([]*model.Source, error)) *MockStore_Sources_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // StartRollout provides a mock function with given fields: ctx, configurationName, options
 func (_m *MockStore) StartRollout(ctx context.Context, configurationName string, options *model.RolloutOptions) (*model.Configuration, error) {
 	ret := _m.Called(ctx, configurationName, options)
@@ -1078,6 +2310,36 @@ func (_m *MockStore) StartRollout(ctx context.Context, configurationName string,
 	return r0, r1
 }
 
+// MockStore_StartRollout_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartRollout'
+type MockStore_StartRollout_Call struct {
+	*mock.Call
+}
+
+// StartRollout is a helper method to define mock.On call
+//   - ctx context.Context
+//   - configurationName string
+//   - options *model.RolloutOptions
+func (_e *MockStore_Expecter) StartRollout(ctx interface{}, configurationName interface{}, options interface{}) *MockStore_StartRollout_Call {
+	return &MockStore_StartRollout_Call{Call: _e.mock.On("StartRollout", ctx, configurationName, options)}
+}
+
+func (_c *MockStore_StartRollout_Call) Run(run func(ctx context.Context, configurationName string, options *model.RolloutOptions)) *MockStore_StartRollout_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(*model.RolloutOptions))
+	})
+	return _c
+}
+
+func (_c *MockStore_StartRollout_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_StartRollout_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_StartRollout_Call) RunAndReturn(run func(context.Context, string, *model.RolloutOptions) (*model.Configuration, error)) *MockStore_StartRollout_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateAllRollouts provides a mock function with given fields: ctx
 func (_m *MockStore) UpdateAllRollouts(ctx context.Context) error {
 	ret := _m.Called(ctx)
@@ -1090,6 +2352,34 @@ func (_m *MockStore) UpdateAllRollouts(ctx context.Context) error {
 	}
 
 	return r0
+}
+
+// MockStore_UpdateAllRollouts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAllRollouts'
+type MockStore_UpdateAllRollouts_Call struct {
+	*mock.Call
+}
+
+// UpdateAllRollouts is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) UpdateAllRollouts(ctx interface{}) *MockStore_UpdateAllRollouts_Call {
+	return &MockStore_UpdateAllRollouts_Call{Call: _e.mock.On("UpdateAllRollouts", ctx)}
+}
+
+func (_c *MockStore_UpdateAllRollouts_Call) Run(run func(ctx context.Context)) *MockStore_UpdateAllRollouts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateAllRollouts_Call) Return(_a0 error) *MockStore_UpdateAllRollouts_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_UpdateAllRollouts_Call) RunAndReturn(run func(context.Context) error) *MockStore_UpdateAllRollouts_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // UpdateConfiguration provides a mock function with given fields: ctx, name, updater
@@ -1125,6 +2415,36 @@ func (_m *MockStore) UpdateConfiguration(ctx context.Context, name string, updat
 	return r0, r1, r2
 }
 
+// MockStore_UpdateConfiguration_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateConfiguration'
+type MockStore_UpdateConfiguration_Call struct {
+	*mock.Call
+}
+
+// UpdateConfiguration is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+//   - updater store.ConfigurationUpdater
+func (_e *MockStore_Expecter) UpdateConfiguration(ctx interface{}, name interface{}, updater interface{}) *MockStore_UpdateConfiguration_Call {
+	return &MockStore_UpdateConfiguration_Call{Call: _e.mock.On("UpdateConfiguration", ctx, name, updater)}
+}
+
+func (_c *MockStore_UpdateConfiguration_Call) Run(run func(ctx context.Context, name string, updater store.ConfigurationUpdater)) *MockStore_UpdateConfiguration_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(store.ConfigurationUpdater))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateConfiguration_Call) Return(config *model.Configuration, status model.UpdateStatus, err error) *MockStore_UpdateConfiguration_Call {
+	_c.Call.Return(config, status, err)
+	return _c
+}
+
+func (_c *MockStore_UpdateConfiguration_Call) RunAndReturn(run func(context.Context, string, store.ConfigurationUpdater) (*model.Configuration, model.UpdateStatus, error)) *MockStore_UpdateConfiguration_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateRollout provides a mock function with given fields: ctx, configurationName
 func (_m *MockStore) UpdateRollout(ctx context.Context, configurationName string) (*model.Configuration, error) {
 	ret := _m.Called(ctx, configurationName)
@@ -1149,6 +2469,35 @@ func (_m *MockStore) UpdateRollout(ctx context.Context, configurationName string
 	}
 
 	return r0, r1
+}
+
+// MockStore_UpdateRollout_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateRollout'
+type MockStore_UpdateRollout_Call struct {
+	*mock.Call
+}
+
+// UpdateRollout is a helper method to define mock.On call
+//   - ctx context.Context
+//   - configurationName string
+func (_e *MockStore_Expecter) UpdateRollout(ctx interface{}, configurationName interface{}) *MockStore_UpdateRollout_Call {
+	return &MockStore_UpdateRollout_Call{Call: _e.mock.On("UpdateRollout", ctx, configurationName)}
+}
+
+func (_c *MockStore_UpdateRollout_Call) Run(run func(ctx context.Context, configurationName string)) *MockStore_UpdateRollout_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateRollout_Call) Return(_a0 *model.Configuration, _a1 error) *MockStore_UpdateRollout_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpdateRollout_Call) RunAndReturn(run func(context.Context, string) (*model.Configuration, error)) *MockStore_UpdateRollout_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // UpdateRollouts provides a mock function with given fields: ctx
@@ -1177,6 +2526,34 @@ func (_m *MockStore) UpdateRollouts(ctx context.Context) ([]*model.Configuration
 	return r0, r1
 }
 
+// MockStore_UpdateRollouts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateRollouts'
+type MockStore_UpdateRollouts_Call struct {
+	*mock.Call
+}
+
+// UpdateRollouts is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) UpdateRollouts(ctx interface{}) *MockStore_UpdateRollouts_Call {
+	return &MockStore_UpdateRollouts_Call{Call: _e.mock.On("UpdateRollouts", ctx)}
+}
+
+func (_c *MockStore_UpdateRollouts_Call) Run(run func(ctx context.Context)) *MockStore_UpdateRollouts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateRollouts_Call) Return(_a0 []*model.Configuration, _a1 error) *MockStore_UpdateRollouts_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpdateRollouts_Call) RunAndReturn(run func(context.Context) ([]*model.Configuration, error)) *MockStore_UpdateRollouts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Updates provides a mock function with given fields: ctx
 func (_m *MockStore) Updates(ctx context.Context) eventbus.Source[store.BasicEventUpdates] {
 	ret := _m.Called(ctx)
@@ -1191,6 +2568,34 @@ func (_m *MockStore) Updates(ctx context.Context) eventbus.Source[store.BasicEve
 	}
 
 	return r0
+}
+
+// MockStore_Updates_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Updates'
+type MockStore_Updates_Call struct {
+	*mock.Call
+}
+
+// Updates is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockStore_Expecter) Updates(ctx interface{}) *MockStore_Updates_Call {
+	return &MockStore_Updates_Call{Call: _e.mock.On("Updates", ctx)}
+}
+
+func (_c *MockStore_Updates_Call) Run(run func(ctx context.Context)) *MockStore_Updates_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockStore_Updates_Call) Return(_a0 eventbus.Source[store.BasicEventUpdates]) *MockStore_Updates_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_Updates_Call) RunAndReturn(run func(context.Context) eventbus.Source[store.BasicEventUpdates]) *MockStore_Updates_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // UpsertAgent provides a mock function with given fields: ctx, agentID, updater
@@ -1219,6 +2624,36 @@ func (_m *MockStore) UpsertAgent(ctx context.Context, agentID string, updater st
 	return r0, r1
 }
 
+// MockStore_UpsertAgent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertAgent'
+type MockStore_UpsertAgent_Call struct {
+	*mock.Call
+}
+
+// UpsertAgent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentID string
+//   - updater store.AgentUpdater
+func (_e *MockStore_Expecter) UpsertAgent(ctx interface{}, agentID interface{}, updater interface{}) *MockStore_UpsertAgent_Call {
+	return &MockStore_UpsertAgent_Call{Call: _e.mock.On("UpsertAgent", ctx, agentID, updater)}
+}
+
+func (_c *MockStore_UpsertAgent_Call) Run(run func(ctx context.Context, agentID string, updater store.AgentUpdater)) *MockStore_UpsertAgent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(store.AgentUpdater))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpsertAgent_Call) Return(_a0 *model.Agent, _a1 error) *MockStore_UpsertAgent_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpsertAgent_Call) RunAndReturn(run func(context.Context, string, store.AgentUpdater) (*model.Agent, error)) *MockStore_UpsertAgent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpsertAgents provides a mock function with given fields: ctx, agentIDs, updater
 func (_m *MockStore) UpsertAgents(ctx context.Context, agentIDs []string, updater store.AgentUpdater) ([]*model.Agent, error) {
 	ret := _m.Called(ctx, agentIDs, updater)
@@ -1245,6 +2680,36 @@ func (_m *MockStore) UpsertAgents(ctx context.Context, agentIDs []string, update
 	return r0, r1
 }
 
+// MockStore_UpsertAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertAgents'
+type MockStore_UpsertAgents_Call struct {
+	*mock.Call
+}
+
+// UpsertAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentIDs []string
+//   - updater store.AgentUpdater
+func (_e *MockStore_Expecter) UpsertAgents(ctx interface{}, agentIDs interface{}, updater interface{}) *MockStore_UpsertAgents_Call {
+	return &MockStore_UpsertAgents_Call{Call: _e.mock.On("UpsertAgents", ctx, agentIDs, updater)}
+}
+
+func (_c *MockStore_UpsertAgents_Call) Run(run func(ctx context.Context, agentIDs []string, updater store.AgentUpdater)) *MockStore_UpsertAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]string), args[2].(store.AgentUpdater))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpsertAgents_Call) Return(_a0 []*model.Agent, _a1 error) *MockStore_UpsertAgents_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpsertAgents_Call) RunAndReturn(run func(context.Context, []string, store.AgentUpdater) ([]*model.Agent, error)) *MockStore_UpsertAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UserSessions provides a mock function with given fields:
 func (_m *MockStore) UserSessions() sessions.Store {
 	ret := _m.Called()
@@ -1259,6 +2724,33 @@ func (_m *MockStore) UserSessions() sessions.Store {
 	}
 
 	return r0
+}
+
+// MockStore_UserSessions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UserSessions'
+type MockStore_UserSessions_Call struct {
+	*mock.Call
+}
+
+// UserSessions is a helper method to define mock.On call
+func (_e *MockStore_Expecter) UserSessions() *MockStore_UserSessions_Call {
+	return &MockStore_UserSessions_Call{Call: _e.mock.On("UserSessions")}
+}
+
+func (_c *MockStore_UserSessions_Call) Run(run func()) *MockStore_UserSessions_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockStore_UserSessions_Call) Return(_a0 sessions.Store) *MockStore_UserSessions_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_UserSessions_Call) RunAndReturn(run func() sessions.Store) *MockStore_UserSessions_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewMockStore creates a new instance of MockStore. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
