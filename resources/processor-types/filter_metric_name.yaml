@@ -2,8 +2,8 @@ apiVersion: bindplane.observiq.com/v1
 kind: ProcessorType
 metadata:
   name: filter_metric_name
-  displayName: Metric Name Filter
-  description: Include or exclude metrics based on metric name matching.
+  displayName: Filter by Metric Name
+  description: Filter by metric name.
   labels:
     category: Filter-And-Reduce
 spec:
@@ -11,7 +11,7 @@ spec:
   parameters:
     - name: action
       label: Action
-      description: Whether to include or exclude matches. When set to include, anything that does not match is filtered.
+      description: When set to include, anything that does not match is filtered.
       type: enum
       validValues:
         - include
@@ -20,7 +20,7 @@ spec:
 
     - name: match_type
       label: Match Type
-      description: Method for matching values. Strict matching requires that 'value' be an exact match. Regexp matching uses 're2' to match a value.
+      description: Strict matching requires that the metric name be an exact match. Regexp matching uses 're2' to match a metric name.
       type: enum
       validValues:
         - strict
