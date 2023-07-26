@@ -25,6 +25,14 @@ gql`
         version
         id
         description
+        deprecated
+        additionalInfo {
+          message
+          documentation {
+            text
+            url
+          }
+        }
       }
       spec {
         parameters {

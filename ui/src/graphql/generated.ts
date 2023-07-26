@@ -226,6 +226,7 @@ export type Metadata = {
   __typename?: 'Metadata';
   additionalInfo?: Maybe<AdditionalInfo>;
   dateModified?: Maybe<Scalars['Time']['output']>;
+  deprecated?: Maybe<Scalars['Boolean']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   displayName?: Maybe<Scalars['String']['output']>;
   icon?: Maybe<Scalars['String']['output']>;
@@ -788,14 +789,14 @@ export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', co
 export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetProcessorWithTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
 
 
-export type GetProcessorWithTypeQuery = { __typename?: 'Query', processorWithType: { __typename?: 'ProcessorWithType', processor?: { __typename?: 'Processor', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null, displayName?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetProcessorWithTypeQuery = { __typename?: 'Query', processorWithType: { __typename?: 'ProcessorWithType', processor?: { __typename?: 'Processor', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null, displayName?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -823,7 +824,7 @@ export type GetProcessorTypeQueryVariables = Exact<{
 }>;
 
 
-export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetRolloutHistoryQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -1589,6 +1590,14 @@ export const GetProcessorTypesDocument = gql`
       labels
       version
       id
+      deprecated
+      additionalInfo {
+        message
+        documentation {
+          text
+          url
+        }
+      }
     }
     spec {
       parameters {
@@ -1692,6 +1701,14 @@ export const GetProcessorWithTypeDocument = gql`
         version
         description
         displayName
+        deprecated
+        additionalInfo {
+          message
+          documentation {
+            text
+            url
+          }
+        }
       }
       spec {
         parameters {
@@ -1895,6 +1912,14 @@ export const GetProcessorTypeDocument = gql`
       version
       id
       description
+      deprecated
+      additionalInfo {
+        message
+        documentation {
+          text
+          url
+        }
+      }
     }
     spec {
       parameters {

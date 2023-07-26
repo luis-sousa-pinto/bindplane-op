@@ -1,5 +1,9 @@
 import { Grid, Typography } from "@mui/material";
-import { Parameter, ParameterDefinition } from "../../../graphql/generated";
+import {
+  AdditionalInfo,
+  Parameter,
+  ParameterDefinition,
+} from "../../../graphql/generated";
 import { useResourceFormValues } from "../../ResourceConfigForm/ResourceFormContext";
 import { ResourceDisplayNameInput } from "../../ResourceConfigForm/ParameterInput/ResourceDisplayNameInput";
 import { ViewHeading } from "./ViewHeading";
@@ -12,14 +16,18 @@ import mixins from "../../../styles/mixins.module.scss";
 interface Props {
   title?: string;
   description?: string;
+  additionalInfo?: AdditionalInfo | null;
   parameterDefinitions: ParameterDefinition[];
   parameters?: Parameter[];
+  deprecated?: boolean;
 }
 
 export const ProcessorForm: React.FC<Props> = ({
   title,
   description,
+  additionalInfo,
   parameterDefinitions,
+  deprecated,
 }) => {
   const { formValues, setFormValues } = useResourceFormValues();
   const groups = useMemo(
@@ -31,7 +39,12 @@ export const ProcessorForm: React.FC<Props> = ({
     <>
       <Grid container spacing={3} className={mixins["mb-3"]}>
         <Grid item xs={12}>
-          <ViewHeading heading={title} subHeading={description} />
+          <ViewHeading
+            heading={title}
+            subHeading={description}
+            additionalInfo={additionalInfo}
+            deprecated={deprecated}
+          />
         </Grid>
       </Grid>
       <form style={{ flexGrow: 1, overflow: "auto" }}>

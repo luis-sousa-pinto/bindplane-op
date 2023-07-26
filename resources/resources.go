@@ -19,7 +19,7 @@ import "embed"
 
 // Files contains the files embedded in resources/destination-types/*, resources/source-types/*, resources/processor-types/*, and resources/agent-versions/*
 //
-//go:embed destination-types/* source-types/* processor-types/* agent-versions/*
+//go:embed destination-types/* source-types/* processor-types/* agent-versions/* deprecated/processor-types/*
 var Files embed.FS
 
 // SeedFolders is the list of folders that we seed on startup
@@ -28,4 +28,5 @@ var SeedFolders = []string{
 	"source-types",
 	"processor-types",
 	"agent-versions",
+	"deprecated/processor-types",
 }

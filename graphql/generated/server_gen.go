@@ -228,6 +228,7 @@ type ComplexityRoot struct {
 	Metadata struct {
 		AdditionalInfo func(childComplexity int) int
 		DateModified   func(childComplexity int) int
+		Deprecated     func(childComplexity int) int
 		Description    func(childComplexity int) int
 		DisplayName    func(childComplexity int) int
 		ID             func(childComplexity int) int
@@ -1255,6 +1256,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Metadata.DateModified(childComplexity), true
+
+	case "Metadata.deprecated":
+		if e.complexity.Metadata.Deprecated == nil {
+			break
+		}
+
+		return e.complexity.Metadata.Deprecated(childComplexity), true
 
 	case "Metadata.description":
 		if e.complexity.Metadata.Description == nil {
@@ -2601,6 +2609,7 @@ type Metadata {
   version: Version!
   dateModified: Time
   additionalInfo: AdditionalInfo
+  deprecated: Boolean
 }
 
 type AdditionalInfo {
@@ -5618,6 +5627,8 @@ func (ec *executionContext) fieldContext_Configuration_metadata(ctx context.Cont
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -6795,6 +6806,8 @@ func (ec *executionContext) fieldContext_Destination_metadata(ctx context.Contex
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -6957,6 +6970,8 @@ func (ec *executionContext) fieldContext_DestinationType_metadata(ctx context.Co
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -8677,6 +8692,47 @@ func (ec *executionContext) fieldContext_Metadata_additionalInfo(ctx context.Con
 				return ec.fieldContext_AdditionalInfo_documentation(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AdditionalInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Metadata_deprecated(ctx context.Context, field graphql.CollectedField, obj *model1.Metadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Metadata_deprecated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deprecated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Metadata_deprecated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Metadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11242,6 +11298,8 @@ func (ec *executionContext) fieldContext_Processor_metadata(ctx context.Context,
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -11404,6 +11462,8 @@ func (ec *executionContext) fieldContext_ProcessorType_metadata(ctx context.Cont
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -14783,6 +14843,8 @@ func (ec *executionContext) fieldContext_Source_metadata(ctx context.Context, fi
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -14945,6 +15007,8 @@ func (ec *executionContext) fieldContext_SourceType_metadata(ctx context.Context
 				return ec.fieldContext_Metadata_dateModified(ctx, field)
 			case "additionalInfo":
 				return ec.fieldContext_Metadata_additionalInfo(ctx, field)
+			case "deprecated":
+				return ec.fieldContext_Metadata_deprecated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Metadata", field.Name)
 		},
@@ -19223,6 +19287,10 @@ func (ec *executionContext) _Metadata(ctx context.Context, sel ast.SelectionSet,
 		case "additionalInfo":
 
 			out.Values[i] = ec._Metadata_additionalInfo(ctx, field, obj)
+
+		case "deprecated":
+
+			out.Values[i] = ec._Metadata_deprecated(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

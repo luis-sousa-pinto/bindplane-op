@@ -59,6 +59,7 @@ func TestSeed(t *testing.T) {
 				s.On("ConfigurationIndex", mock.Anything).Return(configIndex)
 				s.On("Agents", mock.Anything).Return([]*model.Agent{testAgent}, nil)
 				s.On("AgentIndex", mock.Anything).Return(agentIndex)
+				s.EXPECT().ProcessorType(mock.Anything, mock.Anything).Return(nil, nil)
 				return s
 			},
 			expected: nil,
@@ -78,6 +79,7 @@ func TestSeed(t *testing.T) {
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)
 				s.On("Configurations", mock.Anything).Return(nil, fmt.Errorf("error"))
+				s.EXPECT().ProcessorType(mock.Anything, mock.Anything).Return(nil, nil)
 				return s
 			},
 			expected: errors.New("failed to get configurations"),
@@ -93,6 +95,7 @@ func TestSeed(t *testing.T) {
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)
 				s.On("Configurations", mock.Anything).Return([]*model.Configuration{testConfig}, nil)
 				s.On("ConfigurationIndex", mock.Anything).Return(configIndex)
+				s.EXPECT().ProcessorType(mock.Anything, mock.Anything).Return(nil, nil)
 				return s
 			},
 			expected: errors.New("failed to seed configuration index"),
@@ -109,6 +112,7 @@ func TestSeed(t *testing.T) {
 				s.On("Configurations", mock.Anything).Return([]*model.Configuration{testConfig}, nil)
 				s.On("ConfigurationIndex", mock.Anything).Return(configIndex)
 				s.On("Agents", mock.Anything).Return(nil, fmt.Errorf("error"))
+				s.EXPECT().ProcessorType(mock.Anything, mock.Anything).Return(nil, nil)
 				return s
 			},
 			expected: errors.New("failed to get agents"),
@@ -130,6 +134,7 @@ func TestSeed(t *testing.T) {
 				s.On("ConfigurationIndex", mock.Anything).Return(configIndex)
 				s.On("Agents", mock.Anything).Return([]*model.Agent{testAgent}, nil)
 				s.On("AgentIndex", mock.Anything).Return(agentIndex)
+				s.EXPECT().ProcessorType(mock.Anything, mock.Anything).Return(nil, nil)
 				return s
 			},
 			expected: errors.New("failed to seed agent index"),

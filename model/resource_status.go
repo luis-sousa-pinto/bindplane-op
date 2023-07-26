@@ -101,6 +101,9 @@ const (
 
 	// StatusForbidden is used when attempting to modify or delete a resource without sufficient permission
 	StatusForbidden UpdateStatus = "forbidden"
+
+	// StatusDeprecated is used when attempting to seed a resource that is deprecated that doesn't already exist
+	StatusDeprecated UpdateStatus = "deprecated"
 )
 
 // PrintResourceUpdates TODO(doc)

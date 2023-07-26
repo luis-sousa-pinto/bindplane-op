@@ -49,6 +49,7 @@ interface ConfigureResourceViewProps {
   kind: "source" | "destination" | "processor";
   resourceTypeDisplayName: string;
   description: string;
+  deprecated?: boolean;
   additionalInfo?: AdditionalInfo | null;
   formValues: { [key: string]: any };
   includeNameField?: boolean;
@@ -71,6 +72,7 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
   kind,
   resourceTypeDisplayName,
   description,
+  deprecated,
   additionalInfo,
   formValues,
   includeNameField,
@@ -207,6 +209,8 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
             <ViewHeading
               heading={resourceTypeDisplayName}
               subHeading={description}
+              deprecated={deprecated}
+              additionalInfo={additionalInfo}
             />
           ) : (
             <Typography fontWeight={600} fontSize={24}>

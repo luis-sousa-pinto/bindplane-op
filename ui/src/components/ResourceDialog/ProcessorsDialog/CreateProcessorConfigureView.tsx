@@ -51,7 +51,9 @@ const CreateProcessorConfigureViewComponent: React.FC<
       <ProcessorForm
         title={processorType.metadata.displayName ?? ""}
         description={processorType.metadata.description ?? ""}
+        additionalInfo={processorType.metadata.additionalInfo}
         parameterDefinitions={processorType.spec.parameters}
+        deprecated={processorType.metadata.deprecated ?? false}
       />
 
       <ActionsSection>

@@ -71,6 +71,7 @@ type Metadata {
   version: Version!
   dateModified: Time
   additionalInfo: AdditionalInfo
+  deprecated: Boolean
 }
 
 type AdditionalInfo {

@@ -804,7 +804,7 @@ func DeleteResource[R model.Resource](ctx context.Context, s BoltstoreCommon, ki
 				return err
 			}
 
-			// TODO: also delete this archive of this resource
+			// also delete this archive of this resource
 			prefix := archivePrefix(kind, uniqueKey)
 			archiveBucket, err := s.ArchiveBucket(ctx, tx)
 			if err != nil {

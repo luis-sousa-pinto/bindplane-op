@@ -42,6 +42,7 @@ const dummySourceType: SourceTypesQuery["sourceTypes"][0] = {
     icon: "/path/to/icon",
     description: "",
     version: 0,
+    additionalInfo: null,
   },
   spec: {
     __typename: "ResourceTypeSpec",

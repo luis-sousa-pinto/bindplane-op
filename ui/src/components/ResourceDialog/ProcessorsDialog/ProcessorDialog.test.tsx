@@ -292,6 +292,8 @@ const CUSTOM_PROCESSOR_TYPE: GetProcessorTypesQuery["processorTypes"][0] = {
       "Enter any supported Processor and the YAML will be inserted into the configuration. OpenTelemetry processor configuration.",
     version: 0,
     labels: {},
+    deprecated: false,
+    additionalInfo: null,
   },
   spec: {
     telemetryTypes: [

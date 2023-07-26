@@ -195,6 +195,9 @@ type Resource interface {
 	// SetCurrent sets the value of the current field on the status for this resource. Currently this is only used for
 	// Configurations. For other resources this does nothing.
 	SetCurrent(current bool)
+
+	// IsDeprecated returns true if the deprecated field on the status for this resource is true.
+	IsDeprecated() bool
 }
 
 // AnyResource is a resource not yet fully parsed and is the common structure of all Resources. The Spec, which is
@@ -308,6 +311,10 @@ type Metadata struct {
 	// Version is a 1-based integer that is incremented each time the spec is changed.
 	Version      Version    `yaml:"version,omitempty" json:"version,omitempty" mapstructure:"version"`
 	DateModified *time.Time `yaml:"dateModified,omitempty" json:"dateModified,omitempty" mapstructure:"dateModified"`
+
+	// Deprecated indicates that this resource is deprecated and should not be used. Deprecated resources should contain
+	// additional information about why the resource is deprecated and what should be used instead.
+	Deprecated bool `yaml:"deprecated,omitempty" json:"deprecated,omitempty" mapstructure:"deprecated"`
 
 	AdditionalInfo *AdditionalInfo `yaml:"additionalInfo,omitempty" json:"additionalInfo,omitempty" mapstructure:"additionalInfo"`
 }
@@ -461,6 +468,11 @@ func (r *ResourceMeta) UpdateDependencies(_ context.Context, _ ResourceStore) er
 // SetLabels implements the Labeled interface for Resources
 func (r *ResourceMeta) SetLabels(l Labels) {
 	r.Metadata.Labels.Set = l.Set
+}
+
+// IsDeprecated returns true if the deprecated field on the status for this resource is true.
+func (r *ResourceMeta) IsDeprecated() bool {
+	return r.Metadata.Deprecated
 }
 
 // Validate checks that the resource is valid, returning an error if it is not. This provides generic validation for all
