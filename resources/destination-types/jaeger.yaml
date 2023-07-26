@@ -20,6 +20,18 @@ spec:
       type: int
       default: 14250
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to Jaeger.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - snappy
+        - zstd
+      default: gzip
+      advancedConfig: true
+
     - name: enable_tls
       label: Enable TLS
       description: Whether or not to use TLS.
@@ -234,6 +246,7 @@ spec:
     exporters: |
       - jaeger:
           endpoint: {{ .hostname }}:{{ .port }}
+          compression: {{ .compression }}
           tls:
           {{ if .enable_tls }}
             insecure: false
@@ -248,6 +261,6 @@ spec:
           {{ end }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
-          
+
     processors: |
       - batch:
