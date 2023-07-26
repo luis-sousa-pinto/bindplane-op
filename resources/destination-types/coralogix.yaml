@@ -14,14 +14,14 @@ spec:
       required: true
       default: ""
       documentation:
-        - text: Read more
+        - text: Read More
           url: https://coralogix.com/docs/private-key/
       options:
         sensitive: true
 
     - name: application_name
       label: Application Name
-      description: Objects are tagged in Coralogix with this Application name
+      description: Objects are tagged in Coralogix with this Application name.
       required: true
       type: string
       default: ""
@@ -31,7 +31,7 @@ spec:
 
     - name: subsystem_name
       label: Subsystem Name
-      description: Objects are tagged in Coralogix with this Subsystem name
+      description: Objects are tagged in Coralogix with this Subsystem name.
       type: string
       default: ""
       required: true
@@ -81,7 +81,7 @@ spec:
 
     - name: application_name_attributes
       label: Application Name Resource Attributes
-      description: Ordered list of resource attributes that are used for Coralogix AppName
+      description: Ordered list of resource attributes that are used for Coralogix AppName.
       type: strings
       default: []
       relevantIf:
@@ -91,7 +91,7 @@ spec:
 
     - name: subsystem_name_attributes
       label: SubSystem Resource Attributes
-      description: Ordered list of resource attributes that are used for Coralogix SubSystem
+      description: Ordered list of resource attributes that are used for Coralogix SubSystem.
       type: strings
       default: []
       relevantIf:
@@ -126,6 +126,16 @@ spec:
       description: Timeout (seconds) for every attempt to send data to the backend.
       type: int
       default: 5
+      advancedConfig: true
+
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to the backend.
+      type: enum
+      default: gzip
+      validValues:
+        - none
+        - gzip
       advancedConfig: true
 
     # Retry on failure
@@ -291,6 +301,7 @@ spec:
 
           logs:
             endpoint: otel-logs.{{ $url_suffix }}
+            compression: {{ .compression }}
 
           private_key: {{ .private_key }}
 
@@ -369,6 +380,7 @@ spec:
 
           metrics:
             endpoint: otel-metrics.{{ $url_suffix }}
+            compression: {{ .compression }}
 
           private_key: {{ .private_key }}
 
@@ -450,6 +462,7 @@ spec:
 
           traces:
             endpoint: otel-traces.{{ $url_suffix }}
+            compression: {{ .compression }}
 
           private_key: {{ .private_key }}
 
