@@ -838,7 +838,7 @@ export type GetConfigRolloutStatusQueryVariables = Exact<{
 }>;
 
 
-export type GetConfigRolloutStatusQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', pending: boolean, current: boolean, latest: boolean, rollout: { __typename?: 'Rollout', status: number, phase: number, completed: number, errors: number, pending: number, waiting: number } } } | null };
+export type GetConfigRolloutStatusQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number, dateModified?: any | null }, status: { __typename?: 'ConfigurationStatus', pending: boolean, current: boolean, latest: boolean, rollout: { __typename?: 'Rollout', status: number, phase: number, completed: number, errors: number, pending: number, waiting: number } } } | null };
 
 export type AgentsWithConfigurationQueryVariables = Exact<{
   selector?: InputMaybe<Scalars['String']['input']>;
@@ -2049,6 +2049,7 @@ export const GetConfigRolloutStatusDocument = gql`
       name
       id
       version
+      dateModified
     }
     agentCount
     status {

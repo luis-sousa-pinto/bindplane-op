@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { useSnackbar } from "notistack";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGetConfigRolloutStatusQuery } from "../../graphql/generated";
 import {
   pauseRollout,
@@ -19,6 +19,7 @@ gql`
         name
         id
         version
+        dateModified
       }
       agentCount
       status {
@@ -53,7 +54,9 @@ interface RolloutProgressProps {
  *
  * @param configurationName The name of the configuration, should not contain a version
  * @param configurationVersion The version of the configuration, should be a string "latest" or "pending"
- * @param actionDisabled Whether the user should be able to start or pause the rollout
+ * @param showCompleted Whether to show the progress bar when the rollout is completed
+ * @param hideActions whether to hide the pause/resume/start buttons
+ * @param setShow
  */
 export const RolloutProgress: React.FC<RolloutProgressProps> = ({
   configurationName,
@@ -65,6 +68,10 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
 
   const [progressData, setProgressData] = useState<RolloutProgressData>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [barFadeout, setBarFadeout] = useState<boolean>(false);
+  const [barHidden, setBarHidden] = useState<boolean>(false);
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const versionedName = nameAndVersion(configurationName, configurationVersion);
 
@@ -80,6 +87,40 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
   });
 
   useRefetchOnConfigurationChange(configurationName, refetch);
+
+  // Hide the progress bar after a timeout if the rollout is completed
+  useEffect(() => {
+    if (progressData == null) {
+      return;
+    }
+
+    // Show for non completed rollouts
+    if (!progressData.completed()) {
+      setBarHidden(false);
+      setBarFadeout(false);
+      return;
+    }
+
+    // Hide if rollout completed over 10 seconds ago
+    if (progressData.isPastCompletion()) {
+      setBarHidden(true);
+      return;
+    }
+
+    // Rollout completed within last 10 seconds,
+    // start the fadeout animation and set timeout
+    // to hide the progress bar.
+    if (timeoutRef.current == null) {
+      setBarFadeout(true);
+      const timeout = setTimeout(() => {
+        setBarHidden(true);
+        timeoutRef.current = null;
+      }, 10000);
+
+      timeoutRef.current = timeout;
+      return;
+    }
+  }, [barFadeout, progressData]);
 
   /**
    * handleStartRollout is passed to the BuildRolloutDialog and starts the rollout with default options.
@@ -172,6 +213,8 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
           hideActions={hideActions}
           paused={!progressData.rolloutIsStarted()}
           loading={loading}
+          fadeout={barFadeout}
+          hidden={barHidden}
           onPause={handlePauseRollout}
           onStart={handleStartRollout}
           onResume={handleResumeRollout}
