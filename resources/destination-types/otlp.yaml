@@ -60,6 +60,44 @@ spec:
           operator: equals
           value: "grpc"
 
+    - name: http_compression
+      label: Compression
+      description: >
+        Compression algorithm to use when sending data to the OTLP server.
+        Ensure that the server supports the compression algorithm selected.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
+      advancedConfig: true
+      relevantIf:
+        - name: protocol
+          operator: equals
+          value: "http"
+
+    - name: grpc_compression
+      label: Compression
+      description: >
+        Compression algorithm to use when sending data to the OTLP server.
+        Ensure that the server supports the compression algorithm selected.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - snappy
+        - zstd
+      default: gzip
+      advancedConfig: true
+      relevantIf:
+        - name: protocol
+          operator: equals
+          value: "grpc"
+
     # TLS
     - name: enable_tls
       label: Enable TLS
@@ -279,6 +317,7 @@ spec:
             {{ $k }}: {{ $v }}
             {{ end }}
           {{ end }}
+          compression: {{ .grpc_compression }}
           tls:
             {{ if .enable_tls }}
             insecure: false
@@ -300,6 +339,7 @@ spec:
           {{ else }}
           endpoint: http://{{ .hostname }}:{{ .http_port }}
           {{ end }}
+          compression: {{ .http_compression }}
           {{ if .enable_tls }}
           tls:
             insecure_skip_verify: {{ .insecure_skip_verify }}
