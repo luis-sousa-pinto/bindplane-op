@@ -5,6 +5,8 @@ metadata:
   displayName: Kafka
   description: Publish OpenTelemetry Protocol (OTLP) metrics, logs, and traces to a Kafka topic.
   icon: /icons/destinations/kafka.svg
+  additionalInfo:
+    message: The TLS option for Auth Type has been moved to the Enable TLS section and is deprecated as of v1.23.0. It will be removed in a future release. If you are using TLS please select the Enable TLS options and choose the appropriate Auth Type for your environment.
 spec:
   parameters:
     - name: protocol_version
@@ -100,6 +102,7 @@ spec:
         - basic
         - sasl
         - kerberos
+        - tls
       default: basic
       advancedConfig: true
       options:
@@ -520,7 +523,7 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
-            {{ if .enable_tls }}
+            {{ if or .enable_tls (eq .auth_type "tls") }}
             tls:
               insecure: {{ .tls_insecure }}
               ca_file: {{ .tls_ca_file | quote }}
@@ -577,7 +580,7 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
-            {{ if .enable_tls }}
+            {{ if or .enable_tls (eq .auth_type "tls") }}
             tls:
               insecure: {{ .tls_insecure }}
               ca_file: {{ .tls_ca_file | quote }}
@@ -634,7 +637,7 @@ spec:
           timeout: {{ .timeout }}s
           {{ if .enable_auth }}
           auth:
-            {{ if .enable_tls }}
+            {{ if or .enable_tls (eq .auth_type "tls") }}
             tls:
               insecure: {{ .tls_insecure }}
               ca_file: {{ .tls_ca_file | quote }}
