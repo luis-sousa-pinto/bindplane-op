@@ -168,14 +168,17 @@ func TestValidateDefault(t *testing.T) {
 }
 
 func TestValidateOptions(t *testing.T) {
+	twelve := 12
 	testCases := []struct {
-		name      string
-		expectErr bool
-		errorMsg  string
-		param     ParameterDefinition
+		name       string
+		expectErr  bool
+		expectWarn bool
+		errorMsg   string
+		param      ParameterDefinition
 	}{
 		{
 			"Enum Creatable OK",
+			false,
 			false,
 			"",
 			ParameterDefinition{
@@ -188,6 +191,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Enum Not Creatable OK",
 			false,
+			false,
 			"",
 			ParameterDefinition{
 				Type: "enum",
@@ -199,6 +203,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Non-Enum Creatable Error",
 			true,
+			false,
 			"1 error occurred:\n\t* creatable is true for parameter of type 'string'\n\n",
 			ParameterDefinition{
 				Type: "string",
@@ -209,6 +214,7 @@ func TestValidateOptions(t *testing.T) {
 		},
 		{
 			"Non-Enum Not Creatable OK",
+			false,
 			false,
 			"",
 			ParameterDefinition{
@@ -221,6 +227,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Enums TrackUnchecked OK",
 			false,
+			false,
 			"",
 			ParameterDefinition{
 				Type: "enums",
@@ -232,6 +239,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Enums !TrackUnchecked OK",
 			false,
+			false,
 			"",
 			ParameterDefinition{
 				Type: "enums",
@@ -240,6 +248,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Non Enums TrackUnchecked Error",
 			true,
+			false,
 			"1 error occurred:\n\t* trackUnchecked is true for parameter of type `map`\n\n",
 			ParameterDefinition{
 				Type: "map",
@@ -251,6 +260,7 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Non MapToSubForm TrackUnchecked Error",
 			true,
+			false,
 			"1 error occurred:\n\t* trackUnchecked is true for parameter of type `map`\n\n",
 			ParameterDefinition{
 				Type: "map",
@@ -261,6 +271,7 @@ func TestValidateOptions(t *testing.T) {
 		},
 		{
 			"Password for string OK",
+			false,
 			false,
 			"",
 			ParameterDefinition{
@@ -273,11 +284,89 @@ func TestValidateOptions(t *testing.T) {
 		{
 			"Password for non-string Error",
 			true,
+			false,
 			"1 error occurred:\n\t* password is true for parameter of type `int`\n\n",
 			ParameterDefinition{
 				Type: "int",
 				Options: ParameterOptions{
 					Password: true,
+				},
+			},
+		},
+		{
+			"Multiline for string OK",
+			false,
+			false,
+			"",
+			ParameterDefinition{
+				Type: "string",
+				Options: ParameterOptions{
+					Multiline: true,
+				},
+			},
+		},
+		{
+			"Multiline for non-string Error",
+			true,
+			false,
+			"1 error occurred:\n\t* multiline is true for parameter of type `int`\n\n",
+			ParameterDefinition{
+				Type: "int",
+				Options: ParameterOptions{
+					Multiline: true,
+				},
+			},
+		},
+		{
+			"Labels should only be used for map",
+			true,
+			false,
+			"1 error occurred:\n\t* labels is defined for parameter of type `string`\n\n",
+			ParameterDefinition{
+				Type: "string",
+				Options: ParameterOptions{
+					Labels: map[string]string{
+						"key": "Key Label",
+					},
+				},
+			},
+		},
+		{
+			"Labels should exist for map",
+			false,
+			true,
+			"2 warnings occurred:\n\t* labels not defined for parameter of type `map`\n\t* gridColumns: 12 not specified for parameter of type `map`\n\n",
+			ParameterDefinition{
+				Type: "map",
+			},
+		},
+		{
+			"Key and Value Labels should both exist for map",
+			false,
+			true,
+			"2 warnings occurred:\n\t* labels not defined for parameter of type `map`\n\t* gridColumns: 12 not specified for parameter of type `map`\n\n",
+			ParameterDefinition{
+				Type: "map",
+				Options: ParameterOptions{
+					Labels: map[string]string{
+						"key": "Key Label",
+					},
+				},
+			},
+		},
+		{
+			"Key and Value Labels should both exist for map",
+			false,
+			false,
+			"",
+			ParameterDefinition{
+				Type: "map",
+				Options: ParameterOptions{
+					Labels: map[string]string{
+						"key":   "Key Label",
+						"value": "Value Label",
+					},
+					GridColumns: &twelve,
 				},
 			},
 		},
@@ -290,6 +379,9 @@ func TestValidateOptions(t *testing.T) {
 			if test.expectErr {
 				require.Error(t, errs.Result())
 				require.Equal(t, test.errorMsg, errs.Result().Error())
+			} else if test.expectWarn {
+				require.NoError(t, errs.Result())
+				require.Equal(t, test.errorMsg, errs.Warnings())
 			} else {
 				require.NoError(t, errs.Result())
 			}

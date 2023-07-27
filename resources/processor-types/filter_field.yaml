@@ -46,6 +46,9 @@ spec:
       default: {}
       options:
         gridColumns: 12
+        labels:
+          key: Key
+          value: Value
 
     - name: attributes
       label: Attribute Keys
@@ -54,6 +57,9 @@ spec:
       default: {}
       options:
         gridColumns: 12
+        labels:
+          key: Key
+          value: Value
 
     - name: bodies
       label: Body Keys
@@ -62,6 +68,9 @@ spec:
       default: {}
       options:
         gridColumns: 12
+        labels:
+          key: Key
+          value: Value
       relevantIf:
         - name: telemetry_types
           operator: containsAny
@@ -70,7 +79,7 @@ spec:
   metrics:
     processors: |
       {{ if has "Metrics" .telemetry_types }}
-      {{ if or .resources .attributes }}      
+      {{ if or .resources .attributes }}
       - filter/metrics:
           error_mode: ignore
           metrics:
@@ -78,7 +87,7 @@ spec:
             - {{ if eq .action "include" }} not{{ end }} (
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -87,7 +96,7 @@ spec:
               {{- $firstAttr = false -}}
               {{ end }}
               {{- range $k, $v := .resources }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -110,7 +119,7 @@ spec:
             - {{ if eq .action "include" }} not{{ end }} (
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -119,7 +128,7 @@ spec:
               {{- $firstAttr = false -}}
               {{ end }}
               {{- range $k, $v := .resources }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -128,7 +137,7 @@ spec:
               {{- $firstAttr = false -}}
               {{ end }}
               {{- range $k, $v := .bodies }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               body[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -143,7 +152,7 @@ spec:
   traces:
     processors: |
       {{ if has "Traces" .telemetry_types }}
-      {{ if or .resources .attributes }}      
+      {{ if or .resources .attributes }}
       - filter/traces:
           error_mode: ignore
           traces:
@@ -151,7 +160,7 @@ spec:
             - {{ if eq .action "include" }} not{{ end }} (
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}
@@ -160,7 +169,7 @@ spec:
               {{- $firstAttr = false -}}
               {{ end }}
               {{- range $k, $v := .resources }}
-              {{ if not $firstAttr }} and{{ end }} 
+              {{ if not $firstAttr }} and{{ end }}
               {{- if eq $.match_type "strict" }}
               resource.attributes[{{ $k | quote }}] == {{ $v | quote }}
               {{ else }}

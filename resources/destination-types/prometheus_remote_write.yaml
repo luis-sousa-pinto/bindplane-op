@@ -54,6 +54,9 @@ spec:
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
 
     - name: external_labels
       label: External Labels
@@ -63,6 +66,9 @@ spec:
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
 
     # TLS Settings
     - name: enable_tls
@@ -281,4 +287,4 @@ spec:
             key_file: "{{ .key_file }}"
             {{ end }}
           {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
