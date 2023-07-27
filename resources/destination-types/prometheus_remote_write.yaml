@@ -28,11 +28,26 @@ spec:
       required: true
       default: ""
 
+    # Advanced Options
     - name: namespace
       label: Namespace
       description: Prefix to attach to each metric name.
       type: string
       default: ""
+      advancedConfig: true
+
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to the remote write backend.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
       advancedConfig: true
 
     - name: enable_resource_to_telemetry_conversion
@@ -42,7 +57,6 @@ spec:
       default: false
       advancedConfig: true
 
-    # Advanced Options
     - name: headers
       label: Additional HTTP Headers
       description: |
@@ -272,6 +286,7 @@ spec:
 
           resource_to_telemetry_conversion:
             enabled: {{ .enable_resource_to_telemetry_conversion }}
+          compression: {{ .compression }}
           {{ if .enable_tls }}
           tls:
             {{ if .strict_tls_verify }}

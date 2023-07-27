@@ -27,6 +27,16 @@ spec:
       default: "/api/v2/spans"
       required: true
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending traces to Zipkin.
+      type: enum
+      validValues:
+        - none
+        - gzip
+      default: gzip
+      advancedConfig: true
+
     - name: enable_tls
       label: Enable TLS
       description: Whether or not to use TLS.
@@ -245,6 +255,7 @@ spec:
           {{ else }}
           endpoint: http://{{ .hostname }}:{{ .port }}{{ .path }}
           {{ end }}
+          compression: {{ .compression }}
           tls:
           {{ if .enable_tls }}
             insecure: false
