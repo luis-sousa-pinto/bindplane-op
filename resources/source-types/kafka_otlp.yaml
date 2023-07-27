@@ -85,7 +85,6 @@ spec:
       type: enum
       validValues:
         - otlp_proto
-        - raw
         - text
         - json
       default: otlp_proto
