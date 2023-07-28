@@ -26,6 +26,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 
 	"github.com/observiq/bindplane-op/eventbus"
 	"github.com/observiq/bindplane-op/model"
@@ -630,6 +631,41 @@ func (mapstore *mapStore) Updates(_ context.Context) eventbus.Source[BasicEventU
 
 func (mapstore *mapStore) AgentRolloutUpdates(_ context.Context) eventbus.Source[RolloutEventUpdates] {
 	return mapstore.updates.RolloutUpdates()
+}
+
+// ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should
+// not fire an update event for the agents on the Updates eventbus.
+func (mapstore *mapStore) ReportConnectedAgents(_ context.Context, agentIDs []string, time time.Time) error {
+	mapstore.Lock()
+	defer mapstore.Unlock()
+
+	for _, agent := range mapstore.agents {
+		if slices.Contains(agentIDs, agent.ID) {
+			agent.ReportedAt = &time
+		}
+	}
+
+	return nil
+}
+
+// DisconnectUnreportedAgents sets the Status of agents to Disconnected if the agent ReportedAt time is before the
+// specified time.
+func (mapstore *mapStore) DisconnectUnreportedAgents(ctx context.Context, since time.Time) error {
+	mapstore.Lock()
+	defer mapstore.Unlock()
+
+	updates := NewEventUpdates()
+
+	for _, agent := range mapstore.agents {
+		if !agent.ReportedSince(since) {
+			agent.Status = model.Disconnected
+			updates.IncludeAgent(agent, EventTypeUpdate)
+		}
+	}
+
+	mapstore.notify(ctx, updates)
+
+	return nil
 }
 
 // CleanupDisconnectedAgents removes agents that have disconnected before the specified time

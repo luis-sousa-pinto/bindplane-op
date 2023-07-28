@@ -19,7 +19,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -28,35 +27,16 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/eventbus"
 	"github.com/observiq/bindplane-op/model"
 	modelversion "github.com/observiq/bindplane-op/model/version"
 	"github.com/observiq/bindplane-op/otlp/record"
-	"github.com/observiq/bindplane-op/resources"
 	"github.com/observiq/bindplane-op/store/search"
 	"github.com/observiq/bindplane-op/util"
 
 	"github.com/observiq/bindplane-op/store/stats"
 )
-
-func testResource[T model.Resource](t *testing.T, name string) T {
-	return fileResource[T](t, filepath.Join("testfiles", name))
-}
-
-func fileResource[T model.Resource](t *testing.T, path string) T {
-	resources, err := model.ResourcesFromFile(path)
-	require.NoError(t, err)
-
-	parsed, err := model.ParseResources(resources)
-	require.NoError(t, err)
-	require.Len(t, parsed, 1)
-
-	resource, ok := parsed[0].(T)
-	require.True(t, ok)
-	return resource
-}
 
 func addAgent(s Store, agent *model.Agent) error {
 	_, err := s.UpsertAgent(context.TODO(), agent.ID, func(a *model.Agent) {
@@ -4931,62 +4911,4 @@ func runRolloutToDisconnectedAgentsTest(ctx context.Context, t *testing.T, store
 		require.True(t, configuration.IsLatest())
 	})
 
-}
-
-func runTestSeedDeprecated(ctx context.Context, t *testing.T, store Store) {
-	logger := zap.NewNop()
-	tests := []struct {
-		name            string
-		setup           func()
-		expectExists    []string
-		expectNotExists []string
-	}{
-		{
-			name:  "empty store, no deprecated resources are seeded",
-			setup: func() {},
-			expectNotExists: []string{
-				"add_attribute",
-				"add_resource",
-				"filter_log_record_attribute",
-				"filter_resource_attribute",
-			},
-		},
-		{
-			name: "store with deprecated, update deprecated with a new version",
-			setup: func() {
-				// add a deprecated resource to the store (set the name to add_attribute)
-				severityProcessorType := testResource[*model.ProcessorType](t, "filter_severity.yaml")
-				severityProcessorType.Metadata.Name = "add_attribute"
-				_, err := store.ApplyResources(ctx, []model.Resource{severityProcessorType})
-				require.NoError(t, err)
-			},
-			expectExists: []string{
-				"add_attribute",
-				"add_attribute:1",
-				"add_attribute:2",
-			},
-			expectNotExists: []string{
-				"add_resource",
-				"filter_log_record_attribute",
-				"filter_resource_attribute",
-			},
-		},
-	}
-	for _, test := range tests {
-		if test.setup != nil {
-			test.setup()
-		}
-		err := Seed(ctx, store, logger, resources.Files, resources.SeedFolders)
-		require.NoError(t, err)
-		for _, name := range test.expectExists {
-			pt, err := store.ProcessorType(ctx, name)
-			require.NoError(t, err)
-			require.NotNil(t, pt)
-		}
-		for _, name := range test.expectNotExists {
-			pt, err := store.ProcessorType(ctx, name)
-			require.NoError(t, err)
-			require.Nil(t, pt)
-		}
-	}
 }

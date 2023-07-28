@@ -731,7 +731,19 @@ func TestSeedDeprecated(t *testing.T) {
 	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
 	defer store.Close()
 
-	runTestSeedDeprecated(ctx, t, store)
+	RunTestSeedDeprecated(ctx, t, store)
+}
+
+func TestReportConnectedAgents(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	RunReportConnectedAgentsTests(ctx, t, store)
 }
 
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */

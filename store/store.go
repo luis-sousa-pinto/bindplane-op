@@ -63,6 +63,7 @@ type Store interface {
 	Agent(ctx context.Context, id string) (*model.Agent, error)
 	Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error)
 	AgentsCount(context.Context, ...QueryOption) (int, error)
+
 	// UpsertAgent adds a new Agent to the Store or updates an existing one
 	UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
 	UpsertAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error)
@@ -128,6 +129,14 @@ type Store interface {
 
 	// AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
 	AgentsIDsMatchingConfiguration(ctx context.Context, conf *model.Configuration) ([]string, error)
+
+	// ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should
+	// not fire an update event for the agents on the Updates eventbus.
+	ReportConnectedAgents(ctx context.Context, agentIDs []string, time time.Time) error
+
+	// DisconnectUnreportedAgents sets the Status of agents to Disconnected if the agent ReportedAt time is before the
+	// specified time.
+	DisconnectUnreportedAgents(ctx context.Context, since time.Time) error
 
 	// CleanupDisconnectedAgents removes agents that have disconnected before the specified time
 	CleanupDisconnectedAgents(ctx context.Context, since time.Time) error
