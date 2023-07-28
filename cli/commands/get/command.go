@@ -28,6 +28,9 @@ import (
 // HistoryFlag when --history is set print the resources history
 var HistoryFlag bool
 
+// ExportFlag when --export is set print the resources in an importable format
+var ExportFlag bool
+
 // errHistoryNotSupported is the error
 var errHistoryNotSupported = errors.New("history is not supported for this resource kind")
 
@@ -53,6 +56,8 @@ func Command(builder Builder) *cobra.Command {
 	)
 
 	cmd.PersistentFlags().BoolVar(&HistoryFlag, "history", false, "If true, list the history of the resource.")
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
+
 	return cmd
 }
 
@@ -61,7 +66,7 @@ func ResourcesCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resources",
 		Short: "Displays all resources",
-		Long:  `Use -o yaml to export all resources to yaml.`,
+		Long:  `Use -o yaml to output all resources to yaml.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			getter, err := builder.BuildGetter(cmd.Context())
 			if err != nil {
@@ -148,7 +153,7 @@ func ConfigurationsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindConfiguration, args)
 		},
 	}
-
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -177,6 +182,7 @@ func DestinationsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindDestination, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -205,6 +211,7 @@ func ProcessorsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindProcessor, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -233,6 +240,7 @@ func SourcesCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindSource, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
