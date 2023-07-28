@@ -229,17 +229,63 @@ type PhaseAgentCount struct {
 	Maximum    int     `json:"maximum" yaml:"maximum" mapstructure:"maximum"`
 }
 
+// RolloutSize is used to determine the default rollout options for a configuration.
+type RolloutSize string
+
+const (
+	// RolloutSmall is a rollout of 1-20 Agents
+	RolloutSmall RolloutSize = "small"
+	// RolloutMedium is a rollout of  20-500 Agents
+	RolloutMedium RolloutSize = "medium"
+	// RolloutLarge is a rollout of  500+ Agents
+	RolloutLarge RolloutSize = "large"
+)
+
+// RolloutOptionsForAgentCount returns the RolloutOptions that should be used for a rollout of the specified number of agents.
+func RolloutOptionsForAgentCount(agentCount int) RolloutOptions {
+	switch {
+	case agentCount <= 20:
+		return DefaultRolloutOptions[RolloutSmall]
+	case agentCount <= 500:
+		return DefaultRolloutOptions[RolloutMedium]
+	default:
+		return DefaultRolloutOptions[RolloutLarge]
+	}
+}
+
 // DefaultRolloutOptions contains the default rollout options for a configuration.
 // NOTE: These options are the same as the defaults in the UI in rollouts-rest-fns.ts
-var DefaultRolloutOptions = RolloutOptions{
-	StartAutomatically: false,
-	RollbackOnFailure:  true,
-	PhaseAgentCount: PhaseAgentCount{
-		Initial:    3,
-		Multiplier: 5,
-		Maximum:    100,
+var DefaultRolloutOptions = map[RolloutSize]RolloutOptions{
+	RolloutSmall: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    1,
+			Multiplier: 1,
+			Maximum:    1,
+		},
+		MaxErrors: 0,
 	},
-	MaxErrors: 0,
+	RolloutMedium: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    1,
+			Multiplier: 3,
+			Maximum:    100,
+		},
+		MaxErrors: 0,
+	},
+	RolloutLarge: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    3,
+			Multiplier: 5,
+			Maximum:    100,
+		},
+		MaxErrors: 0,
+	},
 }
 
 // Rollout contains details about the rollout and its progress

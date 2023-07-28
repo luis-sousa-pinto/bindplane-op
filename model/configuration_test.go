@@ -2502,7 +2502,7 @@ func TestUpdateStatus(t *testing.T) {
 			name: "progress, max phase size",
 			initialRollout: Rollout{
 				Status:  RolloutStatusStarted,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   20,
 			},
 			progress: RolloutProgress{
@@ -2510,15 +2510,15 @@ func TestUpdateStatus(t *testing.T) {
 				Pending:   0,
 				Waiting:   200,
 			},
-			expectNewAgentsPending: DefaultRolloutOptions.PhaseAgentCount.Maximum,
+			expectNewAgentsPending: DefaultRolloutOptions[RolloutLarge].PhaseAgentCount.Maximum,
 			expectRollout: Rollout{
 				Status:  RolloutStatusStarted,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   21,
 				Progress: RolloutProgress{
 					Completed: 10,
-					Pending:   DefaultRolloutOptions.PhaseAgentCount.Maximum,
-					Waiting:   200 - DefaultRolloutOptions.PhaseAgentCount.Maximum,
+					Pending:   DefaultRolloutOptions[RolloutLarge].PhaseAgentCount.Maximum,
+					Waiting:   200 - DefaultRolloutOptions[RolloutLarge].PhaseAgentCount.Maximum,
 				},
 			},
 		},
@@ -2526,7 +2526,7 @@ func TestUpdateStatus(t *testing.T) {
 			name: "progress, last phase",
 			initialRollout: Rollout{
 				Status:  RolloutStatusStarted,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   2,
 			},
 			progress: RolloutProgress{
@@ -2537,7 +2537,7 @@ func TestUpdateStatus(t *testing.T) {
 			expectNewAgentsPending: 2,
 			expectRollout: Rollout{
 				Status:  RolloutStatusStarted,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   3,
 				Progress: RolloutProgress{
 					Completed: 10,
@@ -2550,7 +2550,7 @@ func TestUpdateStatus(t *testing.T) {
 			name: "progress, complete",
 			initialRollout: Rollout{
 				Status:  RolloutStatusStarted,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   2,
 			},
 			progress: RolloutProgress{
@@ -2561,7 +2561,7 @@ func TestUpdateStatus(t *testing.T) {
 			expectNewAgentsPending: 0,
 			expectRollout: Rollout{
 				Status:  RolloutStatusStable,
-				Options: DefaultRolloutOptions,
+				Options: DefaultRolloutOptions[RolloutLarge],
 				Phase:   2,
 				Progress: RolloutProgress{
 					Completed: 10,

@@ -722,9 +722,14 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 		})
 	}
 
+	agentIDs, err := s.AgentsIDsMatchingConfiguration(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("agentIDs matching configuration: %w", err)
+	}
 	// set the rollout options and start the rollout
 	if options == nil {
-		options = &model.DefaultRolloutOptions
+		defaultOptions := model.RolloutOptionsForAgentCount(len(agentIDs))
+		options = &defaultOptions
 	}
 	config, _, err = editResource(ctx, s, nil, model.KindConfiguration, configurationName, func(config *model.Configuration) error {
 		config.Status.Rollout.Status = model.RolloutStatusStarted
@@ -745,10 +750,6 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 	}
 
 	// set future configuration for all agents using this configuration
-	agentIDs, err := s.AgentsIDsMatchingConfiguration(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("agentIDs matching configuration: %w", err)
-	}
 	_, err = s.UpsertAgents(ctx, agentIDs, func(agent *model.Agent) {
 		agent.SetFutureConfiguration(config)
 	})
