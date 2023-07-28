@@ -480,6 +480,10 @@ func (c *BindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 
 	switch resp.StatusCode() {
 	case http.StatusAccepted:
+		err = jsoniter.Unmarshal(resp.Body(), dr)
+		if err != nil {
+			return nil, err
+		}
 		return dr.Updates, nil
 	case http.StatusUnauthorized:
 		return nil, c.UnauthorizedError(resp)
@@ -490,11 +494,6 @@ func (c *BindplaneClient) Delete(_ context.Context, resources []*model.AnyResour
 		return nil, errors.New("bad request")
 	case http.StatusInternalServerError:
 		return nil, fmt.Errorf("%s", dr.Errors[0])
-	}
-
-	err = jsoniter.Unmarshal(resp.Body(), dr)
-	if err != nil {
-		return nil, err
 	}
 
 	return nil, fmt.Errorf("unknown response from bindplane server")
