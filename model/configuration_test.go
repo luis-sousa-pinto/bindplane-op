@@ -33,6 +33,27 @@ func testResource[T Resource](t *testing.T, name string) T {
 	return fileResource[T](t, filepath.Join("testfiles", name))
 }
 
+func newTestResourceConfiguration(t *testing.T) *ResourceConfiguration {
+	t.Helper()
+	value := 10
+	return &ResourceConfiguration{
+		ID:          "one",
+		Name:        "RC",
+		DisplayName: "Resource Configuration",
+		ParameterizedSpec: ParameterizedSpec{
+			Type: "macOS:1",
+			Parameters: []Parameter{
+				{
+					Name:      "param1",
+					Sensitive: false,
+					Value:     &value,
+				},
+			},
+			Disabled: false,
+		},
+	}
+}
+
 type testConfiguration struct {
 	bindplaneURL                string
 	bindplaneInsecureSkipVerify bool
@@ -2580,4 +2601,71 @@ func TestUpdateStatus(t *testing.T) {
 			require.Equal(t, test.expectRollout, rollout)
 		})
 	}
+}
+
+func TestResourceConfigurationShallowEqual(t *testing.T) {
+	t.Run("Equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		require.True(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("ID Not equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.ID = "different"
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("Name Not equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.Name = "different"
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("DisplayName Not equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.DisplayName = "different"
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("Type Not equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.Type = "different"
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("Disabled Not equal", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.Disabled = !rc2.Disabled
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("Different Number of Parameters", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.Parameters = append(rc1.Parameters,
+			Parameter{
+				Name:      "param1",
+				Sensitive: false,
+				Value:     new(string),
+			},
+		)
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
+	t.Run("Parameters Differ by Name", func(t *testing.T) {
+		rc1 := newTestResourceConfiguration(t)
+		rc2 := newTestResourceConfiguration(t)
+		rc1.Parameters = []Parameter{
+			rc2.Parameters[0],
+		}
+
+		rc1.Parameters[0].Name = "Different"
+
+		require.False(t, rc1.ShallowEqual(rc2))
+	})
 }

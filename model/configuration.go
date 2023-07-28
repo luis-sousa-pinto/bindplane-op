@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -381,6 +382,32 @@ type ResourceConfiguration struct {
 }
 
 var _ HasResourceParameters = (*ResourceConfiguration)(nil)
+
+// ShallowEqual compares the Resource configuration at a high level.
+// It does not compare any child ResourceConfiguration objects.
+func (rc *ResourceConfiguration) ShallowEqual(other *ResourceConfiguration) bool {
+	if rc.Disabled != other.Disabled ||
+		rc.DisplayName != other.DisplayName ||
+		rc.Name != other.Name ||
+		rc.ID != other.ID ||
+		rc.Type != other.Type {
+		return false
+	}
+
+	if len(rc.Parameters) != len(other.Parameters) {
+		return false
+	}
+
+	for i, param := range rc.Parameters {
+		bParam := other.Parameters[i]
+		if param.Name != bParam.Name ||
+			!reflect.DeepEqual(param.Value, bParam.Value) {
+			return false
+		}
+	}
+
+	return true
+}
 
 // ResourceParameters returns the resource parameters for this resource.
 func (rc *ResourceConfiguration) ResourceParameters() []Parameter {

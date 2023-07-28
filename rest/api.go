@@ -1061,7 +1061,7 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 	// When testing rendering the config, we want to first look at the new resources to apply.
 	// We do this, because the config may depend on resources that are currently being applied (e.g. destinations),
 	// which are not yet stored.
-	memoryFirstStore := newMemoryFirstResourceStore(resources, bindplane.Store())
+	memoryFirstStore := NewMemoryFirstResourceStore(resources, bindplane.Store())
 	// Extra validation for configs; We want to ensure that the configuration CAN be rendered before saving it.
 	for _, res := range resources {
 		if conf, ok := res.(*model.Configuration); ok {
