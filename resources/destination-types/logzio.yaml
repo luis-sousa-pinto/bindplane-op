@@ -91,6 +91,16 @@ spec:
       default: 30
       required: true
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to logz.io.
+      type: enum
+      validValues:
+        - none
+        - gzip
+      default: gzip
+      advancedConfig: true
+
     # WAL Settings
     - name: enable_write_ahead_log
       label: Write Ahead Log
@@ -244,7 +254,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store log and trace data.
@@ -276,6 +286,7 @@ spec:
       - prometheusremotewrite:
           endpoint: "{{ .listener_url }}"
           timeout: "{{ .timeout }}s"
+          compression: "{{ .compression }}"
           headers:
             Authorization: "Bearer {{ .metrics_token }}"
           {{ if .enable_write_ahead_log }}
@@ -293,6 +304,7 @@ spec:
           region: "{{ .region }}"
           account_token: "{{ .tracing_token }}"
           timeout: "{{ .timeout }}s"
+          compression: "{{ .compression }}"
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
@@ -306,6 +318,7 @@ spec:
           region: "{{ .region }}"
           account_token: "{{ .logs_token }}"
           timeout: "{{ .timeout }}s"
+          compression: "{{ .compression }}"
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
