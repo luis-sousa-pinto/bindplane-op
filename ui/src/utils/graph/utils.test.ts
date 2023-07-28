@@ -211,6 +211,12 @@ describe("formatMetric", () => {
       "3.5 TiB/h"
     );
   });
+
+  it("uses 0 if the metric has no value", () => {
+    expect(formatMetric({ unit: "B/s" }, "10s")).toEqual("0 B/s");
+
+    expect(formatMetric({ value: 0, unit: "B/s" }, "10s")).toEqual("0 B/s");
+  });
 });
 
 describe("updateMetricData", () => {
