@@ -1,4 +1,4 @@
-import { AppBar, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
+import { AppBar, IconButton, Toolbar } from "@mui/material";
 import React, { SyntheticEvent, useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -6,7 +6,6 @@ import {
   EmailIcon,
   GridIcon,
   HelpCircleIcon,
-  LogoutIcon,
   SettingsIcon,
   SlackIcon,
   SlidersIcon,
@@ -14,12 +13,14 @@ import {
 } from "../Icons";
 import { BindPlaneOPLogo } from "../Logos";
 import { classes } from "../../utils/styles";
+import { useComponents } from "../../hooks/useComponents";
 
 import styles from "./nav-bar.module.scss";
 
 export const NavBar: React.FC = () => {
   const [settingsAnchorEl, setAnchorEl] = useState<Element | null>(null);
   const settingsOpen = Boolean(settingsAnchorEl);
+  const { SettingsMenu } = useComponents();
 
   const navigate = useNavigate();
 
@@ -36,15 +37,6 @@ export const NavBar: React.FC = () => {
   const handleSettingsClose = () => {
     setAnchorEl(null);
   };
-
-  async function handleLogout() {
-    await fetch("/logout", {
-      method: "PUT",
-    });
-
-    localStorage.removeItem("user");
-    navigate("/login");
-  }
 
   const location = useLocation();
   return (
@@ -186,27 +178,11 @@ export const NavBar: React.FC = () => {
             >
               <SettingsIcon className={styles.icon} />
             </IconButton>
-            <Menu
+            <SettingsMenu
               anchorEl={settingsAnchorEl}
-              open={settingsOpen}
               onClose={handleSettingsClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              MenuListProps={{
-                "aria-labelledby": "settings-button   ",
-              }}
-            >
-              <MenuItem onClick={handleLogout}>
-                <LogoutIcon className={styles["settings-icon"]} />
-                Logout
-              </MenuItem>
-            </Menu>
+              open={settingsOpen}
+            />
           </div>
         </Toolbar>
       </AppBar>
