@@ -1191,15 +1191,16 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 	g.Attributes["activeTypeFlags"] = pipelineUsage.ActiveFlags()
 
 	for i, source := range c.Spec.Sources {
-		sourceName := source.localName(KindSource, i)
-		usage := pipelineUsage.sources.usage(sourceName)
+		sourceName := TrimVersion(source.localName(KindSource, i))
+		trimmedName := TrimVersion(sourceName)
+		usage := pipelineUsage.sources.usage(trimmedName)
 
-		attributes := graph.MakeAttributes(string(KindSource), sourceName)
+		attributes := graph.MakeAttributes(string(KindSource), trimmedName)
 		attributes["activeTypeFlags"] = usage.active
 		attributes["supportedTypeFlags"] = usage.supported
 		attributes["sourceIndex"] = i
 		s := &graph.Node{
-			ID:         fmt.Sprintf("source/%s", sourceName),
+			ID:         fmt.Sprintf("source/%s", trimmedName),
 			Type:       "sourceNode",
 			Label:      source.Type,
 			Attributes: attributes,
@@ -1209,7 +1210,7 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		// For now only add one intermediate node for each
 		// source which represents all the processors on the source.
 		p := &graph.Node{
-			ID:    fmt.Sprintf("source/%s/processors", sourceName),
+			ID:    fmt.Sprintf("source/%s/processors", trimmedName),
 			Type:  "processorNode",
 			Label: "Processors",
 			Attributes: map[string]any{
@@ -1228,10 +1229,9 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		// We don't use the name, because the same destination may be used multiple times.
 		// Using the index guarantees uniqueness.
 		destinationName := destination.localName(KindDestination, i)
+		trimmedName := TrimVersion(destinationName)
 		destinationSlug := fmt.Sprintf("%s-%d", TrimVersion(destinationName), i)
 		usage := pipelineUsage.destinations.usage(destinationSlug)
-
-		trimmedName := TrimVersion(destination.Name)
 
 		// For now only add one intermediate node for each
 		// destination which represents all the processors on the destination.
