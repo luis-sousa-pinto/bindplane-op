@@ -1081,6 +1081,11 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
+	// Make sure to mask any sensitive parameters before they are returned
+	for _, status := range resourceStatuses {
+		store.MaskSensitiveParameters(c, status.Resource)
+	}
+
 	c.JSON(http.StatusAccepted, &model.ApplyResponse{
 		Updates: resourceStatuses,
 	})
