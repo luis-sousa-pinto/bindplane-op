@@ -23,9 +23,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	bpopamp "github.com/observiq/bindplane-op/opamp/legacy"
 	bpserver "github.com/observiq/bindplane-op/server"
+	"github.com/observiq/bindplane-op/store"
 	legacyOpampProtobufs "github.com/observiq/opamp-go/protobufs"
 	legacyOpampSvr "github.com/observiq/opamp-go/server"
 	legacyOpamp "github.com/observiq/opamp-go/server/types"
@@ -285,6 +287,15 @@ func (s *legacyOpampServer) ConnectedAgentIDs(ctx context.Context) ([]string, er
 	defer span.End()
 
 	return s.connections.ConnectedAgentIDs(ctx), nil
+}
+
+// ReportConnectedAgents should call Store.ReportConnectedAgents for all connected agents
+func (s *legacyOpampServer) ReportConnectedAgents(ctx context.Context, store store.Store, time time.Time) error {
+	ctx, span := tracer.Start(ctx, "opamp/ReportConnectedAgents")
+	defer span.End()
+
+	agentIDs := s.connections.ConnectedAgentIDs(ctx)
+	return store.ReportConnectedAgents(ctx, agentIDs, time)
 }
 
 func (s *legacyOpampServer) Disconnect(agentID string) bool {

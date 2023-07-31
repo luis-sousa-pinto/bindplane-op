@@ -23,10 +23,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	bpopamp "github.com/observiq/bindplane-op/opamp"
 	bpserver "github.com/observiq/bindplane-op/server"
+	"github.com/observiq/bindplane-op/store"
 	"github.com/open-telemetry/opamp-go/protobufs"
 	opampSvr "github.com/open-telemetry/opamp-go/server"
 	opamp "github.com/open-telemetry/opamp-go/server/types"
@@ -296,6 +298,15 @@ func (s *opampServer) ConnectedAgentIDs(ctx context.Context) ([]string, error) {
 	defer span.End()
 
 	return s.connections.ConnectedAgentIDs(ctx), nil
+}
+
+// ReportConnectedAgents should call Store.ReportConnectedAgents for all connected agents
+func (s *opampServer) ReportConnectedAgents(ctx context.Context, store store.Store, time time.Time) error {
+	ctx, span := tracer.Start(ctx, "opamp/ReportConnectedAgents")
+	defer span.End()
+
+	agentIDs := s.connections.ConnectedAgentIDs(ctx)
+	return store.ReportConnectedAgents(ctx, agentIDs, time)
 }
 
 func (s *opampServer) Disconnect(agentID string) bool {

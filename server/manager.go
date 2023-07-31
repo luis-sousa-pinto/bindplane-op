@@ -300,21 +300,14 @@ func (m *DefaultManager) handleAgentReporting() {
 
 	now := time.Now()
 
-	agentIDs := []string{}
 	for _, p := range m.Protocols {
-		ids, err := p.ConnectedAgentIDs(ctx)
+		err := p.ReportConnectedAgents(ctx, m.Storage, now)
 		if err != nil {
-			m.Logger.Error("unable to get connected agents", zap.String("protocol", p.Name()), zap.Error(err))
+			m.Logger.Error("unable to report connected agents", zap.String("protocol", p.Name()), zap.Error(err))
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			continue
 		}
-		agentIDs = append(agentIDs, ids...)
-	}
-
-	err := m.Storage.ReportConnectedAgents(ctx, agentIDs, now)
-	if err != nil {
-		m.Logger.Error("error reporting connected agents", zap.Error(err))
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
 	}
 }
 
