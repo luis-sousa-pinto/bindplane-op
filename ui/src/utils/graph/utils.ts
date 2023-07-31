@@ -397,7 +397,8 @@ export function getNodesAndEdges(
     };
 
     nodes.forEach((node) => {
-      if (node.id === e.source) {
+      // Use the attributes from the node on the right of the edge
+      if (node.id === e.target) {
         edge.data.attributes = node.data.attributes;
       }
     });
