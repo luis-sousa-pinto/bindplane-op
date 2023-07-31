@@ -95,7 +95,7 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
     }
 
     // Show for non completed rollouts
-    if (!progressData.completed()) {
+    if (!progressData.rolloutIsComplete()) {
       setBarHidden(false);
       setBarFadeout(false);
       return;

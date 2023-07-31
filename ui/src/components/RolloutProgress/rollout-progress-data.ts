@@ -38,6 +38,13 @@ export class RolloutProgressData implements GetConfigRolloutStatusQuery {
   }
 
   /**
+   * rolloutIsComplete returns true if the rollout status is stable
+   */
+  rolloutIsComplete() {
+    return this.configuration.status.rollout.status === 4;
+  }
+
+  /**
    * rolloutIsPaused returns true if the rollout status is paused
    */
   rolloutIsPaused() {
