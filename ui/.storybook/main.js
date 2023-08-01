@@ -2,8 +2,8 @@ const path = require("path");
 const toPath = filePath => path.join(process.cwd(), filePath);
 module.exports = {
   staticDirs: ["../public"],
-  stories: ["../src/**/*.stories.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/preset-create-react-app", "storybook-addon-apollo-client", "@storybook/addon-mdx-gfm"],
+  stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/preset-create-react-app", "storybook-addon-apollo-client"],
   framework: {
     name: "@storybook/react-webpack5",
     options: {}
