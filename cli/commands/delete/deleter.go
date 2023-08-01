@@ -17,6 +17,7 @@ package delete
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/observiq/bindplane-op/client"
@@ -27,8 +28,10 @@ import (
 type Deleter interface {
 	// DeleteResources deletes resources.
 	DeleteResources(ctx context.Context, kind model.Kind, ids []string) error
-	// DeleteResourcesFromFile deletes resources from a file.
-	DeleteResourcesFromFile(ctx context.Context, filename string) ([]*model.AnyResourceStatus, error)
+	// DeleteResourcesFromFile deletes resources from a list of files.
+	DeleteResourcesFromFiles(ctx context.Context, filenames []string) ([]*model.AnyResourceStatus, error)
+	// DeleteResourcesFromReader deletes all resources from a reader.
+	DeleteResourcesFromReader(ctx context.Context, reader io.Reader) ([]*model.AnyResourceStatus, error)
 }
 
 // Builder is an interface for building a Deleter.
@@ -90,9 +93,24 @@ func (d *DefaultDeleter) deleteResource(ctx context.Context, kind model.Kind, id
 	}
 }
 
-// DeleteResourcesFromFile deletes all resources from a file.
-func (d *DefaultDeleter) DeleteResourcesFromFile(ctx context.Context, filename string) ([]*model.AnyResourceStatus, error) {
-	resources, err := model.ResourcesFromFile(filename)
+// DeleteResourcesFromFiles deletes all resources from a file.
+func (d *DefaultDeleter) DeleteResourcesFromFiles(ctx context.Context, filenames []string) ([]*model.AnyResourceStatus, error) {
+	var resources []*model.AnyResource
+	for _, filename := range filenames {
+		r, err := model.ResourcesFromFile(filename)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read resources: %w", err)
+		}
+
+		resources = append(resources, r...)
+	}
+
+	return d.client.Delete(ctx, resources)
+}
+
+// DeleteResourcesFromReader applies all resources from a reader.
+func (d *DefaultDeleter) DeleteResourcesFromReader(ctx context.Context, reader io.Reader) ([]*model.AnyResourceStatus, error) {
+	resources, err := model.ResourcesFromReader(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read resources: %w", err)
 	}

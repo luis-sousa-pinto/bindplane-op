@@ -17,8 +17,10 @@ package delete
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/observiq/bindplane-op/client"
@@ -234,7 +236,55 @@ func TestDeleteResourcesFromFile(t *testing.T) {
 			filepath := filepath.Join(t.TempDir(), tc.name)
 			tc.setupFunc(filepath)
 
-			statuses, err := d.DeleteResourcesFromFile(context.Background(), filepath)
+			statuses, err := d.DeleteResourcesFromFiles(context.Background(), []string{filepath})
+			switch tc.expectedErr {
+			case nil:
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedStatuses, statuses)
+			default:
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expectedErr.Error())
+			}
+		})
+	}
+}
+
+func TestDeleteResourcesFromReader(t *testing.T) {
+	testCases := []struct {
+		name             string
+		clientFunc       func() client.BindPlane
+		readerFunc       func() io.Reader
+		expectedStatuses []*model.AnyResourceStatus
+		expectedErr      error
+	}{
+		{
+			name: "failed reader",
+			clientFunc: func() client.BindPlane {
+				c := mocks.NewMockBindPlane(t)
+				return c
+			},
+			readerFunc: func() io.Reader {
+				return strings.NewReader("invalid")
+			},
+			expectedErr: errors.New("failed to read resources"),
+		},
+		{
+			name: "empty reader",
+			clientFunc: func() client.BindPlane {
+				c := mocks.NewMockBindPlane(t)
+				c.On("Delete", mock.Anything, mock.Anything).Return(nil, nil)
+				return c
+			},
+			readerFunc: func() io.Reader {
+				return strings.NewReader("")
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			d := NewDeleter(tc.clientFunc())
+			statuses, err := d.DeleteResourcesFromReader(context.Background(), tc.readerFunc())
 			switch tc.expectedErr {
 			case nil:
 				require.NoError(t, err)
