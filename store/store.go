@@ -526,26 +526,26 @@ func Seed(ctx context.Context, store Store, logger *zap.Logger, files embed.FS, 
 // ----------------------------------------------------------------------
 // seeding search indexes
 
-// UpdateRolloutMetrics finds the agent counts for the configuration, updates the
-//
-// rollout status and returns the number of new agents pending
-func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *model.Configuration) (int, error) {
+// UpdateRolloutMetrics finds the agent counts for the configuration, updates the rollout status on the configuration,
+// and returns a slice of the agent IDs that are waiting for a rollout and the number of those agents that should be
+// moved into the pending state.
+func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *model.Configuration) ([]string, int, error) {
 	nameAndVersion := config.NameAndVersion()
 	agentsComplete, err := FindAgents(ctx, agentIndex, model.FieldRolloutComplete, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsError, err := FindAgents(ctx, agentIndex, model.FieldRolloutError, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsPending, err := FindAgents(ctx, agentIndex, model.FieldRolloutPending, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsWaiting, err := FindAgents(ctx, agentIndex, model.FieldRolloutWaiting, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 
 	newAgentsPending := config.Status.Rollout.UpdateStatus(model.RolloutProgress{
@@ -554,7 +554,7 @@ func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *
 		Pending:   len(agentsPending),
 		Waiting:   len(agentsWaiting),
 	})
-	return newAgentsPending, nil
+	return agentsWaiting, newAgentsPending, nil
 }
 
 // SeedSearchIndexes seeds the search indexes with the current data in the store

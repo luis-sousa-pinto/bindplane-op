@@ -913,22 +913,15 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 	// get the configuration
 	err = s.DB.Update(func(tx *bbolt.Tx) error {
 		var (
-			agentsWaiting  []string
-			agentsNext     int
-			nameAndVersion string
-			rolloutStatus  model.RolloutStatus
+			agentsWaiting []string
+			agentsNext    int
+			rolloutStatus model.RolloutStatus
 		)
 		oldRolloutStatus := model.RolloutStatusPending
 		config, wasModified, err := editResource(ctx, s, tx, model.KindConfiguration, configuration, func(r *model.Configuration) error {
-			nameAndVersion = r.NameAndVersion()
 			oldRolloutStatus = r.Status.Rollout.Status
 
-			agentsWaiting, err = FindAgents(ctx, s.AgentIndex(ctx), model.FieldRolloutWaiting, nameAndVersion)
-			if err != nil {
-				return err
-			}
-
-			agentsNext, err = UpdateRolloutMetrics(ctx, s.AgentIndex(ctx), r)
+			agentsWaiting, agentsNext, err = UpdateRolloutMetrics(ctx, s.AgentIndex(ctx), r)
 			if err != nil {
 				return err
 			}
@@ -966,6 +959,10 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 			agentsBucket, err := s.AgentsBucket(ctx, tx)
 			if err != nil {
 				return fmt.Errorf("failed to get agents bucket: %w", err)
+			}
+			// ensure we don't try to update more agents than we have
+			if agentsNext > len(agentsWaiting) {
+				agentsNext = len(agentsWaiting)
 			}
 			agentIDs := agentsWaiting[:agentsNext]
 			for _, agentID := range agentIDs {
