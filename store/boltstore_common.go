@@ -689,7 +689,10 @@ func (s *BoltstoreCore) DisconnectUnreportedAgents(ctx context.Context, since ti
 				// agent reported recently, nothing to do
 				continue
 			}
-
+			if agent.Status == model.Disconnected {
+				// agent already disconnected, nothing to do
+				continue
+			}
 			agent.Disconnect()
 
 			// marshal it back to to json
