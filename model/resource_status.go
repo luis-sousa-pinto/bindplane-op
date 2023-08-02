@@ -16,22 +16,20 @@ package model
 
 import (
 	"fmt"
-	"io"
 )
 
 // ResourceStatus contains a resource and its status after an update, which is of type UpdateStatus
 // used in store and rest packages.
 type ResourceStatus struct {
-	// Resource TODO(doc)
+	// Resource is the resource that was updated
 	Resource Resource `json:"resource" mapstructure:"resource"`
-	// Status TODO(doc)
+	// Status is the status of the resource after the update
 	Status UpdateStatus `json:"status" mapstructure:"status"`
 	// Reason will be set if status is invalid or error
 	Reason string `json:"reason" mapstructure:"reason"`
 }
 
-// AnyResourceStatus TODO(doc)
-// Same as ResourceStatus but used by cli to parse response from the rest api.
+// AnyResourceStatus is used by the cli to parse response from the rest api.
 type AnyResourceStatus struct {
 	Resource AnyResource  `json:"resource" mapstructure:"resource"`
 	Status   UpdateStatus `json:"status" mapstructure:"status"`
@@ -59,7 +57,7 @@ func (s *ResourceStatus) String() string {
 	return fmt.Sprintf("%s %s %s", s.Resource.GetKind(), name, s.Status)
 }
 
-// NewResourceStatus TODO(doc)
+// NewResourceStatus returns a status for a resource
 func NewResourceStatus(r Resource, s UpdateStatus) *ResourceStatus {
 	return &ResourceStatus{Resource: r, Status: s}
 }
@@ -105,10 +103,3 @@ const (
 	// StatusDeprecated is used when attempting to seed a resource that is deprecated that doesn't already exist
 	StatusDeprecated UpdateStatus = "deprecated"
 )
-
-// PrintResourceUpdates TODO(doc)
-func PrintResourceUpdates(writer io.Writer, resourceStatuses []*AnyResourceStatus) {
-	for _, update := range resourceStatuses {
-		fmt.Fprintln(writer, update.Message())
-	}
-}

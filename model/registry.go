@@ -426,9 +426,6 @@ type genericKind[T Resource] struct {
 	kind ResourceKind[T]
 }
 
-// APIVersion returns the api version for this kind, e.g. bindplane.observiq.com/v1
-func (s *genericKind[T]) APIVersion() string { return s.APIVersion() }
-
 // NewEmptyResource returns a new empty resource of the specified type
 func (s *genericKind[T]) NewEmptyResource() Resource { return s.kind.NewEmptyResource() }
 

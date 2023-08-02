@@ -15,12 +15,15 @@
 package model
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
@@ -286,7 +289,7 @@ func fileResource[T Resource](t *testing.T, path string) T {
 
 func resourcePaths(t *testing.T, folder string) []string {
 	t.Helper()
-	files, err := ioutil.ReadDir(folder)
+	files, err := os.ReadDir(folder)
 	require.NoError(t, err)
 
 	result := make([]string, len(files))
@@ -932,4 +935,156 @@ func TestParseSourceTypeStrict_TypenameKey(t *testing.T) {
 		},
 	}
 	require.Equal(t, expect, sourceType)
+}
+
+func TestResourceMetaPrint(t *testing.T) {
+	time := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	rm := &ResourceMeta{
+		Kind: "Configuration",
+		Metadata: Metadata{
+			DisplayName:  "Test",
+			Description:  "A test configuration",
+			Version:      1,
+			DateModified: &time,
+		},
+	}
+
+	t.Run("PrintableKindSingular", func(t *testing.T) {
+		expected := "Configuration"
+		require.Equal(t, expected, rm.PrintableKindSingular())
+	})
+
+	t.Run("PrintableKindPlural", func(t *testing.T) {
+		expected := "Configurations"
+		require.Equal(t, expected, rm.PrintableKindPlural())
+	})
+
+	t.Run("PrintableFieldTitles", func(t *testing.T) {
+		expected := []string{"Name"}
+		require.Equal(t, expected, rm.PrintableFieldTitles())
+	})
+
+	t.Run("PrintableFieldValue", func(t *testing.T) {
+		expectedValues := map[string]string{
+			"ID":          rm.ID(),
+			"Name":        rm.Name(),
+			"Hash":        rm.Hash(),
+			"Display":     "Test",
+			"Description": "A test configuration",
+			"Version":     "1",
+			"Date":        "2022-01-01 00:00:00",
+			"Unknown":     "-",
+		}
+
+		for title, expected := range expectedValues {
+			require.Equal(t, expected, rm.PrintableFieldValue(title))
+		}
+	})
+}
+
+func TestResourceMetaIndexing(t *testing.T) {
+	r := &ResourceMeta{
+		Kind: "TestResource",
+		Metadata: Metadata{
+			ID:          "test-id",
+			Name:        "test-name",
+			DisplayName: "Test Display Name",
+			Description: "Test Description",
+			Labels: Labels{
+				Set: map[string]string{
+					"test-label-1": "label-value-1",
+					"test-label-2": "label-value-2",
+				},
+			},
+		},
+	}
+
+	t.Run("IndexID", func(t *testing.T) {
+		expected := "test-name"
+		actual := r.IndexID()
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("IndexFields", func(t *testing.T) {
+		expected := map[string]string{
+			"kind":        "TestResource",
+			"id":          "test-id",
+			"name":        "test-name",
+			"displayName": "Test Display Name",
+			"description": "Test Description",
+		}
+		actual := make(map[string]string)
+		indexFunc := func(key, value string) {
+			actual[key] = value
+		}
+
+		r.IndexFields(indexFunc)
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("IndexLabels", func(t *testing.T) {
+		expected := map[string]string{
+			"test-label-1": "label-value-1",
+			"test-label-2": "label-value-2",
+		}
+		actual := make(map[string]string)
+		indexFunc := func(key, value string) {
+			actual[key] = value
+		}
+
+		r.IndexLabels(indexFunc)
+
+		require.Equal(t, expected, actual)
+	})
+}
+
+func TestAnyResourceValueAndScan(t *testing.T) {
+	original := &AnyResource{
+		ResourceMeta: ResourceMeta{
+			Kind: "TestResource",
+			Metadata: Metadata{
+				Labels: Labels{
+					Set: map[string]string{
+						"test-label-1": "label-value-1",
+						"test-label-2": "label-value-2",
+					},
+				},
+				Name: "test-name",
+			},
+		},
+		Spec: map[string]any{
+			"field1": "value1",
+			"field2": float64(2),
+		},
+	}
+
+	t.Run("Value and Scan", func(t *testing.T) {
+		value, err := original.Value()
+		require.NoError(t, err, "failed to marshal AnyResource to JSON")
+
+		unmarshalled := new(AnyResource)
+		err = unmarshalled.Scan(value)
+		require.NoError(t, err, "failed to unmarshal JSON to AnyResource")
+
+		require.Equal(t, original, unmarshalled)
+	})
+}
+
+func TestVersionUnmarshalAndMarshalGQL(t *testing.T) {
+	original := Version(10)
+
+	t.Run("Unmarshal and Marshal GQL", func(t *testing.T) {
+		var unmarshalled Version
+		err := unmarshalled.UnmarshalGQL(int(original))
+		require.NoError(t, err, "failed to unmarshal int to Version")
+
+		require.Equal(t, original, unmarshalled)
+
+		writer := &bytes.Buffer{}
+		unmarshalled.MarshalGQL(writer)
+		marshalled := writer.String()
+
+		require.Equal(t, strconv.Itoa(int(original)), marshalled)
+	})
 }

@@ -367,9 +367,7 @@ func (p ParameterDefinition) validateMetricCategories(errs validation.Errors) {
 				),
 			)
 		}
-
 	}
-
 }
 
 func (m *MetricCategory) validateMetricCategory(errs validation.Errors) {
@@ -426,7 +424,6 @@ func (p ParameterDefinition) validateValidValues() error {
 		}
 	}
 
-	// TODO(dave+mitch): (validate mapToSubForm type)
 	return nil
 }
 
@@ -653,7 +650,7 @@ func (p ParameterDefinition) validateYamlValue(_ parameterFieldType, value any) 
 	if !ok {
 		return stanzaerrors.NewError(
 			fmt.Sprintf("expected a string for parameter %s", p.Name),
-			fmt.Sprintf("ensure that the value is a string"),
+			"ensure that the value is a string",
 		)
 	}
 
@@ -676,7 +673,7 @@ func (p ParameterDefinition) validateMapValue(_ parameterFieldType, value any) e
 			if k, ok := v.(string); !ok {
 				return stanzaerrors.NewError(
 					fmt.Sprintf("expected type string for value for key %s in map", k),
-					fmt.Sprintf("ensure all values in map are strings"),
+					"ensure all values in map are strings",
 				)
 			}
 		}
@@ -719,19 +716,19 @@ func (p ParameterDefinition) validateAwsCloudwatchNamedFieldType(_ parameterFiel
 			case "id":
 				_, ok := n.(string)
 				if !ok {
-					return stanzaerrors.NewError("incorrect type included in 'id' field",
-						"awsCloudwatchNamedField "+s+" should be of type string")
+					return stanzaerrors.NewError(fmt.Sprintf("incorrect type included in '%s' field", s),
+						fmt.Sprintf("awsCloudwatchNamedField %s should be of type string", s))
 				}
 
 			case "names", "prefixes":
 				_, ok := n.([]interface{})
 				if !ok {
-					return stanzaerrors.NewError("incorrect type included in "+s+" field",
-						"awsCloudwatchNamedField"+s+"should be of type []string")
+					return stanzaerrors.NewError(fmt.Sprintf("incorrect type included in %s field", s),
+						fmt.Sprintf("awsCloudwatchNamedField %s should be of type []string", s))
 				}
 			default:
-				return stanzaerrors.NewError("unexpected field "+s+" included in struct",
-					s+"should not be an included field in awsCloudWatchNamedField")
+				return stanzaerrors.NewError(fmt.Sprintf("unexpected field %s included in struct", s),
+					fmt.Sprintf("%s should not be an included field in awsCloudWatchNamedField", s))
 
 			}
 		}
@@ -755,7 +752,7 @@ func (p ParameterDefinition) validateFileLogSortType(_ parameterFieldType, value
 			result := fileLogSortField{}
 			err := mapstructure.Decode(item, &result)
 			if err != nil {
-				return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
+				return stanzaerrors.NewError(fmt.Sprintf("malformed value for parameter of type filelogsort: %s", err.Error()), "")
 			}
 		}
 	case []map[string]any:

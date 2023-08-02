@@ -58,14 +58,13 @@ const (
 
 	// ConfigurationTypeModular configurations have Sources and Destinations that are used to generate the configuration to pass to an agent.
 	ConfigurationTypeModular ConfigurationType = "modular"
-	// TODO(andy): Do we like Modular for configurations with Sources/Destinations?
 )
 
 // Configuration is the resource for the entire agent configuration
 type Configuration struct {
-	// ResourceMeta TODO(doc)
+	// ResourceMeta contains the metadata for this resource
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
-	// Spec TODO(doc)
+	// Spec contains the spec for the Configuration
 	Spec                            ConfigurationSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
 	StatusType[ConfigurationStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }
@@ -145,8 +144,6 @@ type ConfigurationStatus struct {
 }
 
 // RolloutStatus is the status for a configuration rollout
-
-// RolloutStatus is used to track the status of a rollout
 type RolloutStatus int
 
 // UnmarshalGQL implements the graphql.Unmarshaler interface.
@@ -196,14 +193,13 @@ func (s RolloutStatus) String() string {
 	return str
 }
 
-// TODO make these strings nice
 var rolloutStatusMap = map[RolloutStatus]string{
-	RolloutStatusPending:  "pending",
-	RolloutStatusPaused:   "paused",
-	RolloutStatusStarted:  "started",
-	RolloutStatusError:    "error",
-	RolloutStatusStable:   "stable",
-	RolloutStatusReplaced: "replaced",
+	RolloutStatusPending:  "Pending",
+	RolloutStatusPaused:   "Paused",
+	RolloutStatusStarted:  "Started",
+	RolloutStatusError:    "Error",
+	RolloutStatusStable:   "Stable",
+	RolloutStatusReplaced: "Replaced",
 }
 
 // RolloutOptions are stored with a configuration and determine how rollouts for that configuration are managed.
@@ -1137,14 +1133,6 @@ func (c *Configuration) IndexFields(index modelSearch.Indexer) {
 	for _, destination := range c.Spec.Destinations {
 		destination.indexFields("destination", "destinationType", index)
 	}
-
-	// add pipeline fields
-	//
-	// TODO(andy): I was going to add pipeline:traces, pipeline:logs, and pipeline:metrics because I thought it would be a
-	// useful way to filter configurations. However, we need a ResourceStore implementation to call otelConfiguration and
-	// we don't have that here, even though indexing is actually done in the store. I think the best solution is to cache
-	// the output on the Spec and keep that up to date as any dependent sourceTypes and destinationTypes change. This will
-	// improve performance when comparing configurations and displaying the configuration in UI.
 
 	index("rollout-status", c.Rollout().Status.String())
 

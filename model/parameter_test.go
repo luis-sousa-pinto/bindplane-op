@@ -818,7 +818,7 @@ func TestValidateAwsCloudwatchNamedFieldType(t *testing.T) {
 					[]interface{}{"one", "two", "three"},
 				},
 			},
-			"incorrect type included in 'id' field",
+			"incorrect type included in 'ID' field",
 		},
 		{
 			"malformed slice item 'names'",
@@ -925,6 +925,22 @@ func TestValidateFileLogSortingType(t *testing.T) {
 			},
 			"",
 		},
+		{
+			"bad value for []any",
+			ParameterDefinition{
+				Type: fileLogSortType,
+			},
+			[]any{
+				map[string]any{
+					"sortType":      1,
+					"sortDirection": "ascending",
+					"regexKey":      "regexKey",
+					"layout":        "layout",
+					"location":      "location",
+				},
+			},
+			"malformed value for parameter of type filelogsort: 1 error(s) decoding:\n\n* 'sortType' expected type 'string', got unconvertible type 'int', value: '1'",
+		},
 	}
 
 	for _, test := range tests {
@@ -936,6 +952,43 @@ func TestValidateFileLogSortingType(t *testing.T) {
 			} else {
 				require.NoError(t, gotErr)
 			}
+		})
+	}
+}
+
+func TestValidateMetricCategories(t *testing.T) {
+	tests := []struct {
+		name     string
+		param    ParameterDefinition
+		expected string
+	}{
+		{
+			name: "Required metric categories for type metrics",
+			param: ParameterDefinition{
+				Type: "metrics",
+				Options: ParameterOptions{
+					MetricCategories: nil,
+				},
+			},
+			expected: "options.metricCategories is required for type metrics",
+		},
+		{
+			name: "Metric categories provided for non-metrics type",
+			param: ParameterDefinition{
+				Type: "string", // not 'metrics'
+				Options: ParameterOptions{
+					MetricCategories: []MetricCategory{{}},
+				},
+			},
+			expected: "options.metricCategories is not a valid option for type",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			errs := validation.NewErrors()
+			test.param.validateMetricCategories(errs)
+			require.Contains(t, errs.Result().Error(), test.expected)
 		})
 	}
 }
