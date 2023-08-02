@@ -523,6 +523,14 @@ func computeReportConfigurationHash(contents ...[]byte) []byte {
 
 func (s *opampServer) send(ctx context.Context, conn opamp.Connection, msg *protobufs.ServerToAgent) error {
 	state := s.connections.StateForConnection(conn)
+	if state == nil {
+		addr := "unknown"
+		if conn != nil {
+			addr = conn.Connection().RemoteAddr().String()
+		}
+		return fmt.Errorf("no connection state for connection %s", addr)
+	}
+
 	state.SendLock.Lock()
 	defer state.SendLock.Unlock()
 	return conn.Send(ctx, msg)
