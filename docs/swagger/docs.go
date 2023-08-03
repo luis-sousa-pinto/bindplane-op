@@ -1679,6 +1679,9 @@ const docTemplate = `{
                 "remoteAddress": {
                     "type": "string"
                 },
+                "reported_at": {
+                    "type": "string"
+                },
                 "state": {},
                 "status": {
                     "description": "reported by Status messages",
@@ -1965,7 +1968,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
-                    "description": "Spec TODO(doc)",
+                    "description": "Spec contains the spec for the Configuration",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.ConfigurationSpec"
@@ -2124,7 +2127,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
-                    "description": "Spec TODO(doc)",
+                    "description": "Spec is the specification for the Destination containing the type and parameters",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.ParameterizedSpec"
@@ -2291,6 +2294,10 @@ const docTemplate = `{
                 },
                 "dateModified": {
                     "type": "string"
+                },
+                "deprecated": {
+                    "description": "Deprecated indicates that this resource is deprecated and should not be used. Deprecated resources should contain\nadditional information about why the resource is deprecated and what should be used instead.",
+                    "type": "boolean"
                 },
                 "description": {
                     "type": "string"
@@ -2548,7 +2555,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
-                    "description": "Spec TODO(doc)",
+                    "description": "Spec is the specification for the Processor containing the type and parameters",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.ParameterizedSpec"
@@ -2673,10 +2680,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "resource": {
-                    "description": "Resource TODO(doc)"
+                    "description": "Resource is the resource that was updated"
                 },
                 "status": {
-                    "description": "Status TODO(doc)",
+                    "description": "Status is the status of the resource after the update",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.UpdateStatus"
@@ -2874,7 +2881,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.Metadata"
                 },
                 "spec": {
-                    "description": "Spec TODO(doc)",
+                    "description": "Spec is the specification for the Source that contains the type and parameters",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.ParameterizedSpec"
@@ -2954,7 +2961,8 @@ const docTemplate = `{
                 "invalid",
                 "error",
                 "in-use",
-                "forbidden"
+                "forbidden",
+                "deprecated"
             ],
             "x-enum-varnames": [
                 "StatusUnchanged",
@@ -2964,7 +2972,8 @@ const docTemplate = `{
                 "StatusInvalid",
                 "StatusError",
                 "StatusInUse",
-                "StatusForbidden"
+                "StatusForbidden",
+                "StatusDeprecated"
             ]
         },
         "model.Version": {
