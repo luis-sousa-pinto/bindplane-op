@@ -207,7 +207,18 @@ func (s *BoltstoreCore) DeleteResourcesCore(ctx context.Context, resources []mod
 func (s *BoltstoreCore) UpsertAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {
 	ctx, span := tracer.Start(ctx, "store/UpsertAgents")
 	defer span.End()
+	return s.updateOrUpsertAgents(ctx, false, agentIDs, updater)
+}
 
+// UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
+// agent corresponding to that ID will be returned. An error is only returned if the update fails.
+func (s *BoltstoreCore) UpdateAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {
+	ctx, span := tracer.Start(ctx, "store/UpdateAgents")
+	defer span.End()
+	return s.updateOrUpsertAgents(ctx, true, agentIDs, updater)
+}
+
+func (s *BoltstoreCore) updateOrUpsertAgents(ctx context.Context, requireExists bool, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {
 	agents := make([]*model.Agent, 0, len(agentIDs))
 	updates := s.CreateEventUpdate()
 
@@ -218,12 +229,13 @@ func (s *BoltstoreCore) UpsertAgents(ctx context.Context, agentIDs []string, upd
 		}
 
 		for _, agentID := range agentIDs {
-			agent, err := s.upsertAgentTx(ctx, bucket, agentID, updater, updates)
+			agent, err := s.updateOrUpsertAgentTx(ctx, requireExists, bucket, agentID, updater, updates)
 			if err != nil {
 				return err
 			}
-
-			agents = append(agents, agent)
+			if agent != nil {
+				agents = append(agents, agent)
+			}
 		}
 		return nil
 	})
@@ -245,10 +257,21 @@ func (s *BoltstoreCore) UpsertAgents(ctx context.Context, agentIDs []string, upd
 }
 
 // UpsertAgent creates or updates the given agent and calls the updater method on it.
-func (s *BoltstoreCore) UpsertAgent(ctx context.Context, id string, updater AgentUpdater) (*model.Agent, error) {
+func (s *BoltstoreCore) UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error) {
 	ctx, span := tracer.Start(ctx, "store/UpsertAgent")
 	defer span.End()
+	return s.updateOrUpsertAgent(ctx, false, agentID, updater)
+}
 
+// UpdateAgent updates an existing Agent in the Store. If the agentID does not exist, no error is returned but the
+// agent will be nil. An error is only returned if the update fails.
+func (s *BoltstoreCore) UpdateAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error) {
+	ctx, span := tracer.Start(ctx, "store/UpsertAgent")
+	defer span.End()
+	return s.updateOrUpsertAgent(ctx, true, agentID, updater)
+}
+
+func (s *BoltstoreCore) updateOrUpsertAgent(ctx context.Context, requireExists bool, agentID string, updater AgentUpdater) (*model.Agent, error) {
 	var updatedAgent *model.Agent
 	updates := s.CreateEventUpdate()
 
@@ -258,7 +281,7 @@ func (s *BoltstoreCore) UpsertAgent(ctx context.Context, id string, updater Agen
 			return err
 		}
 
-		agent, err := s.upsertAgentTx(ctx, bucket, id, updater, updates)
+		agent, err := s.updateOrUpsertAgentTx(ctx, requireExists, bucket, agentID, updater, updates)
 		updatedAgent = agent
 		if err != nil {
 			return err
@@ -268,6 +291,9 @@ func (s *BoltstoreCore) UpsertAgent(ctx context.Context, id string, updater Agen
 
 	if err != nil {
 		return nil, err
+	}
+	if updatedAgent == nil {
+		return nil, nil
 	}
 
 	// update the index
@@ -648,7 +674,7 @@ func (s *BoltstoreCore) ReportConnectedAgents(ctx context.Context, agentIDs []st
 		var errs error
 
 		for _, agentID := range agentIDs {
-			_, err := s.upsertAgentTx(ctx, bucket, agentID, func(current *model.Agent) {
+			_, err := s.updateOrUpsertAgentTx(ctx, true, bucket, agentID, func(current *model.Agent) {
 				current.ReportedAt = &time
 			}, updates)
 			errs = errors.Join(errs, err)
@@ -837,11 +863,11 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 	}
 
 	// set future configuration for all agents using this configuration
-	_, err = s.UpsertAgents(ctx, agentIDs, func(agent *model.Agent) {
+	_, err = s.UpdateAgents(ctx, agentIDs, func(agent *model.Agent) {
 		agent.SetFutureConfiguration(config)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("UpsertAgents to SetFutureConfiguration: %w", err)
+		return nil, fmt.Errorf("UpdateAgents to SetFutureConfiguration: %w", err)
 	}
 
 	// run the first phase of the rollout
@@ -969,7 +995,7 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 			}
 			agentIDs := agentsWaiting[:agentsNext]
 			for _, agentID := range agentIDs {
-				agent, err := s.upsertAgentTx(ctx, agentsBucket, agentID, func(agent *model.Agent) {
+				agent, err := s.updateOrUpsertAgentTx(ctx, true, agentsBucket, agentID, func(agent *model.Agent) {
 					agent.SetPendingConfiguration(config)
 				}, updates)
 				if err != nil {

@@ -67,6 +67,15 @@ type Store interface {
 	// UpsertAgent adds a new Agent to the Store or updates an existing one
 	UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
 	UpsertAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error)
+
+	// UpdateAgent updates an existing Agent in the Store. If the agentID does not exist, no error is returned but the
+	// agent will be nil. An error is only returned if the update fails.
+	UpdateAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
+
+	// UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
+	// agent corresponding to that ID will be returned. An error is only returned if the update fails.
+	UpdateAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error)
+
 	DeleteAgents(ctx context.Context, agentIDs []string) ([]*model.Agent, error)
 
 	AgentVersion(ctx context.Context, name string) (*model.AgentVersion, error)

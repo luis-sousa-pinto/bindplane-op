@@ -265,7 +265,7 @@ func (s *legacyOpampServer) OnConnectionClose(conn legacyOpamp.Connection) {
 		return
 	}
 
-	_, err := s.manager.UpsertAgent(ctx, agentID, func(agent *model.Agent) {
+	_, err := s.manager.UpdateAgent(ctx, agentID, func(agent *model.Agent) {
 		agent.Disconnect()
 	})
 	if err != nil {
@@ -364,7 +364,7 @@ func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent,
 		serverToAgent.RemoteConfig = legacyAgentRemoteConfig(&newRawConfiguration, &agentRawConfiguration)
 
 		// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not required to update the agent
-		_, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+		_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
 	}
 
 	if updates.Version != "" {
@@ -372,7 +372,7 @@ func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent,
 		downloadableFile, err := s.getDownloadableFile(ctx, agent, updates.Version)
 		if err != nil || downloadableFile == nil {
 			s.logger.Error("unable to send agent update", zap.Error(err))
-			agent, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+			_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 				current.UpgradeComplete(updates.Version, err.Error())
 			})
 		} else {
@@ -388,11 +388,11 @@ func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent,
 					},
 				},
 			}
-			agent, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+			_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 				current.UpgradeStarted(updates.Version, allPackagesHash)
 			})
 
-			s.logger.Info("sending PackagesAvailable", zap.Any("PackagesAvailable", serverToAgent.PackagesAvailable), zap.Any("Upgrade", agent.Upgrade))
+			s.logger.Info("sending PackagesAvailable", zap.Any("PackagesAvailable", serverToAgent.PackagesAvailable))
 		}
 	}
 
@@ -595,7 +595,7 @@ func (s *legacyOpampServer) updateAgentConfig(ctx context.Context, agent *model.
 
 	// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not
 	// required to update the agent
-	_, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+	_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
 
 	s.logger.Info("agent running with outdated config", zap.Any("cur", agentConfiguration.Collector), zap.Any("new", serverConfiguration.Collector))
 	response.RemoteConfig = remoteConfig
@@ -686,7 +686,7 @@ func (s *legacyOpampServer) updateAgentState(ctx context.Context, agentID string
 }
 
 func (s *legacyOpampServer) updateAgentCurrentConfiguration(ctx context.Context, agent *model.Agent, configuration *model.Configuration) {
-	_, err := s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+	_, err := s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 		current.SetCurrentConfiguration(configuration)
 	})
 	if err != nil {

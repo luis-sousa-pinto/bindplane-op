@@ -352,7 +352,7 @@ func (s *boltstore) disconnectAllAgents(ctx context.Context) {
 	} else {
 		s.Logger.Info("disconnecting all agents on startup", zap.Int("count", len(agents)))
 		for _, agent := range agents {
-			_, err := s.UpsertAgent(ctx, agent.ID, func(a *model.Agent) {
+			_, err := s.UpdateAgent(ctx, agent.ID, func(a *model.Agent) {
 				a.Disconnect()
 			})
 			if err != nil {
@@ -481,10 +481,10 @@ func UpdateResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx
 	return r, status, nil
 }
 
-// upsertAgentTx is a transaction helper that updates the given agent,
+// updateOrUpsertAgentTx is a transaction helper that updates the given agent,
 // puts it into the agent bucket and includes it in the passed updates.
 // it does *not* update the search index or notify any subscribers of updates.
-func (s *BoltstoreCore) upsertAgentTx(ctx context.Context, bucket *bbolt.Bucket, agentID string, updater AgentUpdater, updates BasicEventUpdates) (*model.Agent, error) {
+func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists bool, bucket *bbolt.Bucket, agentID string, updater AgentUpdater, updates BasicEventUpdates) (*model.Agent, error) {
 	key := AgentKey(agentID)
 
 	agentEventType := EventTypeInsert
@@ -497,6 +497,8 @@ func (s *BoltstoreCore) upsertAgentTx(ctx context.Context, bucket *bbolt.Bucket,
 			return agent, err
 		}
 		agentEventType = EventTypeUpdate
+	} else if requireExists {
+		return nil, nil
 	}
 
 	// compare labels before/after and notify if they change

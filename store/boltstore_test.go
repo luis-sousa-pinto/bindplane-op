@@ -247,34 +247,23 @@ func TestUpsertAgent(t *testing.T) {
 	db, err := storetest.InitTestBboltDB(t, testBuckets)
 	require.NoError(t, err, "error while initializing test database", err)
 
-	// Seed with one
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	s := NewBoltStore(ctx, db, testOptions, zap.NewNop())
-	a1 := &model.Agent{ID: "1", Name: "Fake Agent 1", Labels: model.Labels{Set: model.MakeLabels().Set}}
-	addAgent(s, a1)
+	defer s.Close()
 
-	t.Run("creates a new agent if not found", func(t *testing.T) {
-		newAgentID := "3"
-		s.UpsertAgent(ctx, newAgentID, testUpdater)
+	runTestUpsertAgent(ctx, t, s)
+}
+func TestUpdateAgent(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err, "error while initializing test database", err)
 
-		got, err := s.Agent(ctx, newAgentID)
-		require.NoError(t, err)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	s := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer s.Close()
 
-		assert.NotNil(t, got)
-		assert.Equal(t, got.ID, newAgentID)
-	})
-	t.Run("calls updater and updates an agent if exists", func(t *testing.T) {
-		updaterCalled = false
-		s.UpsertAgent(context.TODO(), a1.ID, testUpdater)
-
-		assert.True(t, updaterCalled)
-
-		got, err := s.Agent(ctx, a1.ID)
-		require.NoError(t, err)
-
-		assert.Equal(t, got.Name, "updated")
-	})
+	runTestUpdateAgent(ctx, t, s)
 }
 func TestBoltStoreNotifyUpdates(t *testing.T) {
 	db, err := storetest.InitTestBboltDB(t, testBuckets)
@@ -566,6 +555,17 @@ func TestBoltstoreUpsertAgents(t *testing.T) {
 	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
 	defer store.Close()
 	runTestUpsertAgents(t, store)
+}
+
+func TestBoltstoreUpdateAgents(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+	runTestUpdateAgents(t, store)
 }
 
 func TestBoltstoreMeasurements(t *testing.T) {

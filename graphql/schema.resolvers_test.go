@@ -412,10 +412,10 @@ func Test_mutationResolver_ClearAgentUpgradeError(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"error when upsert fails",
+			"error when update fails",
 			func(t *testing.T) store.Store {
 				s := mocks.NewMockStore(t)
-				s.On("UpsertAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(nil, errors.New("error"))
+				s.On("UpdateAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(nil, errors.New("error"))
 				return s
 			},
 			&model1.ClearAgentUpgradeErrorInput{
@@ -424,10 +424,10 @@ func Test_mutationResolver_ClearAgentUpgradeError(t *testing.T) {
 			true,
 		},
 		{
-			"upsert succeeds",
+			"update succeeds",
 			func(t *testing.T) store.Store {
 				s := mocks.NewMockStore(t)
-				s.On("UpsertAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(&model.Agent{}, nil)
+				s.On("UpdateAgent", mock.Anything, "1", mock.AnythingOfType("store.AgentUpdater")).Return(&model.Agent{}, nil)
 				return s
 			},
 			&model1.ClearAgentUpgradeErrorInput{

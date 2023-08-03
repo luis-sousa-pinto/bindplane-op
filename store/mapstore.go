@@ -220,6 +220,18 @@ func (mapstore *mapStore) UpdateAllRollouts(_ context.Context) error {
 	return nil
 }
 
+func (mapstore *mapStore) UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error) {
+	mapstore.Lock()
+	defer mapstore.Unlock()
+
+	u := NewEventUpdates()
+	agent := mapstore.upsertAgent(agentID, updater, u)
+
+	mapstore.notify(ctx, u)
+
+	return agent, nil
+}
+
 func (mapstore *mapStore) UpsertAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {
 	mapstore.Lock()
 	defer mapstore.Unlock()
@@ -236,16 +248,38 @@ func (mapstore *mapStore) UpsertAgents(ctx context.Context, agentIDs []string, u
 	return agents, nil
 }
 
-func (mapstore *mapStore) UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error) {
+// UpdateAgent updates an existing Agent in the Store. If the agentID does not exist, no error is returned but the
+// agent will be nil. An error is only returned if the update fails.
+func (mapstore *mapStore) UpdateAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error) {
 	mapstore.Lock()
 	defer mapstore.Unlock()
 
 	u := NewEventUpdates()
-	agent := mapstore.upsertAgent(agentID, updater, u)
+	agent := mapstore.updateAgent(agentID, updater, u)
 
 	mapstore.notify(ctx, u)
 
 	return agent, nil
+}
+
+// UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
+// agent corresponding to that ID will be returned. An error is only returned if the update fails.
+func (mapstore *mapStore) UpdateAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {
+	mapstore.Lock()
+	defer mapstore.Unlock()
+
+	agents := make([]*model.Agent, 0, len(agentIDs))
+	u := NewEventUpdates()
+
+	for _, id := range agentIDs {
+		if agent := mapstore.updateAgent(id, updater, u); agent != nil {
+			agents = append(agents, agent)
+		}
+	}
+
+	mapstore.notify(ctx, u)
+
+	return agents, nil
 }
 
 func (mapstore *mapStore) Agents(_ context.Context, options ...QueryOption) ([]*model.Agent, error) {
@@ -711,6 +745,16 @@ func (mapstore *mapStore) Measurements() stats.Measurements {
 // these functions require that the mapstore is already locked
 
 // ----------------------------------------------------------------------
+
+// upsertAgent updates the agent with given id while the mapstore is locked.
+// it updates the passed *Updates to include the change.
+func (mapstore *mapStore) updateAgent(agentID string, updater AgentUpdater, updates BasicEventUpdates) *model.Agent {
+	_, ok := mapstore.agents[agentID]
+	if !ok {
+		return nil
+	}
+	return mapstore.upsertAgent(agentID, updater, updates)
+}
 
 // upsertAgent updates the agent with given id while the mapstore is locked.
 // it updates the passed *Updates to include the change.
