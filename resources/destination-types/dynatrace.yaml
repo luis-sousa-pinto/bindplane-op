@@ -45,6 +45,20 @@ spec:
       default: true
       advancedConfig: true
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to Dynatrace.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
+      advancedConfig: true
+
     - name: prefix
       label: Metric Prefix
       description: Prefix to prepend to metrics
@@ -251,6 +265,7 @@ spec:
           {{ if .prefix }}
           prefix: {{ .prefix }}
           {{ end }}
+          compression: {{ .compression }}
           resource_to_telemetry_conversion:
             enabled: {{ .resource_to_telemetry_conversion }}
           tls:

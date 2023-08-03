@@ -3,7 +3,7 @@ kind: ProcessorType
 metadata:
   name: batch
   displayName: Batch
-  description: The batch processor accepts spans, metrics, or logs and places them into batches. Batching helps better compress the data and reduce the number of outgoing connections required to transmit the data. This processor supports both size and time based batching.
+  description: Batch telemetry data before sending.
   labels:
     category: Advanced
 spec:

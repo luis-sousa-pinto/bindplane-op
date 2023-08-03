@@ -33,7 +33,7 @@ spec:
 
     # TLS
     - name: configure_tls
-      label: Configure TLS
+      label: Enable TLS
       description: Configure advanced TLS settings.
       type: bool
       default: false

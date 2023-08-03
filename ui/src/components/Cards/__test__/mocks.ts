@@ -49,6 +49,7 @@ export const fileSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
               displayName: "File",
               icon: "/icons/sources/file.svg",
               description: "Collect logs from generic log files.",
+              additionalInfo: null,
             },
             spec: {
               parameters: [
@@ -764,6 +765,7 @@ export const redisSourceTypeQuery: MockedResponse<Record<string, any>>[] = [
               displayName: "Redis",
               description: "Collect metrics and logs from Redis.",
               icon: "/icons/sources/redis.svg",
+              additionalInfo: null,
               __typename: "Metadata",
             },
             spec: {

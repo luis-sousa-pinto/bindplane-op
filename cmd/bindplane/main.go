@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/observiq/bindplane-op/cli"
 	"github.com/observiq/bindplane-op/cli/commands/apply"
 	"github.com/observiq/bindplane-op/cli/commands/delete"
@@ -37,6 +38,13 @@ import (
 	"github.com/observiq/bindplane-op/routes"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	// jsoniter should use a format compatible with the standard library. This is important because there are places where
+	// we expect consistent rendering of the JSON output to generate hashes or to compare resources before and after
+	// changes and this is only possible with consistent marshalling.
+	jsoniter.ConfigDefault = jsoniter.ConfigCompatibleWithStandardLibrary
+}
 
 func main() {
 	routeBuilder := &routes.CombinedRouteBuilder{}

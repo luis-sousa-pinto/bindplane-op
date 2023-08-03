@@ -19,7 +19,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -38,23 +37,6 @@ import (
 
 	"github.com/observiq/bindplane-op/store/stats"
 )
-
-func testResource[T model.Resource](t *testing.T, name string) T {
-	return fileResource[T](t, filepath.Join("testfiles", name))
-}
-
-func fileResource[T model.Resource](t *testing.T, path string) T {
-	resources, err := model.ResourcesFromFile(path)
-	require.NoError(t, err)
-
-	parsed, err := model.ParseResources(resources)
-	require.NoError(t, err)
-	require.Len(t, parsed, 1)
-
-	resource, ok := parsed[0].(T)
-	require.True(t, ok)
-	return resource
-}
 
 func addAgent(s Store, agent *model.Agent) error {
 	_, err := s.UpsertAgent(context.TODO(), agent.ID, func(a *model.Agent) {

@@ -52,3 +52,26 @@ func NewDestinationTypeWithSpec(name string, spec ResourceTypeSpec) *Destination
 
 // GetKind returns "DestinationType"
 func (d *DestinationType) GetKind() Kind { return KindDestinationType }
+
+var destinationTypeTLSExemptions = map[string]bool{
+	"aws_s3":                  true, // not available
+	"coralogix":               true, // SaaS
+	"custom":                  true,
+	"datadog":                 true, // SaaS
+	"dynatrace":               true, // SaaS
+	"elasticsearch":           false,
+	"googlecloud":             true, // SaaS
+	"googlemanagedprometheus": true, // SaaS
+	"grafana_cloud":           true, // SaaS
+	"jaeger":                  false,
+	"kafka_otlp_destination":  false,
+	"logzio":                  true, // SaaS
+	"loki":                    false,
+	"newrelic_otlp":           true, // SaaS
+	"otlp_grpc":               false,
+	"prometheus":              true, // no 'insecure_skip_verify' option
+	"prometheus_remote_write": false,
+	"signalfx":                true, // SaaS
+	"splunkhec":               true, // no mTLS
+	"zipkin":                  false,
+}

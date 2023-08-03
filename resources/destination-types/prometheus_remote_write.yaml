@@ -28,11 +28,26 @@ spec:
       required: true
       default: ""
 
+    # Advanced Options
     - name: namespace
       label: Namespace
       description: Prefix to attach to each metric name.
       type: string
       default: ""
+      advancedConfig: true
+
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to the remote write backend.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
       advancedConfig: true
 
     - name: enable_resource_to_telemetry_conversion
@@ -42,7 +57,6 @@ spec:
       default: false
       advancedConfig: true
 
-    # Advanced Options
     - name: headers
       label: Additional HTTP Headers
       description: |
@@ -54,6 +68,9 @@ spec:
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
 
     - name: external_labels
       label: External Labels
@@ -63,6 +80,9 @@ spec:
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
 
     # TLS Settings
     - name: enable_tls
@@ -113,7 +133,7 @@ spec:
       advancedConfig: true
 
     - name: cert_file
-      label: Mutual TLS Client Certificate File
+      label: TLS Client Certificate File
       description: A TLS certificate used for client authentication, if mutual TLS is enabled.
       type: string
       required: true
@@ -125,7 +145,7 @@ spec:
       advancedConfig: true
 
     - name: key_file
-      label: Mutual TLS Client Private Key File
+      label: TLS Client Private Key File
       description: A TLS private key used for client authentication, if mutual TLS is enabled.
       type: string
       required: true
@@ -266,6 +286,7 @@ spec:
 
           resource_to_telemetry_conversion:
             enabled: {{ .enable_resource_to_telemetry_conversion }}
+          compression: {{ .compression }}
           {{ if .enable_tls }}
           tls:
             {{ if .strict_tls_verify }}
@@ -281,4 +302,4 @@ spec:
             key_file: "{{ .key_file }}"
             {{ end }}
           {{ end }}
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}

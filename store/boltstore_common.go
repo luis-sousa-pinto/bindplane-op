@@ -630,6 +630,93 @@ func (s *BoltstoreCore) DeleteDestinationType(ctx context.Context, name string) 
 	return item, err
 }
 
+// ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should
+// not fire an update event for the agents on the Updates eventbus.
+func (s *BoltstoreCore) ReportConnectedAgents(ctx context.Context, agentIDs []string, time time.Time) error {
+	ctx, span := tracer.Start(ctx, "store/ReportConnectedAgents")
+	defer span.End()
+
+	// these updates will not be reported to the eventbus
+	updates := s.CreateEventUpdate()
+
+	err := s.DB.Update(func(tx *bbolt.Tx) error {
+		bucket, err := s.AgentsBucket(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("failed to get agents bucket: %w", err)
+		}
+
+		var errs error
+
+		for _, agentID := range agentIDs {
+			_, err := s.upsertAgentTx(ctx, bucket, agentID, func(current *model.Agent) {
+				current.ReportedAt = &time
+			}, updates)
+			errs = errors.Join(errs, err)
+		}
+
+		return errs
+	})
+
+	// ignore updates gathered above to avoid filling the eventbus with frequent ReportedAt updates
+
+	return err
+}
+
+// DisconnectUnreportedAgents sets the Status of agents to Disconnected if the agent ReportedAt time is before the
+// specified time.
+func (s *BoltstoreCore) DisconnectUnreportedAgents(ctx context.Context, since time.Time) error {
+	ctx, span := tracer.Start(ctx, "store/DisconnectUnreportedAgents")
+	defer span.End()
+
+	changes := s.CreateEventUpdate()
+
+	err := s.DB.Update(func(tx *bbolt.Tx) error {
+		bucket, err := s.AgentsBucket(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("failed to get agents bucket: %w", err)
+		}
+		cursor := bucket.Cursor()
+		prefix := AgentPrefix()
+
+		for k, v := cursor.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = cursor.Next() {
+			agent := &model.Agent{}
+			if err := jsoniter.Unmarshal(v, agent); err != nil {
+				// unable to unmarshal, ignore this agent
+				s.Logger.Info("unable to unmarshal agent, ignoring", zap.Error(err))
+				continue
+			}
+			if agent.ReportedSince(since) {
+				// agent reported recently, nothing to do
+				continue
+			}
+			if agent.Status == model.Disconnected {
+				// agent already disconnected, nothing to do
+				continue
+			}
+			agent.Disconnect()
+
+			// marshal it back to to json
+			data, err := jsoniter.Marshal(agent)
+			if err != nil {
+				return fmt.Errorf("failed to marshal agent: %w", err)
+			}
+
+			// update the agent in the store
+			err = bucket.Put(k, data)
+			if err != nil {
+				return fmt.Errorf("failed to update agent: %w", err)
+			}
+
+			changes.IncludeAgent(agent, EventTypeUpdate)
+		}
+
+		return nil
+	})
+	s.Notify(ctx, changes)
+
+	return err
+}
+
 // CleanupDisconnectedAgents removes all containerized agents that have been disconnected since the given time
 func (s *BoltstoreCore) CleanupDisconnectedAgents(ctx context.Context, since time.Time) error {
 	// get all agents with the container-platform label
@@ -722,9 +809,14 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 		})
 	}
 
+	agentIDs, err := s.AgentsIDsMatchingConfiguration(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("agentIDs matching configuration: %w", err)
+	}
 	// set the rollout options and start the rollout
 	if options == nil {
-		options = &model.DefaultRolloutOptions
+		defaultOptions := model.RolloutOptionsForAgentCount(len(agentIDs))
+		options = &defaultOptions
 	}
 	config, _, err = editResource(ctx, s, nil, model.KindConfiguration, configurationName, func(config *model.Configuration) error {
 		config.Status.Rollout.Status = model.RolloutStatusStarted
@@ -745,10 +837,6 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 	}
 
 	// set future configuration for all agents using this configuration
-	agentIDs, err := s.AgentsIDsMatchingConfiguration(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("agentIDs matching configuration: %w", err)
-	}
 	_, err = s.UpsertAgents(ctx, agentIDs, func(agent *model.Agent) {
 		agent.SetFutureConfiguration(config)
 	})
@@ -828,22 +916,15 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 	// get the configuration
 	err = s.DB.Update(func(tx *bbolt.Tx) error {
 		var (
-			agentsWaiting  []string
-			agentsNext     int
-			nameAndVersion string
-			rolloutStatus  model.RolloutStatus
+			agentsWaiting []string
+			agentsNext    int
+			rolloutStatus model.RolloutStatus
 		)
 		oldRolloutStatus := model.RolloutStatusPending
 		config, wasModified, err := editResource(ctx, s, tx, model.KindConfiguration, configuration, func(r *model.Configuration) error {
-			nameAndVersion = r.NameAndVersion()
 			oldRolloutStatus = r.Status.Rollout.Status
 
-			agentsWaiting, err = FindAgents(ctx, s.AgentIndex(ctx), model.FieldRolloutWaiting, nameAndVersion)
-			if err != nil {
-				return err
-			}
-
-			agentsNext, err = UpdateRolloutMetrics(ctx, s.AgentIndex(ctx), r)
+			agentsWaiting, agentsNext, err = UpdateRolloutMetrics(ctx, s.AgentIndex(ctx), r)
 			if err != nil {
 				return err
 			}
@@ -881,6 +962,10 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 			agentsBucket, err := s.AgentsBucket(ctx, tx)
 			if err != nil {
 				return fmt.Errorf("failed to get agents bucket: %w", err)
+			}
+			// ensure we don't try to update more agents than we have
+			if agentsNext > len(agentsWaiting) {
+				agentsNext = len(agentsWaiting)
 			}
 			agentIDs := agentsWaiting[:agentsNext]
 			for _, agentID := range agentIDs {

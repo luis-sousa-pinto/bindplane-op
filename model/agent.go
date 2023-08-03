@@ -161,6 +161,7 @@ type Agent struct {
 	Configuration  any        `json:"configuration,omitempty" yaml:"configuration,omitempty" db:"configuration"`
 	ConnectedAt    *time.Time `json:"connectedAt,omitempty" yaml:"connectedAt,omitempty" db:"connected_at"`
 	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty" yaml:"disconnectedAt,omitempty" db:"disconnected_at"`
+	ReportedAt     *time.Time `json:"reported_at,omitempty" yaml:"reported_at,omitempty" db:"reported_at"`
 
 	Protocol            string                `json:"protocol,omitempty" yaml:"protocol,omitempty" db:"management_protocol"`
 	State               any                   `json:"state,omitempty" yaml:"state,omitempty" db:"management_state"`
@@ -262,6 +263,14 @@ func (a *Agent) ConnectedDurationDisplayText() string {
 	return durationDisplay(a.ConnectedAt)
 }
 
+// ReportedDurationDisplayText returns the duration since the agent last reported.
+func (a *Agent) ReportedDurationDisplayText() string {
+	if a.Status == Disconnected {
+		return "-"
+	}
+	return durationDisplay(a.ReportedAt)
+}
+
 // DisconnectedDurationDisplayText TODO(doc) What RFC?
 func (a *Agent) DisconnectedDurationDisplayText() string {
 	return durationDisplay(a.DisconnectedAt)
@@ -277,22 +286,35 @@ func (a *Agent) DisconnectedSince(since time.Time) bool {
 	return a.DisconnectedAt != nil && a.DisconnectedAt.Before(since)
 }
 
-// Connect updates the ConnectedAt and DisconnectedAt fields of the agent and should be called when the
+// ReportedSince returns true if the agent has reported since a given time.
+func (a *Agent) ReportedSince(since time.Time) bool {
+	return a.ReportedAt != nil && !a.ReportedAt.Before(since)
+}
+
+// Connect updates the ConnectedAt, ReportedAt, and DisconnectedAt fields of the agent and should be called when the
 // agent connects.
 func (a *Agent) Connect(newAgentVersion string) {
+	// always update ReportedAt
+	now := time.Now()
+	a.ReportedAt = &now
 	// only update ConnectedAt if this is a new version or never connected
 	if a.Version != newAgentVersion || a.ConnectedAt == nil {
-		now := time.Now()
 		a.ConnectedAt = &now
 	}
 	a.DisconnectedAt = nil
 }
 
 // Disconnect updates the DisconnectedAt and Status fields of the agent and should be called when the agent disconnects.
+// If the agent is already disconnected, this does nothing.
 func (a *Agent) Disconnect() {
-	now := time.Now()
-	a.DisconnectedAt = &now
-	a.Status = Disconnected
+	if a.Status != Disconnected {
+		now := time.Now()
+		a.DisconnectedAt = &now
+		a.Status = Disconnected
+
+		// clear out the ConnectedAt so that it gets reset when the agent reconnects
+		a.ConnectedAt = nil
+	}
 }
 
 func durationDisplay(t *time.Time) string {
@@ -614,7 +636,7 @@ func (a *Agent) PrintableKindPlural() string {
 
 // PrintableFieldTitles returns the list of field titles, used for printing a table of resources
 func (a *Agent) PrintableFieldTitles() []string {
-	return []string{"ID", "Name", "Version", "Status", "Configuration", "Connected", "Disconnected", "Labels"}
+	return []string{"ID", "Name", "Version", "Status", "Configuration", "Connected", "Reported", "Disconnected", "Labels"}
 }
 
 // PrintableFieldValue returns the field value for a title, used for printing a table of resources
@@ -630,6 +652,8 @@ func (a *Agent) PrintableFieldValue(title string) string {
 		return a.StatusDisplayText()
 	case "Connected":
 		return a.ConnectedDurationDisplayText()
+	case "Reported":
+		return a.ReportedDurationDisplayText()
 	case "Disconnected":
 		return a.DisconnectedDurationDisplayText()
 	case "Labels":

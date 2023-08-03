@@ -31,7 +31,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("Source", ctx, "testSource2").Return(testSource2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testSource1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testSource1}, mockResStore)
 		source, err := mfrs.Source(ctx, "testSource1")
 		require.NoError(t, err)
 		require.Equal(t, source, testSource1)
@@ -51,7 +51,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("SourceType", ctx, "testSourceType2").Return(testSourceType2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testSourceType1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testSourceType1}, mockResStore)
 		sourceType, err := mfrs.SourceType(ctx, "testSourceType1")
 		require.NoError(t, err)
 		require.Equal(t, sourceType, testSourceType1)
@@ -71,7 +71,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("Processor", ctx, "testProcessor2").Return(testProcessor2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testProcessor1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testProcessor1}, mockResStore)
 		processor, err := mfrs.Processor(ctx, "testProcessor1")
 		require.NoError(t, err)
 		require.Equal(t, processor, testProcessor1)
@@ -91,7 +91,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("ProcessorType", ctx, "testProcessorType2").Return(testProcessorType2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testProcessorType1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testProcessorType1}, mockResStore)
 		processorType, err := mfrs.ProcessorType(ctx, "testProcessorType1")
 		require.NoError(t, err)
 		require.Equal(t, processorType, testProcessorType1)
@@ -111,7 +111,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("Destination", ctx, "testDestination2").Return(testDestination2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testDestination1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testDestination1}, mockResStore)
 		destination, err := mfrs.Destination(ctx, "testDestination1")
 		require.NoError(t, err)
 		require.Equal(t, destination, testDestination1)
@@ -131,7 +131,7 @@ func TestMemoryFirstResourceStore(t *testing.T) {
 		mockResStore := model.NewMockResourceStore(t)
 		mockResStore.On("DestinationType", ctx, "testDestinationType2").Return(testProcessorType2, nil)
 
-		mfrs := newMemoryFirstResourceStore([]model.Resource{testProcessorType1}, mockResStore)
+		mfrs := NewMemoryFirstResourceStore([]model.Resource{testProcessorType1}, mockResStore)
 		destinationType, err := mfrs.DestinationType(ctx, "testDestinationType1")
 		require.NoError(t, err)
 		require.Equal(t, destinationType, testProcessorType1)

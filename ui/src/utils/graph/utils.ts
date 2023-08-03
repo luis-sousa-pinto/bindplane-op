@@ -397,7 +397,8 @@ export function getNodesAndEdges(
     };
 
     nodes.forEach((node) => {
-      if (node.id === e.source) {
+      // Use the attributes from the node on the right of the edge
+      if (node.id === e.target) {
         edge.data.attributes = node.data.attributes;
       }
     });
@@ -721,7 +722,7 @@ export function findRouteReceiverMetric(
 }
 
 export interface MetricValue {
-  value: number;
+  value?: number;
   unit: string;
 }
 
@@ -734,6 +735,10 @@ export interface MetricValue {
 export function formatMetric(metric: MetricValue, rate: string): string {
   let { value, unit } = metric;
   let units: string[];
+  // If value is undefined, we want to use 0 instead of NaN
+  if (value == null) {
+    value = 0;
+  }
 
   if (rate.endsWith("m")) {
     unit = unit.replace("/s", "/m");
@@ -761,7 +766,7 @@ function getUnits(rate: string): string[] {
  * Recursively convert a metric to the next largest unit until the value is less than 1024
  */
 export function convertUnits(
-  metric: MetricValue,
+  metric: Required<MetricValue>,
   units: string[]
 ): MetricValue {
   const unitIndex = units.findIndex((u) => u === metric.unit) ?? 0;

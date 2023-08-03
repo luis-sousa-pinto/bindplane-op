@@ -54,6 +54,8 @@ func WithPeriod(period time.Duration) QueryOption {
 // GetDurationFromPeriod returns the rollup duration for a given query period
 func GetDurationFromPeriod(opts QueryOptions) time.Duration {
 	switch opts.Period {
+	case 10 * time.Second:
+		return 1 * time.Second
 	case 1 * time.Minute:
 		return 10 * time.Second
 	case 5 * time.Minute:

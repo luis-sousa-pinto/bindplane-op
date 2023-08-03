@@ -52,11 +52,10 @@ const TitleSectionComponent: React.FC<Props> = ({
           <Typography>
             {additionalInfo.message}
             {additionalInfo.documentation?.map((d) => (
-              <div key={d.url}>
-                <a href={d.url} rel="noreferrer" target="_blank">
-                  {d.text}
-                </a>
-              </div>
+              <a href={d.url} rel="noreferrer" target="_blank" key={d.url}>
+                <br></br>
+                {d.text}
+              </a>
             ))}
           </Typography>
         </Alert>

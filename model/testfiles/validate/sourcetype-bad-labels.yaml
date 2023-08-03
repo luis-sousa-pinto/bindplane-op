@@ -50,6 +50,73 @@ spec:
         - beginning
         - end
       default: end
+    - name: enable_tls
+      label: Enable TLS
+      description: Enable TLS when connecting to Aerospike.
+      type: bool
+      required: true
+      default: false
+      advancedConfig: true
+
+    - name: insecure_skip_verify
+      label: Skip TLS Certificate Verification
+      description: Enable to skip TLS certificate verification.
+      type: bool
+      default: false
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: server_name
+      label: TLS Server Name
+      description: ServerName requested by client for virtual hosting.
+      type: string
+      required: true
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: ca_file
+      label: TLS Certificate Authority File
+      description: Certificate authority used to validate TLS certificates.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: cert_file
+      label: TLS Client Certificate File
+      description: A TLS certificate used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: key_file
+      label: TLS Client Private Key File
+      description: A TLS private key used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
   metrics:
     # receivers, processors, exporters, and extensions can all be specified
     receivers: |

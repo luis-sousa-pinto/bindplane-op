@@ -45,12 +45,15 @@ spec:
 
     - name: attributes
       label: Attributes
-      description: Any Cloudflare LogPush field names provided as keys will be mapped to log record attributes using the map value as the attribute name.
+      description: A map of Cloudflare LogPush field names to log record attributes.
       type: map
       default: {}
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Field
+          value: Attribute
 
     - name: timestamp_field
       label: Timestamp Field

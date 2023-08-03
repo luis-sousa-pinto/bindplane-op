@@ -32,6 +32,14 @@ gql`
         labels
         version
         id
+        deprecated
+        additionalInfo {
+          message
+          documentation {
+            text
+            url
+          }
+        }
       }
       spec {
         parameters {
@@ -234,6 +242,7 @@ function ProcessorCategory({
           displayName={p.metadata.displayName!}
           onSelect={() => onSelect(p)}
           telemetryTypes={p.spec.telemetryTypes}
+          deprecated={!!p.metadata.deprecated}
         />
       ))}
     </>

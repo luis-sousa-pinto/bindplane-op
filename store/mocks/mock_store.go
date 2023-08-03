@@ -1639,6 +1639,49 @@ func (_c *MockStore_Destinations_Call) RunAndReturn(run func(context.Context) ([
 	return _c
 }
 
+// DisconnectUnreportedAgents provides a mock function with given fields: ctx, since
+func (_m *MockStore) DisconnectUnreportedAgents(ctx context.Context, since time.Time) error {
+	ret := _m.Called(ctx, since)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, time.Time) error); ok {
+		r0 = rf(ctx, since)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockStore_DisconnectUnreportedAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DisconnectUnreportedAgents'
+type MockStore_DisconnectUnreportedAgents_Call struct {
+	*mock.Call
+}
+
+// DisconnectUnreportedAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - since time.Time
+func (_e *MockStore_Expecter) DisconnectUnreportedAgents(ctx interface{}, since interface{}) *MockStore_DisconnectUnreportedAgents_Call {
+	return &MockStore_DisconnectUnreportedAgents_Call{Call: _e.mock.On("DisconnectUnreportedAgents", ctx, since)}
+}
+
+func (_c *MockStore_DisconnectUnreportedAgents_Call) Run(run func(ctx context.Context, since time.Time)) *MockStore_DisconnectUnreportedAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(time.Time))
+	})
+	return _c
+}
+
+func (_c *MockStore_DisconnectUnreportedAgents_Call) Return(_a0 error) *MockStore_DisconnectUnreportedAgents_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_DisconnectUnreportedAgents_Call) RunAndReturn(run func(context.Context, time.Time) error) *MockStore_DisconnectUnreportedAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Measurements provides a mock function with given fields:
 func (_m *MockStore) Measurements() stats.Measurements {
 	ret := _m.Called()
@@ -1951,6 +1994,50 @@ func (_c *MockStore_Processors_Call) Return(_a0 []*model.Processor, _a1 error) *
 }
 
 func (_c *MockStore_Processors_Call) RunAndReturn(run func(context.Context) ([]*model.Processor, error)) *MockStore_Processors_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReportConnectedAgents provides a mock function with given fields: ctx, agentIDs, _a2
+func (_m *MockStore) ReportConnectedAgents(ctx context.Context, agentIDs []string, _a2 time.Time) error {
+	ret := _m.Called(ctx, agentIDs, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string, time.Time) error); ok {
+		r0 = rf(ctx, agentIDs, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockStore_ReportConnectedAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReportConnectedAgents'
+type MockStore_ReportConnectedAgents_Call struct {
+	*mock.Call
+}
+
+// ReportConnectedAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentIDs []string
+//   - _a2 time.Time
+func (_e *MockStore_Expecter) ReportConnectedAgents(ctx interface{}, agentIDs interface{}, _a2 interface{}) *MockStore_ReportConnectedAgents_Call {
+	return &MockStore_ReportConnectedAgents_Call{Call: _e.mock.On("ReportConnectedAgents", ctx, agentIDs, _a2)}
+}
+
+func (_c *MockStore_ReportConnectedAgents_Call) Run(run func(ctx context.Context, agentIDs []string, _a2 time.Time)) *MockStore_ReportConnectedAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]string), args[2].(time.Time))
+	})
+	return _c
+}
+
+func (_c *MockStore_ReportConnectedAgents_Call) Return(_a0 error) *MockStore_ReportConnectedAgents_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockStore_ReportConnectedAgents_Call) RunAndReturn(run func(context.Context, []string, time.Time) error) *MockStore_ReportConnectedAgents_Call {
 	_c.Call.Return(run)
 	return _c
 }

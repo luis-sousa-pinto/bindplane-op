@@ -1,3 +1,46 @@
 .control-box {
   margin-left: 24px;
 }
+
+.box {
+  margin-top: 24px;
+  height: 60px;
+  opacity: 1;
+  transition: opacity 1s, height 1s;
+}
+
+.hidden {
+  display: none;
+}
+
+.fadeout {
+  animation-name: fadeOut;
+  animation-duration: 10s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    margin-top: 24px;
+    opacity: 1;
+    height: 60px;
+  }
+
+  80% {
+    margin-top: 24px;
+    height: 60px;
+    opacity: 1;
+  }
+
+  90% {
+    margin-top: 24px;
+    height: 60px;
+    opacity: 0;
+  }
+
+  100% {
+    margin-top: 0;
+    height: 0;
+    opacity: 0;
+  }
+}

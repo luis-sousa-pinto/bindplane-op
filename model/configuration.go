@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -229,17 +230,63 @@ type PhaseAgentCount struct {
 	Maximum    int     `json:"maximum" yaml:"maximum" mapstructure:"maximum"`
 }
 
+// RolloutSize is used to determine the default rollout options for a configuration.
+type RolloutSize string
+
+const (
+	// RolloutSmall is a rollout of 1-20 Agents
+	RolloutSmall RolloutSize = "small"
+	// RolloutMedium is a rollout of  20-500 Agents
+	RolloutMedium RolloutSize = "medium"
+	// RolloutLarge is a rollout of  500+ Agents
+	RolloutLarge RolloutSize = "large"
+)
+
+// RolloutOptionsForAgentCount returns the RolloutOptions that should be used for a rollout of the specified number of agents.
+func RolloutOptionsForAgentCount(agentCount int) RolloutOptions {
+	switch {
+	case agentCount <= 20:
+		return DefaultRolloutOptions[RolloutSmall]
+	case agentCount <= 500:
+		return DefaultRolloutOptions[RolloutMedium]
+	default:
+		return DefaultRolloutOptions[RolloutLarge]
+	}
+}
+
 // DefaultRolloutOptions contains the default rollout options for a configuration.
 // NOTE: These options are the same as the defaults in the UI in rollouts-rest-fns.ts
-var DefaultRolloutOptions = RolloutOptions{
-	StartAutomatically: false,
-	RollbackOnFailure:  true,
-	PhaseAgentCount: PhaseAgentCount{
-		Initial:    3,
-		Multiplier: 5,
-		Maximum:    100,
+var DefaultRolloutOptions = map[RolloutSize]RolloutOptions{
+	RolloutSmall: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    1,
+			Multiplier: 1,
+			Maximum:    1,
+		},
+		MaxErrors: 0,
 	},
-	MaxErrors: 0,
+	RolloutMedium: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    1,
+			Multiplier: 3,
+			Maximum:    100,
+		},
+		MaxErrors: 0,
+	},
+	RolloutLarge: {
+		StartAutomatically: false,
+		RollbackOnFailure:  true,
+		PhaseAgentCount: PhaseAgentCount{
+			Initial:    3,
+			Multiplier: 5,
+			Maximum:    100,
+		},
+		MaxErrors: 0,
+	},
 }
 
 // Rollout contains details about the rollout and its progress
@@ -335,6 +382,32 @@ type ResourceConfiguration struct {
 }
 
 var _ HasResourceParameters = (*ResourceConfiguration)(nil)
+
+// ShallowEqual compares the Resource configuration at a high level.
+// It does not compare any child ResourceConfiguration objects.
+func (rc *ResourceConfiguration) ShallowEqual(other *ResourceConfiguration) bool {
+	if rc.Disabled != other.Disabled ||
+		rc.DisplayName != other.DisplayName ||
+		rc.Name != other.Name ||
+		rc.ID != other.ID ||
+		rc.Type != other.Type {
+		return false
+	}
+
+	if len(rc.Parameters) != len(other.Parameters) {
+		return false
+	}
+
+	for i, param := range rc.Parameters {
+		bParam := other.Parameters[i]
+		if param.Name != bParam.Name ||
+			!reflect.DeepEqual(param.Value, bParam.Value) {
+			return false
+		}
+	}
+
+	return true
+}
 
 // ResourceParameters returns the resource parameters for this resource.
 func (rc *ResourceConfiguration) ResourceParameters() []Parameter {
@@ -1118,15 +1191,16 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 	g.Attributes["activeTypeFlags"] = pipelineUsage.ActiveFlags()
 
 	for i, source := range c.Spec.Sources {
-		sourceName := source.localName(KindSource, i)
-		usage := pipelineUsage.sources.usage(sourceName)
+		sourceName := TrimVersion(source.localName(KindSource, i))
+		trimmedName := TrimVersion(sourceName)
+		usage := pipelineUsage.sources.usage(trimmedName)
 
-		attributes := graph.MakeAttributes(string(KindSource), sourceName)
+		attributes := graph.MakeAttributes(string(KindSource), trimmedName)
 		attributes["activeTypeFlags"] = usage.active
 		attributes["supportedTypeFlags"] = usage.supported
 		attributes["sourceIndex"] = i
 		s := &graph.Node{
-			ID:         fmt.Sprintf("source/%s", sourceName),
+			ID:         fmt.Sprintf("source/%s", trimmedName),
 			Type:       "sourceNode",
 			Label:      source.Type,
 			Attributes: attributes,
@@ -1136,7 +1210,7 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		// For now only add one intermediate node for each
 		// source which represents all the processors on the source.
 		p := &graph.Node{
-			ID:    fmt.Sprintf("source/%s/processors", sourceName),
+			ID:    fmt.Sprintf("source/%s/processors", trimmedName),
 			Type:  "processorNode",
 			Label: "Processors",
 			Attributes: map[string]any{
@@ -1155,10 +1229,9 @@ func (c *Configuration) Graph(ctx context.Context, store ResourceStore) (*graph.
 		// We don't use the name, because the same destination may be used multiple times.
 		// Using the index guarantees uniqueness.
 		destinationName := destination.localName(KindDestination, i)
+		trimmedName := TrimVersion(destinationName)
 		destinationSlug := fmt.Sprintf("%s-%d", TrimVersion(destinationName), i)
 		usage := pipelineUsage.destinations.usage(destinationSlug)
-
-		trimmedName := TrimVersion(destination.Name)
 
 		// For now only add one intermediate node for each
 		// destination which represents all the processors on the destination.

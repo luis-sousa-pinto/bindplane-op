@@ -42,6 +42,16 @@ spec:
       type: bool
       default: true
 
+    - name: enable_compression
+      label: Enable Compression
+      description: Compress telemetry data using gzip before sending.
+      type: bool
+      default: true
+      options:
+        sectionHeader: true
+        gridColumns: 12
+      advancedConfig: true
+
     # Retry on failure
     - name: retry_on_failure_enabled
       label: Enable Retry on Failure
@@ -183,6 +193,7 @@ spec:
           api_url: https://api.{{ .realm }}.signalfx.com
           ingest_url: https://ingest.{{ .realm }}.signalfx.com
           sync_host_metadata: true
+          disable_compression: {{ not .enable_compression }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}
@@ -199,6 +210,7 @@ spec:
       - splunk_hec:
           token: '{{ .token }}'
           endpoint: https://ingest.{{ .realm }}.signalfx.com/v1/log
+          disable_compression: {{ not .enable_compression }}
           source: otel
           sourcetype: otel
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
@@ -217,6 +229,7 @@ spec:
       - sapm:
           access_token: '{{ .token }}'
           endpoint: https://ingest.{{ .realm }}.signalfx.com/v2/trace
+          disable_compression: {{ not .enable_compression }}
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
       {{ end }}

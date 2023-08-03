@@ -41,6 +41,14 @@ gql`
           version
           description
           displayName
+          deprecated
+          additionalInfo {
+            message
+            documentation {
+              text
+              url
+            }
+          }
         }
         spec {
           parameters {
@@ -197,6 +205,8 @@ export const EditProcessorView: React.FC<EditProcessorViewProps> = ({
         }
         displayName={resourceConfig.displayName ?? resourceConfig.name ?? ""}
         description={processorType.metadata.description ?? ""}
+        additionalInfo={processorType.metadata.additionalInfo}
+        deprecated={processorType.metadata.deprecated ?? false}
         kind={"processor"}
         parameterDefinitions={processorType.spec.parameters}
         includeDisplayNameField={resourceConfig.isInline()}

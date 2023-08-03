@@ -63,6 +63,7 @@ type Store interface {
 	Agent(ctx context.Context, id string) (*model.Agent, error)
 	Agents(ctx context.Context, options ...QueryOption) ([]*model.Agent, error)
 	AgentsCount(context.Context, ...QueryOption) (int, error)
+
 	// UpsertAgent adds a new Agent to the Store or updates an existing one
 	UpsertAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
 	UpsertAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error)
@@ -128,6 +129,14 @@ type Store interface {
 
 	// AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
 	AgentsIDsMatchingConfiguration(ctx context.Context, conf *model.Configuration) ([]string, error)
+
+	// ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should
+	// not fire an update event for the agents on the Updates eventbus.
+	ReportConnectedAgents(ctx context.Context, agentIDs []string, time time.Time) error
+
+	// DisconnectUnreportedAgents sets the Status of agents to Disconnected if the agent ReportedAt time is before the
+	// specified time.
+	DisconnectUnreportedAgents(ctx context.Context, since time.Time) error
 
 	// CleanupDisconnectedAgents removes agents that have disconnected before the specified time
 	CleanupDisconnectedAgents(ctx context.Context, since time.Time) error
@@ -418,6 +427,60 @@ func GetSeedResources(ctx context.Context, files embed.FS, folders []string) ([]
 	return allEmbedded, nil
 }
 
+// separateDeprecatedResources will separate the deprecated resources from the non-deprecated resources.
+func separateDeprecatedResources(resources []model.Resource) (deprecated []model.Resource, notDeprecated []model.Resource) {
+	for _, r := range resources {
+		if r.IsDeprecated() {
+			deprecated = append(deprecated, r)
+		} else {
+			notDeprecated = append(notDeprecated, r)
+		}
+	}
+	return deprecated, notDeprecated
+}
+
+// resourceExists will return true if the resource already exists in the store and any error encountered.
+func resourceExists(ctx context.Context, store Store, resource model.Resource) (bool, error) {
+	switch resource.GetKind() {
+	case model.KindSourceType:
+		existing, err := store.SourceType(ctx, resource.Name())
+		return existing != nil, err
+
+	case model.KindProcessorType:
+		existing, err := store.ProcessorType(ctx, resource.Name())
+		return existing != nil, err
+
+	case model.KindDestinationType:
+		existing, err := store.DestinationType(ctx, resource.Name())
+		return existing != nil, err
+
+	default:
+		return false, fmt.Errorf("unsupported resource type: %s", resource.GetKind())
+	}
+}
+
+// seedDeprecatedResource will only seed the resource if the resource already exists in the store. If the resource does
+// not exist, it will return a resource status with model.StatusDeprecated, nil. If the resource exists, it will be
+// updated and the status will be returned.
+func seedDeprecatedResource(ctx context.Context, store Store, resource model.Resource) (*model.ResourceStatus, error) {
+	// check if the resource already exists
+	alreadyExists, err := resourceExists(ctx, store, resource)
+	if err != nil {
+		return model.NewResourceStatusWithError(resource, err), nil
+	}
+
+	// only apply deprecated resources if they already exist
+	if alreadyExists {
+		updates, err := store.ApplyResources(ctx, []model.Resource{resource})
+		if len(updates) > 0 {
+			return &updates[0], err
+		}
+		return nil, err
+	}
+
+	return model.NewResourceStatus(resource, model.StatusDeprecated), nil
+}
+
 // Seed adds bundled resources to the store
 func Seed(ctx context.Context, store Store, logger *zap.Logger, files embed.FS, folders []string) error {
 	ctx, span := tracer.Start(ctx, "store/Seed")
@@ -429,10 +492,26 @@ func Seed(ctx context.Context, store Store, logger *zap.Logger, files embed.FS, 
 		return err
 	}
 
-	updates, err := store.ApplyResources(ctx, resourceTypes)
+	deprecated, notDeprecated := separateDeprecatedResources(resourceTypes)
+
+	// seed non-deprecated resources first
+	updates, err := store.ApplyResources(ctx, notDeprecated)
 	if err != nil {
 		span.RecordError(err)
 		return err
+	}
+
+	// only update deprecated resources if they already exist in the store
+	for _, r := range deprecated {
+		status, err := seedDeprecatedResource(ctx, store, r)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+		// status will be nil if the deprecated resource is ignored
+		if status != nil {
+			updates = append(updates, *status)
+		}
 	}
 
 	messages := make([]string, len(updates))
@@ -447,26 +526,26 @@ func Seed(ctx context.Context, store Store, logger *zap.Logger, files embed.FS, 
 // ----------------------------------------------------------------------
 // seeding search indexes
 
-// UpdateRolloutMetrics finds the agent counts for the configuration, updates the
-//
-// rollout status and returns the number of new agents pending
-func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *model.Configuration) (int, error) {
+// UpdateRolloutMetrics finds the agent counts for the configuration, updates the rollout status on the configuration,
+// and returns a slice of the agent IDs that are waiting for a rollout and the number of those agents that should be
+// moved into the pending state.
+func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *model.Configuration) ([]string, int, error) {
 	nameAndVersion := config.NameAndVersion()
 	agentsComplete, err := FindAgents(ctx, agentIndex, model.FieldRolloutComplete, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsError, err := FindAgents(ctx, agentIndex, model.FieldRolloutError, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsPending, err := FindAgents(ctx, agentIndex, model.FieldRolloutPending, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 	agentsWaiting, err := FindAgents(ctx, agentIndex, model.FieldRolloutWaiting, nameAndVersion)
 	if err != nil {
-		return 0, err
+		return nil, 0, err
 	}
 
 	newAgentsPending := config.Status.Rollout.UpdateStatus(model.RolloutProgress{
@@ -475,7 +554,7 @@ func UpdateRolloutMetrics(ctx context.Context, agentIndex search.Index, config *
 		Pending:   len(agentsPending),
 		Waiting:   len(agentsWaiting),
 	})
-	return newAgentsPending, nil
+	return agentsWaiting, newAgentsPending, nil
 }
 
 // SeedSearchIndexes seeds the search indexes with the current data in the store

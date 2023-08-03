@@ -25,8 +25,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// historyFlag when --history is set print the resources history
-var historyFlag bool
+// HistoryFlag when --history is set print the resources history
+var HistoryFlag bool
+
+// ExportFlag when --export is set print the resources in an importable format
+var ExportFlag bool
 
 // errHistoryNotSupported is the error
 var errHistoryNotSupported = errors.New("history is not supported for this resource kind")
@@ -52,7 +55,9 @@ func Command(builder Builder) *cobra.Command {
 		RolloutsCommand(builder),
 	)
 
-	cmd.PersistentFlags().BoolVar(&historyFlag, "history", false, "If true, list the history of the resource.")
+	cmd.PersistentFlags().BoolVar(&HistoryFlag, "history", false, "If true, list the history of the resource.")
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
+
 	return cmd
 }
 
@@ -61,7 +66,7 @@ func ResourcesCommand(builder Builder) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resources",
 		Short: "Displays all resources",
-		Long:  `Use -o yaml to export all resources to yaml.`,
+		Long:  `Use -o yaml to output all resources to yaml.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			getter, err := builder.BuildGetter(cmd.Context())
 			if err != nil {
@@ -105,7 +110,7 @@ func AgentsCommand(builder Builder) *cobra.Command {
 				}
 				return getter.GetResourcesOfKind(ctx, model.KindAgent, queryOpts)
 			case 1:
-				if historyFlag {
+				if HistoryFlag {
 					return errHistoryNotSupported
 				}
 				return getter.GetResource(ctx, model.KindAgent, args[0])
@@ -148,7 +153,7 @@ func ConfigurationsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindConfiguration, args)
 		},
 	}
-
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -177,6 +182,7 @@ func DestinationsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindDestination, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -205,6 +211,7 @@ func ProcessorsCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindProcessor, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -233,6 +240,7 @@ func SourcesCommand(builder Builder) *cobra.Command {
 			return Resources(cmd.Context(), builder, model.KindSource, args)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&ExportFlag, "export", false, "If true, export the resource in an importable format.")
 	return cmd
 }
 
@@ -244,7 +252,7 @@ func RolloutsCommand(builder Builder) *cobra.Command {
 		Short:   "Displays the rollouts",
 		Long:    `A rollout configurations agents with a configuration.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if historyFlag {
+			if HistoryFlag {
 				// If we enable the history flag for rollouts it should pull the history for the configuration of the same name
 				return Resources(cmd.Context(), builder, model.KindConfiguration, args)
 			}
@@ -265,7 +273,7 @@ func Resources(ctx context.Context, builder Builder, kind model.Kind, args []str
 	case 0:
 		return getter.GetResourcesOfKind(ctx, kind, client.QueryOptions{})
 	case 1:
-		if historyFlag {
+		if HistoryFlag {
 			// If this isn't a kind that supports history then return an error
 			if !model.HasVersionKind(kind) {
 				return errHistoryNotSupported

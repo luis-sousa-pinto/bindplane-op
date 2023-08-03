@@ -89,7 +89,7 @@ spec:
     advancedConfig: true
 
   - name: ca_file_path
-    label: CA File Path
+    label: TLS Certificate Authority File
     description: File path for CA certification file for CockroachDB (only needed if you have a secure cluster).
     options:
         gridColumns: 12
@@ -106,7 +106,7 @@ spec:
     advancedConfig: true
 
   - name: cert_file_path
-    label: Cert File Path
+    label: TLS Client Certificate File
     description: A TLS certificate used for client authentication, if mutual TLS is enabled.
     options:
         gridColumns: 12
@@ -123,7 +123,7 @@ spec:
     advancedConfig: true
 
   - name: key_file_path
-    label: Key File Path
+    label: TLS Client Private Key File
     description: A TLS private key used for client authentication, if mutual TLS is enabled.
     options:
         gridColumns: 12
@@ -155,7 +155,7 @@ spec:
     advancedConfig: true
 
   - name: insecure_skip_verify
-    label: Skip Verification
+    label: Skip TLS Certificate Verification
     description: Disable validation of the server certificate.
     type: bool
     required: false

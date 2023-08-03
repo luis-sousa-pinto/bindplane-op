@@ -140,6 +140,7 @@ func (x mockUnknownResource) PrintableKindSingular() string     { return string(
 func (x mockUnknownResource) PrintableKindPlural() string       { return string(model.KindUnknown) }
 func (x mockUnknownResource) PrintableFieldTitles() []string    { return []string{} }
 func (x mockUnknownResource) PrintableFieldValue(string) string { return "-" }
+func (x mockUnknownResource) IsDeprecated() bool                { return false }
 
 var _ model.Resource = (*mockUnknownResource)(nil)
 
@@ -719,6 +720,30 @@ func TestRolloutToDisconnectedAgents(t *testing.T) {
 	defer store.Close()
 
 	runRolloutToDisconnectedAgentsTest(ctx, t, store)
+}
+
+func TestSeedDeprecated(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	RunTestSeedDeprecated(ctx, t, store)
+}
+
+func TestReportConnectedAgents(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	RunReportConnectedAgentsTests(ctx, t, store)
 }
 
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */

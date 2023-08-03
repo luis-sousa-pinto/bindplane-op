@@ -310,6 +310,37 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 		)
 	}
 
+	// Labels are only appropriate for type map
+	if len(p.Options.Labels) > 0 && p.Type != "map" {
+		errs.Add(
+			stanzaerrors.NewError(
+				fmt.Sprintf("labels is defined for parameter of type `%s`", p.Type),
+				"remove 'labels' field or change type to 'map`",
+			),
+		)
+	}
+
+	// Labels should be specified for type map
+	if p.Type == "map" {
+		if len(p.Options.Labels) == 0 || p.Options.Labels["key"] == "" || p.Options.Labels["value"] == "" {
+			errs.Warn(
+				stanzaerrors.NewError(
+					fmt.Sprintf("labels not defined for parameter of type `%s`", p.Type),
+					"add 'labels' field to define custom labels for map key and value",
+				),
+			)
+		}
+
+		if p.Options.GridColumns == nil || *p.Options.GridColumns != 12 {
+			errs.Warn(
+				stanzaerrors.NewError(
+					fmt.Sprintf("gridColumns: 12 not specified for parameter of type `%s`", p.Type),
+					"add 'gridColumns: 12' to options to use the full width of the form for map parameters",
+				),
+			)
+		}
+	}
+
 	p.validateMetricCategories(errs)
 }
 

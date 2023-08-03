@@ -11,6 +11,8 @@ describe("RolloutProgress", () => {
         rolloutStatus={0}
         hideActions={false}
         paused={false}
+        hidden={false}
+        fadeout={false}
         onPause={() => {}}
         onStart={() => {}}
         onResume={() => {}}

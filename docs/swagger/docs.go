@@ -16,116 +16,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/Agents": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Agents",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.AgentsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/Configurations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Configurations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ConfigurationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/Destinations": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Destinations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.DestinationsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/Processors": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Processors",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.ProcessorsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/Sources": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "List Sources",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.SourcesResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/agent-versions": {
             "get": {
                 "produces": [
@@ -306,11 +196,31 @@ const docTemplate = `{
             }
         },
         "/agents": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Agents",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.AgentsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "produces": [
                     "application/json"
                 ],
-                "summary": "delete agents by ids",
+                "summary": "Delete agents by ids",
                 "parameters": [
                     {
                         "description": "list of agent ids to delete",
@@ -682,6 +592,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/configurations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Configurations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ConfigurationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/configurations/{name}": {
             "get": {
                 "produces": [
@@ -928,6 +860,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/destinations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Destinations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DestinationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/destinations/{name}": {
             "get": {
                 "produces": [
@@ -1077,6 +1031,28 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/processors": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Processors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ProcessorsResponse"
                         }
                     },
                     "500": {
@@ -1473,6 +1449,28 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sources": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List Sources",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SourcesResponse"
                         }
                     },
                     "500": {

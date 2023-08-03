@@ -224,17 +224,44 @@ func (g *DefaultGetter) getPrintableResource(ctx context.Context, kind model.Kin
 	case model.KindAgentVersion:
 		resource, err = g.client.AgentVersion(ctx, id)
 	case model.KindConfiguration:
-		resource, err = g.client.Configuration(ctx, id)
+		if ExportFlag {
+			c := &model.Configuration{}
+			c, err = g.client.Configuration(ctx, id)
+			if err == nil {
+				exportConfiguration(c)
+				resource = c
+			}
+		} else {
+			resource, err = g.client.Configuration(ctx, id)
+		}
 	case model.KindDestinationType:
 		resource, err = g.client.DestinationType(ctx, id)
 	case model.KindDestination:
-		resource, err = g.client.Destination(ctx, id)
+		d := &model.Destination{}
+		d, err = g.client.Destination(ctx, id)
+		if err == nil && ExportFlag {
+			d.Metadata = sanitizeMetadataForExport(d.Metadata)
+			d.Spec.Type = model.TrimVersion(d.Spec.Type)
+		}
+		resource = d
 	case model.KindProcessorType:
 		resource, err = g.client.ProcessorType(ctx, id)
 	case model.KindProcessor:
-		resource, err = g.client.Processor(ctx, id)
+		p := &model.Processor{}
+		p, err = g.client.Processor(ctx, id)
+		if err == nil && ExportFlag {
+			p.Metadata = sanitizeMetadataForExport(p.Metadata)
+			p.Spec.Type = model.TrimVersion(p.Spec.Type)
+		}
+		resource = p
 	case model.KindSource:
-		resource, err = g.client.Source(ctx, id)
+		s := &model.Source{}
+		s, err = g.client.Source(ctx, id)
+		if err == nil && ExportFlag {
+			s.Metadata = sanitizeMetadataForExport(s.Metadata)
+			s.Spec.Type = model.TrimVersion(s.Spec.Type)
+		}
+		resource = s
 	case model.KindSourceType:
 		resource, err = g.client.SourceType(ctx, id)
 	case model.KindRollout:
@@ -283,11 +310,15 @@ func (g *DefaultGetter) getAllPrintableResources(ctx context.Context, kind model
 		}
 		return resources, err
 	case model.KindConfiguration:
-		configurations, err := g.client.Configurations(ctx)
-		for _, configuration := range configurations {
+		configuration, err := g.client.Configurations(ctx)
+		for _, configuration := range configuration {
+			if ExportFlag {
+				exportConfiguration(configuration)
+			}
 			resources = append(resources, configuration)
 		}
 		return resources, err
+
 	case model.KindDestinationType:
 		destinationTypes, err := g.client.DestinationTypes(ctx)
 		for _, destinationType := range destinationTypes {
@@ -295,8 +326,12 @@ func (g *DefaultGetter) getAllPrintableResources(ctx context.Context, kind model
 		}
 		return resources, err
 	case model.KindDestination:
-		destinations, err := g.client.Destinations(ctx)
-		for _, destination := range destinations {
+		destination, err := g.client.Destinations(ctx)
+		for _, destination := range destination {
+			if ExportFlag {
+				destination.Metadata = sanitizeMetadataForExport(destination.Metadata)
+				destination.Spec.Type = model.TrimVersion(destination.Spec.Type)
+			}
 			resources = append(resources, destination)
 		}
 		return resources, err
@@ -307,14 +342,22 @@ func (g *DefaultGetter) getAllPrintableResources(ctx context.Context, kind model
 		}
 		return resources, err
 	case model.KindProcessor:
-		processors, err := g.client.Processors(ctx)
-		for _, processor := range processors {
+		processor, err := g.client.Processors(ctx)
+		for _, processor := range processor {
+			if ExportFlag {
+				processor.Metadata = sanitizeMetadataForExport(processor.Metadata)
+				processor.Spec.Type = model.TrimVersion(processor.Spec.Type)
+			}
 			resources = append(resources, processor)
 		}
 		return resources, err
 	case model.KindSource:
-		sources, err := g.client.Sources(ctx)
-		for _, source := range sources {
+		source, err := g.client.Sources(ctx)
+		for _, source := range source {
+			if ExportFlag {
+				source.Metadata = sanitizeMetadataForExport(source.Metadata)
+				source.Spec.Type = model.TrimVersion(source.Spec.Type)
+			}
 			resources = append(resources, source)
 		}
 		return resources, err

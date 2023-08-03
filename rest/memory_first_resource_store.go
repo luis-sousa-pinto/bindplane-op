@@ -20,28 +20,28 @@ import (
 	"github.com/observiq/bindplane-op/model"
 )
 
-// memoryFirstResourceStore is a model.ResourceStore that first attempts to return in-memory resources, before
+// MemoryFirstResourceStore is a model.ResourceStore that first attempts to return in-memory resources, before
 // falling back to an underlying model.ResourceStore.
-type memoryFirstResourceStore struct {
-	resourceStore model.ResourceStore
-	sources map[string]*model.Source
-	sourceTypes map[string]*model.SourceType
-	processors map[string]*model.Processor
-	processorTypes map[string]*model.ProcessorType
-	destinations map[string]*model.Destination
+type MemoryFirstResourceStore struct {
+	resourceStore    model.ResourceStore
+	sources          map[string]*model.Source
+	sourceTypes      map[string]*model.SourceType
+	processors       map[string]*model.Processor
+	processorTypes   map[string]*model.ProcessorType
+	destinations     map[string]*model.Destination
 	destinationTypes map[string]*model.DestinationType
 }
 
-// newMemoryFirstResourceStore returns a new MemoryFirstResourceStore, which first looks for the resource in
+// NewMemoryFirstResourceStore returns a new MemoryFirstResourceStore, which first looks for the resource in
 // the provided resource slice, then looks into the model.ResourceStore.
-func newMemoryFirstResourceStore(resources []model.Resource, store model.ResourceStore) *memoryFirstResourceStore {
-	rt := &memoryFirstResourceStore{
-		resourceStore: store,
-		sources: map[string]*model.Source{},
-		sourceTypes: map[string]*model.SourceType{},
-		processors: map[string]*model.Processor{},
-		processorTypes: map[string]*model.ProcessorType{},
-		destinations: map[string]*model.Destination{},
+func NewMemoryFirstResourceStore(resources []model.Resource, store model.ResourceStore) *MemoryFirstResourceStore {
+	rt := &MemoryFirstResourceStore{
+		resourceStore:    store,
+		sources:          map[string]*model.Source{},
+		sourceTypes:      map[string]*model.SourceType{},
+		processors:       map[string]*model.Processor{},
+		processorTypes:   map[string]*model.ProcessorType{},
+		destinations:     map[string]*model.Destination{},
 		destinationTypes: map[string]*model.DestinationType{},
 	}
 
@@ -65,7 +65,9 @@ func newMemoryFirstResourceStore(resources []model.Resource, store model.Resourc
 	return rt
 }
 
-func (t memoryFirstResourceStore) Source(ctx context.Context, name string) (*model.Source, error) {
+// Source returns the Source of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) Source(ctx context.Context, name string) (*model.Source, error) {
 	if source, ok := t.sources[name]; ok {
 		return source, nil
 	}
@@ -73,42 +75,52 @@ func (t memoryFirstResourceStore) Source(ctx context.Context, name string) (*mod
 	return t.resourceStore.Source(ctx, name)
 }
 
-func (t memoryFirstResourceStore) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
+// SourceType returns the Source type of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) SourceType(ctx context.Context, name string) (*model.SourceType, error) {
 	if sourceType, ok := t.sourceTypes[name]; ok {
 		return sourceType, nil
 	}
-	
+
 	return t.resourceStore.SourceType(ctx, name)
 }
 
-func (t memoryFirstResourceStore) Processor(ctx context.Context, name string) (*model.Processor, error) {
+// Processor returns the Processor of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) Processor(ctx context.Context, name string) (*model.Processor, error) {
 	if processors, ok := t.processors[name]; ok {
 		return processors, nil
 	}
-	
+
 	return t.resourceStore.Processor(ctx, name)
 }
 
-func (t memoryFirstResourceStore) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
+// ProcessorType returns the Processor type of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) ProcessorType(ctx context.Context, name string) (*model.ProcessorType, error) {
 	if processorType, ok := t.processorTypes[name]; ok {
 		return processorType, nil
 	}
-	
+
 	return t.resourceStore.ProcessorType(ctx, name)
 }
 
-func (t memoryFirstResourceStore) Destination(ctx context.Context, name string) (*model.Destination, error) {
+// Destination returns the Destination of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) Destination(ctx context.Context, name string) (*model.Destination, error) {
 	if destination, ok := t.destinations[name]; ok {
 		return destination, nil
 	}
-	
+
 	return t.resourceStore.Destination(ctx, name)
 }
 
-func (t memoryFirstResourceStore) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
+// DestinationType returns the Destination type of name.
+// If not cached it will pull from the underlying store.
+func (t MemoryFirstResourceStore) DestinationType(ctx context.Context, name string) (*model.DestinationType, error) {
 	if destinationType, ok := t.destinationTypes[name]; ok {
 		return destinationType, nil
 	}
-	
+
 	return t.resourceStore.DestinationType(ctx, name)
 }

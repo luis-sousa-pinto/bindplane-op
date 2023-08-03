@@ -989,76 +989,6 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get the history of a resource
-  /Agents:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.AgentsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Agents
-  /Configurations:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.ConfigurationsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Configurations
-  /Destinations:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.DestinationsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Destinations
-  /Processors:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.ProcessorsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Processors
-  /Sources:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.SourcesResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.ErrorResponse'
-      summary: List Sources
   /agent-versions:
     get:
       produces:
@@ -1202,7 +1132,20 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
-      summary: delete agents by ids
+      summary: Delete agents by ids
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AgentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Agents
   /agents/{id}:
     get:
       parameters:
@@ -1425,6 +1368,20 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Create, edit, and configure multiple resources.
+  /configurations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ConfigurationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Configurations
   /configurations/{name}:
     delete:
       parameters:
@@ -1588,6 +1545,20 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get destination type by name
+  /destinations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DestinationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Destinations
   /destinations/{name}:
     delete:
       parameters:
@@ -1692,6 +1663,20 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get processor type by name
+  /processors:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ProcessorsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Processors
   /processors/{name}:
     delete:
       parameters:
@@ -1948,6 +1933,20 @@ paths:
           schema:
             $ref: '#/definitions/rest.ErrorResponse'
       summary: Get source type by name
+  /sources:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SourcesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: List Sources
   /sources/{name}:
     delete:
       parameters:

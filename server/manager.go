@@ -75,6 +75,12 @@ const (
 	AgentCleanupTTL = 15 * time.Minute
 	// AgentCleanupInterval is the default agent cleanup interval.
 	AgentCleanupInterval = time.Minute
+	// AgentReportingInterval determines how often to report connected agents.
+	AgentReportingInterval = 10 * time.Second
+	// AgentDisconnectInterval determines how often to disconnect agents that have not reported.
+	AgentDisconnectInterval = 10 * time.Second
+	// AgentDisconnectTTL must be greater than 2*AgentReportingInterval to avoid frequent disconnects
+	AgentDisconnectTTL = 30 * time.Second
 )
 
 // ----------------------------------------------------------------------
@@ -126,6 +132,8 @@ func (m *DefaultManager) Start(ctx context.Context) {
 	m.Messages = broadcast.NewLocalBroadcast[Message](m.ManagerCtx, m.Logger)
 
 	m.StartCleanupAgents()
+	m.StartAgentReporting()
+	m.StartAgentDisconnect()
 }
 
 // StartCleanupAgents starts a goroutine that will handle agent cleanup.
@@ -141,6 +149,40 @@ func (m *DefaultManager) StartCleanupAgents() {
 				return
 			case <-agentCleanupTicker.C:
 				m.handleAgentCleanup()
+			}
+		}
+	}()
+}
+
+// StartAgentReporting starts a goroutine that will report connected agents.
+// It will stop once the ManagerCtx is closed
+func (m *DefaultManager) StartAgentReporting() {
+	go func() {
+		agentReportingTicker := time.NewTicker(AgentReportingInterval)
+		defer agentReportingTicker.Stop()
+		for {
+			select {
+			case <-m.ManagerCtx.Done():
+				return
+			case <-agentReportingTicker.C:
+				m.handleAgentReporting()
+			}
+		}
+	}()
+}
+
+// StartAgentDisconnect starts a goroutine that will disconnect agents that have not reported recently.
+// It will stop once the ManagerCtx is closed
+func (m *DefaultManager) StartAgentDisconnect() {
+	go func() {
+		agentDisconnectTicker := time.NewTicker(AgentDisconnectInterval)
+		defer agentDisconnectTicker.Stop()
+		for {
+			select {
+			case <-m.ManagerCtx.Done():
+				return
+			case <-agentDisconnectTicker.C:
+				m.handleAgentDisconnect()
 			}
 		}
 	}()
@@ -249,16 +291,51 @@ func (m *DefaultManager) AgentVersion(ctx context.Context, version string) (*mod
 
 // ----------------------------------------------------------------------
 
-// handleAgentCleanup removes disconnected container agents from the store.
-func (m *DefaultManager) handleAgentCleanup() {
+func (m *DefaultManager) handleAgentReporting() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	ctx, span := tracer.Start(ctx, "manager/handleAgentReporting")
+	defer span.End()
+
+	now := time.Now()
+
+	for _, p := range m.Protocols {
+		err := p.ReportConnectedAgents(ctx, m.Storage, now)
+		if err != nil {
+			m.Logger.Error("unable to report connected agents", zap.String("protocol", p.Name()), zap.Error(err))
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			continue
+		}
+	}
+}
+
+func (m *DefaultManager) handleAgentDisconnect() {
+	ctx := context.Background()
+	ctx, span := tracer.Start(ctx, "manager/handleAgentReporting")
+	defer span.End()
+
+	cutoff := time.Now().Add(-AgentDisconnectTTL)
+	m.Logger.Info("disconnecting agents not reported", zap.Time("since", cutoff))
+
+	// TODO: in a cluster, move this to a job
+	err := m.Storage.DisconnectUnreportedAgents(ctx, cutoff)
+	if err != nil {
+		m.Logger.Error("error disconnecting agent not reported", zap.Error(err))
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+}
+
+// handleAgentCleanup removes disconnected container agents from the store.
+func (m *DefaultManager) handleAgentCleanup() {
+	ctx := context.Background()
 	ctx, span := tracer.Start(ctx, "manager/handleAgentCleanup")
 	defer span.End()
 
 	cutoff := time.Now().Add(-AgentCleanupTTL)
-	m.Logger.Sugar().Infof("cleaning up container agents disconnected since %s", cutoff.Format(time.RFC3339))
+	m.Logger.Info("cleaning up container agents disconnected", zap.Time("since", cutoff))
 
 	// TODO: in a cluster, move this to a job
 	err := m.Storage.CleanupDisconnectedAgents(ctx, cutoff)

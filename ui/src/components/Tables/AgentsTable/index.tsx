@@ -16,6 +16,7 @@ import {
   GridRowParams,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
+import { Stack } from "@mui/material";
 import { mergeAgents } from "./merge-agents";
 import { AgentStatus } from "../../../types/agents";
 import { DEFAULT_AGENTS_TABLE_PERIOD } from "../../MeasurementControlBar/MeasurementControlBar";
@@ -206,7 +207,7 @@ const AgentsTableComponent: React.FC<Props> = ({
     (isFunction(onUpdatableAgentsSelected) && allowSelection);
 
   return (
-    <>
+    <Stack spacing={1}>
       <SearchBar
         filterOptions={AGENTS_TABLE_FILTER_OPTIONS}
         suggestions={data?.agents.suggestions}
@@ -227,7 +228,7 @@ const AgentsTableComponent: React.FC<Props> = ({
         agentMetrics={agentMetrics}
         columnFields={columnFields}
       />
-    </>
+    </Stack>
   );
 };
 

@@ -45,6 +45,20 @@ spec:
           - prod-gb-south-0
           - prod-us-central-0
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to Grafana Cloud.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
+      advancedConfig: true
+
     # Retry on failure
     - name: retry_on_failure_enabled
       label: Enable Retry on Failure
@@ -185,6 +199,7 @@ spec:
     exporters: |
       - otlphttp:
           endpoint: https://otlp-gateway-{{ .gcp_zone}}.grafana.net/otlp
+          compression: {{ .compression }}
           auth:
             authenticator: {{ bpComponentID "basicauth" }}
 

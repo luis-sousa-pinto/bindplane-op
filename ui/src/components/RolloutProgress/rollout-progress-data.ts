@@ -38,6 +38,13 @@ export class RolloutProgressData implements GetConfigRolloutStatusQuery {
   }
 
   /**
+   * rolloutIsComplete returns true if the rollout status is stable
+   */
+  rolloutIsComplete() {
+    return this.configuration.status.rollout.status === 4;
+  }
+
+  /**
    * rolloutIsPaused returns true if the rollout status is paused
    */
   rolloutIsPaused() {
@@ -63,5 +70,22 @@ export class RolloutProgressData implements GetConfigRolloutStatusQuery {
    */
   rolloutStatus() {
     return this.configuration.status.rollout.status;
+  }
+
+  /**
+   * isPastCompletion returns true if the rollout completed longer than 10 seconds ago.
+   */
+  isPastCompletion() {
+    if (!this.completed()) {
+      return false;
+    }
+
+    const { dateModified } = this.configuration.metadata;
+    if (!dateModified) {
+      return false;
+    }
+    const completedAtDate = new Date(dateModified);
+    const now = new Date();
+    return now.getTime() - completedAtDate.getTime() > 10000;
   }
 }

@@ -29,6 +29,16 @@ spec:
       options:
         sensitive: true
 
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data to New Relic.
+      type: enum
+      validValues:
+        - none
+        - gzip
+      default: gzip
+      advancedConfig: true
+
     # Retry on failure
     - name: retry_on_failure_enabled
       label: Enable Retry on Failure
@@ -167,6 +177,7 @@ spec:
           endpoint: {{ .endpoint }}:443
           headers:
             - api-key: "{{ .license_key }}"
+          compression: {{ .compression }}
           tls:
             insecure: false
           {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}

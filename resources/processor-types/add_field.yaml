@@ -34,11 +34,14 @@ spec:
           value: true
 
     - name: log_resource_attributes
-      label: Resource Keys
+      label: Resource Fields
       description: "List of resource fields to add from telemetry data."
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_logs
           operator: equals
@@ -62,10 +65,13 @@ spec:
           value: true
 
     - name: log_attributes
-      label: Attribute Keys
+      label: Attribute Fields
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_logs
           operator: equals
@@ -89,8 +95,8 @@ spec:
           value: true
 
     - name: log_body
-      label: Body Keys
-      description: "List of body keys to add to log data."
+      label: Body Fields
+      description: "List of body fields to add to log data."
       type: map
       relevantIf:
         - name: enable_logs
@@ -98,6 +104,9 @@ spec:
           value: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
 
     - name: log_body_action
       label: Body Action
@@ -141,11 +150,14 @@ spec:
           value: true
 
     - name: metric_resource_attributes
-      label: Resource Keys
+      label: Resource Fields
       description: "List of resource fields to add from telemetry data."
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_metrics
           operator: equals
@@ -169,10 +181,13 @@ spec:
           value: true
 
     - name: metric_attributes
-      label: Attribute Keys
+      label: Attribute Fields
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_metrics
           operator: equals
@@ -220,11 +235,14 @@ spec:
           value: true
 
     - name: traces_resource_attributes
-      label: Resource Keys
+      label: Resource Fields
       description: "List of resource fields to add from telemetry data."
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_traces
           operator: equals
@@ -248,10 +266,13 @@ spec:
           value: true
 
     - name: traces_attributes
-      label: Attribute Keys
+      label: Attribute Fields
       type: map
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
       relevantIf:
         - name: enable_traces
           operator: equals
@@ -261,7 +282,7 @@ spec:
       label: Attribute Action
       type: enum
       description: |
-        insert: Add attribute if it does not exist. 
+        insert: Add attribute if it does not exist.
         update: Update existing value.
         upsert: Insert or update.
       default: upsert

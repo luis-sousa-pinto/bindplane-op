@@ -2,6 +2,7 @@ import { LoadingButton } from "@mui/lab";
 import { Box, Button, LinearProgress, Stack, Typography } from "@mui/material";
 import { useMemo } from "react";
 import { SendIcon } from "../Icons";
+import { classes } from "../../utils/styles";
 
 import styles from "./rollout-progress.module.scss";
 
@@ -13,6 +14,8 @@ interface RolloutProgressProps {
   hideActions?: boolean;
   paused: boolean;
   loading?: boolean;
+  hidden: boolean;
+  fadeout: boolean;
   onPause: () => void;
   onStart: () => void;
   onResume: () => void;
@@ -30,6 +33,8 @@ interface RolloutProgressProps {
  * @param paused whether the rollout is paused, if true,
  * the control button will be "Start Rollout", otherwise it will be "Pause"
  * @param loading whether to display a loading state in the action button
+ * @param hidden whether to hide the component
+ * @param fadeout whether to fadeout the component
  * @param onPause callback for when the "Pause" button is clicked
  * @param onStartRollout callback for when the "Start Rollout" button is clicked
  * @returns
@@ -41,6 +46,8 @@ export const RolloutProgressBar: React.FC<RolloutProgressProps> = ({
   rolloutStatus,
   hideActions,
   loading,
+  hidden,
+  fadeout,
   onPause,
   onStart,
   onResume,
@@ -107,8 +114,20 @@ export const RolloutProgressBar: React.FC<RolloutProgressProps> = ({
     }
   }, [rolloutStatus]);
 
+  const boxStyles = useMemo(() => {
+    const classes = [styles.box];
+    if (hidden) {
+      classes.push(styles.hidden);
+    }
+
+    if (fadeout) {
+      classes.push(styles.fadeout);
+    }
+    return classes;
+  }, [fadeout, hidden]);
+
   return (
-    <Box>
+    <Box className={classes(boxStyles)}>
       <Stack direction="row" width="100%" alignItems={"center"}>
         <Box flexGrow={1}>
           <Stack

@@ -10,6 +10,7 @@ export function selectorString(sel: AgentSelector | undefined | null): string {
 }
 
 export enum PipelineTypeFlags {
+  None = 0x0,
   Logs = 0x1,
   Metrics = 0x2,
   Traces = 0x4,
@@ -32,5 +33,5 @@ export function getPipelineTypeFlags(telemetryType: string): PipelineTypeFlags {
     case PipelineType.Traces:
       return PipelineTypeFlags.Traces;
   }
-  return 0;
+  return PipelineTypeFlags.None;
 }

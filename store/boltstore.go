@@ -804,7 +804,7 @@ func DeleteResource[R model.Resource](ctx context.Context, s BoltstoreCommon, ki
 				return err
 			}
 
-			// TODO: also delete this archive of this resource
+			// also delete this archive of this resource
 			prefix := archivePrefix(kind, uniqueKey)
 			archiveBucket, err := s.ArchiveBucket(ctx, tx)
 			if err != nil {
@@ -915,9 +915,12 @@ func editResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 		return resource, false, err
 	}
 
-	if resource.GetKind() == model.KindConfiguration {
-		if err := s.ConfigurationsIndex(ctx).Upsert(resource); err != nil {
-			return resource, wasModified, err
+	// only re-index if modified
+	if wasModified {
+		if resource.GetKind() == model.KindConfiguration {
+			if err := s.ConfigurationsIndex(ctx).Upsert(resource); err != nil {
+				return resource, wasModified, err
+			}
 		}
 	}
 

@@ -5,8 +5,10 @@ metadata:
   displayName: Kafka Cluster
   description: Collect metrics from Kafka cluster brokers.
   icon: /icons/sources/kafka.svg
+  additionalInfo:
+    message: The TLS option for Auth Type has been moved to the Enable TLS section and is deprecated as of v1.23.0. It will be removed in a future release. If you are using TLS please select the Enable TLS options and choose the appropriate Auth Type for your environment.
 spec:
-  version: 0.1.0
+  version: 0.2.0
   supportedPlatforms:
     - macos
     - linux
@@ -68,8 +70,8 @@ spec:
       validValues:
         - basic
         - sasl
-        - tls
         - kerberos
+        - tls
       default: basic
       options:
         sectionHeader: true
@@ -77,53 +79,6 @@ spec:
         - name: enable_auth
           operator: equals
           value: true
-      advancedConfig: true
-
-    - name: insecure_skip_verify
-      label: Skip TLS Certificate Verification
-      description: Enable to skip TLS certificate verification.
-      type: bool
-      default: false
-      relevantIf:
-        - name: auth_type
-          operator: equals
-          value: tls
-      advancedConfig: true
-
-    - name: ca_file
-      label: TLS Certificate Authority File
-      description: Certificate authority used to validate TLS certificates.
-      type: string
-      required: false
-      default: ""
-      relevantIf:
-        - name: auth_type
-          operator: equals
-          value: tls
-      advancedConfig: true
-
-    - name: cert_file
-      label: Mutual TLS Client Certificate File
-      description: A TLS certificate used for client authentication.
-      type: string
-      required: false
-      default: ""
-      relevantIf:
-        - name: auth_type
-          operator: equals
-          value: tls
-      advancedConfig: true
-
-    - name: key_file
-      label: TLS Client Private Key File
-      description: A TLS private key used for client authentication.
-      type: string
-      required: false
-      default: ""
-      relevantIf:
-        - name: auth_type
-          operator: equals
-          value: tls
       advancedConfig: true
 
     - name: basic_username
@@ -310,6 +265,64 @@ spec:
           value: basic
       advancedConfig: true
 
+    - name: enable_tls
+      label: Enable TLS
+      description: Whether or not to use TLS.
+      type: bool
+      default: false
+      advancedConfig: true
+      options:
+        sectionHeader: true
+
+    - name: insecure_skip_verify
+      label: Skip TLS Certificate Verification
+      description: Enable to skip TLS certificate verification.
+      type: bool
+      default: false
+      options:
+        sectionHeader: true
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: ca_file
+      label: TLS Certificate Authority File
+      description: Certificate authority used to validate TLS certificates.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: cert_file
+      label: Mutual TLS Client Certificate File
+      description: A TLS certificate used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
+    - name: key_file
+      label: TLS Client Private Key File
+      description: A TLS private key used for client authentication.
+      type: string
+      required: false
+      default: ""
+      relevantIf:
+        - name: enable_tls
+          operator: equals
+          value: true
+      advancedConfig: true
+
   metrics:
     receivers: |
       - kafkametrics:
@@ -326,6 +339,13 @@ spec:
           collection_interval: {{ .collection_interval }}s
           {{ if .enable_auth }}
           auth:
+            {{ if or .enable_tls (eq .auth_type "tls") }}
+            tls:
+              ca_file: {{ .ca_file }}
+              cert_file: {{ .cert_file }}
+              key_file: {{ .key_file }}
+              insecure: {{ .insecure_skip_verify }}
+            {{ end }}
             {{ if eq .auth_type "basic" }}
             plain_text:
               username: "{{ .basic_username }}"
@@ -348,12 +368,6 @@ spec:
               password: {{ .kerberos_password }}
               {{ end }}
               config_file: {{ .kerberos_config_file }}
-              {{ else if eq .auth_type "tls" }}
-              tls:
-                ca_file: {{ .ca_file }}
-                cert_file: {{ .cert_file }}
-                key_file: {{ .key_file }}
-                insecure: {{ .insecure_skip_verify }}
             {{ end }}
           {{ end }}
 

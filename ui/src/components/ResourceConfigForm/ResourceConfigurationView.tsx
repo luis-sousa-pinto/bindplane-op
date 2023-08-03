@@ -38,6 +38,8 @@ interface ResourceConfigurationViewProps {
 
   description: string;
 
+  deprecated?: boolean;
+
   additionalInfo?: AdditionalInfo | null;
 
   // Used to determine some form values.
@@ -99,6 +101,7 @@ interface ComponentProps extends ResourceConfigurationViewProps {
 const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
   resourceTypeDisplayName,
   description,
+  deprecated,
   additionalInfo,
   parameters,
   parameterDefinitions,
@@ -127,6 +130,7 @@ const ResourceConfigurationViewComponent: React.FC<ComponentProps> = ({
     <ConfigureResourceView
       resourceTypeDisplayName={resourceTypeDisplayName}
       description={description}
+      deprecated={deprecated}
       additionalInfo={additionalInfo}
       kind={kind}
       formValues={formValues}

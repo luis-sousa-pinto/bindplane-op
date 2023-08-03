@@ -93,7 +93,7 @@ type defaultServer struct {
 // Seed will seed the BindPlane server.
 func (s *defaultServer) Seed(ctx context.Context) error {
 	if err := store.Seed(ctx, s.store, s.logger, resources.Files, resources.SeedFolders); err != nil {
-		return fmt.Errorf("failed to seed resources: %w", err)
+		s.logger.Error("Failed to seed resources on startup", zap.Error(err))
 	}
 
 	configurations, err := s.store.Configurations(ctx)

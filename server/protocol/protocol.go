@@ -17,8 +17,10 @@ package protocol
 
 import (
 	"context"
+	"time"
 
 	"github.com/observiq/bindplane-op/model"
+	"github.com/observiq/bindplane-op/store"
 )
 
 // Protocol represents a communication protocol for managing agents
@@ -45,6 +47,9 @@ type Protocol interface {
 
 	// RequestReport sends report configuration to the specified agent
 	RequestReport(ctx context.Context, agentID string, report Report) error
+
+	// ReportConnectedAgents should call Store.ReportConnectAgents for all connected agents
+	ReportConnectedAgents(ctx context.Context, store store.Store, time time.Time) error
 
 	// Shutdown should disconnect all agents before the server is terminated
 	Shutdown(ctx context.Context) error

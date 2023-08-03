@@ -23,10 +23,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	bpopamp "github.com/observiq/bindplane-op/opamp"
 	bpserver "github.com/observiq/bindplane-op/server"
+	"github.com/observiq/bindplane-op/store"
 	"github.com/open-telemetry/opamp-go/protobufs"
 	opampSvr "github.com/open-telemetry/opamp-go/server"
 	opamp "github.com/open-telemetry/opamp-go/server/types"
@@ -298,6 +300,15 @@ func (s *opampServer) ConnectedAgentIDs(ctx context.Context) ([]string, error) {
 	return s.connections.ConnectedAgentIDs(ctx), nil
 }
 
+// ReportConnectedAgents should call Store.ReportConnectedAgents for all connected agents
+func (s *opampServer) ReportConnectedAgents(ctx context.Context, store store.Store, time time.Time) error {
+	ctx, span := tracer.Start(ctx, "opamp/ReportConnectedAgents")
+	defer span.End()
+
+	agentIDs := s.connections.ConnectedAgentIDs(ctx)
+	return store.ReportConnectedAgents(ctx, agentIDs, time)
+}
+
 func (s *opampServer) Disconnect(agentID string) bool {
 	state := s.connections.StateForAgentID(agentID)
 	if state == nil {
@@ -512,6 +523,14 @@ func computeReportConfigurationHash(contents ...[]byte) []byte {
 
 func (s *opampServer) send(ctx context.Context, conn opamp.Connection, msg *protobufs.ServerToAgent) error {
 	state := s.connections.StateForConnection(conn)
+	if state == nil {
+		addr := "unknown"
+		if conn != nil {
+			addr = conn.Connection().RemoteAddr().String()
+		}
+		return fmt.Errorf("no connection state for connection %s", addr)
+	}
+
 	state.SendLock.Lock()
 	defer state.SendLock.Unlock()
 	return conn.Send(ctx, msg)

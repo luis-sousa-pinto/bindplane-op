@@ -1,4 +1,4 @@
-import { Card, Stack, Typography } from "@mui/material";
+import { Card, Chip, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { Maybe, PipelineType } from "../../graphql/generated";
 import { TelemetryChip } from "../Chips";
@@ -11,6 +11,7 @@ interface ResourceButtonProps {
   hideIcon?: boolean;
   onSelect: () => void;
   telemetryTypes?: PipelineType[];
+  deprecated?: boolean;
 }
 
 // Resource button is used to display a SourceType, ProcessorType, or DestinationType
@@ -21,6 +22,7 @@ export const ResourceTypeButton: React.FC<ResourceButtonProps> = ({
   displayName,
   onSelect,
   telemetryTypes,
+  deprecated,
 }) => {
   const [isHovered, setHovered] = useState(false);
 
@@ -56,6 +58,18 @@ export const ResourceTypeButton: React.FC<ResourceButtonProps> = ({
           <Typography fontWeight={600} color={isHovered ? "#fff" : "inherit"}>
             {displayName}
           </Typography>
+
+          {deprecated && (
+            <Chip
+              color="warning"
+              label="Deprecated"
+              size="small"
+              variant="filled"
+              classes={{
+                root: isHovered ? styles.hovered : styles.grey,
+              }}
+            />
+          )}
         </Stack>
 
         {telemetryTypes && (

@@ -52,6 +52,47 @@ spec:
       advancedConfig: true
       options:
         gridColumns: 12
+        labels:
+          key: Name
+          value: Value
+      relevantIf:
+        - name: protocol
+          operator: equals
+          value: "grpc"
+
+    - name: http_compression
+      label: Compression
+      description: >
+        Compression algorithm to use when sending data to the OTLP server.
+        Ensure that the server supports the compression algorithm selected.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - deflate
+        - snappy
+        - zlib
+        - zstd
+      default: gzip
+      advancedConfig: true
+      relevantIf:
+        - name: protocol
+          operator: equals
+          value: "http"
+
+    - name: grpc_compression
+      label: Compression
+      description: >
+        Compression algorithm to use when sending data to the OTLP server.
+        Ensure that the server supports the compression algorithm selected.
+      type: enum
+      validValues:
+        - none
+        - gzip
+        - snappy
+        - zstd
+      default: gzip
+      advancedConfig: true
       relevantIf:
         - name: protocol
           operator: equals
@@ -104,7 +145,7 @@ spec:
       advancedConfig: true
 
     - name: cert_file
-      label: Client Certificate File
+      label: TLS Client Certificate File
       description: A path to the client certificate to be used for mutual TLS.
       type: string
       required: true
@@ -119,7 +160,7 @@ spec:
       advancedConfig: true
 
     - name: key_file
-      label: Client Private Key
+      label: TLS Client Private Key
       description: A path to the client private key to be used for mutual TLS.
       type: string
       required: true
@@ -241,7 +282,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -276,6 +317,7 @@ spec:
             {{ $k }}: {{ $v }}
             {{ end }}
           {{ end }}
+          compression: {{ .grpc_compression }}
           tls:
             {{ if .enable_tls }}
             insecure: false
@@ -297,6 +339,7 @@ spec:
           {{ else }}
           endpoint: http://{{ .hostname }}:{{ .http_port }}
           {{ end }}
+          compression: {{ .http_compression }}
           {{ if .enable_tls }}
           tls:
             insecure_skip_verify: {{ .insecure_skip_verify }}
@@ -307,9 +350,9 @@ spec:
             {{ end }}
           {{ end }}
       {{ end }}
-      
+
           # These settings are used for both otlphttp and otlp
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
+          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }}
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
 
     processors: |

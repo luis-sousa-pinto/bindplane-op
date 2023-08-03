@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { NavBar } from ".";
+import { NavBar } from "./NavBar";
 import { MemoryRouter } from "react-router-dom";
 import renderer from "react-test-renderer";
 

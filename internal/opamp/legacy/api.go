@@ -23,9 +23,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	bpopamp "github.com/observiq/bindplane-op/opamp/legacy"
 	bpserver "github.com/observiq/bindplane-op/server"
+	"github.com/observiq/bindplane-op/store"
 	legacyOpampProtobufs "github.com/observiq/opamp-go/protobufs"
 	legacyOpampSvr "github.com/observiq/opamp-go/server"
 	legacyOpamp "github.com/observiq/opamp-go/server/types"
@@ -287,6 +289,15 @@ func (s *legacyOpampServer) ConnectedAgentIDs(ctx context.Context) ([]string, er
 	return s.connections.ConnectedAgentIDs(ctx), nil
 }
 
+// ReportConnectedAgents should call Store.ReportConnectedAgents for all connected agents
+func (s *legacyOpampServer) ReportConnectedAgents(ctx context.Context, store store.Store, time time.Time) error {
+	ctx, span := tracer.Start(ctx, "opamp/ReportConnectedAgents")
+	defer span.End()
+
+	agentIDs := s.connections.ConnectedAgentIDs(ctx)
+	return store.ReportConnectedAgents(ctx, agentIDs, time)
+}
+
 func (s *legacyOpampServer) Disconnect(agentID string) bool {
 	state := s.connections.StateForAgentID(agentID)
 	if state == nil {
@@ -501,6 +512,14 @@ func computeReportConfigurationHash(contents ...[]byte) []byte {
 
 func (s *legacyOpampServer) send(ctx context.Context, conn legacyOpamp.Connection, msg *legacyOpampProtobufs.ServerToAgent) error {
 	state := s.connections.StateForConnection(conn)
+	if state == nil {
+		addr := "unknown"
+		if conn != nil {
+			addr = conn.RemoteAddr().String()
+		}
+		return fmt.Errorf("no connection state for connection %s", addr)
+	}
+
 	state.SendLock.Lock()
 	defer state.SendLock.Unlock()
 	return conn.Send(ctx, msg)

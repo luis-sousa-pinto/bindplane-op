@@ -43,6 +43,7 @@ interface AgentsDataGridProps {
   density?: GridDensity;
   loading: boolean;
   minHeight?: string;
+  maxHeight?: string;
   agents?: AgentsTableAgent[];
   agentMetrics?: AgentsTableMetricsSubscription;
   columnFields?: AgentsTableField[];
@@ -54,6 +55,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
   onAgentsSelected,
   isRowSelectable,
   minHeight,
+  maxHeight,
   loading,
   agents,
   agentMetrics,
@@ -175,7 +177,7 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
           </Stack>
         ),
       }}
-      style={{ minHeight }}
+      style={{ minHeight, maxHeight }}
       loading={loading}
       disableRowSelectionOnClick
       columns={columns}
@@ -273,7 +275,8 @@ function createMetricRateColumn(
 }
 
 AgentsDataGridComponent.defaultProps = {
-  minHeight: "calc(100vh - 300px)",
+  minHeight: "65vh",
+  maxHeight: "65vh",
   columnFields: [
     AgentsTableField.NAME,
     AgentsTableField.STATUS,
