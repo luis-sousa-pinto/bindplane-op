@@ -213,7 +213,7 @@ func convertRelease(r *githubRelease, hashes Sha256sums) *model.AgentVersion {
 	}
 
 	return model.NewAgentVersion(model.AgentVersionSpec{
-		Type:            repo,
+		Type:            string(model.AgentTypeNameObservIQOtelCollector),
 		Version:         r.TagName,
 		Prerelease:      r.Prerelease,
 		Draft:           r.Draft,

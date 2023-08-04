@@ -406,11 +406,11 @@ func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent,
 
 func (s *legacyOpampServer) getDownloadableFile(ctx context.Context, a *model.Agent, versionString string) (*legacyOpampProtobufs.DownloadableFile, error) {
 	version, err := s.manager.AgentVersion(ctx, versionString)
-	if version == nil {
-		return nil, fmt.Errorf("agent version %s not found", versionString)
-	}
 	if err != nil {
 		return nil, err
+	}
+	if version == nil {
+		return nil, fmt.Errorf("agent version %s not found", versionString)
 	}
 	platform := fmt.Sprintf("%s/%s", a.Platform, a.Architecture)
 	artifact := version.Download(platform)
