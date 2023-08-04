@@ -92,7 +92,7 @@
     "@storybook/react": "^7.1.1",
     "@storybook/react-webpack5": "^7.1.1",
     "@storybook/testing-library": "^0.2.0",
-    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^14.4.3",
     "@types/graphql": "^14.5.0",
