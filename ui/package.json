@@ -110,7 +110,7 @@
     "react": "^17.0.2",
     "react-diff-viewer-continued": "^3.2.5",
     "react-scripts": "^5.0.1",
-    "sass": "^1.58.3",
+    "sass": "^1.64.2",
     "source-map-explorer": "^2.5.2",
     "storybook": "^7.1.1",
     "storybook-addon-apollo-client": "^5.0.0",
