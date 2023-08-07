@@ -32,6 +32,8 @@ const DEFAULT_PARAMETER_OPTIONS = {
   trackUnchecked: false,
   gridColumns: 6,
   sectionHeader: false,
+  subHeader: null,
+  horizontalDivider: false,
   multiline: false,
   metricCategories: null,
   labels: null,

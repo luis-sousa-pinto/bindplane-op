@@ -331,6 +331,8 @@ type ParameterOptions {
   labels: Map
   password: Boolean
   sensitive: Boolean
+  subHeader: String
+  horizontalDivider: Boolean
 }
 
 type MetricCategory {

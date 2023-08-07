@@ -334,12 +334,14 @@ export type ParameterOptions = {
   __typename?: 'ParameterOptions';
   creatable?: Maybe<Scalars['Boolean']['output']>;
   gridColumns?: Maybe<Scalars['Int']['output']>;
+  horizontalDivider?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Scalars['Map']['output']>;
   metricCategories?: Maybe<Array<MetricCategory>>;
   multiline?: Maybe<Scalars['Boolean']['output']>;
   password?: Maybe<Scalars['Boolean']['output']>;
   sectionHeader?: Maybe<Scalars['Boolean']['output']>;
   sensitive?: Maybe<Scalars['Boolean']['output']>;
+  subHeader?: Maybe<Scalars['String']['output']>;
   trackUnchecked?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -719,21 +721,21 @@ export type SourceTypeQueryVariables = Exact<{
 }>;
 
 
-export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null, description?: string | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type SourceTypeQuery = { __typename?: 'Query', sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, icon?: string | null, description?: string | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetDestinationWithTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
 
 
-export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetDestinationWithTypeQuery = { __typename?: 'Query', destinationWithType: { __typename?: 'DestinationWithType', destination?: { __typename?: 'Destination', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, destinationType?: { __typename?: 'DestinationType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type GetSourceWithTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
 
 
-export type GetSourceWithTypeQuery = { __typename?: 'Query', sourceWithType: { __typename?: 'SourceWithType', source?: { __typename?: 'Source', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetSourceWithTypeQuery = { __typename?: 'Query', sourceWithType: { __typename?: 'SourceWithType', source?: { __typename?: 'Source', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, sourceType?: { __typename?: 'SourceType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, icon?: string | null, description?: string | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type GetCurrentConfigVersionQueryVariables = Exact<{
   configurationName: Scalars['String']['input'];
@@ -789,14 +791,14 @@ export type ConfigurationMetricsSubscription = { __typename?: 'Subscription', co
 export type GetProcessorTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type GetProcessorTypesQuery = { __typename?: 'Query', processorTypes: Array<{ __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, description?: string | null, name: string, labels?: any | null, version: number, id: string, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetProcessorWithTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
 
 
-export type GetProcessorWithTypeQuery = { __typename?: 'Query', processorWithType: { __typename?: 'ProcessorWithType', processor?: { __typename?: 'Processor', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null, displayName?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
+export type GetProcessorWithTypeQuery = { __typename?: 'Query', processorWithType: { __typename?: 'ProcessorWithType', processor?: { __typename?: 'Processor', metadata: { __typename?: 'Metadata', name: string, version: number, id: string, labels?: any | null }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } } | null, processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', id: string, name: string, version: number, description?: string | null, displayName?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', multiline?: boolean | null, creatable?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null } };
 
 export type ProcessorDialogSourceTypeQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -824,7 +826,7 @@ export type GetProcessorTypeQueryVariables = Exact<{
 }>;
 
 
-export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
+export type GetProcessorTypeQuery = { __typename?: 'Query', processorType?: { __typename?: 'ProcessorType', metadata: { __typename?: 'Metadata', displayName?: string | null, name: string, version: number, id: string, description?: string | null, deprecated?: boolean | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', parameters: Array<{ __typename?: 'ParameterDefinition', label: string, name: string, description: string, required: boolean, type: ParameterType, default?: any | null, advancedConfig?: boolean | null, validValues?: Array<string> | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, trackUnchecked?: boolean | null, gridColumns?: number | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, multiline?: boolean | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } } | null };
 
 export type GetRolloutHistoryQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -963,12 +965,12 @@ export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __
 export type DestinationsAndTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
+export type DestinationsAndTypesQuery = { __typename?: 'Query', destinationTypes: Array<{ __typename?: 'DestinationType', kind: string, apiVersion: string, metadata: { __typename?: 'Metadata', id: string, version: number, name: string, displayName?: string | null, description?: string | null, icon?: string | null }, spec: { __typename?: 'ResourceTypeSpec', version: string, supportedPlatforms: Array<string>, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', label: string, type: ParameterType, name: string, description: string, default?: any | null, validValues?: Array<string> | null, advancedConfig?: boolean | null, required: boolean, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, value: any, operator: RelevantIfOperatorType }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }>, destinations: Array<{ __typename?: 'Destination', metadata: { __typename?: 'Metadata', id: string, version: number, name: string }, spec: { __typename?: 'ParameterizedSpec', type: string, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null } }> };
 
 export type SourceTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SourceTypesQuery = { __typename?: 'Query', sourceTypes: Array<{ __typename?: 'SourceType', apiVersion: string, kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, description?: string | null, icon?: string | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', supportedPlatforms: Array<string>, version: string, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', name: string, label: string, description: string, advancedConfig?: boolean | null, required: boolean, type: ParameterType, validValues?: Array<string> | null, default?: any | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
+export type SourceTypesQuery = { __typename?: 'Query', sourceTypes: Array<{ __typename?: 'SourceType', apiVersion: string, kind: string, metadata: { __typename?: 'Metadata', id: string, name: string, version: number, displayName?: string | null, description?: string | null, icon?: string | null, additionalInfo?: { __typename?: 'AdditionalInfo', message: string, documentation: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> } | null }, spec: { __typename?: 'ResourceTypeSpec', supportedPlatforms: Array<string>, version: string, telemetryTypes: Array<PipelineType>, parameters: Array<{ __typename?: 'ParameterDefinition', name: string, label: string, description: string, advancedConfig?: boolean | null, required: boolean, type: ParameterType, validValues?: Array<string> | null, default?: any | null, relevantIf?: Array<{ __typename?: 'RelevantIfCondition', name: string, operator: RelevantIfOperatorType, value: any }> | null, documentation?: Array<{ __typename?: 'DocumentationLink', text: string, url: string }> | null, options: { __typename?: 'ParameterOptions', creatable?: boolean | null, multiline?: boolean | null, trackUnchecked?: boolean | null, sectionHeader?: boolean | null, subHeader?: string | null, horizontalDivider?: boolean | null, gridColumns?: number | null, labels?: any | null, password?: boolean | null, sensitive?: boolean | null, metricCategories?: Array<{ __typename?: 'MetricCategory', label: string, column: number, metrics: Array<{ __typename?: 'MetricOption', name: string, description?: string | null, kpi?: boolean | null }> }> | null } }> } }> };
 
 export type GetConfigNamesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1059,6 +1061,8 @@ export const SourceTypeDocument = gql`
           creatable
           trackUnchecked
           sectionHeader
+          subHeader
+          horizontalDivider
           gridColumns
           labels
           metricCategories {
@@ -1158,6 +1162,8 @@ export const GetDestinationWithTypeDocument = gql`
             creatable
             trackUnchecked
             sectionHeader
+            subHeader
+            horizontalDivider
             gridColumns
             labels
             metricCategories {
@@ -1258,6 +1264,8 @@ export const GetSourceWithTypeDocument = gql`
             creatable
             trackUnchecked
             sectionHeader
+            subHeader
+            horizontalDivider
             gridColumns
             labels
             metricCategories {
@@ -1623,6 +1631,8 @@ export const GetProcessorTypesDocument = gql`
           trackUnchecked
           gridColumns
           sectionHeader
+          subHeader
+          horizontalDivider
           multiline
           labels
           metricCategories {
@@ -1734,6 +1744,8 @@ export const GetProcessorWithTypeDocument = gql`
             creatable
             trackUnchecked
             sectionHeader
+            subHeader
+            horizontalDivider
             gridColumns
             labels
             metricCategories {
@@ -1944,6 +1956,8 @@ export const GetProcessorTypeDocument = gql`
           trackUnchecked
           gridColumns
           sectionHeader
+          subHeader
+          horizontalDivider
           multiline
           labels
           metricCategories {
@@ -2963,6 +2977,8 @@ export const DestinationsAndTypesDocument = gql`
           multiline
           trackUnchecked
           sectionHeader
+          subHeader
+          horizontalDivider
           gridColumns
           labels
           metricCategories {
@@ -2976,6 +2992,8 @@ export const DestinationsAndTypesDocument = gql`
           }
           password
           sensitive
+          subHeader
+          horizontalDivider
         }
       }
       supportedPlatforms
@@ -3070,6 +3088,8 @@ export const SourceTypesDocument = gql`
           multiline
           trackUnchecked
           sectionHeader
+          subHeader
+          horizontalDivider
           gridColumns
           labels
           metricCategories {

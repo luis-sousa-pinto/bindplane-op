@@ -23,6 +23,8 @@ const DEFAULT_PARAMETER_OPTIONS = {
   multiline: false,
   trackUnchecked: false,
   sectionHeader: null,
+  subHeader: null,
+  horizontalDivider: false,
   gridColumns: null,
   metricCategories: null,
   labels: null,

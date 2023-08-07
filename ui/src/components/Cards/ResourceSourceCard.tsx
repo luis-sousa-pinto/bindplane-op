@@ -71,6 +71,8 @@ gql`
               creatable
               trackUnchecked
               sectionHeader
+              subHeader
+              horizontalDivider
               gridColumns
               labels
               metricCategories {

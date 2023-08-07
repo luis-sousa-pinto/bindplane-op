@@ -300,15 +300,17 @@ type ComplexityRoot struct {
 	}
 
 	ParameterOptions struct {
-		Creatable        func(childComplexity int) int
-		GridColumns      func(childComplexity int) int
-		Labels           func(childComplexity int) int
-		MetricCategories func(childComplexity int) int
-		Multiline        func(childComplexity int) int
-		Password         func(childComplexity int) int
-		SectionHeader    func(childComplexity int) int
-		Sensitive        func(childComplexity int) int
-		TrackUnchecked   func(childComplexity int) int
+		Creatable         func(childComplexity int) int
+		GridColumns       func(childComplexity int) int
+		HorizontalDivider func(childComplexity int) int
+		Labels            func(childComplexity int) int
+		MetricCategories  func(childComplexity int) int
+		Multiline         func(childComplexity int) int
+		Password          func(childComplexity int) int
+		SectionHeader     func(childComplexity int) int
+		Sensitive         func(childComplexity int) int
+		SubHeader         func(childComplexity int) int
+		TrackUnchecked    func(childComplexity int) int
 	}
 
 	ParameterizedSpec struct {
@@ -1606,6 +1608,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ParameterOptions.GridColumns(childComplexity), true
 
+	case "ParameterOptions.horizontalDivider":
+		if e.complexity.ParameterOptions.HorizontalDivider == nil {
+			break
+		}
+
+		return e.complexity.ParameterOptions.HorizontalDivider(childComplexity), true
+
 	case "ParameterOptions.labels":
 		if e.complexity.ParameterOptions.Labels == nil {
 			break
@@ -1647,6 +1656,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ParameterOptions.Sensitive(childComplexity), true
+
+	case "ParameterOptions.subHeader":
+		if e.complexity.ParameterOptions.SubHeader == nil {
+			break
+		}
+
+		return e.complexity.ParameterOptions.SubHeader(childComplexity), true
 
 	case "ParameterOptions.trackUnchecked":
 		if e.complexity.ParameterOptions.TrackUnchecked == nil {
@@ -2869,6 +2885,8 @@ type ParameterOptions {
   labels: Map
   password: Boolean
   sensitive: Boolean
+  subHeader: String
+  horizontalDivider: Boolean
 }
 
 type MetricCategory {
@@ -10396,6 +10414,10 @@ func (ec *executionContext) fieldContext_ParameterDefinition_options(ctx context
 				return ec.fieldContext_ParameterOptions_password(ctx, field)
 			case "sensitive":
 				return ec.fieldContext_ParameterOptions_sensitive(ctx, field)
+			case "subHeader":
+				return ec.fieldContext_ParameterOptions_subHeader(ctx, field)
+			case "horizontalDivider":
+				return ec.fieldContext_ParameterOptions_horizontalDivider(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ParameterOptions", field.Name)
 		},
@@ -10815,6 +10837,88 @@ func (ec *executionContext) _ParameterOptions_sensitive(ctx context.Context, fie
 }
 
 func (ec *executionContext) fieldContext_ParameterOptions_sensitive(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ParameterOptions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ParameterOptions_subHeader(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterOptions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ParameterOptions_subHeader(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SubHeader, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ParameterOptions_subHeader(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ParameterOptions",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ParameterOptions_horizontalDivider(ctx context.Context, field graphql.CollectedField, obj *model1.ParameterOptions) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ParameterOptions_horizontalDivider(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HorizontalDivider, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ParameterOptions_horizontalDivider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ParameterOptions",
 		Field:      field,
@@ -19758,6 +19862,14 @@ func (ec *executionContext) _ParameterOptions(ctx context.Context, sel ast.Selec
 		case "sensitive":
 
 			out.Values[i] = ec._ParameterOptions_sensitive(ctx, field, obj)
+
+		case "subHeader":
+
+			out.Values[i] = ec._ParameterOptions_subHeader(ctx, field, obj)
+
+		case "horizontalDivider":
+
+			out.Values[i] = ec._ParameterOptions_horizontalDivider(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
