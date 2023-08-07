@@ -2,74 +2,90 @@ apiVersion: bindplane.observiq.com/v1
 kind: ProcessorType
 metadata:
   name: filter_field
-  displayName: Filter by Field
-  description: Include or exclude telemetry based on field values.
+  displayName: Filter by Fields
+  description: Filter telemetry based on field values.
   labels:
     category: Filter-And-Reduce
 spec:
-  version: 0.0.2
+  version: 0.0.3
   parameters:
     - name: telemetry_types
       label: Enable Telemetry
       type: enums
-      description: "Select which types of telemetry you'd like to enable this processor for."
+      description: "The telemetry types to enable this processor for."
       validValues: ["Metrics", "Logs", "Traces"]
-      default: ["Metrics", "Logs", "Traces"]
+      default: []
       options:
         gridColumns: 12
 
     - name: action
       label: Action
-      description: Whether to include or exclude matches. When set to include, anything that does not match is filtered.
+      description: "The action to take when the filter condition is met. Include will retain matching telemetry. Exclude will remove matching telemetry."
       type: enum
       validValues:
         - include
         - exclude
       default: exclude
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs", "Metrics", "Traces"]
 
     - name: match_type
       label: Match Type
-      description: "Method for matching values. Strict matching requires that 'value' be an exact match. Regexp matching uses an re2 regex."
+      description: "The method for matching values. Strict requires an exact match. Regexp uses an expression to match against."
       documentation:
-        - text: re2 Syntax
+        - text: Regexp Syntax
           url: https://github.com/google/re2/wiki/Syntax
       type: enum
       validValues:
         - strict
         - regexp
       default: strict
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs", "Metrics", "Traces"]
 
     - name: resources
-      label: Resource Keys
-      description: Resource key value pairs to filter on. Telemetry is filtered if all resource, attribute, and body key pairs are matched.
+      label: Resource Fields
+      description: "A list of resource fields to match."
       type: map
       default: {}
       options:
         gridColumns: 12
         labels:
-          key: Key
+          key: Field
           value: Value
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs", "Metrics", "Traces"]
 
     - name: attributes
-      label: Attribute Keys
-      description: Attribute key value pairs to filter on. Telemetry is filtered if all resource, attribute, and body key pairs are matched.
+      label: Attribute Fields
+      description: "A list of attribute fields to match."
       type: map
       default: {}
       options:
         gridColumns: 12
         labels:
-          key: Key
+          key: Field
           value: Value
+      relevantIf:
+        - name: telemetry_types
+          operator: containsAny
+          value: ["Logs", "Metrics", "Traces"]
 
     - name: bodies
-      label: Body Keys
-      description: Log body key value pairs to filter on. Log records filtered if all resource, attribute, and body key pairs are matched.
+      label: Body Fields
+      description: "A list of body fields to match."
       type: map
       default: {}
       options:
         gridColumns: 12
         labels:
-          key: Key
+          key: Field
           value: Value
       relevantIf:
         - name: telemetry_types
