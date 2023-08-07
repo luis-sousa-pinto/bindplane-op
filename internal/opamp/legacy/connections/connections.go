@@ -90,7 +90,7 @@ func (c *connections) Connection(agentID string) bpopamp.Connection {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
-	if state := c.StateForAgentID(agentID); state != nil {
+	if state, ok := c.agents[agentID]; ok {
 		return state.Conn
 	}
 	return nil
@@ -106,10 +106,10 @@ func (c *connections) ConnectedAgentIDs(_ context.Context) []string {
 	return ids
 }
 
-func (c *connections) ConnectedAgentsCount(ctx context.Context) int {
+func (c *connections) ConnectedAgentsCount(_ context.Context) int {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-	return len(c.ConnectedAgentIDs(ctx))
+	return len(c.agents)
 }
 
 func (c *connections) StateForAgentID(agentID string) *bpopamp.AgentConnectionState {
