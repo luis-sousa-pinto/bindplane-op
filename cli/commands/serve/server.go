@@ -126,6 +126,8 @@ func (s *defaultServer) Serve(ctx context.Context) error {
 	agentVersions := s.createAgentVersions(ctx)
 	bindplane := bpserver.NewBindPlane(s.cfg, s.logger, s.store, agentVersions)
 
+	s.startManager(ctx, bindplane)
+
 	s.setGinMode()
 	router, err := s.createRouter(bindplane)
 	if err != nil {
@@ -140,8 +142,6 @@ func (s *defaultServer) Serve(ctx context.Context) error {
 	s.startScheduler(ctx)
 
 	s.startTracer(ctx)
-
-	s.startManager(ctx, bindplane)
 
 	s.startRolloutUpdates(ctx)
 

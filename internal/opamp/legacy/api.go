@@ -73,6 +73,7 @@ func BuildLegacyHandler(bindplane exposedserver.BindPlane) (func(res http.Respon
 	if err != nil {
 		return nil, fmt.Errorf("error attempting to attach the OpAMP v0.2.0 server: %w", err)
 	}
+	go callbacks.updater.Start(context.Background())
 
 	bindplane.Manager().EnableProtocol(callbacks)
 
@@ -158,8 +159,6 @@ func (s *legacyOpampServer) OnConnecting(request *http.Request) legacyOpamp.Conn
 	}
 
 	s.connections.OnConnecting(ctx, headers.id)
-
-	go s.updater.Start(context.Background())
 
 	return legacyOpamp.ConnectionResponse{
 		Accept:         true,
