@@ -2,21 +2,21 @@ apiVersion: bindplane.observiq.com/v1
 kind: ProcessorType
 metadata:
   name: rename_field
-  displayName: Rename Field
-  description: Rename a resource, attribute, or body field.
+  displayName: Rename Fields
+  description: Rename resource, attribute, or body fields.
   labels:
     category: Transform
 spec:
-  version: 1.0.0
+  version: 1.0.1
   parameters:
     # Logs
     - name: enable_logs
       label: Enable Logs
       type: bool
-      default: true
+      default: false
 
     - name: log_condition
-      label: Log Condition
+      label: Condition
       description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all logs."
       type: string
       default: "true"
@@ -34,7 +34,8 @@ spec:
           value: true
 
     - name: log_resource_keys
-      label: Resource Keys
+      label: Resource Fields
+      description: "A list of resource fields to rename."
       type: map
       default: {}
       required: false
@@ -49,7 +50,8 @@ spec:
           value: true
 
     - name: log_attribute_keys
-      label: Attribute Keys
+      label: Attribute Fields
+      description: "A list of attribute fields to rename."
       type: map
       default: {}
       required: false
@@ -64,7 +66,8 @@ spec:
           value: true
 
     - name: log_body_keys
-      label: Body Keys
+      label: Body Fields
+      description: "A list of body fields to rename."
       type: map
       default: {}
       required: false
@@ -82,10 +85,10 @@ spec:
     - name: enable_metrics
       label: Enable Metrics
       type: bool
-      default: true
+      default: false
 
     - name: datapoint_condition
-      label: Datapoint Condition
+      label: Condition
       description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all datapoints."
       type: string
       default: "true"
@@ -103,7 +106,8 @@ spec:
           value: true
 
     - name: metric_resource_keys
-      label: Resource Keys
+      label: Resource Fields
+      description: "A list of resource fields to rename."
       type: map
       default: {}
       required: false
@@ -118,7 +122,8 @@ spec:
           value: true
 
     - name: metric_attribute_keys
-      label: Attribute Keys
+      label: Attribute Fields
+      description: "A list of attribute fields to rename."
       type: map
       default: {}
       required: false
@@ -136,10 +141,10 @@ spec:
     - name: enable_traces
       label: Enable Traces
       type: bool
-      default: true
+      default: false
 
     - name: span_condition
-      label: Spans Condition
+      label: Condition
       description: "An OTTL boolean expression that must evaluate to true to apply this processor. By default, the processor applies to all spans."
       type: string
       default: "true"
@@ -157,7 +162,8 @@ spec:
           value: true
 
     - name: trace_resource_keys
-      label: Resource Keys
+      label: Resource Fields
+      description: "A list of resource fields to rename."
       type: map
       default: {}
       required: false
@@ -172,7 +178,8 @@ spec:
           value: true
 
     - name: trace_attribute_keys
-      label: Attribute Keys
+      label: Attribute Fields
+      description: "A list of attribute fields to rename."
       type: map
       default: {}
       required: false
