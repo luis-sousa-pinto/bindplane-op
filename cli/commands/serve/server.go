@@ -193,12 +193,13 @@ func (s *defaultServer) createAgentVersions(ctx context.Context) agent.Versions 
 	var versionClient agent.VersionClient
 	if !s.cfg.Offline {
 		versionClient = agent.NewGitHubVersionClient()
+	} else {
+		versionClient = agent.NewNoopClient()
 	}
 
 	settings := agent.VersionsSettings{
 		Logger:                    s.logger.Named("versions"),
 		SyncAgentVersionsInterval: s.cfg.AgentVersions.SyncInterval,
-		Offline:                   s.cfg.Offline,
 	}
 
 	return agent.NewVersions(ctx, versionClient, s.store, settings)

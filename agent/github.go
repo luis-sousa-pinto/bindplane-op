@@ -16,8 +16,6 @@ package agent
 
 import (
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -30,6 +28,12 @@ var (
 	oldestReleaseDate = time.Date(2022, time.August, 1, 0, 0, 0, 0, time.UTC)
 )
 
+const (
+	githubAPIUrl    = "https://api.github.com"
+	githubRepo      = "bindplane-agent"
+	githubRepoOwner = "observIQ"
+)
+
 type github struct {
 	client *resty.Client
 }
@@ -37,18 +41,13 @@ type github struct {
 var _ VersionClient = (*github)(nil)
 
 // newGithub creates a new github client for retrieving agent versions
-func newGithub() VersionClient {
+func newGithub() *github {
 	c := resty.New()
 	c.SetTimeout(time.Second * 20)
-	c.SetBaseURL("https://api.github.com")
+	c.SetBaseURL(githubAPIUrl)
 	return &github{
 		client: c,
 	}
-}
-
-// LatestVersion returns the latest agent release.
-func (c *github) LatestVersion() (*model.AgentVersion, error) {
-	return c.Version(VersionLatest)
 }
 
 type githubReleaseAsset struct {
@@ -66,20 +65,22 @@ type githubRelease struct {
 	Assets          []githubReleaseAsset
 }
 
-const owner = "observIQ"
-const repo = "bindplane-agent"
-
 func releasesURL() string {
-	return fmt.Sprintf("/repos/%s/%s/releases", owner, repo)
+	return fmt.Sprintf("/repos/%s/%s/releases", githubRepoOwner, githubRepo)
 }
 func latestURL() string {
-	return fmt.Sprintf("/repos/%s/%s/releases/latest", owner, repo)
+	return fmt.Sprintf("/repos/%s/%s/releases/latest", githubRepoOwner, githubRepo)
 }
 func versionURL(version string) string {
-	return fmt.Sprintf("/repos/%s/%s/releases/tags/%s", owner, repo, version)
+	return fmt.Sprintf("/repos/%s/%s/releases/tags/%s", githubRepoOwner, githubRepo, version)
 }
 
-func (c *github) Version(version string) (*model.AgentVersion, error) {
+// LatestVersion returns the latest agent release.
+func (g *github) LatestVersion() (*model.AgentVersion, error) {
+	return g.Version(VersionLatest)
+}
+
+func (g *github) Version(version string) (*model.AgentVersion, error) {
 	var url string
 	if version == VersionLatest {
 		url = latestURL()
@@ -88,38 +89,35 @@ func (c *github) Version(version string) (*model.AgentVersion, error) {
 	}
 
 	var release githubRelease
-	res, err := c.client.R().SetResult(&release).Get(url)
+	res, err := g.client.R().SetResult(&release).Get(url)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get release: %w", err)
 	}
 	if res.StatusCode() == 404 {
 		return nil, ErrVersionNotFound
 	}
 	if res.StatusCode() != 200 {
-		return nil, fmt.Errorf("Unable to get version %s: %s", version, res.Status())
+		return nil, fmt.Errorf("unable to get version %s: %s", version, res.Status())
 	}
 
-	sums, err := c.GetSha256Sums(&release)
+	sums, err := g.GetSha256Sums(&release)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get sha256 sums: %w", err)
 	}
 
 	return convertRelease(&release, sums), nil
 }
 
-func (c *github) Versions() ([]*model.AgentVersion, error) {
+func (g *github) Versions() ([]*model.AgentVersion, error) {
 	var releases []githubRelease
-	res, err := c.client.R().SetResult(&releases).Get(releasesURL())
+	res, err := g.client.R().SetResult(&releases).Get(releasesURL())
 
 	if err != nil {
-		return nil, err
-	}
-	if res.StatusCode() == 404 {
-		return nil, ErrVersionNotFound
+		return nil, fmt.Errorf("get releases: %w", err)
 	}
 	if res.StatusCode() != 200 {
-		return nil, fmt.Errorf("Unable to get versions: %s", res.Status())
+		return nil, fmt.Errorf("unable to get versions: %s", res.Status())
 	}
 
 	var results []*model.AgentVersion
@@ -130,9 +128,9 @@ func (c *github) Versions() ([]*model.AgentVersion, error) {
 		}
 
 		r := release
-		sums, err := c.GetSha256Sums(&r)
+		sums, err := g.GetSha256Sums(&r)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("get sha256 sums: %w", err)
 		}
 
 		results = append(results, convertRelease(&r, sums))
@@ -141,25 +139,37 @@ func (c *github) Versions() ([]*model.AgentVersion, error) {
 	return results, nil
 }
 
-func (c *github) GetSha256Sums(release *githubRelease) (Sha256sums, error) {
+func (g *github) GetSha256Sums(release *githubRelease) (Sha256sums, error) {
 	// download and parse the sha256sums
 	sumsName := fmt.Sprintf("observiq-otel-collector-%s-SHA256SUMS", release.TagName)
 	sumsURL := releaseAssetURL(sumsName, release.Assets)
 
-	res, err := c.client.R().Get(sumsURL)
+	res, err := g.client.R().Get(sumsURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get: %w", err)
+	}
+	if res.StatusCode() != 200 {
+		return nil, fmt.Errorf("bad status code: %d", res.StatusCode())
 	}
 	return ParseSha256Sums(res.Body()), nil
 }
 
-// PlatformArtifacts is a map of platform to the download package format and installer name.
-var PlatformArtifacts = map[string]struct {
-	// format for use with Sprintf(format, version)
+// PlatformArtifactNames contains the names for a set of artifacts for a platform.
+type PlatformArtifactNames struct {
+	// DownloadPackageFormat is the format string for the name of the downloadable upgrade package.
+	// It must be formatted for use with Sprintf(format, version)
 	DownloadPackageFormat string
-	// name of the installer for this platform
+	// InstallerName is the name of the installer for this platform
 	InstallerName string
-}{
+}
+
+// DownloadPackageName formats DownloadPackageFormat with the version, giving the name of the downloadable upgrade package.
+func (p PlatformArtifactNames) DownloadPackageName(version string) string {
+	return fmt.Sprintf(p.DownloadPackageFormat, version)
+}
+
+// PlatformArtifacts is a map of platform to the download package format and installer name.
+var PlatformArtifacts = map[string]PlatformArtifactNames{
 	"darwin/amd64": {
 		DownloadPackageFormat: "observiq-otel-collector-%s-darwin-amd64.tar.gz",
 		InstallerName:         "install_macos.sh",
@@ -195,7 +205,7 @@ func convertRelease(r *githubRelease, hashes Sha256sums) *model.AgentVersion {
 	download := map[string]model.AgentDownload{}
 
 	for platform, components := range PlatformArtifacts {
-		downloadName := fmt.Sprintf(components.DownloadPackageFormat, r.TagName)
+		downloadName := components.DownloadPackageName(r.TagName)
 		installerName := components.InstallerName
 
 		installer[platform] = model.AgentInstaller{
@@ -231,23 +241,4 @@ func releaseAssetURL(name string, assets []githubReleaseAsset) string {
 		}
 	}
 	return ""
-}
-
-// IsGitHubAgentVersion determines if the agent version points to github or not
-func IsGitHubAgentVersion(v *model.AgentVersion) (bool, error) {
-	// If any downloads have a github.com host, we consider it a "github" version
-	for _, d := range v.Spec.Download {
-		downloadURL, err := url.Parse(d.URL)
-		if err != nil {
-			return false, fmt.Errorf("parse download url (version: %s): %w", v.Name(), err)
-		}
-
-		// if the host is "github.com" or is a subdomain of github (api.github.com, www.github.com),
-		// we consider it to be a github url.
-		if downloadURL.Host == "github.com" || strings.HasSuffix(downloadURL.Host, ".github.com") {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }

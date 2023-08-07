@@ -59,6 +59,7 @@ require (
 require (
 	github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2
 	github.com/creack/pty v1.1.18
+	github.com/jarcoal/httpmock v1.3.0
 	github.com/observiq/opamp-go v0.2.1
 	github.com/open-telemetry/opamp-go v0.8.0
 )
