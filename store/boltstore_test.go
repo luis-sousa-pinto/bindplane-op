@@ -409,8 +409,9 @@ func TestInitDB(t *testing.T) {
 			// 6. - otelcol_processor_throughputmeasurement_log_data_size
 			// 7. - otelcol_processor_throughputmeasurement_metric_data_size
 			// 8. - otelcol_processor_throughputmeasurement_trace_data_size
-			bucketCount := 8
-			require.Equal(t, bucketCount*2, db.Stats().TxStats.CursorCount)
+			bucketCount := int64(8)
+			stats := db.Stats().TxStats
+			require.Equal(t, bucketCount*2, stats.GetCursorCount())
 
 			// InitDB creates buckets: Resources, Tasks, Agents, Measurements, and sub-buckets in measurements for each metric
 			_ = db.Update(func(tx *bbolt.Tx) error {
