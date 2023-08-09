@@ -8,18 +8,18 @@ metadata:
     category: Advanced
 
 spec:
-  version: 0.0.1
+  version: 0.0.2
   parameters:
     - name: telemetry_types
       label: Telemetry Types
       type: enums
-      description: "Select which types of telemetry the processor supports."
+      description: "The types of telemetry the processor supports."
       validValues: ["Metrics", "Logs", "Traces"]
       default: []
 
     - name: configuration
       label: Configuration
-      description: Enter any supported Processor and the YAML will be inserted into the configuration.
+      description: The YAML configuration for the processor.
       type: yaml
       options:
         gridColumns: 12
@@ -39,7 +39,6 @@ spec:
       {{ if has "Metrics" .telemetry_types }}
       - {{ .configuration | nindent 2 }}
       {{ end }}
-
 
   traces:
     processors: |

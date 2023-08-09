@@ -277,7 +277,7 @@ func (r *Resolver) RemoveAgentConfiguration(ctx context.Context, input *model1.R
 		return nil, err
 	}
 
-	newAgent, err := r.Bindplane.Store().UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+	newAgent, err := r.Bindplane.Store().UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 		current.Labels.Set["configuration"] = ""
 	})
 

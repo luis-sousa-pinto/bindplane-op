@@ -3,12 +3,12 @@ kind: ProcessorType
 metadata:
   name: group_by_attributes
   displayName: Group by Attributes
-  description: Group telemetry into resources based on matching attributes.
+  description: Group telemetry into the same resources based on matching attributes.
   labels:
     category: Advanced
 
 spec:
-  version: 0.0.1
+  version: 0.0.2
   parameters:
     - name: enable_logs
       label: Enable Logs
@@ -17,8 +17,8 @@ spec:
       required: false
 
     - name: log_attributes
-      label: Attribute Keys
-      description: "A list of log attribute keys to group by. If none are specified, resources with the same attributes will be compacted."
+      label: Attribute Fields
+      description: "A list of log attribute field names to group by. If none are specified, resources with the same attributes will be compacted."
       type: strings
       default: []
       required: false
@@ -34,8 +34,8 @@ spec:
       required: false
 
     - name: metric_attributes
-      label: Attribute Keys
-      description: "A list of metric datapoint attribute keys to group by. If none are specified, resources with the same attributes will be compacted."
+      label: Attribute Fields
+      description: "A list of metric datapoint attribute field names to group by. If none are specified, resources with the same attributes will be compacted."
       type: strings
       default: []
       required: false
@@ -51,8 +51,8 @@ spec:
       required: false
 
     - name: trace_attributes
-      label: Metric Attribute Keys
-      description: "A list of span attribute keys to group by. If none are specified, resources with the same attributes will be compacted."
+      label: Attribute Fields
+      description: "A list of span attribute field names to group by. If none are specified, resources with the same attributes will be compacted."
       type: strings
       default: []
       required: false

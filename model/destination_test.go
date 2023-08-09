@@ -197,3 +197,56 @@ func TestWithoutSensitiveParameterMasking(t *testing.T) {
 	ctx = ContextWithoutSensitiveParameterMasking(ctx)
 	require.True(t, IsWithoutSensitiveParameterMasking(ctx), "true if set on context")
 }
+
+func TestNewDestinationType(t *testing.T) {
+	name := "test_name"
+	parameters := []ParameterDefinition{
+		{Name: "test_parameter"},
+	}
+	dt := NewDestinationType(name, parameters)
+
+	// Check that the name and parameters are correct
+	require.Equal(t, name, dt.Metadata.Name, "Name was not set correctly")
+	require.Equal(t, parameters, dt.Spec.Parameters, "Parameters were not set correctly")
+}
+
+func TestNewDestination(t *testing.T) {
+	name := "test_name"
+	parameters := []Parameter{
+		{Name: "test_parameter"},
+	}
+	dt := NewDestination(name, "destType", parameters)
+
+	// Check that the name and parameters are correct
+	require.Equal(t, name, dt.Metadata.Name, "Name was not set correctly")
+	require.Equal(t, parameters, dt.Spec.Parameters, "Parameters were not set correctly")
+}
+
+func TestNewDestinationTypeWithSpec(t *testing.T) {
+	name := "test_name"
+	spec := ResourceTypeSpec{
+		Version:    "1.0",
+		Parameters: []ParameterDefinition{{Name: "test_parameter"}},
+	}
+	dt := NewDestinationTypeWithSpec(name, spec)
+
+	// Check that the name and spec are correct
+	require.Equal(t, name, dt.Metadata.Name, "Name was not set correctly")
+	require.Equal(t, spec, dt.Spec, "Spec was not set correctly")
+}
+
+func TestGetSpec(t *testing.T) {
+	rt := ResourceType{
+		Spec: ResourceTypeSpec{
+			Version: "1.0",
+			Parameters: []ParameterDefinition{
+				{Name: "test_parameter"},
+			},
+		},
+	}
+
+	spec := rt.GetSpec()
+
+	// Check that the returned spec is correct
+	require.Equal(t, rt.Spec, spec, "GetSpec did not return the correct spec")
+}

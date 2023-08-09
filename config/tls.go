@@ -66,11 +66,6 @@ func (t *TLS) Validate() error {
 		return errors.New("tls certificate must be set when tls private key is set")
 	}
 
-	caCerts := len(t.CertificateAuthority)
-	if caCerts > 0 && t.Certificate == "" || caCerts > 0 && t.PrivateKey == "" {
-		return errors.New("tls certificate and private key must be set when tls certificate authority is set")
-	}
-
 	if t.Certificate != "" {
 		if _, err := os.Stat(t.Certificate); err != nil {
 			return fmt.Errorf("failed to lookup tls certificate file %s: %w", t.Certificate, err)

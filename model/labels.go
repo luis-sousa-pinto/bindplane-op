@@ -53,11 +53,11 @@ const (
 	LabelAgentContainerPlatform = "container-platform"
 )
 
-// Labeled TODO(doc)
+// Labeled is used for filtering resources by labels
 type Labeled interface {
-	// GetLabels TODO(doc)
+	// GetLabels returns the labels for the resource
 	GetLabels() Labels
-	// SetLabels TODO(doc)
+	// SetLabels sets the labels for the resource
 	SetLabels(l Labels)
 }
 
@@ -110,7 +110,7 @@ func LabelsFromValidatedMap(labels map[string]string) Labels {
 	return Labels{labels}
 }
 
-// LabelsFromSelector TODO(doc)
+// LabelsFromSelector will create a set of labels from a selector string.
 func LabelsFromSelector(selector string) (Labels, error) {
 	// ConvertSelectorToLabelsMap validates the labels provided
 	set, err := labels.ConvertSelectorToLabelsMap(selector)

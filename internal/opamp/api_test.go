@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/observiq/bindplane-op/config"
@@ -328,12 +327,7 @@ func TestServerOnConnecting(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			manager := tc.createManager(t)
-			updater := serverMocks.NewMockUpdater(t)
-			if tc.expect.Accept {
-				updater.On("Start", mock.Anything).Return()
-			}
 			server := testServer(manager)
-			server.updater = updater
 			request := &http.Request{
 				Header: http.Header{},
 			}
@@ -345,11 +339,6 @@ func TestServerOnConnecting(t *testing.T) {
 			response := server.OnConnecting(request)
 			require.Equal(t, tc.expect.Accept, response.Accept)
 			require.Equal(t, tc.expect.HTTPStatusCode, response.HTTPStatusCode)
-			if tc.expect.Accept {
-				require.Eventually(t, func() bool {
-					return updater.AssertExpectations(t)
-				}, 100*time.Millisecond, 10*time.Millisecond)
-			}
 		})
 	}
 }

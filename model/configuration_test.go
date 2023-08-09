@@ -17,11 +17,15 @@ package model
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/observiq/bindplane-op/model/version"
+	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -2668,4 +2672,432 @@ func TestResourceConfigurationShallowEqual(t *testing.T) {
 
 		require.False(t, rc1.ShallowEqual(rc2))
 	})
+}
+func TestConfigurationPrintableFieldTitles(t *testing.T) {
+	conf := Configuration{}
+	expected := []string{"Name", "Version", "Match"}
+	require.Equal(t, expected, conf.PrintableFieldTitles())
+}
+
+func TestConfigurationPrintableVersionFieldTitles(t *testing.T) {
+	conf := Configuration{}
+	expected := []string{"Name", "Version", "Date", "Match", "Current", "Pending", "Rollout"}
+	require.Equal(t, expected, conf.PrintableVersionFieldTitles())
+}
+
+func TestConfigurationPrintableFieldValue(t *testing.T) {
+	meta := ResourceMeta{
+		Metadata: Metadata{
+			Name: "Test",
+		},
+	}
+	rollout := RolloutStatusPending
+	status := ConfigurationStatus{Current: true, Pending: false, Rollout: Rollout{}}
+	conf := Configuration{ResourceMeta: meta, Spec: ConfigurationSpec{}, StatusType: NewStatusType(status)}
+
+	require.Equal(t, "Test", conf.PrintableFieldValue("Name"))
+	require.Equal(t, "*", conf.PrintableFieldValue("Current"))
+	require.Equal(t, "", conf.PrintableFieldValue("Pending"))
+	require.Equal(t, rollout.String(), conf.PrintableFieldValue("Rollout"))
+	require.Equal(t, "-", conf.PrintableFieldValue("Nonexistent Title"))
+}
+
+func TestConfigurationGraph(t *testing.T) {
+	ctx := context.Background()
+	conf := Configuration{
+		Spec: ConfigurationSpec{
+			Sources: []ResourceConfiguration{
+				{
+					Name: "s1",
+				},
+				{
+					Name: "s2",
+				},
+				{
+					Name: "s3",
+				},
+			},
+			Destinations: []ResourceConfiguration{
+				{
+					Name: "d1",
+				},
+				{
+					Name: "d2",
+				},
+			},
+		},
+	}
+
+	src := &Source{}
+	dest := &Destination{}
+	srcType := &SourceType{}
+	destType := &DestinationType{}
+
+	mockResStore := NewMockResourceStore(t)
+
+	// We don't need the specific information for the source and destination types so we can just return generic types
+	mockResStore.On("SourceType", mock.Anything, mock.Anything).Return(srcType, nil)
+	mockResStore.On("DestinationType", mock.Anything, mock.Anything).Return(destType, nil)
+	mockResStore.On("Source", mock.Anything, mock.Anything).Return(src, nil)
+	mockResStore.On("Destination", mock.Anything, mock.Anything).Return(dest, nil)
+
+	// Call Graph method
+	g, err := conf.Graph(ctx, mockResStore)
+	require.NoError(t, err)
+	require.NotNil(t, g)
+
+	// Check nodes in the graph
+	require.Len(t, g.Sources, len(conf.Spec.Sources), "The number of source nodes should match the number of sources")
+	require.Len(t, g.Targets, len(conf.Spec.Destinations), "The number of destination nodes should match the number of destinations")
+	require.Len(t, g.Intermediates, len(conf.Spec.Sources)+len(conf.Spec.Destinations), "The number of intermediate nodes should match the total number of sources and destinations")
+
+	// Check connections in the graph
+	for _, srcNode := range g.Sources {
+		outgoingEdges := 0
+		for _, edge := range g.Edges {
+			if edge.Source == srcNode.ID {
+				outgoingEdges++
+			}
+		}
+		require.Equal(t, 1, outgoingEdges, fmt.Sprintf("Each source node should be connected to one intermediate node, source node ID: %s", srcNode.ID))
+	}
+	for _, tgtNode := range g.Targets {
+		incomingEdges := 0
+		for _, edge := range g.Edges {
+			if edge.Target == tgtNode.ID {
+				incomingEdges++
+			}
+		}
+		require.Equal(t, 1, incomingEdges, fmt.Sprintf("Each destination node should be connected from one intermediate node, destination node ID: %s", tgtNode.ID))
+	}
+}
+
+func TestCreateRouteReceiver(t *testing.T) {
+	t.Run("it should return a route receiver with a unique name", func(t *testing.T) {
+		name := "route_receiver"
+		errorHandler := func(error) {} // No-op errorHandler for this test
+
+		receiverName, partials := createRouteReceiver(context.Background(), name, errorHandler)
+
+		// Check the receiver name is correct
+		require.Equal(t, name, receiverName)
+
+		// Check that the partial configuration is not nil and contains a receiver
+		require.NotNil(t, partials)
+
+		// Check that the receiver is a 'route' receiver
+		for _, partial := range partials {
+			for _, receivers := range partial.Receivers {
+				for receiverID := range receivers {
+					require.Contains(t, string(receiverID), "route")
+				}
+			}
+		}
+	})
+}
+
+// TestMaskSensitiveParameters tests the maskSensitiveParameters method of ResourceConfiguration
+func TestMaskSensitiveParametersRC(t *testing.T) {
+	ctx := context.Background()
+	// Creating an instance of ResourceConfiguration with parameters
+	rc := &ResourceConfiguration{
+		ParameterizedSpec: ParameterizedSpec{
+			Parameters: []Parameter{
+				{
+					Name:      "TestParameter1",
+					Value:     "TestValue1",
+					Sensitive: true,
+				},
+				{
+					Name:      "TestParameter2",
+					Value:     "TestValue2",
+					Sensitive: false,
+				},
+			},
+		},
+	}
+
+	// Calling the method
+	rc.maskSensitiveParameters(ctx)
+
+	// Asserting that sensitive parameter values are replaced with the placeholder
+	for _, param := range rc.Parameters {
+		if param.Sensitive {
+			require.Equal(t, SensitiveParameterPlaceholder, param.Value)
+		} else {
+			require.NotEqual(t, SensitiveParameterPlaceholder, param.Value)
+		}
+	}
+}
+
+// TestPreserveSensitiveParametersRC tests the preserveSensitiveParameters method of ResourceConfiguration
+func TestPreserveSensitiveParametersRC(t *testing.T) {
+	ctx := context.Background()
+
+	existing := &ResourceConfiguration{
+		ParameterizedSpec: ParameterizedSpec{
+			Parameters: []Parameter{
+				{
+					Name:      "TestParameter1",
+					Value:     "ExistingValue1",
+					Sensitive: true,
+				},
+				{
+					Name:      "TestParameter2",
+					Value:     "ExistingValue2",
+					Sensitive: false,
+				},
+			},
+			Processors: []ResourceConfiguration{
+				{
+					ParameterizedSpec: ParameterizedSpec{
+						Parameters: []Parameter{
+							{
+								Name:      "ProcessorParameter1",
+								Value:     "ExistingProcessorValue1",
+								Sensitive: true,
+							},
+							{
+								Name:      "ProcessorParameter2",
+								Value:     "ExistingProcessorValue2",
+								Sensitive: false,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	rc := &ResourceConfiguration{
+		ParameterizedSpec: ParameterizedSpec{
+			Parameters: []Parameter{
+				{
+					Name:  "TestParameter1",
+					Value: SensitiveParameterPlaceholder,
+				},
+				{
+					Name:  "TestParameter2",
+					Value: SensitiveParameterPlaceholder,
+				},
+			},
+			Processors: []ResourceConfiguration{
+				{
+					ParameterizedSpec: ParameterizedSpec{
+						Parameters: []Parameter{
+							{
+								Name:  "ProcessorParameter1",
+								Value: SensitiveParameterPlaceholder,
+							},
+							{
+								Name:  "ProcessorParameter2",
+								Value: SensitiveParameterPlaceholder,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Calling the method
+	rc.preserveSensitiveParameters(ctx, existing)
+
+	// Asserting that sensitive parameter values are replaced with the value from the existing resource
+	for i, param := range rc.Parameters {
+		require.Equal(t, existing.Parameters[i].Value, param.Value)
+	}
+
+	// Now also assert for the processors
+	for i, processor := range rc.Processors {
+		for j, param := range processor.Parameters {
+			require.Equal(t, existing.Processors[i].Parameters[j].Value, param.Value)
+		}
+	}
+}
+
+func TestRolloutPrintableFieldValue(t *testing.T) {
+	// Create an instance of Rollout
+	r := &Rollout{
+		Name:   "TestRollout",
+		Status: 1,
+		Phase:  2,
+		Progress: RolloutProgress{
+			Completed: 3,
+			Errors:    4,
+			Pending:   5,
+			Waiting:   6,
+		},
+	}
+
+	// Create a map of expected values for each field title
+	expectedValues := map[string]string{
+		"Name":      "TestRollout",
+		"Status":    "Started",
+		"Phase":     "2",
+		"Completed": "3",
+		"Errors":    "4",
+		"Pending":   "5",
+		"Waiting":   "6",
+	}
+
+	titles := r.PrintableFieldTitles()
+
+	for _, title := range titles {
+		val := r.PrintableFieldValue(title)
+		// Check if the returned value for each title matches the expected value
+		require.Equal(t, expectedValues[title], val)
+	}
+
+	// Check for a title that does not exist
+	val := r.PrintableFieldValue("NonExistentTitle")
+	require.Equal(t, "-", val)
+}
+
+func TestConfigurationDuplicate(t *testing.T) {
+	original := &Configuration{
+		ResourceMeta: ResourceMeta{
+			Metadata: Metadata{
+				ID:   uuid.New().String(),
+				Name: "original_configuration",
+			},
+		},
+		Spec: ConfigurationSpec{
+			Selector: AgentSelector{
+				MatchLabels: map[string]string{
+					"configuration": "original_configuration",
+				},
+			},
+		},
+	}
+
+	newName := "test_name"
+	duplicate := original.Duplicate(newName)
+
+	// Check if the Name, ID and matchLabel have been correctly updated
+	require.Equal(t, newName, duplicate.Metadata.Name, "The Name was not updated correctly")
+	require.NotEqual(t, original.Metadata.ID, duplicate.Metadata.ID, "The ID should be different")
+	require.Equal(t, newName, duplicate.Spec.Selector.MatchLabels["configuration"], "The matchLabel was not updated correctly")
+
+	// Set these fields to the original's fields to compare the remaining data
+	duplicate.Metadata.Name = original.Metadata.Name
+	duplicate.Metadata.ID = original.Metadata.ID
+	duplicate.Spec.Selector.MatchLabels["configuration"] = original.Spec.Selector.MatchLabels["configuration"]
+
+	require.Equal(t, original, duplicate, "The duplicated configuration should be identical except for the Name, ID and matchLabel fields")
+}
+
+func TestDestinationPrintableFields(t *testing.T) {
+	// Initialize a Destination
+	d := &Destination{
+		ResourceMeta: ResourceMeta{
+			APIVersion: "v1",
+			Kind:       "destination",
+			Metadata: Metadata{
+				Name:        "test_destination",
+				Description: "This is a test destination",
+				ID:          "123",
+			},
+		},
+	}
+
+	expectedTitles := []string{"Name", "Type", "Description"}
+	require.Equal(t, expectedTitles, d.PrintableFieldTitles(), "PrintableFieldTitles didn't return the expected titles")
+
+	// Check if PrintableFieldValue correctly returns the values for each title
+	for _, title := range expectedTitles {
+		var expectedValue string
+
+		switch title {
+		case "Name":
+			expectedValue = d.Metadata.Name
+		case "Type":
+			expectedValue = d.ResourceTypeName() // ResourceTypeName() should be defined in the Destination struct
+		case "Description":
+			expectedValue = d.Metadata.Description
+		}
+
+		require.Equal(t, expectedValue, d.PrintableFieldValue(title), "PrintableFieldValue didn't return the expected value for the title: "+title)
+	}
+}
+
+type MockIndexer struct {
+	fields map[string]string
+}
+
+func (m *MockIndexer) Add(key string, value string) {
+	m.fields[key] = value
+}
+
+func TestConfigurationIndexFields(t *testing.T) {
+	mockIndexer := &MockIndexer{fields: make(map[string]string)}
+
+	configuration := &Configuration{
+		ResourceMeta: ResourceMeta{
+			Metadata: Metadata{
+				Name: "TestConfiguration",
+			},
+		},
+		Spec: ConfigurationSpec{
+			Sources: []ResourceConfiguration{
+				{
+					Name: "TestSource",
+					ParameterizedSpec: ParameterizedSpec{
+						Type: "TestSourceType",
+					},
+				},
+			},
+			Destinations: []ResourceConfiguration{
+				{
+					Name: "TestDestination",
+
+					ParameterizedSpec: ParameterizedSpec{
+						Type: "TestDestinationType",
+					},
+				},
+			},
+		},
+		StatusType: StatusType[ConfigurationStatus]{},
+	}
+
+	configuration.IndexFields(mockIndexer.Add)
+
+	// Assertions
+	require.Equal(t, "TestConfiguration", mockIndexer.fields["name"])
+	require.Equal(t, "modular", mockIndexer.fields["type"])
+	require.Equal(t, "TestSource", mockIndexer.fields["source"])
+	require.Equal(t, "TestDestination", mockIndexer.fields["destination"])
+	require.Equal(t, "Pending", mockIndexer.fields["rollout-status"])
+}
+
+func TestNewConfiguration(t *testing.T) {
+	name := "TestConfiguration"
+	raw := "TestRawConfiguration"
+	spec := ConfigurationSpec{
+		Raw: raw,
+	}
+
+	// Test NewConfiguration
+	config := NewConfiguration(name)
+	require.Equal(t, name, config.Metadata.Name)
+	require.Equal(t, version.V1, config.APIVersion)
+	require.Equal(t, KindConfiguration, config.Kind)
+	require.NotNil(t, config.Metadata.Labels)
+	require.Equal(t, ConfigurationSpec{}, config.Spec)
+
+	// Test NewRawConfiguration
+	rawConfig := NewRawConfiguration(name, raw)
+	require.Equal(t, name, rawConfig.Metadata.Name)
+	require.Equal(t, version.V1, rawConfig.APIVersion)
+	require.Equal(t, KindConfiguration, rawConfig.Kind)
+	require.NotNil(t, rawConfig.Metadata.Labels)
+	require.Equal(t, spec, rawConfig.Spec)
+
+	// Test NewConfigurationWithSpec
+	specConfig := NewConfigurationWithSpec(name, spec)
+	require.Equal(t, name, specConfig.Metadata.Name)
+	require.Equal(t, version.V1, specConfig.APIVersion)
+	require.Equal(t, KindConfiguration, specConfig.Kind)
+	require.NotNil(t, specConfig.Metadata.Labels)
+	require.Equal(t, spec, specConfig.Spec)
 }

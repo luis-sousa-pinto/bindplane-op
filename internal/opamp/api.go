@@ -97,6 +97,7 @@ func buildCurrentHandler(bindplane exposedserver.BindPlane) (func(res http.Respo
 	if err != nil {
 		return nil, fmt.Errorf("error attempting to attach the current OpAMP server: %w", err)
 	}
+	go callbacks.updater.Start(context.Background())
 
 	bindplane.Manager().EnableProtocol(callbacks)
 
@@ -168,8 +169,6 @@ func (s *opampServer) OnConnecting(request *http.Request) opamp.ConnectionRespon
 	}
 
 	s.connections.OnConnecting(ctx, headers.id)
-
-	go s.updater.Start(context.Background())
 
 	return opamp.ConnectionResponse{
 		Accept:              true,
@@ -276,7 +275,7 @@ func (s *opampServer) OnConnectionClose(conn opamp.Connection) {
 		return
 	}
 
-	_, err := s.manager.UpsertAgent(ctx, agentID, func(agent *model.Agent) {
+	_, err := s.manager.UpdateAgent(ctx, agentID, func(agent *model.Agent) {
 		agent.Disconnect()
 	})
 	if err != nil {
@@ -375,7 +374,7 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 		serverToAgent.RemoteConfig = agentRemoteConfig(&newRawConfiguration, &agentRawConfiguration)
 
 		// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not required to update the agent
-		_, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+		_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
 	}
 
 	if updates.Version != "" {
@@ -383,7 +382,7 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 		downloadableFile, err := s.getDownloadableFile(ctx, agent, updates.Version)
 		if err != nil || downloadableFile == nil {
 			s.logger.Error("unable to send agent update", zap.Error(err))
-			agent, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+			_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 				current.UpgradeComplete(updates.Version, err.Error())
 			})
 		} else {
@@ -399,11 +398,11 @@ func (s *opampServer) UpdateAgent(ctx context.Context, agent *model.Agent, updat
 					},
 				},
 			}
-			agent, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+			_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 				current.UpgradeStarted(updates.Version, allPackagesHash)
 			})
 
-			s.logger.Info("sending PackagesAvailable", zap.Any("PackagesAvailable", serverToAgent.PackagesAvailable), zap.Any("Upgrade", agent.Upgrade))
+			s.logger.Info("sending PackagesAvailable", zap.Any("PackagesAvailable", serverToAgent.PackagesAvailable))
 		}
 	}
 
@@ -606,7 +605,7 @@ func (s *opampServer) updateAgentConfig(ctx context.Context, agent *model.Agent,
 
 	// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not
 	// required to update the agent
-	_, _ = s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+	_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
 
 	s.logger.Info("agent running with outdated config", zap.Any("cur", agentConfiguration.Collector), zap.Any("new", serverConfiguration.Collector))
 	response.RemoteConfig = remoteConfig
@@ -697,7 +696,7 @@ func (s *opampServer) updateAgentState(ctx context.Context, agentID string, conn
 }
 
 func (s *opampServer) updateAgentCurrentConfiguration(ctx context.Context, agent *model.Agent, configuration *model.Configuration) {
-	_, err := s.manager.UpsertAgent(ctx, agent.ID, func(current *model.Agent) {
+	_, err := s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) {
 		current.SetCurrentConfiguration(configuration)
 	})
 	if err != nil {

@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	authmocks "github.com/observiq/bindplane-op/authenticator/mocks"
 	"github.com/observiq/bindplane-op/eventbus"
+	"github.com/observiq/bindplane-op/server"
 	servermocks "github.com/observiq/bindplane-op/server/mocks"
 	"github.com/observiq/bindplane-op/store"
 	storemocks "github.com/observiq/bindplane-op/store/mocks"
@@ -41,6 +42,8 @@ func TestCombinedRouteBuilderAddRoutes(t *testing.T) {
 
 	mockManager := servermocks.NewMockManager(t)
 	mockManager.On("EnableProtocol", mock.Anything).Return()
+	mockManager.On("Store", mock.Anything).Return(mockStore)
+	mockManager.On("AgentMessages", mock.Anything).Return(eventbus.NewSource[server.Message]())
 
 	mockBindplane := servermocks.NewMockBindPlane(t)
 	mockBindplane.On("Authenticator").Return(mockAuthenticator)

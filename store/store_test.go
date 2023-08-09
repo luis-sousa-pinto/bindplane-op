@@ -1589,6 +1589,130 @@ func runTestUpsertAgents(t *testing.T, store Store) {
 
 }
 
+func runTestUpsertAgent(ctx context.Context, t *testing.T, s Store) {
+	// Seed with one
+	a1 := &model.Agent{ID: "1", Name: "Fake Agent 1", Labels: model.Labels{Set: model.MakeLabels().Set}}
+	addAgent(s, a1)
+
+	t.Run("creates a new agent if not found", func(t *testing.T) {
+		newAgentID := "3"
+		s.UpsertAgent(ctx, newAgentID, testUpdater)
+
+		got, err := s.Agent(ctx, newAgentID)
+		require.NoError(t, err)
+
+		assert.NotNil(t, got)
+		assert.Equal(t, got.ID, newAgentID)
+	})
+	t.Run("calls updater and updates an agent if exists", func(t *testing.T) {
+		updaterCalled = false
+		s.UpsertAgent(context.TODO(), a1.ID, testUpdater)
+
+		assert.True(t, updaterCalled)
+
+		got, err := s.Agent(ctx, a1.ID)
+		require.NoError(t, err)
+
+		assert.Equal(t, got.Name, "updated")
+	})
+}
+
+func runTestUpdateAgent(ctx context.Context, t *testing.T, s Store) {
+	// Seed with one
+	a1 := &model.Agent{ID: "1", Name: "Fake Agent 1", Labels: model.Labels{Set: model.MakeLabels().Set}}
+	addAgent(s, a1)
+
+	t.Run("update does nothing if not found", func(t *testing.T) {
+		newAgentID := "3"
+		s.UpdateAgent(ctx, newAgentID, testUpdater)
+
+		got, err := s.Agent(ctx, newAgentID)
+		require.NoError(t, err)
+		require.Nil(t, got)
+	})
+	t.Run("calls updater and updates an agent if exists", func(t *testing.T) {
+		updaterCalled = false
+		s.UpdateAgent(context.TODO(), a1.ID, testUpdater)
+
+		assert.True(t, updaterCalled)
+
+		got, err := s.Agent(ctx, a1.ID)
+		require.NoError(t, err)
+
+		assert.Equal(t, got.Name, "updated")
+	})
+}
+
+func runTestUpdateAgents(t *testing.T, store Store) {
+	t.Run("update does not insert new agents", func(t *testing.T) {
+		store.Clear()
+		count, err := store.AgentsCount(context.TODO())
+		require.NoError(t, err)
+		require.Zero(t, count)
+
+		returnedAgents, err := store.UpdateAgents(
+			context.TODO(),
+			[]string{"1", "2", "3"},
+			func(current *model.Agent) {
+				current.Labels = model.MakeLabels()
+			},
+		)
+		require.NoError(t, err)
+
+		expectAgents := []*model.Agent{}
+
+		require.ElementsMatch(t, expectAgents, returnedAgents)
+
+		gotAgents, err := store.Agents(context.TODO())
+		require.NoError(t, err)
+		require.ElementsMatch(t, expectAgents, gotAgents)
+	})
+
+	t.Run("update only updates existing agents", func(t *testing.T) {
+		tests := []struct {
+			description    string
+			initAgentsIDs  []string
+			upsertAgentIDs []string
+			updater        AgentUpdater
+			expectAgents   []*model.Agent
+		}{
+			{
+				description:    "updates existing agents",
+				initAgentsIDs:  []string{"1"},
+				upsertAgentIDs: []string{"1", "2"},
+				updater:        func(current *model.Agent) { current.Status = 1; current.Labels = model.MakeLabels() },
+				expectAgents: []*model.Agent{
+					{ID: "1", Status: 1, Labels: model.MakeLabels()},
+				},
+			},
+		}
+
+		for _, test := range tests {
+			t.Run(test.description, func(t *testing.T) {
+				// setup
+				store.Clear()
+
+				// seed agents
+				for _, id := range test.initAgentsIDs {
+					addAgent(store, &model.Agent{ID: id, Labels: model.MakeLabels()})
+				}
+
+				// upsert
+				returnedAgents, err := store.UpdateAgents(context.TODO(), test.upsertAgentIDs, test.updater)
+				require.NoError(t, err)
+				require.ElementsMatch(t, test.expectAgents, returnedAgents)
+
+				// verify
+				gotAgents, err := store.Agents(context.TODO())
+				require.NoError(t, err)
+				require.ElementsMatch(t, test.expectAgents, gotAgents)
+
+			})
+		}
+	})
+
+}
+
 func cloneResources[T model.Resource](t *testing.T, resources []T) []T {
 	clones := make([]T, len(resources))
 	for ix, r := range resources {

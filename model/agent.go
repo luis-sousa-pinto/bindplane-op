@@ -35,7 +35,7 @@ const (
 	AgentTypeNameObservIQOtelCollector AgentTypeName = "observiq-otel-collector"
 )
 
-// AgentStatus TODO(doc)
+// AgentStatus is the status of the Agent's connection to bindplane platform
 type AgentStatus uint8
 
 const (
@@ -255,7 +255,7 @@ func (a *Agent) SetLabels(l Labels) {
 	a.Labels.Set = l.Set
 }
 
-// ConnectedDurationDisplayText TODO(doc)
+// ConnectedDurationDisplayText returns the duration since the agent connected.
 func (a *Agent) ConnectedDurationDisplayText() string {
 	if a.Status == Disconnected {
 		return "-"
@@ -271,7 +271,7 @@ func (a *Agent) ReportedDurationDisplayText() string {
 	return durationDisplay(a.ReportedAt)
 }
 
-// DisconnectedDurationDisplayText TODO(doc) What RFC?
+// DisconnectedDurationDisplayText returns the duration since the agent disconnected.
 func (a *Agent) DisconnectedDurationDisplayText() string {
 	return durationDisplay(a.DisconnectedAt)
 }
@@ -531,14 +531,16 @@ type byName []*Agent
 func (s byName) Len() int {
 	return len(s)
 }
+
 func (s byName) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+
 func (s byName) Less(i, j int) bool {
 	return s[i].Name < s[j].Name
 }
 
-// SortAgentsByName TODO(doc)
+// SortAgentsByName sorts the specified slice of Agents by name.
 func SortAgentsByName(agents []*Agent) {
 	sort.Sort(byName(agents))
 }

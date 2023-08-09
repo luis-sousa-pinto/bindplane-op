@@ -76,16 +76,6 @@ func TestNetworkValidate(t *testing.T) {
 			expected: errors.New("tls certificate must be set when tls private key is set"),
 		},
 		{
-			name: "invalid-tls-mtls-missing-keypair",
-			network: Network{
-				Port: "1234",
-				TLS: TLS{
-					CertificateAuthority: []string{"./testdata/tls/ca.crt.test"},
-				},
-			},
-			expected: errors.New("certificate and private key must be set when tls certificate authority is set"),
-		},
-		{
 			name: "invalid-tls-mtls-missing-cert-file",
 			network: Network{
 				Port: "1234",

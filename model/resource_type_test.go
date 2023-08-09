@@ -16,6 +16,8 @@ package model
 
 import (
 	"errors"
+	"fmt"
+	"sort"
 	"strings"
 	"testing"
 
@@ -162,7 +164,6 @@ func TestTelemetryTypes(t *testing.T) {
 }
 
 func TestResourceType_templateFuncHasMetricsEnabled(t *testing.T) {
-
 	type args struct {
 		parameterValue []any
 		parameterName  string
@@ -352,6 +353,152 @@ func TestResourceType_templateFuncHasMetricsEnabled(t *testing.T) {
 			if got != test.want {
 				t.Errorf("ResourceType.templateFuncHasMetricsEnabled() = %v, want %v", got, test.want)
 			}
+		})
+	}
+}
+
+func TestResourceType_templateFuncDisabledCategoryMetrics(t *testing.T) {
+	type args struct {
+		parameterValue []any
+		parameterName  string
+		category       string
+	}
+	tests := []struct {
+		name    string
+		metrics ParameterDefinition
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			name: "missing definition",
+			metrics: ParameterDefinition{
+				Name: "missing",
+				Type: metricsType,
+			},
+			args: args{
+				parameterName: "something-else",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "bad type",
+			metrics: ParameterDefinition{
+				Name: "wrongType",
+				Type: stringType,
+			},
+			args: args{
+				parameterName: "wrongType",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "no disabled metrics",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: metricsType,
+				Options: ParameterOptions{
+					MetricCategories: []MetricCategory{
+						{
+							Label: "Network",
+							Metrics: []MetricOption{
+								{
+									Name: "system.network.io",
+								},
+								{
+									Name: "system.network.errors",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				parameterName: "metrics",
+				category:      "Network",
+			},
+		},
+		{
+			name: "all disabled metrics",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: metricsType,
+				Options: ParameterOptions{
+					MetricCategories: []MetricCategory{
+						{
+							Label: "Network",
+							Metrics: []MetricOption{
+								{
+									Name: "system.network.io",
+								},
+								{
+									Name: "system.network.errors",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				parameterValue: []any{"system.network.io", "system.network.errors"},
+				parameterName:  "metrics",
+				category:       "Network",
+			},
+			want: []string{"system.network.errors", "system.network.io"},
+		},
+		{
+			name: "some disabled metrics",
+			metrics: ParameterDefinition{
+				Name: "metrics",
+				Type: metricsType,
+				Options: ParameterOptions{
+					MetricCategories: []MetricCategory{
+						{
+							Label: "Network",
+							Metrics: []MetricOption{
+								{
+									Name: "system.network.io",
+								},
+								{
+									Name: "system.network.errors",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				parameterValue: []any{"system.network.io"},
+				parameterName:  "metrics",
+				category:       "Network",
+			},
+			want: []string{"system.network.io"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rt := &ResourceType{
+				ResourceMeta: ResourceMeta{
+					Metadata: Metadata{
+						Name: "test",
+					},
+				},
+				Spec: ResourceTypeSpec{
+					Parameters: []ParameterDefinition{
+						tt.metrics,
+					},
+				},
+			}
+			got, err := rt.templateFuncDisabledCategoryMetrics(tt.args.parameterValue, tt.args.parameterName, tt.args.category)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ResourceType.templateFuncDisabledCategoryMetrics() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			sort.Strings(got)
+			sort.Strings(tt.want)
+			require.Equal(t, tt.want, got, fmt.Sprintf("ResourceType.templateFuncDisabledCategoryMetrics() = %v, want %v", got, tt.want))
 		})
 	}
 }

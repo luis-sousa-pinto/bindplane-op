@@ -24,6 +24,9 @@ const url = new URL(`${ws}//${window.location.host}/v1/graphql`);
 const wsLink = new GraphQLWsLink(
   createClient({
     url: url.href,
+    shouldRetry: () => {
+      return true;
+    },
   })
 );
 

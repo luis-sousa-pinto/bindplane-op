@@ -24,30 +24,49 @@ import (
 	"github.com/observiq/bindplane-op/model"
 )
 
-// file is the file to delete resources from
-var file string
-
 // Command returns the bindplane delete cobra command
 func Command(builder Builder) *cobra.Command {
+	var fileFlag []string
+
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "Delete bindplane resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if file == "" {
+			// any positional args are treated as if they were prefixed with -f/--file. this allows shell globs to be used
+			// with or without -f. for example, the following two commands are the same "apply -f *.yaml" and "apply *.yaml"
+			fileArgs := fileFlag
+			fileArgs = append(fileArgs, args...)
+
+			if len(fileArgs) == 0 {
 				_ = cmd.Help()
 				return nil
 			}
 
 			ctx := cmd.Context()
 			writer := cmd.OutOrStdout()
+			var resourceStatuses []*model.AnyResourceStatus
+
 			deleter, err := builder.BuildDeleter(ctx)
 			if err != nil {
 				return err
 			}
 
-			resourceStatuses, err := deleter.DeleteResourcesFromFile(ctx, file)
-			if err != nil {
-				return err
+			switch fileArgs[0] {
+			case "-":
+				reader := cmd.InOrStdin()
+				statuses, err := deleter.DeleteResourcesFromReader(ctx, reader)
+				if err != nil {
+					return err
+				}
+
+				resourceStatuses = append(resourceStatuses, statuses...)
+			default:
+				statuses, err := deleter.DeleteResourcesFromFiles(ctx, fileArgs)
+				if err != nil {
+					return err
+				}
+
+				resourceStatuses = append(resourceStatuses, statuses...)
 			}
 
 			for _, status := range resourceStatuses {
@@ -58,7 +77,7 @@ func Command(builder Builder) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&file, "file", "f", "", "delete resources from a file")
+	cmd.Flags().StringSliceVarP(&fileFlag, "file", "f", []string{}, "path to a yaml file that specifies bindplane resources")
 
 	cmd.AddCommand(
 		deleteResourceCommand(builder, "agent", model.KindAgent, []string{"agents"}),

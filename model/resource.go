@@ -334,7 +334,7 @@ type VersionStatus struct {
 type NoStatus struct {
 }
 
-// Parameter TODO(doc)
+// Parameter is a field that can be set by the user when creating a resource
 type Parameter struct {
 	// Name is the name of the parameter
 	Name string `json:"name" yaml:"name" mapstructure:"name"`

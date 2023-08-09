@@ -2427,6 +2427,118 @@ func (_c *MockStore_StartRollout_Call) RunAndReturn(run func(context.Context, st
 	return _c
 }
 
+// UpdateAgent provides a mock function with given fields: ctx, agentID, updater
+func (_m *MockStore) UpdateAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error) {
+	ret := _m.Called(ctx, agentID, updater)
+
+	var r0 *model.Agent
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, store.AgentUpdater) (*model.Agent, error)); ok {
+		return rf(ctx, agentID, updater)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, store.AgentUpdater) *model.Agent); ok {
+		r0 = rf(ctx, agentID, updater)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Agent)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, store.AgentUpdater) error); ok {
+		r1 = rf(ctx, agentID, updater)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockStore_UpdateAgent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAgent'
+type MockStore_UpdateAgent_Call struct {
+	*mock.Call
+}
+
+// UpdateAgent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentID string
+//   - updater store.AgentUpdater
+func (_e *MockStore_Expecter) UpdateAgent(ctx interface{}, agentID interface{}, updater interface{}) *MockStore_UpdateAgent_Call {
+	return &MockStore_UpdateAgent_Call{Call: _e.mock.On("UpdateAgent", ctx, agentID, updater)}
+}
+
+func (_c *MockStore_UpdateAgent_Call) Run(run func(ctx context.Context, agentID string, updater store.AgentUpdater)) *MockStore_UpdateAgent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(store.AgentUpdater))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateAgent_Call) Return(_a0 *model.Agent, _a1 error) *MockStore_UpdateAgent_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpdateAgent_Call) RunAndReturn(run func(context.Context, string, store.AgentUpdater) (*model.Agent, error)) *MockStore_UpdateAgent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateAgents provides a mock function with given fields: ctx, agentIDs, updater
+func (_m *MockStore) UpdateAgents(ctx context.Context, agentIDs []string, updater store.AgentUpdater) ([]*model.Agent, error) {
+	ret := _m.Called(ctx, agentIDs, updater)
+
+	var r0 []*model.Agent
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string, store.AgentUpdater) ([]*model.Agent, error)); ok {
+		return rf(ctx, agentIDs, updater)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, []string, store.AgentUpdater) []*model.Agent); ok {
+		r0 = rf(ctx, agentIDs, updater)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.Agent)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, []string, store.AgentUpdater) error); ok {
+		r1 = rf(ctx, agentIDs, updater)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockStore_UpdateAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAgents'
+type MockStore_UpdateAgents_Call struct {
+	*mock.Call
+}
+
+// UpdateAgents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - agentIDs []string
+//   - updater store.AgentUpdater
+func (_e *MockStore_Expecter) UpdateAgents(ctx interface{}, agentIDs interface{}, updater interface{}) *MockStore_UpdateAgents_Call {
+	return &MockStore_UpdateAgents_Call{Call: _e.mock.On("UpdateAgents", ctx, agentIDs, updater)}
+}
+
+func (_c *MockStore_UpdateAgents_Call) Run(run func(ctx context.Context, agentIDs []string, updater store.AgentUpdater)) *MockStore_UpdateAgents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].([]string), args[2].(store.AgentUpdater))
+	})
+	return _c
+}
+
+func (_c *MockStore_UpdateAgents_Call) Return(_a0 []*model.Agent, _a1 error) *MockStore_UpdateAgents_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockStore_UpdateAgents_Call) RunAndReturn(run func(context.Context, []string, store.AgentUpdater) ([]*model.Agent, error)) *MockStore_UpdateAgents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateAllRollouts provides a mock function with given fields: ctx
 func (_m *MockStore) UpdateAllRollouts(ctx context.Context) error {
 	ret := _m.Called(ctx)

@@ -29,9 +29,9 @@ func (k *destinationKind) NewEmptyResource() *Destination { return &Destination{
 
 // Destination will generate an exporter and be at the end of a pipeline
 type Destination struct {
-	// ResourceMeta TODO(doc)
+	// ResourceMeta is the metadata for the Destination
 	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
-	// Spec TODO(doc)
+	// Spec is the specification for the Destination containing the type and parameters
 	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
 	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
 }

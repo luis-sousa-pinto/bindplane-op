@@ -22,14 +22,15 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 )
 
-// HasAgentSelector TODO(docs)
+// HasAgentSelector is an interface for resources that have an agent selector
 type HasAgentSelector interface {
-	// AgentSelector TODO(docs)
+	// AgentSelector returns the agent selector
 	AgentSelector() Selector
+	// IsForAgent returns true if the resource is for the given agent
 	IsForAgent(agent *Agent) bool
 }
 
-// Selector TODO(docs)
+// Selector is a wrapper for labels.Selector
 type Selector struct {
 	labels.Selector
 }

@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/observiq/bindplane-op/config"
@@ -322,12 +321,7 @@ func TestServerOnConnecting(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			manager := tc.createManager(t)
-			updater := serverMocks.NewMockUpdater(t)
-			if tc.expect.Accept {
-				updater.On("Start", mock.Anything).Return()
-			}
 			server := testServer(manager)
-			server.updater = updater
 			server.compatibleOpAMPVersions = []string{"v0.2.0"}
 			request := &http.Request{
 				Header: http.Header{
@@ -342,11 +336,6 @@ func TestServerOnConnecting(t *testing.T) {
 			response := server.OnConnecting(request)
 			require.Equal(t, tc.expect.Accept, response.Accept)
 			require.Equal(t, tc.expect.HTTPStatusCode, response.HTTPStatusCode)
-			if tc.expect.Accept {
-				require.Eventually(t, func() bool {
-					return updater.AssertExpectations(t)
-				}, 100*time.Millisecond, 10*time.Millisecond)
-			}
 		})
 	}
 }
@@ -896,20 +885,12 @@ func TestOnConnectingOpAMPCompatibility(t *testing.T) {
 		testManager := bpserver.NewManager(cfg, nil, nil, zap.NewNop())
 		testServer := newLegacyServer(testManager, zap.NewNop())
 		testServer.compatibleOpAMPVersions = []string{"v0.2.0"}
-		updater := serverMocks.NewMockUpdater(t)
-		if test.expect.Accept {
-			updater.On("Start", mock.Anything).Return()
-		}
-		testServer.updater = updater
 
 		t.Run(test.name, func(t *testing.T) {
 			response := testServer.OnConnecting(&test.request)
 			require.Equal(t, test.expect.Accept, response.Accept)
 			require.Equal(t, test.expect.HTTPStatusCode, response.HTTPStatusCode)
 			require.Equal(t, test.expect.HTTPResponseHeader, response.HTTPResponseHeader)
-			require.Eventually(t, func() bool {
-				return updater.AssertExpectations(t)
-			}, 100*time.Millisecond, 10*time.Millisecond)
 		})
 	}
 }

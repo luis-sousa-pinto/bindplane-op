@@ -42,6 +42,8 @@ definitions:
         type: string
       remoteAddress:
         type: string
+      reported_at:
+        type: string
       state: {}
       status:
         allOf:
@@ -234,7 +236,7 @@ definitions:
       spec:
         allOf:
         - $ref: '#/definitions/model.ConfigurationSpec'
-        description: Spec TODO(doc)
+        description: Spec contains the spec for the Configuration
       status:
         $ref: '#/definitions/model.ConfigurationStatus'
     type: object
@@ -344,7 +346,8 @@ definitions:
       spec:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
-        description: Spec TODO(doc)
+        description: Spec is the specification for the Destination containing the
+          type and parameters
       status:
         $ref: '#/definitions/model.VersionStatus'
     type: object
@@ -457,6 +460,11 @@ definitions:
         $ref: '#/definitions/model.AdditionalInfo'
       dateModified:
         type: string
+      deprecated:
+        description: |-
+          Deprecated indicates that this resource is deprecated and should not be used. Deprecated resources should contain
+          additional information about why the resource is deprecated and what should be used instead.
+        type: boolean
       description:
         type: string
       displayName:
@@ -650,7 +658,8 @@ definitions:
       spec:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
-        description: Spec TODO(doc)
+        description: Spec is the specification for the Processor containing the type
+          and parameters
       status:
         $ref: '#/definitions/model.VersionStatus'
     type: object
@@ -731,11 +740,11 @@ definitions:
         description: Reason will be set if status is invalid or error
         type: string
       resource:
-        description: Resource TODO(doc)
+        description: Resource is the resource that was updated
       status:
         allOf:
         - $ref: '#/definitions/model.UpdateStatus'
-        description: Status TODO(doc)
+        description: Status is the status of the resource after the update
     type: object
   model.ResourceTypeOutput:
     properties:
@@ -874,7 +883,8 @@ definitions:
       spec:
         allOf:
         - $ref: '#/definitions/model.ParameterizedSpec'
-        description: Spec TODO(doc)
+        description: Spec is the specification for the Source that contains the type
+          and parameters
       status:
         $ref: '#/definitions/model.VersionStatus'
     type: object
@@ -925,6 +935,7 @@ definitions:
     - error
     - in-use
     - forbidden
+    - deprecated
     type: string
     x-enum-varnames:
     - StatusUnchanged
@@ -935,6 +946,7 @@ definitions:
     - StatusError
     - StatusInUse
     - StatusForbidden
+    - StatusDeprecated
   model.Version:
     enum:
     - -2

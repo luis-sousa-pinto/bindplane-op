@@ -402,9 +402,12 @@ func PatchAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	newAgent, err := bindplane.Store().UpsertAgent(ctx, id, func(agent *model.Agent) {
+	newAgent, err := bindplane.Store().UpdateAgent(ctx, id, func(agent *model.Agent) {
 		agent.Labels = model.LabelsFromMerge(agent.Labels, newLabels)
 	})
+	if newAgent == nil {
+		err = fmt.Errorf("agent not found with id=%s", id)
+	}
 
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -467,7 +470,7 @@ func UpgradeAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 			continue
 		}
 
-		_, err = bindplane.Store().UpsertAgent(ctx, id, func(current *model.Agent) {
+		_, err = bindplane.Store().UpdateAgent(ctx, id, func(current *model.Agent) {
 			current.UpgradeTo(version)
 		})
 		if err != nil {
@@ -515,7 +518,7 @@ func UpgradeAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
 	}
 
 	// start an upgrade process
-	_, err = bindplane.Store().UpsertAgent(ctx, id, func(current *model.Agent) {
+	_, err = bindplane.Store().UpdateAgent(ctx, id, func(current *model.Agent) {
 		current.UpgradeTo(req.Version)
 	})
 	if err != nil {

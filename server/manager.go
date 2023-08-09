@@ -42,6 +42,8 @@ type Manager interface {
 	Agent(ctx context.Context, agentID string) (*model.Agent, error)
 	// UpsertAgent adds a new Agent to the Store or updates an existing one
 	UpsertAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error)
+	// UpdateAgent updates an existing Agent in the Store
+	UpdateAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error)
 	// AgentUpdates returns the updates that should be applied to an agent based on the current bindplane configuration
 	AgentUpdates(ctx context.Context, agent *model.Agent) (*protocol.AgentUpdates, error)
 	// VerifySecretKey checks to see if the specified secretKey matches configured secretKey
@@ -223,6 +225,11 @@ func (m *DefaultManager) Agent(ctx context.Context, agentID string) (*model.Agen
 // UpsertAgent adds a new Agent to the Store or updates an existing one
 func (m *DefaultManager) UpsertAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error) {
 	return m.Storage.UpsertAgent(ctx, agentID, updater)
+}
+
+// UpdateAgent updates an existing Agent in the Store
+func (m *DefaultManager) UpdateAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error) {
+	return m.Storage.UpdateAgent(ctx, agentID, updater)
 }
 
 // AgentUpdates returns the updates that should be applied to an agent based on the current bindplane configuration
