@@ -128,6 +128,9 @@ force_exit() {
 }
 
 error_exit() {
+  # Cleanup before exitiing
+  clean
+
   line_num=$(if [ -n "$1" ]; then command printf ":$1"; fi)
   error "ERROR ($SCRIPT_NAME$line_num): ${2:-Unknown Error}" >&2
   if [ -n "$0" ]; then
@@ -405,6 +408,15 @@ display_results() {
     return 0
 }
 
+# Clean is called in two places. In main() after install(),
+# and error_exit(). This ensures that the package file is
+# always cleaned up.
+clean () {
+    # rm -f does not have output and returns 0
+    # even if the file(s) do not exist.
+    rm -f bindplane.deb bindplane.rpm
+}
+
 main() {
   if [ $# -ge 1 ]; then
     while [ -n "$1" ]; do
@@ -437,6 +449,7 @@ main() {
   observiq_banner
   check_prereqs
   install
+  clean
   display_results
 }
 
