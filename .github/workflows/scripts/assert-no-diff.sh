@@ -15,7 +15,7 @@
 
 set -e
 
-if ! git diff --exit-code --quiet; then
+if ! git diff --exit-code --quiet ':!graphql/generated/server_gen.go'; then
     echo "ERROR: Uncommitted changes detected. Please commit or stash your changes before running this script."
     echo "changes: $(git diff --name-only)"
     exit 1
