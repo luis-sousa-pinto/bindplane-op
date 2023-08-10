@@ -22,7 +22,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +37,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
@@ -119,6 +122,8 @@ type opampServer struct {
 
 var _ protocol.Protocol = (*opampServer)(nil)
 var _ opamp.Callbacks = (*opampServer)(nil)
+var mp metric.Meter = otel.Meter("opamp/agents")
+var agentMessages atomic.Int64
 
 func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
 	s := &opampServer{
@@ -131,7 +136,40 @@ func newServer(manager bpserver.Manager, logger *zap.Logger) *opampServer {
 		s.manager,
 		s.logger,
 	)
+	setupMetrics(s)
 	return s
+}
+
+func setupMetrics(s *opampServer) {
+	_, err := mp.Int64ObservableGauge("connected_agents",
+		metric.WithDescription("Number of connected agents"),
+		metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
+			io.Observe(int64(s.connections.ConnectedAgentsCount(ctx)))
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create connected_agents metric", zap.Error(err))
+	}
+
+	_, err = mp.Int64ObservableGauge("goroutines",
+		metric.WithDescription("Number of active goroutines"),
+		metric.WithInt64Callback(func(_ context.Context, io metric.Int64Observer) error {
+			io.Observe(int64(runtime.NumGoroutine()))
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create goroutines metric", zap.Error(err))
+	}
+
+	_, err = mp.Int64ObservableCounter("agent_messages",
+		metric.WithDescription("Number of agent messages received"),
+		metric.WithInt64Callback(func(_ context.Context, io metric.Int64Observer) error {
+			io.Observe(agentMessages.Load())
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create agent_metrics metric", zap.Error(err))
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -221,6 +259,7 @@ func (s *opampServer) OnMessage(conn opamp.Connection, message *protobufs.AgentT
 		InstanceUid:  agentID,
 		Capabilities: uint64(capabilities),
 	}
+	agentMessages.Add(1)
 
 	if _, err := s.connections.OnMessage(agentID, conn); err != nil {
 		s.logger.Error("failed to verify the agent configuration", zap.Error(err))

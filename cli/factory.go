@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -45,6 +46,7 @@ import (
 	"github.com/observiq/bindplane-op/common"
 	"github.com/observiq/bindplane-op/config"
 	"github.com/observiq/bindplane-op/logging"
+	"github.com/observiq/bindplane-op/metrics"
 	"github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/store"
 	"github.com/observiq/bindplane-op/tracer"
@@ -271,7 +273,12 @@ func (f *Factory) BuildServer(ctx context.Context) (serve.Server, error) {
 		return nil, fmt.Errorf("failed to load tracer: %w", err)
 	}
 
-	return serve.NewServer(f.cfg, st, tr, logger, f.routeBuilder), nil
+	mp, err := f.BuildMetricsProvider(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load meter provider: %w", err)
+	}
+
+	return serve.NewServer(f.cfg, st, tr, logger, mp, f.routeBuilder), nil
 }
 
 // SupportsServer returns true if the OS is not windows.
@@ -323,7 +330,7 @@ func (f *Factory) BuildClient(ctx context.Context) (client.BindPlane, error) {
 func (f *Factory) BuildTracer(_ context.Context) (tracer.Tracer, error) {
 	cfg := &f.cfg.Tracing
 	samplingRate := math.Min(math.Max(cfg.SamplingRate, 0), 1)
-	resource := tracer.DefaultResource()
+	resource := common.DefaultResource()
 
 	switch cfg.Type {
 	case config.TracerTypeOTLP:
@@ -334,6 +341,24 @@ func (f *Factory) BuildTracer(_ context.Context) (tracer.Tracer, error) {
 		return tracer.NewNop(), nil
 	default:
 		return nil, fmt.Errorf("unknown tracer type: %s", cfg.Type)
+	}
+}
+
+// BuildMetricsProvider builds the meter provider for the server
+func (f *Factory) BuildMetricsProvider(_ context.Context) (metrics.Provider, error) {
+	cfg := &f.cfg.Metrics
+	interval := cfg.Interval
+	if interval.Seconds() == 0 {
+		interval = 1 * time.Minute
+	}
+
+	switch cfg.Type {
+	case config.MetricsTypeOTLP:
+		return metrics.NewOTLP(&cfg.OTLP, interval, common.DefaultResource())
+	case config.MetricsTypeNop:
+		return metrics.NewNop(), nil
+	default:
+		return nil, fmt.Errorf("unknown metrics type: %s", cfg.Type)
 	}
 }
 

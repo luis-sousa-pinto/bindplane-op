@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package tracer provides tracers for BindPlane
-package tracer
+package common
 
 import (
-	"context"
+	"os"
+	"runtime"
+
+	"github.com/observiq/bindplane-op/version"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-// Tracer is an interface used for tracing
-//
-//go:generate mockery --name=Tracer --filename=mock_trace.go --structname=MockTracer
-type Tracer interface {
-	// Start starts the tracer
-	Start(ctx context.Context) error
-
-	// Shutdown shuts down the tracer
-	Shutdown(ctx context.Context) error
+// DefaultResource returns the default resource for OTLP exporters
+func DefaultResource() *resource.Resource {
+	hostname, _ := os.Hostname()
+	return resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String("bindplane"),
+		semconv.ServiceVersionKey.String(version.NewVersion().String()),
+		semconv.HostArchKey.String(runtime.GOARCH),
+		semconv.HostNameKey.String(hostname),
+	)
 }

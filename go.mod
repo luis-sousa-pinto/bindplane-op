@@ -62,12 +62,15 @@ require (
 	github.com/jarcoal/httpmock v1.3.0
 	github.com/observiq/opamp-go v0.2.1
 	github.com/open-telemetry/opamp-go v0.8.0
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.39.0
+	go.opentelemetry.io/otel/metric v1.16.0
+	go.opentelemetry.io/otel/sdk/metric v0.39.0
 )
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
-	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.39.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230706204954-ccb25ca9f130 // indirect

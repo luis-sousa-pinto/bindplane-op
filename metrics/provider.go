@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package tracer provides tracers for BindPlane
-package tracer
+// Package metrics provides the Provider interface for sending APM metrics
+package metrics
 
 import (
 	"context"
 )
 
-// Tracer is an interface used for tracing
+// Provider is a metrics provider
 //
-//go:generate mockery --name=Tracer --filename=mock_trace.go --structname=MockTracer
-type Tracer interface {
-	// Start starts the tracer
-	Start(ctx context.Context) error
-
-	// Shutdown shuts down the tracer
-	Shutdown(ctx context.Context) error
+//go:generate mockery --name=Provider --filename=mock_provider.go --structname=MockProvider --with-expecter
+type Provider interface {
+	// Start starts the provider
+	Start(context.Context) error
+	// Shutdown shuts down the provider
+	Shutdown(context.Context) error
 }

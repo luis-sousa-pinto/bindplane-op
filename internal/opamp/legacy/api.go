@@ -22,7 +22,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	bpopamp "github.com/observiq/bindplane-op/opamp/legacy"
@@ -34,6 +36,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -92,6 +95,8 @@ type legacyOpampServer struct {
 
 var _ protocol.Protocol = (*legacyOpampServer)(nil)
 var _ legacyOpamp.Callbacks = (*legacyOpampServer)(nil)
+var mp metric.Meter = otel.Meter("opamp/agents")
+var agentMessages atomic.Int64
 
 func newLegacyServer(manager bpserver.Manager, logger *zap.Logger) *legacyOpampServer {
 	s := &legacyOpampServer{
@@ -105,7 +110,40 @@ func newLegacyServer(manager bpserver.Manager, logger *zap.Logger) *legacyOpampS
 		s.manager,
 		s.logger,
 	)
+	setupMetrics(s)
 	return s
+}
+
+func setupMetrics(s *legacyOpampServer) {
+	_, err := mp.Int64ObservableGauge("legacy_connected_agents",
+		metric.WithDescription("Number of connected agents"),
+		metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
+			io.Observe(int64(s.connections.ConnectedAgentsCount(ctx)))
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create legacy_connected_agents metric", zap.Error(err))
+	}
+
+	_, err = mp.Int64ObservableGauge("legacy_goroutines",
+		metric.WithDescription("Number of active goroutines"),
+		metric.WithInt64Callback(func(_ context.Context, io metric.Int64Observer) error {
+			io.Observe(int64(runtime.NumGoroutine()))
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create legacy_goroutines metric", zap.Error(err))
+	}
+
+	_, err = mp.Int64ObservableCounter("legacy_agent_messages",
+		metric.WithDescription("Number of agent messages received"),
+		metric.WithInt64Callback(func(_ context.Context, io metric.Int64Observer) error {
+			io.Observe(agentMessages.Load())
+			return nil
+		}))
+	if err != nil {
+		s.logger.Warn("failed to create legacy_agent_metrics metric", zap.Error(err))
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -210,6 +248,7 @@ func (s *legacyOpampServer) OnMessage(conn legacyOpamp.Connection, message *lega
 		InstanceUid:  agentID,
 		Capabilities: legacyCapabilities,
 	}
+	agentMessages.Add(1)
 
 	if _, err := s.connections.OnMessage(agentID, conn); err != nil {
 		s.logger.Error("failed to verify the agent configuration", zap.Error(err))

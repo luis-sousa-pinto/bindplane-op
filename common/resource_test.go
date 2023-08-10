@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tracer
+package common
 
 import (
 	"os"
 	"runtime"
 	"testing"
 
-	bpversion "github.com/observiq/bindplane-op/version"
+	"github.com/observiq/bindplane-op/version"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -43,7 +43,7 @@ func TestDefaultResource(t *testing.T) {
 		},
 		{
 			Key:   attribute.Key("service.version"),
-			Value: attribute.StringValue(bpversion.NewVersion().String()),
+			Value: attribute.StringValue(version.NewVersion().String()),
 		},
 	}
 

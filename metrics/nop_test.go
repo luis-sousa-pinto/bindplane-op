@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package tracer provides tracers for BindPlane
-package tracer
+package metrics
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-// Tracer is an interface used for tracing
-//
-//go:generate mockery --name=Tracer --filename=mock_trace.go --structname=MockTracer
-type Tracer interface {
-	// Start starts the tracer
-	Start(ctx context.Context) error
+func TestNopStart(t *testing.T) {
+	nop := NewNop()
+	err := nop.Start(context.Background())
+	require.NoError(t, err)
+}
 
-	// Shutdown shuts down the tracer
-	Shutdown(ctx context.Context) error
+func TestNopShutdown(t *testing.T) {
+	nop := NewNop()
+	err := nop.Shutdown(context.Background())
+	require.NoError(t, err)
 }

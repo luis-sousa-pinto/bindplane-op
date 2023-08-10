@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package tracer provides tracers for BindPlane
-package tracer
+package metrics
 
 import (
 	"context"
 )
 
-// Tracer is an interface used for tracing
-//
-//go:generate mockery --name=Tracer --filename=mock_trace.go --structname=MockTracer
-type Tracer interface {
-	// Start starts the tracer
-	Start(ctx context.Context) error
+// Nop is a Provider that does nothing
+type Nop struct{}
 
-	// Shutdown shuts down the tracer
-	Shutdown(ctx context.Context) error
+// NewNop creates a new Nop Provider
+func NewNop() *Nop {
+	return &Nop{}
+}
+
+// Start starts the Provider
+func (n *Nop) Start(_ context.Context) error {
+	return nil
+}
+
+// Shutdown shuts down the Provider
+func (n *Nop) Shutdown(_ context.Context) error {
+	return nil
 }

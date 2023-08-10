@@ -37,6 +37,9 @@ const (
 
 	// DefaultRolloutsInterval is the interval at which rollouts are updated
 	DefaultRolloutsInterval = 5 * time.Second
+
+	// DefaultMetricsInterval is the interval at which metrics are exported
+	DefaultMetricsInterval = 1 * time.Minute
 )
 
 // Config is the configuration of BindPlane
@@ -77,6 +80,9 @@ type Config struct {
 
 	// Logging configuration for the logger
 	Logging Logging `yaml:"logging,omitempty" mapstructure:"logging,omitempty"`
+
+	// Metrics is the configuration for sending APM metrics
+	Metrics Metrics `yaml:"metrics,omitempty" mapstructure:"metrics,omitempty"`
 }
 
 // Validate validates the configuration.
@@ -103,6 +109,10 @@ func (c *Config) Validate() error {
 
 	if err := c.Logging.Validate(); err != nil {
 		return fmt.Errorf("failed to validate logging: %w", err)
+	}
+
+	if err := c.Metrics.Validate(); err != nil {
+		return fmt.Errorf("failed to validate metrics: %w", err)
 	}
 
 	return nil
