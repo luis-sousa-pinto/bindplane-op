@@ -50,10 +50,9 @@ func (jp *JSONPrinter) PrintResource(item model.Printable) {
 // PrintResources prints a generic model that implements the model.Printable interface
 func (jp *JSONPrinter) PrintResources(list []model.Printable) {
 	if len(list) == 0 {
-		jp.printIndentedJSONLine(list, "?")
-	} else {
-		jp.printIndentedJSONLine(list, list[0].PrintableKindPlural())
+		return
 	}
+	jp.printIndentedJSONLine(list, list[0].PrintableKindPlural())
 }
 
 func (jp *JSONPrinter) printIndentedJSONLine(resource interface{}, resourceName string) {

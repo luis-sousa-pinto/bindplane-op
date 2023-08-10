@@ -51,7 +51,6 @@ func (yp *YamlPrinter) PrintResource(item model.Printable) {
 // PrintResources prints a generic model that implements the model.Printable interface
 func (yp *YamlPrinter) PrintResources(list []model.Printable) {
 	if len(list) == 0 {
-		fmt.Fprintln(yp.writer, "[]")
 		return
 	}
 	for _, item := range list {
