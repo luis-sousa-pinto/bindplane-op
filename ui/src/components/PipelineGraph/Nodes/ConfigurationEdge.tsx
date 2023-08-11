@@ -1,8 +1,11 @@
 import { memo } from "react";
 import { EdgeProps } from "reactflow";
 import { usePipelineGraph } from "../PipelineGraphContext";
-
-import { CustomEdge, CustomEdgeData } from "../../GraphComponents";
+import {
+  CustomEdge,
+  CustomEdgeData,
+  getWeightedClassName,
+} from "../../GraphComponents";
 
 const ConfigurationEdge: React.FC<EdgeProps<CustomEdgeData>> = (props) => {
   const { selectedTelemetryType, hoveredSet, maxValues } = usePipelineGraph();
@@ -13,6 +16,7 @@ const ConfigurationEdge: React.FC<EdgeProps<CustomEdgeData>> = (props) => {
       hoveredSet={hoveredSet}
       telemetryType={selectedTelemetryType}
       maxValues={maxValues}
+      getWeightedClassFunc={getWeightedClassName}
     />
   );
 };

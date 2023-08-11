@@ -175,6 +175,15 @@ export type Edge = {
   target: Scalars['String']['output'];
 };
 
+export type EdgeMetric = {
+  __typename?: 'EdgeMetric';
+  edgeID: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  pipelineType: Scalars['String']['output'];
+  unit: Scalars['String']['output'];
+  value: Scalars['Float']['output'];
+};
+
 export type EditConfigurationDescriptionInput = {
   description: Scalars['String']['input'];
   name: Scalars['String']['input'];
@@ -207,6 +216,7 @@ export type GraphMetric = {
 
 export type GraphMetrics = {
   __typename?: 'GraphMetrics';
+  edgeMetrics: Array<EdgeMetric>;
   maxLogValue: Scalars['Float']['output'];
   maxMetricValue: Scalars['Float']['output'];
   maxTraceValue: Scalars['Float']['output'];
@@ -995,15 +1005,6 @@ export type GetOverviewPageQueryVariables = Exact<{
 
 export type GetOverviewPageQuery = { __typename?: 'Query', overviewPage: { __typename?: 'OverviewPage', graph: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, label: string, type: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } } };
 
-export type OverviewMetricsSubscriptionVariables = Exact<{
-  period: Scalars['String']['input'];
-  configIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
-  destinationIDs?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
-}>;
-
-
-export type OverviewMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', maxMetricValue: number, maxLogValue: number, maxTraceValue: number, metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
-
 export type DeployedConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1016,7 +1017,7 @@ export type OverviewPageMetricsSubscriptionVariables = Exact<{
 }>;
 
 
-export type OverviewPageMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }> } };
+export type OverviewPageMetricsSubscription = { __typename?: 'Subscription', overviewMetrics: { __typename?: 'GraphMetrics', maxMetricValue: number, maxLogValue: number, maxTraceValue: number, metrics: Array<{ __typename?: 'GraphMetric', name: string, nodeID: string, pipelineType: string, value: number, unit: string }>, edgeMetrics: Array<{ __typename?: 'EdgeMetric', name: string, edgeID: string, unit: string, value: number, pipelineType: string }> } };
 
 
 export const SourceTypeDocument = gql`
@@ -3291,51 +3292,6 @@ export function useGetOverviewPageLazyQuery(baseOptions?: Apollo.LazyQueryHookOp
 export type GetOverviewPageQueryHookResult = ReturnType<typeof useGetOverviewPageQuery>;
 export type GetOverviewPageLazyQueryHookResult = ReturnType<typeof useGetOverviewPageLazyQuery>;
 export type GetOverviewPageQueryResult = Apollo.QueryResult<GetOverviewPageQuery, GetOverviewPageQueryVariables>;
-export const OverviewMetricsDocument = gql`
-    subscription OverviewMetrics($period: String!, $configIDs: [ID!], $destinationIDs: [ID!]) {
-  overviewMetrics(
-    period: $period
-    configIDs: $configIDs
-    destinationIDs: $destinationIDs
-  ) {
-    metrics {
-      name
-      nodeID
-      pipelineType
-      value
-      unit
-    }
-    maxMetricValue
-    maxLogValue
-    maxTraceValue
-  }
-}
-    `;
-
-/**
- * __useOverviewMetricsSubscription__
- *
- * To run a query within a React component, call `useOverviewMetricsSubscription` and pass it any options that fit your needs.
- * When your component renders, `useOverviewMetricsSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useOverviewMetricsSubscription({
- *   variables: {
- *      period: // value for 'period'
- *      configIDs: // value for 'configIDs'
- *      destinationIDs: // value for 'destinationIDs'
- *   },
- * });
- */
-export function useOverviewMetricsSubscription(baseOptions: Apollo.SubscriptionHookOptions<OverviewMetricsSubscription, OverviewMetricsSubscriptionVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<OverviewMetricsSubscription, OverviewMetricsSubscriptionVariables>(OverviewMetricsDocument, options);
-      }
-export type OverviewMetricsSubscriptionHookResult = ReturnType<typeof useOverviewMetricsSubscription>;
-export type OverviewMetricsSubscriptionResult = Apollo.SubscriptionResult<OverviewMetricsSubscription>;
 export const DeployedConfigsDocument = gql`
     query DeployedConfigs {
   configurations(onlyDeployedConfigurations: true) {
@@ -3390,6 +3346,16 @@ export const OverviewPageMetricsDocument = gql`
       value
       unit
     }
+    edgeMetrics {
+      name
+      edgeID
+      unit
+      value
+      pipelineType
+    }
+    maxMetricValue
+    maxLogValue
+    maxTraceValue
   }
 }
     `;

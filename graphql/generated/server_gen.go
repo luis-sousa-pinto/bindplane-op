@@ -193,6 +193,14 @@ type ComplexityRoot struct {
 		Target func(childComplexity int) int
 	}
 
+	EdgeMetric struct {
+		EdgeID       func(childComplexity int) int
+		Name         func(childComplexity int) int
+		PipelineType func(childComplexity int) int
+		Unit         func(childComplexity int) int
+		Value        func(childComplexity int) int
+	}
+
 	Graph struct {
 		Attributes    func(childComplexity int) int
 		Edges         func(childComplexity int) int
@@ -211,6 +219,7 @@ type ComplexityRoot struct {
 	}
 
 	GraphMetrics struct {
+		EdgeMetrics    func(childComplexity int) int
 		MaxLogValue    func(childComplexity int) int
 		MaxMetricValue func(childComplexity int) int
 		MaxTraceValue  func(childComplexity int) int
@@ -1105,6 +1114,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Edge.Target(childComplexity), true
 
+	case "EdgeMetric.edgeID":
+		if e.complexity.EdgeMetric.EdgeID == nil {
+			break
+		}
+
+		return e.complexity.EdgeMetric.EdgeID(childComplexity), true
+
+	case "EdgeMetric.name":
+		if e.complexity.EdgeMetric.Name == nil {
+			break
+		}
+
+		return e.complexity.EdgeMetric.Name(childComplexity), true
+
+	case "EdgeMetric.pipelineType":
+		if e.complexity.EdgeMetric.PipelineType == nil {
+			break
+		}
+
+		return e.complexity.EdgeMetric.PipelineType(childComplexity), true
+
+	case "EdgeMetric.unit":
+		if e.complexity.EdgeMetric.Unit == nil {
+			break
+		}
+
+		return e.complexity.EdgeMetric.Unit(childComplexity), true
+
+	case "EdgeMetric.value":
+		if e.complexity.EdgeMetric.Value == nil {
+			break
+		}
+
+		return e.complexity.EdgeMetric.Value(childComplexity), true
+
 	case "Graph.attributes":
 		if e.complexity.Graph.Attributes == nil {
 			break
@@ -1181,6 +1225,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GraphMetric.Value(childComplexity), true
+
+	case "GraphMetrics.edgeMetrics":
+		if e.complexity.GraphMetrics.EdgeMetrics == nil {
+			break
+		}
+
+		return e.complexity.GraphMetrics.EdgeMetrics(childComplexity), true
 
 	case "GraphMetrics.maxLogValue":
 		if e.complexity.GraphMetrics.MaxLogValue == nil {
@@ -3020,11 +3071,21 @@ type GraphMetric {
   agentID: ID
 }
 
+# EdgeMetric is a metric associated with an edge in the overview graph
+type EdgeMetric {
+  name: String!
+  edgeID: String!
+  pipelineType: String!
+  value: Float!
+  unit: String!
+}
+
 type GraphMetrics {
   metrics: [GraphMetric!]!
   maxMetricValue: Float!
   maxLogValue: Float!
   maxTraceValue: Float!
+  edgeMetrics: [EdgeMetric!]!
 }
 
 # ----------------------------------------------------------------------
@@ -7417,6 +7478,226 @@ func (ec *executionContext) fieldContext_Edge_target(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _EdgeMetric_name(ctx context.Context, field graphql.CollectedField, obj *model.EdgeMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EdgeMetric_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EdgeMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EdgeMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EdgeMetric_edgeID(ctx context.Context, field graphql.CollectedField, obj *model.EdgeMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EdgeMetric_edgeID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EdgeID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EdgeMetric_edgeID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EdgeMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EdgeMetric_pipelineType(ctx context.Context, field graphql.CollectedField, obj *model.EdgeMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EdgeMetric_pipelineType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PipelineType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EdgeMetric_pipelineType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EdgeMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EdgeMetric_value(ctx context.Context, field graphql.CollectedField, obj *model.EdgeMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EdgeMetric_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EdgeMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EdgeMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EdgeMetric_unit(ctx context.Context, field graphql.CollectedField, obj *model.EdgeMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EdgeMetric_unit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Unit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EdgeMetric_unit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EdgeMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Graph_sources(ctx context.Context, field graphql.CollectedField, obj *graph.Graph) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Graph_sources(ctx, field)
 	if err != nil {
@@ -8121,6 +8402,62 @@ func (ec *executionContext) fieldContext_GraphMetrics_maxTraceValue(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GraphMetrics_edgeMetrics(ctx context.Context, field graphql.CollectedField, obj *model.GraphMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EdgeMetrics, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.EdgeMetric)
+	fc.Result = res
+	return ec.marshalNEdgeMetric2ᚕᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐEdgeMetricᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GraphMetrics_edgeMetrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GraphMetrics",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_EdgeMetric_name(ctx, field)
+			case "edgeID":
+				return ec.fieldContext_EdgeMetric_edgeID(ctx, field)
+			case "pipelineType":
+				return ec.fieldContext_EdgeMetric_pipelineType(ctx, field)
+			case "value":
+				return ec.fieldContext_EdgeMetric_value(ctx, field)
+			case "unit":
+				return ec.fieldContext_EdgeMetric_unit(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EdgeMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -13205,6 +13542,8 @@ func (ec *executionContext) fieldContext_Query_agentMetrics(ctx context.Context,
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -13270,6 +13609,8 @@ func (ec *executionContext) fieldContext_Query_configurationMetrics(ctx context.
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -13335,6 +13676,8 @@ func (ec *executionContext) fieldContext_Query_overviewMetrics(ctx context.Conte
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -15531,6 +15874,8 @@ func (ec *executionContext) fieldContext_Subscription_agentMetrics(ctx context.C
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -15610,6 +15955,8 @@ func (ec *executionContext) fieldContext_Subscription_configurationMetrics(ctx c
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -15689,6 +16036,8 @@ func (ec *executionContext) fieldContext_Subscription_overviewMetrics(ctx contex
 				return ec.fieldContext_GraphMetrics_maxLogValue(ctx, field)
 			case "maxTraceValue":
 				return ec.fieldContext_GraphMetrics_maxTraceValue(ctx, field)
+			case "edgeMetrics":
+				return ec.fieldContext_GraphMetrics_edgeMetrics(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GraphMetrics", field.Name)
 		},
@@ -19118,6 +19467,62 @@ func (ec *executionContext) _Edge(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var edgeMetricImplementors = []string{"EdgeMetric"}
+
+func (ec *executionContext) _EdgeMetric(ctx context.Context, sel ast.SelectionSet, obj *model.EdgeMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, edgeMetricImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EdgeMetric")
+		case "name":
+
+			out.Values[i] = ec._EdgeMetric_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edgeID":
+
+			out.Values[i] = ec._EdgeMetric_edgeID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pipelineType":
+
+			out.Values[i] = ec._EdgeMetric_pipelineType(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "value":
+
+			out.Values[i] = ec._EdgeMetric_value(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "unit":
+
+			out.Values[i] = ec._EdgeMetric_unit(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var graphImplementors = []string{"Graph"}
 
 func (ec *executionContext) _Graph(ctx context.Context, sel ast.SelectionSet, obj *graph.Graph) graphql.Marshaler {
@@ -19268,6 +19673,13 @@ func (ec *executionContext) _GraphMetrics(ctx context.Context, sel ast.Selection
 		case "maxTraceValue":
 
 			out.Values[i] = ec._GraphMetrics_maxTraceValue(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edgeMetrics":
+
+			out.Values[i] = ec._GraphMetrics_edgeMetrics(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -22188,6 +22600,60 @@ func (ec *executionContext) marshalNEdge2ᚖgithubᚗcomᚋobserviqᚋbindplane�
 		return graphql.Null
 	}
 	return ec._Edge(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNEdgeMetric2ᚕᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐEdgeMetricᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EdgeMetric) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEdgeMetric2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐEdgeMetric(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNEdgeMetric2ᚖgithubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐEdgeMetric(ctx context.Context, sel ast.SelectionSet, v *model.EdgeMetric) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EdgeMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNEditConfigurationDescriptionInput2githubᚗcomᚋobserviqᚋbindplaneᚑopᚋgraphqlᚋmodelᚐEditConfigurationDescriptionInput(ctx context.Context, v interface{}) (model.EditConfigurationDescriptionInput, error) {

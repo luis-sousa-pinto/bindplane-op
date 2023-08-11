@@ -1,6 +1,6 @@
 import { Edge, Node, Position } from "reactflow";
 import { TARGET_OFFSET_MULTIPLIER } from "../../components/PipelineGraph/ConfigurationFlow";
-import { Graph, GraphMetric } from "../../graphql/generated";
+import { Graph, GraphMetric, GraphMetrics } from "../../graphql/generated";
 import {
   formatMetric,
   getMetricForNode,
@@ -8,6 +8,7 @@ import {
   Page,
   truncateLabel,
   updateMetricData,
+  updateOverviewMetricData,
 } from "./utils";
 
 describe("getMetricForNode", () => {
@@ -374,5 +375,156 @@ describe("truncateLabel", () => {
   });
   it("truncates with ellipsis", () => {
     expect(truncateLabel("word1word2", 5)).toEqual("word1...");
+  });
+});
+
+describe("updateOverviewMetricData", () => {
+  it("assigns the metric to the edges", () => {
+    const nodes: Node<any>[] = [
+      {
+        id: "configuration/c-1",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+      {
+        id: "configuration/c-2",
+        position: { x: 0, y: 100 },
+        data: {},
+      },
+      {
+        id: "destination/d-1",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+      {
+        id: "destination/d-2",
+        position: { x: 0, y: 100 },
+        data: {},
+      },
+    ];
+
+    const edges: Edge<any>[] = [
+      {
+        id: "configuration/c-1|destination/d-1",
+        source: "configuration/c-1",
+        target: "destination/d-1",
+        type: "configurationEdge",
+        data: {},
+      },
+      {
+        id: "configuration/c-1|destination/d-2",
+        source: "configuration/c-1",
+        target: "destination/d-2",
+        type: "configurationEdge",
+        data: {},
+      },
+      {
+        id: "configuration/c-2|destination/d-2",
+        source: "configuration/c-2",
+        target: "destination/d-2",
+        type: "configurationEdge",
+        data: {},
+      },
+    ];
+
+    const metrics: GraphMetrics = {
+      metrics: [
+        {
+          name: "log_data_size",
+          nodeID: "configuration/c-1",
+          value: 2100,
+          unit: "B/s",
+          pipelineType: "",
+        },
+        {
+          name: "log_data_size",
+          nodeID: "configuration/c-2",
+          pipelineType: "",
+          value: 30000,
+          unit: "B/s",
+        },
+        {
+          name: "log_data_size",
+          nodeID: "destination/d-1",
+          pipelineType: "",
+          value: 100,
+          unit: "B/s",
+        },
+        {
+          name: "log_data_size",
+          nodeID: "destination/d-2",
+          pipelineType: "",
+          value: 32000,
+          unit: "B/s",
+        },
+      ],
+      edgeMetrics: [
+        {
+          name: "log_data_size",
+          edgeID: "configuration/c-1|destination/d-1",
+          pipelineType: "",
+          value: 100,
+          unit: "B/s",
+        },
+        {
+          name: "log_data_size",
+          edgeID: "configuration/c-1|destination/d-2",
+          pipelineType: "",
+          value: 2000,
+          unit: "B/s",
+        },
+        {
+          name: "log_data_size",
+          edgeID: "configuration/c-2|destination/d-2",
+          pipelineType: "",
+          value: 30000,
+          unit: "B/s",
+        },
+      ],
+      maxLogValue: 3000,
+      maxMetricValue: 0,
+      maxTraceValue: 0,
+    };
+
+    updateOverviewMetricData(metrics, edges, nodes, "10s", "logs");
+
+    expect(edges[0].data.metrics).toEqual([
+      // contains the total for c1, ~2100 b/s
+      // also has the edge value from c1 to d1, 100 b/s
+      {
+        rawValue: 100,
+        startOffset: "4%",
+        textAnchor: "start",
+        value: "2.1 KiB/s",
+      },
+      // contains the total for d1, ~100 b/s
+      {
+        startOffset: "96%",
+        textAnchor: "end",
+        value: "100 B/s",
+      },
+    ]);
+
+    expect(edges[1].data.metrics).toEqual([
+      // This is the total for d2, ~32000 b/s
+      // also has the edge value from c1 to d2, 2000 b/s
+      {
+        rawValue: 2000,
+        startOffset: "96%",
+        textAnchor: "end",
+        value: "31.3 KiB/s",
+      },
+    ]);
+
+    expect(edges[2].data.metrics).toEqual([
+      // This is the total for c2, ~30000 b/s
+      // also has the edge value from c2 to d2, 30000 b/s
+      {
+        rawValue: 30000,
+        startOffset: "4%",
+        textAnchor: "start",
+        value: "29.3 KiB/s",
+      },
+    ]);
   });
 });

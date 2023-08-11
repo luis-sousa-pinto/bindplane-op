@@ -21,11 +21,11 @@ import { DestinationsTableField } from "../../components/Tables/DestinationsTabl
 import { ConfigurationsTableField } from "../../components/Tables/ConfigurationTable/ConfigurationsDataGrid";
 import { DestinationsPageSubContent } from "../destinations/DestinationsPage";
 import { useCallback, useEffect, useState } from "react";
+import { GridSortItem } from "@mui/x-data-grid";
 
 import colors from "../../styles/colors";
 import mixins from "../../styles/mixins.module.scss";
 import styles from "./overview-page.module.scss";
-import { GridSortItem } from "@mui/x-data-grid";
 
 gql`
   query DeployedConfigs {
@@ -57,6 +57,16 @@ gql`
         value
         unit
       }
+      edgeMetrics {
+        name
+        edgeID
+        unit
+        value
+        pipelineType
+      }
+      maxMetricValue
+      maxLogValue
+      maxTraceValue
     }
   }
 `;

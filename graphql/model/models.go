@@ -79,6 +79,21 @@ func ToEventType(eventType store.EventType) EventType {
 	return EventTypeUpdate
 }
 
+// ToEdgeMetric converts a Metric to an EdgeMetric
+func ToEdgeMetric(m *record.Metric, edgeID string) (*EdgeMetric, error) {
+	// make sure this is a float64 value
+	value, ok := stats.Value(m)
+	if !ok {
+		return nil, fmt.Errorf("bad value for metric %s", m.Name)
+	}
+	return &EdgeMetric{
+		Name:   strings.TrimPrefix(m.Name, "otelcol_processor_throughputmeasurement_"),
+		Value:  value,
+		EdgeID: edgeID,
+		Unit:   m.Unit,
+	}, nil
+}
+
 // ToGraphMetric converts a Metric to a GraphMetric
 func ToGraphMetric(m *record.Metric) (*GraphMetric, error) {
 	// make sure this is a float64 value

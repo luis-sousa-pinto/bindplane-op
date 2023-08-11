@@ -26,6 +26,7 @@ import (
 	model1 "github.com/observiq/bindplane-op/graphql/model"
 	"github.com/observiq/bindplane-op/internal/server"
 	"github.com/observiq/bindplane-op/model"
+	"github.com/observiq/bindplane-op/model/graph"
 	"github.com/observiq/bindplane-op/model/otel"
 	bpotel "github.com/observiq/bindplane-op/model/otel"
 	"github.com/observiq/bindplane-op/otlp/record"
@@ -845,63 +846,13 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 	var maxLogValue float64
 	var maxTraceValue float64
 
-	everythingOrSelected := func(resourceKey, resourceType string) string {
-		resourcesSelected := []string{}
-		switch resourceType {
-		case "configuration":
-			if configIDs == nil {
-				return fmt.Sprintf("%s/%s", resourceType, resourceKey)
-			}
-			resourcesSelected = configIDs
-		case "destination":
-			if destinationIDs == nil {
-				return fmt.Sprintf("%s/%s", resourceType, resourceKey)
-			}
-			resourcesSelected = destinationIDs
-		}
-
-		inEverything := true
-		for _, resourceID := range resourcesSelected {
-			if strings.HasSuffix(resourceID, resourceKey) {
-				inEverything = false
-			}
-		}
-
-		if inEverything {
-			return fmt.Sprintf("everything/%s", resourceType)
-		}
-		return fmt.Sprintf("%s/%s", resourceType, resourceKey)
-	}
-
-	includeMetric := func(metricMap map[string]*model1.GraphMetric, pipelineType string, nodeID string, metric *record.Metric) {
-		// separate metric per pipelineType
-		key := fmt.Sprintf("%s_%s", pipelineType, nodeID)
-		if cur, ok := metricMap[key]; ok {
-			// already exists, include in sum
-			if value, ok := stats.Value(metric); ok {
-				cur.Value += value
-			} else {
-				bindplane.Logger().Debug("unable to parse value as float", zap.Any("value", metric.Value))
-			}
-		} else {
-			// doesn't exist, create a metric
-			m, err := model1.ToGraphMetric(metric)
-			if err != nil {
-				bindplane.Logger().Debug("unable to convert record.Metric to GraphMetric", zap.Error(err))
-				return
-			}
-			m.NodeID = nodeID
-			metricMap[key] = m
-		}
-	}
-
 	destinations, err := destinationsInConfigs(ctx, bindplane.Store(), nil)
 	if err != nil {
 		return nil, errors.Join(errors.New("Failed to get destinations in OverviewMetrics"), err)
 	}
 	// map of processor (includes type and name) => metric
-	destinationMetrics := map[string]*model1.GraphMetric{}
-	includeDestination := func(metric *record.Metric, pipelineType, destinationName string) {
+	destinationMetrics := make(nodeMetricMap)
+	includeDestination := func(metric *record.Metric, pipelineType, destinationName string) (bool, error) {
 		destinationFound := false
 		for _, destination := range destinations {
 			if destination.Name() == destinationName {
@@ -910,28 +861,36 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 			}
 		}
 		if !destinationFound {
-			return
+			return false, nil
 		}
-		// need to eliminate destination metrics that are from undeployed configs
 
+		// need to eliminate destination metrics that are from undeployed configs
 		if !configIsDeployed(ctx, bindplane, stats.Configuration(metric)) {
-			return
+			return false, nil
 		}
-		nodeID := everythingOrSelected(destinationName, "destination")
-		includeMetric(destinationMetrics, pipelineType, nodeID, metric)
+
+		nodeID, _ := getOverviewNodeID(destinationName, "destination", destinationIDs)
+		if err := includeNodeMetric(destinationMetrics, pipelineType, nodeID, metric); err != nil {
+			return false, err
+		}
+		return true, nil
 	}
 
 	// map of configuration name => metric
-	configurationMetrics := map[string]*model1.GraphMetric{}
-	includeConfiguration := func(metric *record.Metric, pipelineType string) {
+	configurationMetrics := make(nodeMetricMap)
+	includeConfiguration := func(metric *record.Metric, pipelineType string) (bool, error) {
 		configurationName := stats.Configuration(metric)
 		if !configIsDeployed(ctx, bindplane, configurationName) {
-			return
+			return false, nil
 		}
-		nodeID := everythingOrSelected(configurationName, "configuration")
-		includeMetric(configurationMetrics, pipelineType, nodeID, metric)
+		nodeID, _ := getOverviewNodeID(configurationName, "configuration", configIDs)
+		if err := includeNodeMetric(configurationMetrics, pipelineType, nodeID, metric); err != nil {
+			return false, err
+		}
+		return true, nil
 	}
 
+	edgeMetrics := make(edgeMetricMap)
 	for _, metric := range metrics {
 		position, pipelineType, resourceName := stats.ProcessorParsed(metric)
 		if position != string(model.MeasurementPositionDestinationAfterProcessors) {
@@ -944,9 +903,26 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		}
 		resourceName = strings.Join(splitStrs, "-")
 
-		includeDestination(metric, pipelineType, resourceName)
-		includeConfiguration(metric, pipelineType)
+		destIncluded, err := includeDestination(metric, pipelineType, resourceName)
+		if err != nil {
+			return nil, fmt.Errorf("overview metrics failed to include destination, %w", err)
+		}
+		configIncluded, err := includeConfiguration(metric, pipelineType)
+		if err != nil {
+			return nil, fmt.Errorf("overview metrics failed to include configuration, %w", err)
+		}
 
+		if !destIncluded || !configIncluded {
+			continue
+		}
+
+		sourceID, _ := getOverviewNodeID(stats.Configuration(metric), model.KindConfiguration, configIDs)
+		targetID, _ := getOverviewNodeID(resourceName, model.KindDestination, destinationIDs)
+		edgeID := graph.EdgeID(sourceID, targetID)
+
+		if err := includeEdgeMetric(edgeMetrics, pipelineType, edgeID, metric); err != nil {
+			return nil, fmt.Errorf("overview metrics failed to include edge, %w", err)
+		}
 	}
 
 	var graphMetrics []*model1.GraphMetric
@@ -955,8 +931,11 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 	graphMetrics = append(graphMetrics, maps.Values(destinationMetrics)...)
 	graphMetrics = append(graphMetrics, maps.Values(configurationMetrics)...)
 
-	// Go through the metrics and find the highest value for each telemetry type
-	for _, metric := range graphMetrics {
+	overviewEdgeMetrics := make([]*model1.EdgeMetric, 0)
+	overviewEdgeMetrics = append(overviewEdgeMetrics, maps.Values(edgeMetrics)...)
+
+	// Go through the edge metrics and find the highest value for each telemetry type
+	for _, metric := range overviewEdgeMetrics {
 		switch metric.Name {
 		case "metric_data_size":
 			if metric.Value > maxMetricValue {
@@ -978,6 +957,7 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 		MaxLogValue:    maxLogValue,
 		MaxMetricValue: maxMetricValue,
 		MaxTraceValue:  maxTraceValue,
+		EdgeMetrics:    overviewEdgeMetrics,
 	}, nil
 }
 
@@ -1121,4 +1101,60 @@ func MetricSubscriber(ctx context.Context, sendMetrics func(), updateTicker *tim
 			return
 		}
 	}
+}
+
+// nodeMetricMap is a map in the form pipelineType_nodeID: GraphMetric
+type nodeMetricMap map[string]*model1.GraphMetric
+
+// includeNodeMetric includes a metric in the nodeMetricMap
+func includeNodeMetric(metricMap nodeMetricMap, pipelineType string, nodeID string, metric *record.Metric) error {
+	// separate metric per pipelineType
+	key := metricMapKey(pipelineType, nodeID)
+	if cur, ok := metricMap[key]; ok {
+		// already exists, include in sum
+		if value, ok := stats.Value(metric); ok {
+			cur.Value += value
+		} else {
+			return fmt.Errorf("unable to get value from metric %s", metric.Name)
+		}
+	} else {
+		// doesn't exist, create a metric
+		m, err := model1.ToGraphMetric(metric)
+		if err != nil {
+			return err
+		}
+		m.NodeID = nodeID
+		metricMap[key] = m
+	}
+	return nil
+}
+
+// edgeMetricMap is a map in the form of pipelineType_edgeID: EdgeMetric
+type edgeMetricMap map[string]*model1.EdgeMetric
+
+// includeEdgeMetric includes a metric in the edgeMetricMap
+func includeEdgeMetric(metricMap edgeMetricMap, pipelineType string, edgeID string, metric *record.Metric) error {
+	// separate metric per pipelineType
+	key := metricMapKey(pipelineType, edgeID)
+	if cur, ok := metricMap[key]; ok {
+		// already exists, include in sum
+		if value, ok := stats.Value(metric); ok {
+			cur.Value += value
+		} else {
+			return fmt.Errorf("unable to get value from metric %s", metric.Name)
+		}
+	} else {
+		// doesn't exist, create a metric
+		m, err := model1.ToEdgeMetric(metric, edgeID)
+		if err != nil {
+			return err
+		}
+		metricMap[key] = m
+	}
+	return nil
+}
+
+// metricMapKey creates a key for a metric map
+func metricMapKey(pipelineType, id string) string {
+	return fmt.Sprintf("%s_%s", pipelineType, id)
 }

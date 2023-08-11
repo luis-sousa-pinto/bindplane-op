@@ -2,6 +2,7 @@ import { memo } from "react";
 import { EdgeProps, getBezierPath } from "reactflow";
 import { classes } from "../../utils/styles";
 import { isNodeDisabled } from "../PipelineGraph/Nodes/nodeUtils";
+import { getWeightedClassNameFunc } from "./utils/get-weighted-classname";
 
 import styles from "./custom-edge.module.scss";
 
@@ -28,6 +29,7 @@ export interface CustomEdgeProps extends EdgeProps<CustomEdgeData> {
   className?: string;
   telemetryType: string;
   maxValues: MaxValueMap;
+  getWeightedClassFunc: getWeightedClassNameFunc;
 }
 
 export const CustomEdge: React.FC<CustomEdgeProps> = ({
@@ -43,6 +45,7 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
   className,
   telemetryType,
   maxValues,
+  getWeightedClassFunc,
 }) => {
   hoveredSet ||= [];
 
@@ -58,7 +61,7 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
   const inactive = isNodeDisabled(telemetryType || "", data?.attributes || {});
   const dimmed = hoveredSet.length > 0 && !hoveredSet.includes(id);
 
-  const metrics: JSX.Element[] = [];
+  const metricLabels: JSX.Element[] = [];
   if (data?.metrics) {
     for (var i = 0; i < data.metrics.length; i++) {
       const m = data.metrics[i];
@@ -81,7 +84,7 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
           </text>
         </g>
       );
-      metrics.push(metric);
+      metricLabels.push(metric);
     }
   }
 
@@ -91,12 +94,12 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
   !inactive && pathClasses.push(styles.gradient);
   !inactive &&
     pathClasses.push(
-      getWeightedClassName(data?.metrics, maxValues, telemetryType)
+      getWeightedClassFunc(data?.metrics, maxValues, telemetryType)
     );
 
   return (
     <>
-      {metrics}
+      {metricLabels}
       <path id={id} className={classes(pathClasses)} d={path}>
         <animate
           attributeName="stroke-dashoffset"
@@ -111,49 +114,3 @@ export const CustomEdge: React.FC<CustomEdgeProps> = ({
 };
 
 export default memo(CustomEdge);
-
-export function getWeightedClassName(
-  metrics: CustomEdgeData["metrics"] | undefined,
-  maxValues: MaxValueMap,
-  telemetryType: string
-) {
-  var maxValue: number | null = null;
-
-  switch (telemetryType) {
-    case "metrics":
-      maxValue = maxValues.maxMetricValue;
-      break;
-    case "logs":
-      maxValue = maxValues.maxLogValue;
-      break;
-    case "traces":
-      maxValue = maxValues.maxTraceValue;
-      break;
-  }
-
-  if (
-    maxValue === null ||
-    metrics == null ||
-    metrics.length === 0 ||
-    metrics[0] == null
-  ) {
-    return styles.inactive;
-  }
-  // If the first metrics is the end of the edge, just discard it -
-  // we don't have data for the beginning so it should be inactive
-  if (metrics[0].textAnchor === "end") {
-    return styles.inactive;
-  }
-
-  // Take the ratio of raw value to max value and scale it to the range of [1, 5]
-  const ratio = metrics[0].rawValue / maxValue;
-  if (ratio >= 1) {
-    return styles.w5;
-  }
-
-  const scaled = Math.floor(ratio * 5 + 1);
-
-  const widthStyle = `w${scaled}`;
-
-  return styles[widthStyle];
-}

@@ -51,6 +51,14 @@ type DestinationWithType struct {
 	DestinationType *model.DestinationType `json:"destinationType"`
 }
 
+type EdgeMetric struct {
+	Name         string  `json:"name"`
+	EdgeID       string  `json:"edgeID"`
+	PipelineType string  `json:"pipelineType"`
+	Value        float64 `json:"value"`
+	Unit         string  `json:"unit"`
+}
+
 type EditConfigurationDescriptionInput struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -70,6 +78,7 @@ type GraphMetrics struct {
 	MaxMetricValue float64        `json:"maxMetricValue"`
 	MaxLogValue    float64        `json:"maxLogValue"`
 	MaxTraceValue  float64        `json:"maxTraceValue"`
+	EdgeMetrics    []*EdgeMetric  `json:"edgeMetrics"`
 }
 
 type OverviewPage struct {

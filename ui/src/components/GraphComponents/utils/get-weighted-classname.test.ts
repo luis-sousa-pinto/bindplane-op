@@ -1,6 +1,7 @@
-import { CustomEdgeData, getWeightedClassName } from "./CustomEdge";
+import { CustomEdgeData } from "../CustomEdge";
+import { getWeightedClassName } from "./get-weighted-classname";
 
-import styles from "./edge-styles.module.scss";
+import styles from "../custom-edge.module.scss";
 
 describe("getWeightedClassName", () => {
   function metricWithRawValue(rawValue: number): CustomEdgeData["metrics"] {
