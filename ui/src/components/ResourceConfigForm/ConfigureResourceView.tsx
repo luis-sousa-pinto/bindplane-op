@@ -78,7 +78,8 @@ export const ConfigureResourceContent: React.FC<ConfigureResourceViewProps> = ({
       parameterDefinitions,
       formValues,
       kind,
-      includeNameField
+      includeNameField,
+      existingResourceNames,
     );
 
     if (!isValid(errors)) {
