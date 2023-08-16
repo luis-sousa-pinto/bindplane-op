@@ -242,9 +242,6 @@ exports[`EnumsParameter renders correctly 1`] = `
           <span
             className="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
           />
-          <span
-            className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-          />
         </span>
         <span
           className="MuiSwitch-track css-1yjjitx-MuiSwitch-track"
@@ -287,9 +284,6 @@ exports[`EnumsParameter renders correctly 1`] = `
           />
           <span
             className="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
-          />
-          <span
-            className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </span>
         <span
@@ -334,9 +328,6 @@ exports[`EnumsParameter renders correctly 1`] = `
           <span
             className="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
           />
-          <span
-            className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-          />
         </span>
         <span
           className="MuiSwitch-track css-1yjjitx-MuiSwitch-track"
@@ -379,9 +370,6 @@ exports[`EnumsParameter renders correctly 1`] = `
           />
           <span
             className="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
-          />
-          <span
-            className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </span>
         <span
@@ -598,6 +586,266 @@ exports[`MapParamInput renders correctly 1`] = `
         </svg>
       </span>
       New Row
+    </button>
+  </div>
+</div>
+`;
+
+exports[`MapToEnumParamInput renders correctly 1`] = `
+<div
+  className="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-13i4rnv-MuiGrid-root"
+>
+  <label
+    aria-required={true}
+    className="MuiFormLabel-root MuiFormLabel-colorPrimary css-u4tvz2-MuiFormLabel-root"
+    htmlFor="map_type_param"
+  >
+    Label
+     *
+  </label>
+  <p
+    className="MuiFormHelperText-root css-1d1r5q-MuiFormHelperText-root"
+  >
+    description
+  </p>
+  <div
+    className="css-1okj3ks-MuiStack-root"
+  >
+    <div
+      className="css-m69qwo-MuiStack-root"
+    >
+      <p
+        className="MuiTypography-root MuiTypography-body1 css-isiq0q-MuiTypography-root"
+      >
+        Key
+      </p>
+      <p
+        className="MuiTypography-root MuiTypography-body1 css-13qb2yq-MuiTypography-root"
+      >
+        Value
+      </p>
+    </div>
+    <div
+      className="css-w4z10b-MuiStack-root"
+    >
+      <div
+        className="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-sizeSmall css-vsqhek-MuiInputBase-root-MuiOutlinedInput-root"
+        data-testid="map_type_param-0-0-input"
+        onClick={[Function]}
+      >
+        <input
+          autoFocus={false}
+          className="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+          disabled={false}
+          id="map_type_param-input-0"
+          onAnimationStart={[Function]}
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          type="text"
+          value=""
+        />
+        <fieldset
+          aria-hidden={true}
+          className="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+        >
+          <legend
+            className="css-ihdtdm"
+          >
+            <span
+              className="notranslate"
+            >
+              ​
+            </span>
+          </legend>
+        </fieldset>
+      </div>
+      <div
+        className="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-10guph6-MuiFormControl-root-MuiTextField-root"
+        data-testid="map_type_param-0-1-input"
+      >
+        <div
+          className="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
+          onClick={[Function]}
+        >
+          <select
+            aria-invalid={false}
+            autoFocus={false}
+            className="MuiNativeSelect-select MuiNativeSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-12ogz78-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+            disabled={false}
+            id="map_type_param-input-1"
+            multiple={false}
+            name="map_type_param"
+            onAnimationStart={[Function]}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={true}
+            value="one"
+          >
+            <option
+              value="one"
+            >
+              one
+            </option>
+            <option
+              value="two"
+            >
+              two
+            </option>
+            <option
+              value="three"
+            >
+              three
+            </option>
+            <option
+              value="four"
+            >
+              four
+            </option>
+            <option
+              value="five"
+            >
+              five
+            </option>
+            <option
+              value="six"
+            >
+              six
+            </option>
+          </select>
+          <svg
+            aria-hidden={true}
+            className="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiNativeSelect-icon MuiNativeSelect-iconOutlined css-1g12qau-MuiSvgIcon-root-MuiNativeSelect-icon"
+            data-testid="ArrowDropDownIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M7 10l5 5 5-5z"
+            />
+          </svg>
+          <fieldset
+            aria-hidden={true}
+            className="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+          >
+            <legend
+              className="css-ihdtdm"
+            >
+              <span
+                className="notranslate"
+              >
+                ​
+              </span>
+            </legend>
+          </fieldset>
+        </div>
+      </div>
+      <button
+        className="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"
+        data-testid="map_type_param-0-remove-button"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onDragLeave={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex={0}
+        type="button"
+      >
+        <svg
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width={18}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polyline
+            points="3 6 5 6 21 6"
+          />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+        <span
+          className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiBox-root css-1um4smj"
+  >
+    <button
+      className="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onContextMenu={[Function]}
+      onDragLeave={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex={0}
+      type="button"
+    >
+      <span
+        className="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+      >
+        <svg
+          className="feather feather-plus-circle"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+          />
+          <line
+            x1="12"
+            x2="12"
+            y1="8"
+            y2="16"
+          />
+          <line
+            x1="8"
+            x2="16"
+            y1="12"
+            y2="12"
+          />
+        </svg>
+      </span>
+      New Row
+      <span
+        className="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
     </button>
   </div>
 </div>

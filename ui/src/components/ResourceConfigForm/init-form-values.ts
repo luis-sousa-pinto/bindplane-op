@@ -73,6 +73,7 @@ export function initFormErrors(
     }
 
     switch (definition.type) {
+      case ParameterType.MapToEnum:
       case ParameterType.Map:
         initErrors[definition.name] = validateMapField(
           initValues[definition.name],

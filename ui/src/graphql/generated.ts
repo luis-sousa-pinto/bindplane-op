@@ -363,6 +363,7 @@ export enum ParameterType {
   FileLogSort = 'fileLogSort',
   Int = 'int',
   Map = 'map',
+  MapToEnum = 'mapToEnum',
   Metrics = 'metrics',
   String = 'string',
   Strings = 'strings',

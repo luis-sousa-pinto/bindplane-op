@@ -153,6 +153,24 @@ func TestValidateDefault(t *testing.T) {
 				Type: "metrics",
 			},
 		},
+		{
+			"ValidMapToEnum",
+			false,
+			ParameterDefinition{
+				Type:        "mapToEnum",
+				ValidValues: []string{"trace", "debug", "info", "error", "fatal"},
+				Default:     map[string]any{"random_value": "info"},
+			},
+		},
+		{
+			"InvalidMapToEnum",
+			true,
+			ParameterDefinition{
+				Type:        "mapToEnum",
+				ValidValues: []string{"trace", "debug", "info", "error", "fatal"},
+				Default:     map[string]any{"random_value": "foo"},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -318,7 +336,7 @@ func TestValidateOptions(t *testing.T) {
 			},
 		},
 		{
-			"Labels should only be used for map",
+			"Labels should only be used for map and mapToEnum",
 			true,
 			false,
 			"1 error occurred:\n\t* labels is defined for parameter of type `string`\n\n",
@@ -361,6 +379,45 @@ func TestValidateOptions(t *testing.T) {
 			"",
 			ParameterDefinition{
 				Type: "map",
+				Options: ParameterOptions{
+					Labels: map[string]string{
+						"key":   "Key Label",
+						"value": "Value Label",
+					},
+					GridColumns: &twelve,
+				},
+			},
+		},
+		{
+			"Labels should exist for mapToEnum",
+			false,
+			true,
+			"2 warnings occurred:\n\t* labels not defined for parameter of type `mapToEnum`\n\t* gridColumns: 12 not specified for parameter of type `mapToEnum`\n\n",
+			ParameterDefinition{
+				Type: "mapToEnum",
+			},
+		},
+		{
+			"Key and Value Labels should both exist for mapToEnum",
+			false,
+			true,
+			"2 warnings occurred:\n\t* labels not defined for parameter of type `mapToEnum`\n\t* gridColumns: 12 not specified for parameter of type `mapToEnum`\n\n",
+			ParameterDefinition{
+				Type: "mapToEnum",
+				Options: ParameterOptions{
+					Labels: map[string]string{
+						"key": "Key Label",
+					},
+				},
+			},
+		},
+		{
+			"Key and Value Labels should both exist for mapToEnum",
+			false,
+			false,
+			"",
+			ParameterDefinition{
+				Type: "mapToEnum",
 				Options: ParameterOptions{
 					Labels: map[string]string{
 						"key":   "Key Label",
@@ -678,6 +735,30 @@ eleven:
 				Type: "timezone",
 			},
 			"America/NewJersey",
+		},
+		{
+			"ValidMapToEnum",
+			false,
+			ParameterDefinition{
+				Type:        "mapToEnum",
+				ValidValues: []string{"trace", "debug", "info", "error", "fatal"},
+			},
+			map[string]string{
+				"random_value": "info",
+				"other_value":  "debug",
+			},
+		},
+		{
+			"InvalidMapToEnum",
+			true,
+			ParameterDefinition{
+				Type:        "mapToEnum",
+				ValidValues: []string{"trace", "debug", "info", "error", "fatal"},
+			},
+			map[string]string{
+				"random_value": "info",
+				"other_value":  "bug",
+			},
 		},
 	}
 

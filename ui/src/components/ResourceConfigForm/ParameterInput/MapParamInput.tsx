@@ -7,17 +7,21 @@ import {
   Box,
   Button,
   FormLabel,
+  TextField,
 } from "@mui/material";
 import { useState, useMemo, memo } from "react";
 import { TrashIcon, PlusCircleIcon } from "../../Icons";
 import { validateMapField } from "../validation-functions";
 import { useValidationContext } from "../ValidationContext";
 import { ParamInputProps } from "./ParameterInput";
+import { ParameterType } from "../../../graphql/generated";
 
 const MapParamInputComponent: React.FC<
   ParamInputProps<Record<string, string>>
 > = ({ definition, value, readOnly, onValueChange }) => {
-  const initValue = valueToTupleArray(value);
+  const isMapToEnum = definition.type === ParameterType.MapToEnum;
+  const newFieldValue = isMapToEnum ? definition.validValues?.[0] ?? "" : "";
+  const initValue = valueToTupleArray(value, newFieldValue);
   const [controlValue, setControlValue] = useState<Tuple[]>(initValue);
 
   const { errors, setError, touched, touch } = useValidationContext();
@@ -96,7 +100,7 @@ const MapParamInputComponent: React.FC<
     if (nextInput != null) {
       (nextInput as HTMLElement).focus();
     } else {
-      setControlValue((prev) => addRow(prev));
+      setControlValue((prev) => addRow(prev, newFieldValue));
     }
   }
 
@@ -161,20 +165,44 @@ const MapParamInputComponent: React.FC<
                 onKeyDown={(e) => handleKeyFieldEnter(e, rowIndex)}
                 sx={{ width: 230 }}
               />
-
-              <OutlinedInput
-                id={`${definition.name}-input-${rowIndex * 2 + 1}`}
-                key={`${definition.name}-${rowIndex}-1-input`}
-                data-testid={`${definition.name}-${rowIndex}-1-input`}
-                disabled={readOnly}
-                size="small"
-                type="text"
-                value={v}
-                onChange={(e) => onChangeInput(e, rowIndex, 1)}
-                onBlur={handleBlur}
-                onKeyDown={(e) => handleValueFieldEnter(e, rowIndex)}
-                sx={{ width: 230 }}
-              />
+              {isMapToEnum ? (
+                <TextField
+                  id={`${definition.name}-input-${rowIndex * 2 + 1}`}
+                  key={`${definition.name}-${rowIndex}-1-input`}
+                  data-testid={`${definition.name}-${rowIndex}-1-input`}
+                  disabled={readOnly}
+                  value={v}
+                  onChange={(e) => onChangeInput(e, rowIndex, 1)}
+                  name={definition.name}
+                  fullWidth
+                  size="small"
+                  onBlur={handleBlur}
+                  sx={{ width: 230 }}
+                  required={definition.required}
+                  select
+                  SelectProps={{ native: true }}
+                >
+                  {definition.validValues?.map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </TextField>
+              ) : (
+                <OutlinedInput
+                  id={`${definition.name}-input-${rowIndex * 2 + 1}`}
+                  key={`${definition.name}-${rowIndex}-1-input`}
+                  data-testid={`${definition.name}-${rowIndex}-1-input`}
+                  disabled={readOnly}
+                  size="small"
+                  type="text"
+                  value={v}
+                  onChange={(e) => onChangeInput(e, rowIndex, 1)}
+                  onBlur={handleBlur}
+                  onKeyDown={(e) => handleValueFieldEnter(e, rowIndex)}
+                  sx={{ width: 230 }}
+                />
+              )}
 
               <IconButton
                 key={`${definition.name}-${rowIndex}-remove-button`}
@@ -197,7 +225,7 @@ const MapParamInputComponent: React.FC<
         <Button
           disabled={readOnly}
           startIcon={<PlusCircleIcon />}
-          onClick={() => setControlValue((prev) => addRow(prev))}
+          onClick={() => setControlValue((prev) => addRow(prev, newFieldValue))}
         >
           New Row
         </Button>
@@ -211,14 +239,14 @@ export const MapParamInput = memo(MapParamInputComponent);
 // Utility functions
 export type Tuple = [string, string];
 
-export function valueToTupleArray(value: any): Tuple[] {
+export function valueToTupleArray(value: any, initialValue: string): Tuple[] {
   try {
     const tuples = Object.entries(value);
 
-    tuples.push(["", ""]);
+    tuples.push(["", initialValue]);
     return tuples as Tuple[];
   } catch (err) {
-    return [["", ""]];
+    return [["", initialValue]];
   }
 }
 
@@ -235,9 +263,9 @@ export function tupleArrayToMap(tuples: Tuple[]): Record<string, string> {
   return mapValue;
 }
 
-function addRow(tuples: Tuple[]): Tuple[] {
+function addRow(tuples: Tuple[], intialValue: string): Tuple[] {
   const newTuples = [...tuples];
-  newTuples.push(["", ""]);
+  newTuples.push(["", intialValue]);
   return newTuples;
 }
 

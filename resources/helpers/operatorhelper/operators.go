@@ -18,8 +18,10 @@ package operatorhelper
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+	"go.opentelemetry.io/collector/pdata/plog"
 )
 
 // Use the a special config for jsoniter, because
@@ -139,4 +141,26 @@ func addTimestampParsingConfig(
 
 	timestampConfig["location"] = timezone
 	operator["timestamp"] = timestampConfig
+}
+
+// BpMapSeverityNameToNumber maps from severity strings to plog SeverityNumbers
+func BpMapSeverityNameToNumber(severity string) int {
+
+	s := strings.ToUpper(severity)
+
+	switch s {
+	case "TRACE":
+		return int(plog.SeverityNumberTrace)
+	case "DEBUG":
+		return int(plog.SeverityNumberDebug)
+	case "INFO":
+		return int(plog.SeverityNumberInfo)
+	case "WARN", "WARNING":
+		return int(plog.SeverityNumberWarn)
+	case "ERROR", "ERR":
+		return int(plog.SeverityNumberError)
+	case "FATAL":
+		return int(plog.SeverityNumberFatal)
+	}
+	return int(plog.SeverityNumberUnspecified)
 }

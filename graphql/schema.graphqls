@@ -295,6 +295,7 @@ enum ParameterType {
   metrics
   awsCloudwatchNamedField
   fileLogSort
+  mapToEnum
 }
 
 type ParameterDefinition {

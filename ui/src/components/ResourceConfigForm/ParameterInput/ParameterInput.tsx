@@ -179,6 +179,15 @@ export const ParameterInput: React.FC<{
             readOnly={readOnly}
           />
         );
+      case ParameterType.MapToEnum:
+        return (
+          <MapParamInput
+            definition={definition}
+            value={formValues[definition.name]}
+            onValueChange={onValueChange}
+            readOnly={readOnly}
+          />
+        );
     }
   }, [definition, formValues, onValueChange, readOnly]);
 

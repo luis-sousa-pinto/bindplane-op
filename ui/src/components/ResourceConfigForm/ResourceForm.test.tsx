@@ -471,7 +471,7 @@ describe("MapParamInput", () => {
     ];
 
     for (const test of tests) {
-      const got = valueToTupleArray(test.value);
+      const got = valueToTupleArray(test.value, "");
       expect(got).toEqual(test.expect);
     }
   });
@@ -565,6 +565,142 @@ describe("MapParamInput", () => {
     // We should have two rows
     screen.getByTestId(`${mapParameter.name}-0-0-input`);
     screen.getByTestId(`${mapParameter.name}-1-0-input`);
+  });
+});
+
+describe("MapToEnumParamInput", () => {
+  const mapToEnumParameter: ParameterDefinition = {
+    required: true,
+    label: "Label",
+    description: "description",
+    type: ParameterType.MapToEnum,
+    validValues: ["one", "two", "three", "four", "five", "six"],
+    name: "map_type_param",
+    options: {},
+  };
+
+  it("valueToTupleArray", () => {
+    const tests = [
+      {
+        value: {
+          foo: "one",
+          blah: "two",
+        },
+        expect: [
+          ["foo", "one"],
+          ["blah", "two"],
+          ["", "one"],
+        ],
+      },
+      {
+        value: null,
+        expect: [["", "one"]],
+      },
+      {
+        value: {},
+        expect: [["", "one"]],
+      },
+    ];
+
+    for (const test of tests) {
+      const got = valueToTupleArray(test.value, "one");
+      expect(got).toEqual(test.expect);
+    }
+  });
+
+  it("tupleArrayToMap", () => {
+    const tests: { tuples: Tuple[]; expect: any }[] = [
+      {
+        tuples: [
+          ["one", "two"],
+          ["three", "four"],
+        ],
+        expect: {
+          one: "two",
+          three: "four",
+        },
+      },
+      {
+        tuples: [
+          ["", "one"],
+          ["three", "two"],
+          ["some", "three"],
+          ["", "one"],
+        ],
+        expect: {
+          three: "two",
+          some: "three",
+        },
+      },
+      {
+        tuples: [["", "one"]],
+        expect: {},
+      },
+    ];
+
+    for (const test of tests) {
+      const got = tupleArrayToMap(test.tuples);
+      expect(got).toEqual(test.expect);
+    }
+  });
+
+  it("renders correctly", () => {
+    const tree = renderer.create(
+      <ParameterInput definition={mapToEnumParameter} readOnly={false} />
+    );
+    expect(tree).toMatchSnapshot();
+  });
+
+  it("renders map values", () => {
+    const value: Record<string, string> = {
+      first: "two",
+      second: "four",
+      third: "six",
+    };
+    render(
+      <MapParamInput
+        definition={mapToEnumParameter}
+        value={value}
+        readOnly={false}
+      />
+    );
+    screen.getByDisplayValue("first");
+    screen.getByDisplayValue("two");
+    screen.getByDisplayValue("second");
+    screen.getByDisplayValue("four");
+    screen.getByDisplayValue("third");
+    screen.getByDisplayValue("six");
+  });
+
+  it("can add key value pairs", () => {
+    render(<ParameterInput definition={mapToEnumParameter} readOnly={false} />);
+
+    screen.getByText("New Row").click();
+    screen.getByText("New Row").click();
+
+    // We should have three rows
+    screen.getByTestId(`${mapToEnumParameter.name}-0-0-input`);
+    screen.getByTestId(`${mapToEnumParameter.name}-1-0-input`);
+    screen.getByTestId(`${mapToEnumParameter.name}-2-0-input`);
+  });
+
+  it("can delete key value pairs", () => {
+    render(<ParameterInput definition={mapToEnumParameter} readOnly={false} />);
+
+    screen.getByText("New Row").click();
+    screen.getByText("New Row").click();
+
+    // We should have three rows
+    screen.getByTestId(`${mapToEnumParameter.name}-0-0-input`);
+    screen.getByTestId(`${mapToEnumParameter.name}-1-0-input`);
+    screen.getByTestId(`${mapToEnumParameter.name}-2-0-input`);
+
+    // Delete one
+    screen.getByTestId(`${mapToEnumParameter.name}-1-remove-button`).click();
+
+    // We should have two rows
+    screen.getByTestId(`${mapToEnumParameter.name}-0-0-input`);
+    screen.getByTestId(`${mapToEnumParameter.name}-1-0-input`);
   });
 });
 

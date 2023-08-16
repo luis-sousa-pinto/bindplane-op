@@ -430,6 +430,8 @@ func (s *ResourceTypeSpec) validate(kind Kind, errs validation.Errors) {
 				params[p.Name] = []string{}
 			case yamlType:
 				params[p.Name] = ""
+			case mapToEnumType:
+				params[p.Name] = make(map[string]string)
 			}
 		}
 	}

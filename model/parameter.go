@@ -42,6 +42,7 @@ const (
 	metricsType                 = "metrics"
 	awsCloudwatchNamedFieldType = "awsCloudwatchNamedField"
 	fileLogSortType             = "fileLogSort"
+	mapToEnumType               = "mapToEnum"
 )
 
 // ParameterDefinition is a basic description of a definition's parameter. This implementation comes directly from
@@ -271,7 +272,7 @@ func (p ParameterDefinition) validateType() error {
 		)
 	}
 	switch p.Type {
-	case stringType, intType, boolType, stringsType, enumType, enumsType, mapType, yamlType, timezoneType, metricsType, awsCloudwatchNamedFieldType, fileLogSortType: // ok
+	case stringType, intType, boolType, stringsType, enumType, enumsType, mapType, yamlType, timezoneType, metricsType, awsCloudwatchNamedFieldType, fileLogSortType, mapToEnumType: // ok
 	default:
 		return stanzaerrors.NewError(
 			fmt.Sprintf("invalid type '%s' for '%s'", p.Type, p.Name),
@@ -317,8 +318,8 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 		)
 	}
 
-	// Labels are only appropriate for type map
-	if len(p.Options.Labels) > 0 && p.Type != "map" {
+	// Labels are only appropriate for types map and mapToEnum
+	if len(p.Options.Labels) > 0 && p.Type != "map" && p.Type != "mapToEnum" {
 		errs.Add(
 			stanzaerrors.NewError(
 				fmt.Sprintf("labels is defined for parameter of type `%s`", p.Type),
@@ -327,8 +328,8 @@ func (p ParameterDefinition) validateOptions(errs validation.Errors) {
 		)
 	}
 
-	// Labels should be specified for type map
-	if p.Type == "map" {
+	// Labels should be specified for type map and mapToEnum
+	if p.Type == "map" || p.Type == "mapToEnum" {
 		if len(p.Options.Labels) == 0 || p.Options.Labels["key"] == "" || p.Options.Labels["value"] == "" {
 			errs.Warn(
 				stanzaerrors.NewError(
@@ -422,10 +423,10 @@ func (p ParameterDefinition) validateValidValues() error {
 				"remove 'validValues' field or change type to 'enum' or 'enums",
 			)
 		}
-	case enumType, enumsType:
+	case enumType, enumsType, mapToEnumType:
 		if len(p.ValidValues) == 0 {
 			return stanzaerrors.NewError(
-				"parameter of type 'enum' or 'enums' must have 'validValues' specified",
+				"parameter of type 'enum' or 'enums' or 'mapToEnum' must have 'validValues' specified",
 				"specify an array that includes one or more valid values",
 			)
 		}
@@ -483,6 +484,8 @@ func (p ParameterDefinition) validateValueType(fieldType parameterFieldType, val
 		return p.validateAwsCloudwatchNamedFieldType(fieldType, value)
 	case fileLogSortType:
 		return p.validateFileLogSortType(fieldType, value)
+	case mapToEnumType:
+		return p.validateMapToEnumType(fieldType, value)
 	default:
 		return stanzaerrors.NewError(
 			"invalid type for parameter",
@@ -775,6 +778,36 @@ func (p ParameterDefinition) validateFileLogSortType(_ parameterFieldType, value
 		return stanzaerrors.NewError("malformed value for parameter of type filelogsort", "")
 	}
 
+	return nil
+}
+
+func (p ParameterDefinition) validateMapToEnumType(fieldType parameterFieldType, value any) error {
+
+	reflectValue := reflect.ValueOf(value)
+	kind := reflectValue.Kind()
+	if kind != reflect.Map {
+		return stanzaerrors.NewError(
+			fmt.Sprintf("expected type map for parameter %s but got %s", p.Name, kind),
+			"ensure parameter is map[string]string",
+		)
+	}
+
+	if m, ok := value.(map[string]interface{}); ok {
+		for _, v := range m {
+			err := p.validateEnumValue(fieldType, v)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if m, ok := value.(map[string]string); ok {
+		for _, v := range m {
+			err := p.validateEnumValue(fieldType, v)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

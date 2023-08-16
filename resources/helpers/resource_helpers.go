@@ -30,5 +30,6 @@ func ResourceHelperFuncMap() template.FuncMap {
 		"bpRenderOtelSendingQueueConfig":   exporterhelper.BPRenderOtelSendingQueueConfig,
 		"bpRenderMaskRules":                masksensitivedatahelper.BPRenderMaskRules,
 		"bpRenderStandardParsingOperator":  operatorhelper.BpRenderStandardParsingOperator,
+		"bpMapSeverityNameToNumber":        operatorhelper.BpMapSeverityNameToNumber,
 	}
 }

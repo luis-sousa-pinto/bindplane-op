@@ -329,6 +329,9 @@ func (r *Resolver) Type(_ context.Context, obj *model.ParameterDefinition) (mode
 	case "fileLogSort":
 		return model1.ParameterTypeFileLogSort, nil
 
+	case "mapToEnum":
+		return model1.ParameterTypeMapToEnum, nil
+
 	default:
 		return "", errors.New("unknown parameter type")
 	}
