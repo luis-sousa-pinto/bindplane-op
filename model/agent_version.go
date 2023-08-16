@@ -35,10 +35,10 @@ func (k *agentVersionKind) NewEmptyResource() *AgentVersion { return &AgentVersi
 // the agent release.
 type AgentVersion struct {
 	// ResourceMeta TODO(doc)
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec TODO(doc)
 	Spec                 AgentVersionSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[NoStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[NoStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 // AgentVersionSpec is the spec for an AgentVersion

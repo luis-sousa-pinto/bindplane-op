@@ -63,10 +63,10 @@ const (
 // Configuration is the resource for the entire agent configuration
 type Configuration struct {
 	// ResourceMeta contains the metadata for this resource
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec contains the spec for the Configuration
 	Spec                            ConfigurationSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[ConfigurationStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[ConfigurationStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ HasAgentSelector = (*Configuration)(nil)
@@ -374,7 +374,7 @@ type ResourceConfiguration struct {
 	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty" mapstructure:"displayName"`
 
 	// ParameterizedSpec contains the definition of an embedded resource if this is not a reference to another resource
-	ParameterizedSpec `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ParameterizedSpec `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ HasResourceParameters = (*ResourceConfiguration)(nil)

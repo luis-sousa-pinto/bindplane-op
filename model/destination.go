@@ -30,10 +30,10 @@ func (k *destinationKind) NewEmptyResource() *Destination { return &Destination{
 // Destination will generate an exporter and be at the end of a pipeline
 type Destination struct {
 	// ResourceMeta is the metadata for the Destination
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec is the specification for the Destination containing the type and parameters
 	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[VersionStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Destination)(nil)

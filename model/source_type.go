@@ -22,7 +22,7 @@ func (k *sourceTypeKind) NewEmptyResource() *SourceType { return &SourceType{} }
 
 // SourceType is a ResourceType used to define sources
 type SourceType struct {
-	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceType `yaml:",inline" mapstructure:",squash"`
 }
 
 // NewSourceType creates a new source-type with the specified name,
