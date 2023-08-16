@@ -17,6 +17,8 @@ package printer
 import (
 	"fmt"
 	"io"
+	"sort"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 
@@ -51,9 +53,13 @@ func (tp *TablePrinter) PrintResources(list []model.Printable) {
 	titles := list[0].PrintableFieldTitles()
 	tp.Reset()
 	tp.table.SetHeader(titles)
+
+	var rows [][]string
 	for _, item := range list {
-		tp.table.Append(model.PrintableFieldValuesForTitles(item, titles))
+		rows = append(rows, model.PrintableFieldValuesForTitles(item, titles))
 	}
+	sortByFirstItem(rows)
+	tp.table.AppendBulk(rows)
 	tp.table.Render()
 }
 
@@ -74,4 +80,14 @@ func (tp *TablePrinter) Reset() {
 	tp.table.ClearRows()
 	tp.table.ClearFooter()
 	tp.table.SetHeader([]string{})
+}
+
+type byFirstItem [][]string
+
+func (a byFirstItem) Len() int           { return len(a) }
+func (a byFirstItem) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byFirstItem) Less(i, j int) bool { return strings.ToLower(a[i][0]) < strings.ToLower(a[j][0]) }
+
+func sortByFirstItem(list [][]string) {
+	sort.Sort(byFirstItem(list))
 }

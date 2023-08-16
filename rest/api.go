@@ -25,6 +25,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
 	"github.com/observiq/bindplane-op/model"
@@ -1326,6 +1327,8 @@ func RolloutStatus(c *gin.Context, bindplane exposedserver.BindPlane) {
 		Configuration: config,
 	})
 }
+
+var mp metric.Meter = otel.Meter("rest")
 
 // RolloutStart starts a rollout by configuration name.
 // @Summary Start rollout by configuration name

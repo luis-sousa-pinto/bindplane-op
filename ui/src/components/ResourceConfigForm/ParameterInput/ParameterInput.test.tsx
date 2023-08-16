@@ -24,6 +24,8 @@ import { StringsParamInput } from "./StringsParamInput";
 import { TimezoneParamInput } from "./TimezoneParamInput";
 import { YamlParamInput } from "./YamlParamInput";
 import { FileLogSortInput } from "./FileLogSortInput";
+import { ParameterDefinition, ParameterType } from "../../../graphql/generated";
+import { ParameterInput } from "./ParameterInput";
 
 describe("ParameterInput supports readOnly", () => {
   it("StringParamInput editable", () => {
@@ -253,4 +255,28 @@ describe("StringsParamInput trims whitespace", () => {
   fireEvent.blur(autocomplete);
 
   expect(gotValue).toEqual(["internal space"]);
+});
+
+describe("parameter options", () => {
+  const definition: ParameterDefinition = {
+    type: ParameterType.String,
+    name: "string_param",
+    label: "String Param Label",
+    description: "String Param Description",
+    options: {
+      subHeader: "String Param Subheader",
+      horizontalDivider: true,
+    },
+    required: false,
+  };
+
+  it("subHeader", () => {
+    render(<ParameterInput definition={definition} />);
+    expect(screen.getByText("String Param Subheader")).toBeInTheDocument();
+  });
+
+  it("horizontalDivider", () => {
+    render(<ParameterInput definition={definition} />);
+    expect(screen.getByRole("separator")).toBeInTheDocument();
+  });
 });

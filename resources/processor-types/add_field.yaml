@@ -3,11 +3,11 @@ kind: ProcessorType
 metadata:
   name: add_fields
   displayName: Add Fields
-  description: Add telemetry fields.
+  description: Add fields to incoming telemetry.
   labels:
     category: Transform
 spec:
-  version: 0.1.0
+  version: 0.2.0
   parameters:
     # Logs
     - name: enable_logs
@@ -16,7 +16,7 @@ spec:
       default: false
 
     - name: log_condition
-      label: Log Condition
+      label: Condition
       description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all logs."
       type: string
       default: "true"
@@ -35,12 +35,12 @@ spec:
 
     - name: log_resource_attributes
       label: Resource Fields
-      description: "List of resource fields to add from telemetry data."
+      description: "A list of resource fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_logs
@@ -50,10 +50,7 @@ spec:
     - name: log_resource_action
       label: Resource Action
       type: enum
-      description: |
-        insert: Add resource if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: "The action to take when adding resource fields."
       default: upsert
       validValues:
         - insert
@@ -66,11 +63,12 @@ spec:
 
     - name: log_attributes
       label: Attribute Fields
+      description: "A list of attribute fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_logs
@@ -80,10 +78,7 @@ spec:
     - name: log_attributes_action
       label: Attribute Action
       type: enum
-      description: |
-        insert: Add attribute if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: "The action to take when adding attribute fields."
       default: upsert
       validValues:
         - insert
@@ -96,7 +91,7 @@ spec:
 
     - name: log_body
       label: Body Fields
-      description: "List of body fields to add to log data."
+      description: "A list of body fields to add."
       type: map
       relevantIf:
         - name: enable_logs
@@ -105,16 +100,13 @@ spec:
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
 
     - name: log_body_action
       label: Body Action
       type: enum
-      description: |
-        insert: Add body key if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: "The action to take when adding body fields."
       default: upsert
       validValues:
         - insert
@@ -132,7 +124,7 @@ spec:
       default: false
 
     - name: datapoint_condition
-      label: Datapoint Condition
+      label: Condition
       description: "An OTTL condition that must evaluate to true to apply this processor. By default, the processor applies to all datapoints."
       type: string
       default: "true"
@@ -151,12 +143,12 @@ spec:
 
     - name: metric_resource_attributes
       label: Resource Fields
-      description: "List of resource fields to add from telemetry data."
+      description: "A list of resource fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_metrics
@@ -166,10 +158,7 @@ spec:
     - name: metric_resource_action
       label: Resource Action
       type: enum
-      description: |
-        insert: Add resource if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: The action to take when adding resource fields.
       default: upsert
       validValues:
         - insert
@@ -182,11 +171,12 @@ spec:
 
     - name: metric_attributes
       label: Attribute Fields
+      description: "A list of attribute fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_metrics
@@ -196,10 +186,7 @@ spec:
     - name: metric_attributes_action
       label: Attribute Action
       type: enum
-      description: |
-        insert: Add attribute if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: The action to take when adding attribute fields.
       default: upsert
       validValues:
         - insert
@@ -217,7 +204,7 @@ spec:
       default: false
 
     - name: span_condition
-      label: Spans Condition
+      label: Condition
       description: "An OTTL boolean expression that must evaluate to true to apply this processor. By default, the processor applies to all spans."
       type: string
       default: "true"
@@ -236,12 +223,12 @@ spec:
 
     - name: traces_resource_attributes
       label: Resource Fields
-      description: "List of resource fields to add from telemetry data."
+      description: "A list of resource fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_traces
@@ -251,10 +238,7 @@ spec:
     - name: traces_resource_action
       label: Resource Action
       type: enum
-      description: |
-        insert: Add resource if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: The action to take when adding resource fields.
       default: upsert
       validValues:
         - insert
@@ -267,11 +251,12 @@ spec:
 
     - name: traces_attributes
       label: Attribute Fields
+      description: "A list of attribute fields to add."
       type: map
       options:
         gridColumns: 12
         labels:
-          key: Name
+          key: Field
           value: Value
       relevantIf:
         - name: enable_traces
@@ -281,10 +266,7 @@ spec:
     - name: traces_attributes_action
       label: Attribute Action
       type: enum
-      description: |
-        insert: Add attribute if it does not exist.
-        update: Update existing value.
-        upsert: Insert or update.
+      description: The action to take when adding attribute fields.
       default: upsert
       validValues:
         - insert

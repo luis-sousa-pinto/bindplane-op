@@ -86,6 +86,8 @@ gql`
             multiline
             trackUnchecked
             sectionHeader
+            subHeader
+            horizontalDivider
             gridColumns
             labels
             metricCategories {
@@ -99,6 +101,8 @@ gql`
             }
             password
             sensitive
+            subHeader
+            horizontalDivider
           }
         }
         supportedPlatforms

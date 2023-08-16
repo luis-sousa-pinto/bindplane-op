@@ -150,6 +150,29 @@ func TestOverviewMetrics(t *testing.T) {
 							Unit:         "B/s",
 						},
 					},
+					EdgeMetrics: []*model1.EdgeMetric{
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-1|destination/d-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-2|destination/d-2",
+							PipelineType: "",
+							Value:        200,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-3|destination/d-3",
+							PipelineType: "",
+							Value:        3000,
+							Unit:         "B/s",
+						},
+					},
 					MaxMetricValue: 0,
 					MaxLogValue:    3000,
 					MaxTraceValue:  0,
@@ -205,10 +228,20 @@ func TestOverviewMetrics(t *testing.T) {
 							Unit:         "B/s",
 						},
 					},
+					EdgeMetrics: []*model1.EdgeMetric{
+						{
+							Name:         "log_data_size",
+							EdgeID:       "everything/configuration|everything/destination",
+							PipelineType: "",
+							Value:        3210,
+							Unit:         "B/s",
+						},
+					},
 					MaxMetricValue: 0,
 					MaxLogValue:    3210,
 					MaxTraceValue:  0,
 				},
+
 				"",
 			},
 		},
@@ -249,8 +282,152 @@ func TestOverviewMetrics(t *testing.T) {
 							Unit:         "B/s",
 						},
 					},
+					EdgeMetrics: []*model1.EdgeMetric{
+						{
+							Name:         "log_data_size",
+							EdgeID:       "everything/configuration|everything/destination",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+					},
 					MaxMetricValue: 0,
 					MaxLogValue:    10,
+					MaxTraceValue:  0,
+				},
+
+				"",
+			},
+		},
+		// This case is for getting the metrics to determine the Top 3 configurations
+		// or destinations.
+		{
+			"passing in nil config and source IDs returns metrics for all resources",
+			args{
+				[]*record.Metric{
+					testDestinationMetricWithValue("c-1", "d-1", 0, 10),
+				},
+				nil,
+				[]*model.Destination{
+					testDestination("d-1"),
+				},
+				nil,
+				[]*model.Configuration{
+					testConfiguration("c-1", false, []string{"d-1"}),
+				},
+				map[string][]string{
+					"c-1": {"agent1"},
+				},
+				"10s",
+				&model1.GraphMetrics{
+					Metrics: []*model1.GraphMetric{
+						{
+							Name:         "log_data_size",
+							NodeID:       "configuration/c-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							NodeID:       "destination/d-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+					},
+					EdgeMetrics: []*model1.EdgeMetric{
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-1|destination/d-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+					},
+					MaxLogValue:    10,
+					MaxMetricValue: 0,
+					MaxTraceValue:  0,
+				},
+				"",
+			},
+		},
+		{
+			"one configuration has two destinations with different edge metrics",
+			args{
+				[]*record.Metric{
+					testDestinationMetricWithValue("c-1", "d-1", 0, 10),
+					testDestinationMetricWithValue("c-1", "d-2", 1, 200),
+					testDestinationMetricWithValue("c-2", "d-2", 0, 3000),
+				},
+				[]string{"d-1", "d-2"},
+				[]*model.Destination{testDestination("d-1"), testDestination("d-2")},
+				[]string{"c-1", "c-2"},
+				[]*model.Configuration{
+					testConfiguration("c-1", false, []string{"d-1", "d-2"}),
+					testConfiguration("c-2", false, []string{"d-2"}),
+				},
+				map[string][]string{
+					"c-1": {"agent1"},
+					"c-2": {"agent2"},
+				},
+				"10s",
+				&model1.GraphMetrics{
+					Metrics: []*model1.GraphMetric{
+						{
+							Name:         "log_data_size",
+							NodeID:       "configuration/c-1",
+							PipelineType: "",
+							Value:        210,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							NodeID:       "configuration/c-2",
+							PipelineType: "",
+							Value:        3000,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							NodeID:       "destination/d-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							NodeID:       "destination/d-2",
+							PipelineType: "",
+							Value:        3200,
+							Unit:         "B/s",
+						},
+					},
+					EdgeMetrics: []*model1.EdgeMetric{
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-1|destination/d-1",
+							PipelineType: "",
+							Value:        10,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-1|destination/d-2",
+							PipelineType: "",
+							Value:        200,
+							Unit:         "B/s",
+						},
+						{
+							Name:         "log_data_size",
+							EdgeID:       "configuration/c-2|destination/d-2",
+							PipelineType: "",
+							Value:        3000,
+							Unit:         "B/s",
+						},
+					},
+					MaxMetricValue: 0,
+					MaxLogValue:    3000,
 					MaxTraceValue:  0,
 				},
 				"",
@@ -311,6 +488,7 @@ func TestOverviewMetrics(t *testing.T) {
 				return
 			}
 			require.ElementsMatch(t, test.args.expected.Metrics, got.Metrics)
+			require.ElementsMatch(t, test.args.expected.EdgeMetrics, got.EdgeMetrics)
 			require.Equal(t, test.args.expected.MaxMetricValue, got.MaxMetricValue)
 			require.Equal(t, test.args.expected.MaxLogValue, got.MaxLogValue)
 			require.Equal(t, test.args.expected.MaxTraceValue, got.MaxTraceValue)

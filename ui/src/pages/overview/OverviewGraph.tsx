@@ -1,8 +1,14 @@
-import { gql } from "@apollo/client";
+import { ApolloError, gql } from "@apollo/client";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
-import ReactFlow, { Controls, useReactFlow, useStore } from "reactflow";
+import { useEffect, useState } from "react";
+import ReactFlow, {
+  Controls,
+  useReactFlow,
+  useStore,
+  Node,
+  Edge,
+} from "reactflow";
 import { useNavigate } from "react-router-dom";
 import {
   DEFAULT_OVERVIEW_GRAPH_PERIOD,
@@ -13,12 +19,12 @@ import { firstActiveTelemetry } from "../../components/PipelineGraph/Nodes/nodeU
 import {
   Role,
   useGetOverviewPageQuery,
-  useOverviewMetricsSubscription,
+  useOverviewPageMetricsSubscription,
 } from "../../graphql/generated";
 import {
   getNodesAndEdges,
   Page,
-  updateMetricData,
+  updateOverviewMetricData,
 } from "../../utils/graph/utils";
 import { OverviewDestinationNode, ConfigurationNode } from "./nodes";
 import OverviewEdge from "./OverviewEdge";
@@ -72,30 +78,12 @@ gql`
       }
     }
   }
-
-  subscription OverviewMetrics(
-    $period: String!
-    $configIDs: [ID!]
-    $destinationIDs: [ID!]
-  ) {
-    overviewMetrics(
-      period: $period
-      configIDs: $configIDs
-      destinationIDs: $destinationIDs
-    ) {
-      metrics {
-        name
-        nodeID
-        pipelineType
-        value
-        unit
-      }
-      maxMetricValue
-      maxLogValue
-      maxTraceValue
-    }
-  }
 `;
+
+interface LastDataRecieved {
+  query?: Date;
+  subscription?: Date;
+}
 
 const nodeTypes = {
   destinationNode: OverviewDestinationNode,
@@ -107,6 +95,13 @@ const edgeTypes = {
 };
 
 export const OverviewGraph: React.FC = () => {
+  const [nodes, setNodes] = useState<Node[]>();
+  const [edges, setEdges] = useState<Edge[]>();
+  const [hasPipeline, setHasPipeline] = useState<boolean>(true);
+  const [lastDataRecieved, setLastDataRecieved] = useState<LastDataRecieved>(
+    {}
+  );
+
   const {
     selectedTelemetry,
     setSelectedTelemetry,
@@ -125,7 +120,16 @@ export const OverviewGraph: React.FC = () => {
   // map the selectedConfigs to an array of strings
   const configIDs = selectedConfigs.map((id) => id.toString());
 
-  const { data, error, loading } = useGetOverviewPageQuery({
+  function onError(error: ApolloError) {
+    console.error(error.message);
+    enqueueSnackbar("Oops! Something went wrong.", {
+      variant: "error",
+      key: error.message,
+    });
+  }
+
+  const { loading } = useGetOverviewPageQuery({
+    notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
     variables: {
       configIDs: configIDs,
@@ -136,46 +140,100 @@ export const OverviewGraph: React.FC = () => {
           ? TELEMETRY_SIZE_METRICS[selectedTelemetry]
           : DEFAULT_TELEMETRY_TYPE,
     },
+    onCompleted(data) {
+      setLastDataRecieved((prev) => ({
+        ...prev,
+        query: new Date(),
+      }));
+
+      const { nodes: gotNodes, edges: gotEdges } = getNodesAndEdges(
+        Page.Overview,
+        data!.overviewPage.graph,
+        700,
+        null,
+        () => {},
+        () => {},
+        () => {},
+        true,
+        selectedTelemetry
+      );
+
+      setNodes(gotNodes);
+      setEdges(gotEdges);
+
+      const determineHasPipeline =
+        data.overviewPage.graph.sources.length > 0 &&
+        data.overviewPage.graph.targets.length > 0;
+
+      setHasPipeline(determineHasPipeline);
+
+      if (
+        selectedTelemetry == null &&
+        data.overviewPage.graph.attributes != null
+      ) {
+        const activeTelemetry = firstActiveTelemetry(
+          data.overviewPage.graph.attributes
+        );
+        if (activeTelemetry) {
+          setSelectedTelemetry(activeTelemetry);
+        }
+      }
+    },
+    onError,
   });
 
-  const { data: overviewMetricsData } = useOverviewMetricsSubscription({
+  const { data: subscriptionData } = useOverviewPageMetricsSubscription({
+    skip: loading,
     variables: {
       period: selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
       configIDs: configIDs,
       destinationIDs: destinationIDs,
     },
     onData({ data: subscriptionData }) {
-      if (subscriptionData.data?.overviewMetrics) {
+      setLastDataRecieved((prev) => ({
+        ...prev,
+        subscription: new Date(),
+      }));
+
+      const overviewMetrics = subscriptionData.data?.overviewMetrics;
+      if (overviewMetrics) {
         setMaxValues({
-          maxMetricValue: subscriptionData.data.overviewMetrics.maxMetricValue,
-          maxLogValue: subscriptionData.data.overviewMetrics.maxLogValue,
-          maxTraceValue: subscriptionData.data.overviewMetrics.maxTraceValue,
+          maxMetricValue: overviewMetrics.maxMetricValue,
+          maxLogValue: overviewMetrics.maxLogValue,
+          maxTraceValue: overviewMetrics.maxTraceValue,
         });
       }
     },
+    onError,
   });
 
   useEffect(() => {
-    if (error != null) {
-      console.error(error);
-      enqueueSnackbar("There was a problem loading the overview graph.", {
-        variant: "error",
-      });
+    if (!edges || !nodes || !subscriptionData) {
+      return;
     }
-  }, [enqueueSnackbar, error]);
 
-  useEffect(() => {
-    // Set the first selected telemetry to the first active after we load.
+    // Update metric data if the subscription is newer than the query
     if (
-      data?.overviewPage?.graph?.attributes != null &&
-      selectedTelemetry == null
+      lastDataRecieved.subscription &&
+      lastDataRecieved.query &&
+      lastDataRecieved.subscription > lastDataRecieved.query
     ) {
-      setSelectedTelemetry(
-        firstActiveTelemetry(data.overviewPage.graph.attributes) ??
-          DEFAULT_TELEMETRY_TYPE
+      updateOverviewMetricData(
+        subscriptionData?.overviewMetrics,
+        edges,
+        nodes,
+        selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
+        selectedTelemetry || DEFAULT_TELEMETRY_TYPE
       );
     }
-  });
+  }, [
+    edges,
+    nodes,
+    lastDataRecieved,
+    selectedPeriod,
+    selectedTelemetry,
+    subscriptionData,
+  ]);
 
   const reactFlowWidth = useStore((state: { width: any }) => state.width);
   const reactFlowHeight = useStore((state: { height: any }) => state.height);
@@ -187,44 +245,13 @@ export const OverviewGraph: React.FC = () => {
     reactFlowInstance.fitView();
   }, [reactFlowWidth, reactFlowHeight, reactFlowNodeCount, reactFlowInstance]);
 
-  if (loading || data == null || data?.overviewPage == null) {
+  if (loading || nodes == null) {
     return <LoadingIndicator />;
-  }
-
-  if (data?.overviewPage.graph == null) {
-    enqueueSnackbar("There was a problem loading the overview graph.", {
-      variant: "error",
-    });
-    return null;
   }
 
   function onNodesChange() {
     reactFlowInstance.fitView();
   }
-
-  const hasPipeline =
-    data.overviewPage.graph.sources.length > 0 &&
-    data.overviewPage.graph.targets.length > 0;
-
-  const { nodes, edges } = getNodesAndEdges(
-    Page.Overview,
-    data!.overviewPage.graph,
-    700,
-    null,
-    () => {},
-    () => {},
-    () => {},
-    true,
-    selectedTelemetry
-  );
-  updateMetricData(
-    Page.Overview,
-    nodes,
-    edges,
-    overviewMetricsData?.overviewMetrics.metrics ?? [],
-    selectedPeriod || DEFAULT_OVERVIEW_GRAPH_PERIOD,
-    selectedTelemetry || DEFAULT_TELEMETRY_TYPE
-  );
 
   return hasPipeline ? (
     <div style={{ height: "100%", width: "100%", paddingBottom: 75 }}>

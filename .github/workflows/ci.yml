@@ -191,6 +191,8 @@ jobs:
           restore-keys: npm-cache-
       - name: Lint
         run: make lint
+      - name: Check Generate
+        run: make generate && bash .github/workflows/scripts/assert-no-diff.sh
       - name: Check Swagger
         run: make swagger && bash .github/workflows/scripts/assert-no-diff.sh
 

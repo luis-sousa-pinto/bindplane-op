@@ -212,6 +212,12 @@ func DefaultOverrides() []*Override {
 		NewOverride("tracing.otlp.endpoint", "the endpoint to send tracing data to, if using OTLP", ""),
 		NewOverride("tracing.otlp.insecure", "whether to use insecure TLS for tracing", false),
 
+		// Metrics overrides
+		NewOverride("metrics.type", "the type of metrics to use. One of: otlp", MetricsTypeNop),
+		NewOverride("metrics.interval", "interval to export metrics at", DefaultMetricsInterval),
+		NewOverride("metrics.otlp.endpoint", "the gRPC endpoint to send metrics to, if using OTLP", ""),
+		NewOverride("metrics.otlp.insecure", "whether to use insecure TLS for metrics", false),
+
 		// Store overrides
 		NewOverride("store.type", "the type of store to use. One of: bbolt|mapstore", StoreTypeBBolt),
 		NewOverride("store.bbolt.path", "the path to the store file", DefaultBBoltPath),

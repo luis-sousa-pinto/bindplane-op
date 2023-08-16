@@ -34,7 +34,7 @@ type VersionClient interface {
 	Version(version string) (*model.AgentVersion, error)
 	// Versions returns all available agent versions
 	Versions() ([]*model.AgentVersion, error)
-	// LatestVersion returns the latest agent version, as determined by Github
+	// LatestVersion returns the latest agent version
 	LatestVersion() (*model.AgentVersion, error)
 }
 
@@ -43,4 +43,9 @@ type VersionClient interface {
 // NewGitHubVersionClient creates a new VersionClient for github versions
 func NewGitHubVersionClient() VersionClient {
 	return newGithub()
+}
+
+// NewNoopClient creates a new client that does not connect to other services
+func NewNoopClient() VersionClient {
+	return newNoopClient()
 }

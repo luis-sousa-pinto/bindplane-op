@@ -42,7 +42,9 @@ type Versions interface {
 	LatestVersion(ctx context.Context) (*model.AgentVersion, error)
 	// Version returns the agent version for the given semver
 	Version(ctx context.Context, version string) (*model.AgentVersion, error)
+	// SyncVersion fetches the up-to-date AgentVersion resource, suitable for syncing.
 	SyncVersion(version string) (*model.AgentVersion, error)
+	// SyncVersions fetches the up-to-date list of AgentVersion resources, suitable for syncing.
 	SyncVersions() ([]*model.AgentVersion, error)
 }
 
@@ -53,10 +55,6 @@ type VersionsSettings struct {
 	// SyncAgentVersionsInterval is the interval at which SyncVersions() will be called to ensure the agent-versions are
 	// in sync with GitHub and new releases are available.
 	SyncAgentVersionsInterval time.Duration
-
-	// Offline is true if the server is in offline mode and should not contact GitHub automatically. Sync methods called
-	// by 'bindplane sync' commands will still attempt to contact GitHub.
-	Offline bool
 }
 
 // The latest version cache keeps the latest version in memory to avoid hitting the store to get the latest version.
@@ -79,10 +77,10 @@ var _ Versions = (*versions)(nil)
 
 // NewVersions creates an implementation of Versions using the specified client, cache, and settings. To disable
 // caching, pass nil for the Cache.
-func NewVersions(ctx context.Context, client VersionClient, store store.Store, settings VersionsSettings) Versions {
+func NewVersions(ctx context.Context, client VersionClient, storeInterface store.Store, settings VersionsSettings) Versions {
 	v := &versions{
 		client:        client,
-		store:         store,
+		store:         storeInterface,
 		latestVersion: util.NewRemember[model.AgentVersion](latestVersionCacheDuration),
 		logger:        settings.Logger,
 	}
@@ -93,7 +91,8 @@ func NewVersions(ctx context.Context, client VersionClient, store store.Store, s
 		}
 		go v.syncAgentVersions(ctx, interval)
 	}
-	go v.watchAgentVersionUpdates(ctx)
+
+	v.watchAgentVersionUpdates(ctx)
 	return v
 }
 
@@ -115,7 +114,7 @@ func (v *versions) LatestVersion(ctx context.Context) (*model.AgentVersion, erro
 	// find the latest public version
 	agentVersions, err := v.store.AgentVersions(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("agent versions: %w", err)
 	}
 	model.SortAgentVersionsLatestFirst(agentVersions)
 
@@ -135,18 +134,23 @@ func (v *versions) LatestVersion(ctx context.Context) (*model.AgentVersion, erro
 	return found, nil
 }
 
-// Version returns the specified agent version. If the version is invalid or does not exist, it returns an error. If
-// version is "latest", it returns the latest version.
+// Version returns the specified agent version. If the version is invalid, it returns an error.
+// If version does not exist, (nil, nil) is returned.
+// If version is "latest", it returns the latest version.
 func (v *versions) Version(ctx context.Context, version string) (*model.AgentVersion, error) {
 	if version == VersionLatest {
-		return v.LatestVersion(ctx)
+		v, err := v.LatestVersion(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("latest version: %w", err)
+		}
+		return v, nil
 	}
 
 	name := fmt.Sprintf("%s-%s", model.AgentTypeNameObservIQOtelCollector, version)
 
 	found, err := v.store.AgentVersion(ctx, name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("agent version by name: %w", err)
 	}
 
 	return found, nil
@@ -183,42 +187,47 @@ func (v *versions) syncAgentVersions(ctx context.Context, interval time.Duration
 func (v *versions) syncAgentVersionsOnce(ctx context.Context) {
 	agentVersions, err := v.SyncVersions()
 	if err != nil {
-		v.logger.Error("error during syncAgentVersions SyncVersions", zap.Error(err))
+		v.logger.Error("Error during syncAgentVersions SyncVersions", zap.Error(err))
 		return
 	}
 
 	// assemble the model.Resource array for Apply
-	var resources []model.Resource
+	resources := make([]model.Resource, 0, len(agentVersions))
 	for _, agentVersion := range agentVersions {
 		resources = append(resources, agentVersion)
 	}
 
 	resourceStatuses, err := v.store.ApplyResources(ctx, resources)
 	if err != nil {
-		v.logger.Error("error during syncAgentVersions ApplyResources", zap.Error(err))
+		v.logger.Error("Error during syncAgentVersions ApplyResources", zap.Error(err))
 		return
 	}
 
-	var messages []string
+	messages := make([]string, 0, len(resourceStatuses))
 	for _, resourceStatus := range resourceStatuses {
 		messages = append(messages, resourceStatus.String())
 	}
 	v.logger.Debug("syncAgentVersions", zap.Strings("statuses", messages))
 }
 
+// watchAgentVersionUpdates listens on the eventbus, and clears its cache when an agent-version is updated
 func (v *versions) watchAgentVersionUpdates(ctx context.Context) {
+	// Subscribe before the goroutine to ensure that after NewVersions returns, we are listening to stuff on the eventbus for agent version updates.
 	channel, unsubscribe := eventbus.SubscribeWithFilter(ctx, v.store.Updates(ctx), func(u store.BasicEventUpdates) (store.BasicEventUpdates, bool) {
 		return u, len(u.AgentVersions()) > 0
 	})
-	defer unsubscribe()
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-channel:
-			// clear the latest version whenever we see any AgentVersion changes
-			v.latestVersion.Forget()
+	go func() {
+		defer unsubscribe()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-channel:
+				// clear the latest version whenever we see any AgentVersion changes
+				v.latestVersion.Forget()
+			}
 		}
-	}
+	}()
 }

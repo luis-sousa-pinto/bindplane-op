@@ -1,0 +1,70 @@
+{
+    "apiVersion": "bindplane.observiq.com/v1",
+    "kind": "AgentVersion",
+    "metadata": {
+        "id": "",
+        "name": "observiq-otel-collector-v1.30.0"
+    },
+    "spec": {
+        "type": "observiq-otel-collector",
+        "version": "v1.30.0",
+        "releaseNotesURL": "https://github.com/observIQ/bindplane-agent/releases/tag/v1.30.0",
+        "draft": false,
+        "prerelease": false,
+        "installer": {
+            "darwin/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/install_macos.sh"
+            },
+            "darwin/arm64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/install_macos.sh"
+            },
+            "linux/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/install_unix.sh"
+            },
+            "linux/arm64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/install_unix.sh"
+            },
+            "linux/arm": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/install_unix.sh"
+            },
+            "windows/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector.msi"
+            },
+            "windows/386": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-x86.msi"
+            }
+        },
+        "download": {
+            "windows/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-windows-amd64.zip",
+                "hash": "33835ce16aacc85d5539e6a4f70d504bec82b11780c18c6471d21b8a7b64af48"
+            },
+            "windows/386": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-windows-386.zip",
+                "hash": "bc37f29627749ebc618cf4d384a69ac8e884ed9f52bfbd26a429af8a4a0582ac"
+            },
+            "darwin/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-darwin-amd64.tar.gz",
+                "hash": "1e4d4e7d64e45d7380d90cb608fc7c70e772347da491ba13731766b29218da29"
+            },
+            "darwin/arm64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-darwin-arm64.tar.gz",
+                "hash": "e199dd8689135bbf1398a3267cceac72ff25f2fc8581dc4cc24002007e1148f6"
+            },
+            "linux/amd64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-linux-amd64.tar.gz",
+                "hash": "b0a1b344668a30f30ee057199c2333a8b1c2bd36edb64eead65fecdda0b51614"
+            },
+            "linux/arm64": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-linux-arm64.tar.gz",
+                "hash": "9d677ff785f6c597932d59297b5aa39380de61d1e5081cfa6ba8c406dcf53010"
+            },
+            "linux/arm": {
+                "url": "https://github.com/observIQ/bindplane-agent/releases/download/v1.30.0/observiq-otel-collector-v1.30.0-linux-arm.tar.gz",
+                "hash": "9e89415f1b5de906e9a63c28440fa28d6844cd86a47164d23e282486746c8e66"
+            }
+        },
+        "releaseDate": "2023-07-26T15:36:02Z"
+    },
+    "status": {}
+}

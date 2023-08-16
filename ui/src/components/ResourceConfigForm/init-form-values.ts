@@ -43,13 +43,23 @@ export function initFormValues(
   return defaults;
 }
 
+/**
+ * Check for errors in the form based on the current values and definitions
+ *
+ * @param definitions       ParameterDefinitions for the form
+ * @param initValues        Form values
+ * @param kind              Resource kind
+ * @param includeNameField  Whether to include the name field
+ * @param existingNames     Existing resource names to validate against
+ * @returns Errors that should be displayed for each field
+ */
 export function initFormErrors(
   definitions: ParameterDefinition[],
   initValues: Record<string, any>,
   kind: "processor" | "destination" | "source",
   includeNameField?: boolean,
   existingNames?: string[]
-) {
+): Record<string, null | string> {
   const initErrors: Record<string, null | string> = {};
 
   if (includeNameField) {

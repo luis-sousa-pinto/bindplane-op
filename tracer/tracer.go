@@ -17,12 +17,6 @@ package tracer
 
 import (
 	"context"
-	"os"
-	"runtime"
-
-	bpversion "github.com/observiq/bindplane-op/version"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 // Tracer is an interface used for tracing
@@ -34,16 +28,4 @@ type Tracer interface {
 
 	// Shutdown shuts down the tracer
 	Shutdown(ctx context.Context) error
-}
-
-// DefaultResource returns the default resource for the tracer
-func DefaultResource() *resource.Resource {
-	hostname, _ := os.Hostname()
-	return resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceNameKey.String("bindplane"),
-		semconv.ServiceVersionKey.String(bpversion.NewVersion().String()),
-		semconv.HostArchKey.String(runtime.GOARCH),
-		semconv.HostNameKey.String(hostname),
-	)
 }

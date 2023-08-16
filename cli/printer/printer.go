@@ -54,8 +54,8 @@ func Build(format string, writer io.Writer, logger *zap.Logger) Printer {
 		return NewJSONPrinter(writer, logger)
 	case "yaml":
 		return NewYamlPrinter(writer, logger)
-	case "table":
-		fallthrough
+	case "csv":
+		return NewCSVPrinter(writer, logger)
 	default:
 		return NewTablePrinter(writer)
 	}

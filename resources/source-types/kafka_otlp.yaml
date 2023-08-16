@@ -403,9 +403,10 @@ spec:
           group_id: "{{ .group_id }}"
           client_id: "{{ .client_id }}"
           metadata:
-            # Retry broker connections with a backoff instead of
-            # failing on startup.
-            full: false
+            # Start will fail if the host can't be reached,
+            # which is what we want
+            # TODO: revert once upstream bug is fixed
+            full: true
           {{ if .enable_auth }}
           auth:
             {{ if or .enable_tls (eq .auth_type "tls") }}
@@ -462,9 +463,10 @@ spec:
           group_id: "{{ .group_id }}"
           client_id: "{{ .client_id }}"
           metadata:
-            # Retry broker connections with a backoff instead of
-            # failing on startup.
-            full: false
+            # Start will fail if the host can't be reached,
+            # which is what we want
+            # TODO: revert once upstream bug is fixed
+            full: true
           {{ if .enable_auth }}
           auth:
             {{ if or .enable_tls (eq .auth_type "tls") }}
@@ -521,9 +523,10 @@ spec:
           group_id: "{{ .group_id }}"
           client_id: "{{ .client_id }}"
           metadata:
-            # Retry broker connections with a backoff instead of
-            # failing on startup.
-            full: false
+            # Start will fail if the host can't be reached,
+            # which is what we want
+            # TODO: revert once upstream bug is fixed
+            full: true
           {{ if .enable_auth }}
           auth:
             {{ if or .enable_tls (eq .auth_type "tls") }}

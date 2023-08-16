@@ -54,10 +54,15 @@ type Edge struct {
 	Target string
 }
 
+// EdgeID constructs an id for an edge from the source and target
+func EdgeID(source, target string) string {
+	return fmt.Sprintf("%s|%s", source, target)
+}
+
 // NewEdge constructs a new Edge with the specified source and target and sets the id to "source|target"
 func NewEdge(source, target string) *Edge {
 	return &Edge{
-		ID:     fmt.Sprintf("%s|%s", source, target),
+		ID:     EdgeID(source, target),
 		Source: source,
 		Target: target,
 	}

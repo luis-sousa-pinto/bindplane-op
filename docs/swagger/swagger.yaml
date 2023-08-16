@@ -573,6 +573,11 @@ definitions:
           control will take up, must be an integer between 1 and 12 or
           unspecified.
         type: integer
+      horizontalDivider:
+        description: |-
+          HorizontalDivider will add a horizontal divider after the parameter at full
+          width of the form.
+        type: boolean
       labels:
         additionalProperties:
           type: string
@@ -603,6 +608,9 @@ definitions:
         description: Sensitive indicates that the field is sensitive and will be masked
           with (sensitive) in the response.
         type: boolean
+      subHeader:
+        description: SubHeader will place a subheader above the parameter.
+        type: string
       trackUnchecked:
         description: |-
           TrackUnchecked will modify the "enums" parameter to store the

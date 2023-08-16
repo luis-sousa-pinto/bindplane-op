@@ -331,6 +331,8 @@ type ParameterOptions {
   labels: Map
   password: Boolean
   sensitive: Boolean
+  subHeader: String
+  horizontalDivider: Boolean
 }
 
 type MetricCategory {
@@ -464,11 +466,21 @@ type GraphMetric {
   agentID: ID
 }
 
+# EdgeMetric is a metric associated with an edge in the overview graph
+type EdgeMetric {
+  name: String!
+  edgeID: String!
+  pipelineType: String!
+  value: Float!
+  unit: String!
+}
+
 type GraphMetrics {
   metrics: [GraphMetric!]!
   maxMetricValue: Float!
   maxLogValue: Float!
   maxTraceValue: Float!
+  edgeMetrics: [EdgeMetric!]!
 }
 
 # ----------------------------------------------------------------------

@@ -8,8 +8,8 @@ import { useResourceFormValues } from "../../ResourceConfigForm/ResourceFormCont
 import { ResourceDisplayNameInput } from "../../ResourceConfigForm/ParameterInput/ResourceDisplayNameInput";
 import { ViewHeading } from "./ViewHeading";
 import { ParameterSection } from "../../ResourceConfigForm/ParameterSection";
-import { groupParameters } from "../../ResourceConfigForm/ConfigureResourceView";
 import { useMemo } from "react";
+import { groupParameters } from "../../ResourceConfigForm/utils";
 
 import mixins from "../../../styles/mixins.module.scss";
 

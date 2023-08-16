@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Divider, Grid, Typography } from "@mui/material";
 import { useMemo } from "react";
 import {
   BoolParamInput,
@@ -35,6 +35,29 @@ export const ParameterInput: React.FC<{
     },
     [definition.name, setFormValues]
   );
+
+  const subHeader: JSX.Element | null = useMemo(() => {
+    if (definition.options.subHeader) {
+      return (
+        <Grid item xs={12}>
+          <Typography>{definition.options.subHeader}</Typography>
+        </Grid>
+      );
+    }
+
+    return null;
+  }, [definition.options.subHeader]);
+
+  const divider: JSX.Element | null = useMemo(() => {
+    if (definition.options.horizontalDivider) {
+      return (
+        <Grid item xs={12}>
+          <Divider />
+        </Grid>
+      );
+    }
+    return null;
+  }, [definition.options.horizontalDivider]);
 
   const Control: JSX.Element = useMemo(() => {
     switch (definition.type) {
@@ -184,9 +207,13 @@ export const ParameterInput: React.FC<{
   }, [definition]);
 
   return (
-    <Grid item xs={gridColumns}>
-      {Control}
-    </Grid>
+    <>
+      {subHeader}
+      <Grid item xs={gridColumns}>
+        {Control}
+      </Grid>
+      {divider}
+    </>
   );
 };
 

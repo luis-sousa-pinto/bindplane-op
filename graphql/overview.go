@@ -46,24 +46,6 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 		return nil, err
 	}
 
-	everythingOrSelected := func(resourceKey string, kind model.Kind) (string, bool) {
-		resourcesSelected := []string{}
-		switch kind {
-		case model.KindConfiguration:
-			resourcesSelected = configsIDs
-		case model.KindDestination:
-			resourcesSelected = destinationIDs
-		}
-		for _, resourceID := range resourcesSelected {
-			if strings.HasSuffix(resourceID, resourceKey) {
-				// resources is selected
-				return fmt.Sprintf("%s/%s", strings.ToLower(string(kind)), resourceKey), false
-			}
-		}
-		// resource is in the everything node
-		return fmt.Sprintf("everything/%s", strings.ToLower(string(kind))), true
-	}
-
 	// keep track of destinations and reuse them
 	destNodes := make(map[string]*graph.Node)
 	// Also keep an ordered slice of the nodes for consistent ordering
@@ -97,7 +79,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 			continue
 		}
 
-		configNodeID, isEverything := everythingOrSelected(c.Name(), model.KindConfiguration)
+		configNodeID, isEverything := getOverviewNodeID(c.Name(), model.KindConfiguration, configsIDs)
 		configKey := ""
 		configLabel := ""
 		if isEverything {
@@ -138,7 +120,7 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 
 			trimmedName := model.TrimVersion(d.Name)
 
-			destNodeID, isEverything := everythingOrSelected(trimmedName, model.KindDestination)
+			destNodeID, isEverything := getOverviewNodeID(trimmedName, model.KindDestination, destinationIDs)
 
 			destinationKey := ""
 			destinationLabel := ""
@@ -254,4 +236,26 @@ func OverviewGraph(ctx context.Context, b exposedserver.BindPlane, configsIDs []
 	g.Attributes["activeTypeFlags"] = activeFlags
 
 	return g, nil
+}
+
+// getOverviewNodeID returns the node ID for a resource in the overview graph
+// and a bool indicating whether the resource is in the everything node
+func getOverviewNodeID(resourceID string, kind model.Kind, selectedIDs []string) (string, bool) {
+	formattedKind := strings.ToLower(string(kind))
+
+	// Special case, if we don't receive a selectedIDs then we're getting
+	// all metrics to determine the top 3.  So we need to return the node ID for
+	// the resource.
+	if selectedIDs == nil {
+		return fmt.Sprintf("%s/%s", formattedKind, resourceID), false
+
+	}
+
+	for _, selectedID := range selectedIDs {
+		if strings.HasSuffix(selectedID, resourceID) {
+			return fmt.Sprintf("%s/%s", formattedKind, resourceID), false
+		}
+	}
+
+	return fmt.Sprintf("everything/%s", formattedKind), true
 }

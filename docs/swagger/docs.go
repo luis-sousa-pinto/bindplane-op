@@ -2448,6 +2448,10 @@ const docTemplate = `{
                     "description": "GridColumns will specify the number of flex-grid columns the\ncontrol will take up, must be an integer between 1 and 12 or\nunspecified.",
                     "type": "integer"
                 },
+                "horizontalDivider": {
+                    "description": "HorizontalDivider will add a horizontal divider after the parameter at full\nwidth of the form.",
+                    "type": "boolean"
+                },
                 "labels": {
                     "description": "Labels indicate labels that can be used when rendering the parameter. This was added for the \"map\" parameter type\nto make the \"key\" and \"value\" labels configurable.",
                     "type": "object",
@@ -2476,6 +2480,10 @@ const docTemplate = `{
                 "sensitive": {
                     "description": "Sensitive indicates that the field is sensitive and will be masked with (sensitive) in the response.",
                     "type": "boolean"
+                },
+                "subHeader": {
+                    "description": "SubHeader will place a subheader above the parameter.",
+                    "type": "string"
                 },
                 "trackUnchecked": {
                     "description": "TrackUnchecked will modify the \"enums\" parameter to store the\nunchecked values as the value.",

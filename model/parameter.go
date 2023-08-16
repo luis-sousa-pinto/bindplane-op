@@ -110,6 +110,13 @@ type ParameterOptions struct {
 
 	// Sensitive indicates that the field is sensitive and will be masked with (sensitive) in the response.
 	Sensitive bool `json:"sensitive,omitempty" yaml:"sensitive,omitempty"`
+
+	// SubHeader will place a subheader above the parameter.
+	SubHeader string `json:"subHeader,omitempty" yaml:"subHeader,omitempty"`
+
+	// HorizontalDivider will add a horizontal divider after the parameter at full
+	// width of the form.
+	HorizontalDivider bool `json:"horizontalDivider,omitempty" yaml:"horizontalDivider,omitempty"`
 }
 
 // MetricCategory consists of the label, optional column, and metrics for a metricsType Parameter

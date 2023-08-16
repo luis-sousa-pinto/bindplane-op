@@ -2,7 +2,7 @@ import { Edge, Position, MarkerType, Node } from "reactflow";
 import { TELEMETRY_SIZE_METRICS } from "../../components/MeasurementControlBar/MeasurementControlBar";
 import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";
-import { Graph, GraphMetric } from "../../graphql/generated";
+import { Graph, GraphMetric, GraphMetrics } from "../../graphql/generated";
 import { isNodeDisabled } from "../../components/PipelineGraph/Nodes/nodeUtils";
 
 export const GRAPH_NODE_OFFSET = 150;
@@ -531,6 +531,82 @@ function getMetricPosition(nodeID: string): MetricPosition | undefined {
 }
 
 /**
+ * updateOverviewMetricData updates the metric data for the overview graph
+ */
+export function updateOverviewMetricData(
+  graphMetrics: GraphMetrics,
+  edges: Edge<any>[],
+  nodes: Node<any>[],
+  rate: string,
+  telemetryType: string
+) {
+  // Filter out for the telemetry type
+  const nodeMetrics = graphMetrics.metrics.filter(
+    (m) => m.name === TELEMETRY_SIZE_METRICS[telemetryType]
+  );
+  for (const edge of edges) {
+    edge.data.metrics = [];
+  }
+
+  // Assign the node metrics as the value to show the annotated total
+  for (const m of nodeMetrics) {
+    const isConfigurationMetric =
+      m.nodeID.startsWith("configuration") ||
+      m.nodeID === "everything/configuration";
+
+    // Find all the edges that are connected to this node
+    var candidateEdges: Edge[];
+    if (isConfigurationMetric) {
+      candidateEdges = edges.filter((e) => e.source === m.nodeID);
+    } else {
+      candidateEdges = edges.filter((e) => e.target === m.nodeID);
+    }
+
+    // Find the edge with the source or target with the
+    // lowest y position
+    const edge = isConfigurationMetric
+      ? findEdgeWithLowestDestinationY(candidateEdges, nodes)
+      : findEdgeWithLowestSourceY(candidateEdges, nodes);
+
+    var startOffset = "4%";
+    var textAnchor = "start";
+    if (!isConfigurationMetric) {
+      startOffset = "96%";
+      textAnchor = "end";
+    }
+
+    if (edge != null) {
+      edge.data.metrics ||= [];
+      edge.data.metrics.push({
+        startOffset,
+        textAnchor,
+        value: formatMetric(m, rate),
+      });
+    }
+  }
+
+  // Assign the raw value
+  for (const edgeM of graphMetrics.edgeMetrics) {
+    if (edgeM.name !== TELEMETRY_SIZE_METRICS[telemetryType]) {
+      continue;
+    }
+    const edge = edges.find((e) => e.id === edgeM.edgeID);
+    if (edge != null) {
+      // set the raw value on the first edge metric or create a new one
+      if (edge.data.metrics != null && edge.data.metrics.length > 0) {
+        edge.data.metrics[0].rawValue = edgeM.value;
+      } else {
+        edge.data.metrics = [
+          {
+            rawValue: edgeM.value,
+          },
+        ];
+      }
+    }
+  }
+}
+
+/**
  * Update the metric data of nodes and edges in a configuration's graph.
  * The nodes and edges are mutated in place.
  *
@@ -794,4 +870,37 @@ export function truncateLabel(label: string, maxLength: number): string {
     return label.slice(0, maxLength) + "...";
   }
   return label;
+}
+
+export function findEdgeWithLowestSourceY(edges: Edge[], nodes: Node[]): Edge {
+  const edge = edges.reduce((prev, curr) => {
+    const prevNode = nodes.find((n) => n.id === prev.source);
+    const currNode = nodes.find((n) => n.id === curr.source);
+    if (prevNode == null) {
+      return curr;
+    }
+    if (currNode == null) {
+      return prev;
+    }
+    return prevNode.position.y < currNode.position.y ? prev : curr;
+  });
+  return edge;
+}
+
+export function findEdgeWithLowestDestinationY(
+  edges: Edge[],
+  nodes: Node[]
+): Edge {
+  const edge = edges.reduce((prev, curr) => {
+    const prevNode = nodes.find((n) => n.id === prev.target);
+    const currNode = nodes.find((n) => n.id === curr.target);
+    if (prevNode == null) {
+      return curr;
+    }
+    if (currNode == null) {
+      return prev;
+    }
+    return prevNode.position.y < currNode.position.y ? prev : curr;
+  });
+  return edge;
 }

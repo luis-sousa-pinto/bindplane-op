@@ -30,11 +30,14 @@ import (
 	"github.com/observiq/bindplane-op/agent"
 	"github.com/observiq/bindplane-op/config"
 	bpserver "github.com/observiq/bindplane-op/internal/server"
+	"github.com/observiq/bindplane-op/metrics"
 	"github.com/observiq/bindplane-op/resources"
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/stopqueue"
 	"github.com/observiq/bindplane-op/store"
 	"github.com/observiq/bindplane-op/tracer"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 )
 
@@ -68,13 +71,18 @@ type Builder interface {
 	SupportsServer() bool
 }
 
+var mp metric.Meter = otel.Meter("server")
+
 // NewServer returns a new Server.
-func NewServer(cfg *config.Config, s store.Store, tracer tracer.Tracer, logger *zap.Logger, routeBuilder exposedserver.RouteBuilder) Server {
+func NewServer(cfg *config.Config, s store.Store, tracer tracer.Tracer,
+	logger *zap.Logger, mp metrics.Provider, routeBuilder exposedserver.RouteBuilder,
+) Server {
 	return &defaultServer{
 		cfg:          cfg,
 		store:        s,
 		tracer:       tracer,
 		logger:       logger,
+		mp:           mp,
 		routeBuilder: routeBuilder,
 		stopQueue:    stopqueue.NewStopQueue(),
 	}
@@ -86,6 +94,7 @@ type defaultServer struct {
 	store        store.Store
 	tracer       tracer.Tracer
 	logger       *zap.Logger
+	mp           metrics.Provider
 	routeBuilder exposedserver.RouteBuilder
 	stopQueue    *stopqueue.Queue
 }
@@ -143,6 +152,8 @@ func (s *defaultServer) Serve(ctx context.Context) error {
 
 	s.startTracer(ctx)
 
+	s.startMetrics(ctx)
+
 	s.startRolloutUpdates(ctx)
 
 	serverErr := make(chan error, 1)
@@ -193,12 +204,13 @@ func (s *defaultServer) createAgentVersions(ctx context.Context) agent.Versions 
 	var versionClient agent.VersionClient
 	if !s.cfg.Offline {
 		versionClient = agent.NewGitHubVersionClient()
+	} else {
+		versionClient = agent.NewNoopClient()
 	}
 
 	settings := agent.VersionsSettings{
 		Logger:                    s.logger.Named("versions"),
 		SyncAgentVersionsInterval: s.cfg.AgentVersions.SyncInterval,
-		Offline:                   s.cfg.Offline,
 	}
 
 	return agent.NewVersions(ctx, versionClient, s.store, settings)
@@ -274,6 +286,19 @@ func (s *defaultServer) startTracer(ctx context.Context) {
 	s.stopQueue.Add(
 		func(stopCtx context.Context) error {
 			return s.tracer.Shutdown(stopCtx)
+		},
+	)
+}
+
+// startMetrics starts the tracer and adds it's cleanup onto the stopQueue
+func (s *defaultServer) startMetrics(ctx context.Context) {
+	if err := s.mp.Start(ctx); err != nil {
+		s.logger.Warn("Failed to start metrics", zap.Error(err))
+	}
+
+	s.stopQueue.Add(
+		func(stopCtx context.Context) error {
+			return s.mp.Shutdown(stopCtx)
 		},
 	)
 }

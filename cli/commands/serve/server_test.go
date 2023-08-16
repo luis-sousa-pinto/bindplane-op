@@ -25,6 +25,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/observiq/bindplane-op/config"
 	"github.com/observiq/bindplane-op/eventbus"
+	metricsmocks "github.com/observiq/bindplane-op/metrics/mocks"
 	"github.com/observiq/bindplane-op/model"
 	serverMocks "github.com/observiq/bindplane-op/server/mocks"
 	"github.com/observiq/bindplane-op/store"
@@ -155,7 +156,7 @@ func TestSeed(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewServer(nil, tc.storeFunc(), nil, zap.NewNop(), nil)
+			s := NewServer(nil, tc.storeFunc(), nil, zap.NewNop(), nil, nil)
 			err := s.Seed(context.Background())
 			switch tc.expected {
 			case nil:
@@ -189,6 +190,10 @@ func TestServeWithClient(t *testing.T) {
 	tracer.On("Start", mock.Anything).Return(nil)
 	tracer.On("Shutdown", mock.Anything).Return(nil)
 
+	mp := metricsmocks.NewMockProvider(t)
+	mp.On("Start", mock.Anything).Return(nil)
+	mp.On("Shutdown", mock.Anything).Return(nil)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -197,7 +202,7 @@ func TestServeWithClient(t *testing.T) {
 
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- NewServer(cfg, st, tracer, logger, mockRouteBuilder).Serve(ctx)
+		errChan <- NewServer(cfg, st, tracer, logger, mp, mockRouteBuilder).Serve(ctx)
 	}()
 
 	var resultStatus int

@@ -6,10 +6,10 @@ import {
   Typography,
 } from "@mui/material";
 import { ChevronDown } from "../Icons";
-import { ParameterGroup } from "./ConfigureResourceView";
 import { ParameterInput } from "./ParameterInput";
 import { useResourceFormValues } from "./ResourceFormContext";
 import { satisfiesRelevantIf } from "./satisfiesRelevantIf";
+import { ParameterGroup } from "./utils";
 
 interface ParameterSectionProps {
   group: ParameterGroup;

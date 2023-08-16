@@ -65,6 +65,9 @@ func TestOverrideDefaults(t *testing.T) {
 				Path: DefaultBBoltPath,
 			},
 		},
+		Metrics: Metrics{
+			Interval: DefaultMetricsInterval,
+		},
 		AgentVersions: AgentVersions{
 			SyncInterval: DefaultSyncInterval,
 		},
@@ -94,8 +97,12 @@ func TestOverrideFlags(t *testing.T) {
 		"--secret-key", "secret",
 		"--session-secret", "session",
 		"--tracing-type", "otlp",
-		"--tracing-otlp-endpoint", "http://localhost:4317",
+		"--tracing-otlp-endpoint", "localhost:4317",
 		"--tracing-otlp-insecure", "true",
+		"--metrics-type", "otlp",
+		"--metrics-otlp-endpoint", "localhost:4317",
+		"--metrics-otlp-insecure", "true",
+		"--metrics-interval", "2m",
 		"--store-type", "bbolt",
 		"--store-bbolt-path", "/tmp/store.db",
 		"--store-max-events", "200",
@@ -151,9 +158,17 @@ func TestOverrideFlags(t *testing.T) {
 		Tracing: Tracing{
 			Type: "otlp",
 			OTLP: OTLPTracing{
-				Endpoint: "http://localhost:4317",
+				Endpoint: "localhost:4317",
 				Insecure: true,
 			},
+		},
+		Metrics: Metrics{
+			Type: "otlp",
+			OTLP: OTLPMetrics{
+				Endpoint: "localhost:4317",
+				Insecure: true,
+			},
+			Interval: time.Minute * 2,
 		},
 		AgentVersions: AgentVersions{
 			SyncInterval: time.Hour * 2,
@@ -182,8 +197,11 @@ func TestOverrideEnvs(t *testing.T) {
 		"BINDPLANE_SECRET_KEY":                   "secret",
 		"BINDPLANE_SESSION_SECRET":               "session",
 		"BINDPLANE_TRACING_TYPE":                 "otlp",
-		"BINDPLANE_TRACING_OTLP_ENDPOINT":        "http://localhost:4317",
+		"BINDPLANE_TRACING_OTLP_ENDPOINT":        "localhost:4317",
 		"BINDPLANE_TRACING_OTLP_INSECURE":        "true",
+		"BINDPLANE_METRICS_TYPE":                 "otlp",
+		"BINDPLANE_METRICS_OTLP_ENDPOINT":        "localhost:4317",
+		"BINDPLANE_METRICS_OTLP_INSECURE":        "true",
 		"BINDPLANE_STORE_TYPE":                   "bbolt",
 		"BINDPLANE_STORE_BBOLT_PATH":             "/tmp/store.db",
 		"BINDPLANE_STORE_MAX_EVENTS":             "200",
@@ -240,7 +258,15 @@ func TestOverrideEnvs(t *testing.T) {
 		Tracing: Tracing{
 			Type: "otlp",
 			OTLP: OTLPTracing{
-				Endpoint: "http://localhost:4317",
+				Endpoint: "localhost:4317",
+				Insecure: true,
+			},
+		},
+		Metrics: Metrics{
+			Type:     "otlp",
+			Interval: DefaultMetricsInterval,
+			OTLP: OTLPMetrics{
+				Endpoint: "localhost:4317",
 				Insecure: true,
 			},
 		},
