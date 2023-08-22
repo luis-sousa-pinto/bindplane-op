@@ -730,14 +730,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
 service:
     pipelines:
         logs/source0__googlecloud-0:
@@ -911,14 +906,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
         tls:
             ca_file: /path/to/ca
             cert_file: /path/to/cert
@@ -1100,14 +1090,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
         tls:
             ca_file: /path/to/ca
             cert_file: /path/to/cert
@@ -1283,14 +1268,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
         tls:
             insecure_skip_verify: true
 service:
@@ -1469,14 +1449,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
 service:
     pipelines:
         logs/source0__cabin-production-logs-1:
@@ -1658,14 +1633,9 @@ exporters:
         endpoint: /v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
 service:
     pipelines:
         logs/source0__googlecloud-0:
@@ -2208,14 +2178,9 @@ exporters:
         endpoint: https://127.0.0.1:8443/v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
 service:
     pipelines:
         logs/source0__destination0-0:
@@ -2365,14 +2330,9 @@ exporters:
         endpoint: https://127.0.0.1:8443/v1/otlphttp
         headers: {}
         retry_on_failure:
-            enabled: true
-            initial_interval: 5s
-            max_elapsed_time: 30s
-            max_interval: 5s
+            enabled: false
         sending_queue:
-            enabled: true
-            num_consumers: 1
-            queue_size: 60
+            enabled: false
         tls:
             insecure_skip_verify: true
 service:

@@ -18,7 +18,6 @@ package otel
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
@@ -422,17 +421,12 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[s
 		// Default retry values can be found at:
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L249
 		"retry_on_failure": map[string]any{
-			"enabled":          true,
-			"initial_interval": 5 * time.Second,
-			"max_interval":     5 * time.Second,
-			"max_elapsed_time": 30 * time.Second,
+			"enabled": false,
 		},
 		// Default queue values can be found at:
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L44
 		"sending_queue": map[string]any{
-			"enabled":       true,
-			"num_consumers": 1,
-			"queue_size":    60,
+			"enabled": false,
 		},
 	}
 

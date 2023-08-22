@@ -16,7 +16,6 @@ package otel
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -136,15 +135,10 @@ func TestAddAgentMetricsPipeline(t *testing.T) {
 	expect := map[string]any{
 		"endpoint": "http://test/v1/otlphttp",
 		"retry_on_failure": map[string]any{
-			"enabled":          true,
-			"initial_interval": 5 * time.Second,
-			"max_interval":     5 * time.Second,
-			"max_elapsed_time": 30 * time.Second,
+			"enabled": false,
 		},
 		"sending_queue": map[string]any{
-			"enabled":       true,
-			"num_consumers": 1,
-			"queue_size":    60,
+			"enabled": false,
 		},
 		"headers": map[string]string{},
 	}
