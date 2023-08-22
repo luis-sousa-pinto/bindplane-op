@@ -41,6 +41,7 @@ import (
 	"github.com/observiq/bindplane-op/model/version"
 	"github.com/observiq/bindplane-op/store"
 	storeMocks "github.com/observiq/bindplane-op/store/mocks"
+	statsmocks "github.com/observiq/bindplane-op/store/stats/mocks"
 	"github.com/observiq/bindplane-op/store/storetest"
 	"github.com/observiq/bindplane-op/util"
 )
@@ -203,7 +204,8 @@ func TestREST(t *testing.T) {
 
 	store := store.NewBoltStore(ctx, db, storeOpts, zap.NewNop())
 
-	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), store, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), store, nil, mockBatcher)
 	AddRestRoutes(router, bindplane)
 
 	client := resty.New()
@@ -1877,7 +1879,8 @@ func TestRESTMock(t *testing.T) {
 			defer svr.Close()
 
 			store := &storeMocks.MockStore{}
-			bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), store, nil)
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+			bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), store, nil, mockBatcher)
 			AddRestRoutes(router, bindplane)
 
 			client := resty.New()

@@ -10,6 +10,8 @@ import (
 
 	server "github.com/observiq/bindplane-op/server"
 
+	stats "github.com/observiq/bindplane-op/store/stats"
+
 	store "github.com/observiq/bindplane-op/store"
 
 	zap "go.uber.org/zap"
@@ -90,6 +92,22 @@ func (_m *MockBindPlane) Manager() server.Manager {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(server.Manager)
+		}
+	}
+
+	return r0
+}
+
+// MeasurementBatcher provides a mock function with given fields:
+func (_m *MockBindPlane) MeasurementBatcher() stats.MeasurementBatcher {
+	ret := _m.Called()
+
+	var r0 stats.MeasurementBatcher
+	if rf, ok := ret.Get(0).(func() stats.MeasurementBatcher); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(stats.MeasurementBatcher)
 		}
 	}
 

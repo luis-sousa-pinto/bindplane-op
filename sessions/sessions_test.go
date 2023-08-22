@@ -36,6 +36,7 @@ import (
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/store"
 	storeMocks "github.com/observiq/bindplane-op/store/mocks"
+	statsmocks "github.com/observiq/bindplane-op/store/stats/mocks"
 )
 
 func TestAddRoutes(t *testing.T) {
@@ -52,7 +53,8 @@ func TestAddRoutes(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, logger)
 
-	bindplane := server.NewBindPlane(&config.Config{}, zap.NewNop(), s, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(&config.Config{}, zap.NewNop(), s, nil, mockBatcher)
 
 	t.Run("adds /login /logout and /verify", func(t *testing.T) {
 		AddRoutes(router, bindplane)
@@ -97,7 +99,8 @@ func TestHandleLogin(t *testing.T) {
 		SessionsSecret:   "super-secret-key",
 		MaxEventsToMerge: 1,
 	}, logger)
-	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil, mockBatcher)
 	AddRoutes(router, bindplane)
 
 	t.Run(fmt.Sprintf("sets the %s cookie with correct credentials", authenticator.CookieName), func(t *testing.T) {
@@ -158,7 +161,8 @@ func TestLogin(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, logger)
 
-	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil, mockBatcher)
 
 	t.Run("will not set authenticated to true for invalid creds", func(t *testing.T) {
 		// Create a Post Form Request with username and password
@@ -207,7 +211,8 @@ func TestLogin(t *testing.T) {
 		mockStore := storeMocks.NewMockStore(t)
 		mockStore.On("UserSessions").Return(&mockCookieStore{})
 
-		mockServer := server.NewBindPlane(cfg, zap.NewNop(), mockStore, nil)
+		mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+		mockServer := server.NewBindPlane(cfg, zap.NewNop(), mockStore, nil, mockBatcher)
 
 		req := httptest.NewRequest("POST", "/login", nil)
 		req.PostForm = url.Values{
@@ -261,7 +266,8 @@ func TestLogout(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, logger)
 
-	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil, mockBatcher)
 
 	t.Run("will set username and password to empty for a logged in context", func(t *testing.T) {
 		cookie := getLoggedInCookie(t, bindplane)
@@ -298,7 +304,8 @@ func TestVerify(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, logger)
 
-	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil)
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(cfg, zap.NewNop(), s, nil, mockBatcher)
 
 	t.Run("aborts with status 401 when username is unset", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/verify", nil)

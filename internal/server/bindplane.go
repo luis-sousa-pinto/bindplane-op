@@ -23,31 +23,34 @@ import (
 	"github.com/observiq/bindplane-op/config"
 	bpserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/store"
+	"github.com/observiq/bindplane-op/store/stats"
 )
 
 // NewBindPlane creates a new BindPlane Server using the given store and agent versions
-func NewBindPlane(cfg *config.Config, logger *zap.Logger, s store.Store, versions agent.Versions) bpserver.BindPlane {
+func NewBindPlane(cfg *config.Config, logger *zap.Logger, s store.Store, versions agent.Versions, batcher stats.MeasurementBatcher) bpserver.BindPlane {
 	return &storeBindPlane{
 		store: s,
 		bindplane: bindplane{
-			logger:        logger,
-			config:        cfg,
-			manager:       bpserver.NewManager(cfg, s, versions, logger),
-			relayers:      NewRelayers(logger),
-			versions:      versions,
-			authenticator: authenticator.NewBasicAuthenticator(cfg.Auth.Username, cfg.Auth.Password),
+			logger:             logger,
+			config:             cfg,
+			manager:            bpserver.NewManager(cfg, s, versions, logger),
+			relayers:           NewRelayers(logger),
+			versions:           versions,
+			authenticator:      authenticator.NewBasicAuthenticator(cfg.Auth.Username, cfg.Auth.Password),
+			measurementBatcher: batcher,
 		},
 	}
 }
 
 // ----------------------------------------------------------------------
 type bindplane struct {
-	config        *config.Config
-	manager       bpserver.Manager
-	logger        *zap.Logger
-	versions      agent.Versions
-	relayers      *Relayers
-	authenticator authenticator.Authenticator
+	config             *config.Config
+	manager            bpserver.Manager
+	logger             *zap.Logger
+	versions           agent.Versions
+	relayers           *Relayers
+	authenticator      authenticator.Authenticator
+	measurementBatcher stats.MeasurementBatcher
 }
 
 // Manager TODO(doc)
@@ -90,6 +93,11 @@ func (s *storeBindPlane) Store() store.Store {
 // Versions TODO(doc)
 func (s *storeBindPlane) Versions() agent.Versions {
 	return s.versions
+}
+
+// MeasurementBatcher retrieves the measurement batcher for batching agent metrics
+func (s *storeBindPlane) MeasurementBatcher() stats.MeasurementBatcher {
+	return s.measurementBatcher
 }
 
 func (s *storeBindPlane) BindPlaneURL() string {

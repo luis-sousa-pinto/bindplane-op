@@ -18,6 +18,7 @@ import (
 	"github.com/observiq/bindplane-op/agent"
 	"github.com/observiq/bindplane-op/authenticator"
 	"github.com/observiq/bindplane-op/store"
+	"github.com/observiq/bindplane-op/store/stats"
 	"go.uber.org/zap"
 )
 
@@ -33,6 +34,8 @@ type BindPlane interface {
 	Relayers() Relayers
 	// Versions TODO(doc)
 	Versions() agent.Versions
+	// MeasurementBatcher retrieves the measurement batcher for batching agent metrics
+	MeasurementBatcher() stats.MeasurementBatcher
 	// Logger TODO(doc)
 	Logger() *zap.Logger
 	// BindPlaneURL returns the URL of the BindPlane server

@@ -31,6 +31,7 @@ import (
 	"github.com/observiq/bindplane-op/store"
 	storeMocks "github.com/observiq/bindplane-op/store/mocks"
 	searchMocks "github.com/observiq/bindplane-op/store/search/mocks"
+	statsmocks "github.com/observiq/bindplane-op/store/stats/mocks"
 	traceMocks "github.com/observiq/bindplane-op/tracer/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -185,6 +186,9 @@ func TestServeWithClient(t *testing.T) {
 	st := storeMocks.NewMockStore(t)
 	st.On("Updates", mock.Anything).Return(eventbus.NewSource[store.BasicEventUpdates]())
 	st.On("AgentRolloutUpdates", mock.Anything).Return(eventbus.NewSource[store.RolloutEventUpdates]())
+
+	mockMeasurements := statsmocks.NewMockMeasurements(t)
+	st.On("Measurements").Return(mockMeasurements)
 
 	tracer := traceMocks.NewMockTracer(t)
 	tracer.On("Start", mock.Anything).Return(nil)

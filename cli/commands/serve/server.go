@@ -35,6 +35,7 @@ import (
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/stopqueue"
 	"github.com/observiq/bindplane-op/store"
+	"github.com/observiq/bindplane-op/store/stats"
 	"github.com/observiq/bindplane-op/tracer"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -133,7 +134,10 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 // Serve will run a BindPlane server until an error occurs or the context is canceled.
 func (s *defaultServer) Serve(ctx context.Context) error {
 	agentVersions := s.createAgentVersions(ctx)
-	bindplane := bpserver.NewBindPlane(s.cfg, s.logger, s.store, agentVersions)
+
+	batcher := s.createMeasurementBatcher(ctx)
+
+	bindplane := bpserver.NewBindPlane(s.cfg, s.logger, s.store, agentVersions, batcher)
 
 	s.startManager(ctx, bindplane)
 
@@ -214,6 +218,17 @@ func (s *defaultServer) createAgentVersions(ctx context.Context) agent.Versions 
 	}
 
 	return agent.NewVersions(ctx, versionClient, s.store, settings)
+}
+
+// createMeasurementBatcher creates a measurement batcher and adds it to the stop queue
+func (s *defaultServer) createMeasurementBatcher(ctx context.Context) stats.MeasurementBatcher {
+	batcher := stats.NewDefaultBatcher(ctx, s.logger, s.store.Measurements())
+
+	s.stopQueue.Add(func(stopCtx context.Context) error {
+		return batcher.Shutdown(stopCtx)
+	})
+
+	return batcher
 }
 
 // setGinMode will set the gin mode based on the environment.
