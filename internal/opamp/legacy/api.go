@@ -196,6 +196,23 @@ func (s *legacyOpampServer) OnConnecting(request *http.Request) legacyOpamp.Conn
 		}
 	}
 
+	disconnected, err := s.isAgentDisconnected(ctx, *headers)
+	if err != nil {
+		s.logger.Info("Could not determine if agent was already connected.", zap.Error(err), zap.String("agentID", headers.id))
+		return legacyOpamp.ConnectionResponse{
+			Accept:         false,
+			HTTPStatusCode: http.StatusInternalServerError,
+		}
+	}
+
+	if !disconnected {
+		s.logger.Info("Agent is already connected.", zap.Error(err), zap.String("agentID", headers.id))
+		return legacyOpamp.ConnectionResponse{
+			Accept:         false,
+			HTTPStatusCode: http.StatusConflict,
+		}
+	}
+
 	s.connections.OnConnecting(ctx, headers.id)
 
 	return legacyOpamp.ConnectionResponse{
@@ -731,4 +748,25 @@ func (s *legacyOpampServer) updateAgentCurrentConfiguration(ctx context.Context,
 		// if we were unable to set the Current configuration, the configuration will still be Pending and we will try again
 		s.logger.Error("unable to SetCurrentConfiguration", zap.Error(err))
 	}
+}
+
+func (s *legacyOpampServer) isAgentDisconnected(ctx context.Context, headers agentHeaders) (bool, error) {
+	// Quick check to see if the agent is already connected locally
+	if s.connections.Connected(headers.id) {
+		s.logger.Debug("Agent was already connected to this instance.", zap.String("agentID", headers.id))
+		return false, nil
+	}
+
+	// Slow check to see if the agent is already connected in the whole cluster
+	agent, err := s.manager.Agent(ctx, headers.id)
+	if err != nil {
+		return false, fmt.Errorf("get agent: %w", err)
+	}
+
+	if agent != nil && agent.Status != model.Disconnected {
+		s.logger.Debug("Existing agent not in disconnected state.", zap.String("agentID", headers.id))
+		return false, nil
+	}
+
+	return true, nil
 }

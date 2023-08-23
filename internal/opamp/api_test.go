@@ -287,13 +287,39 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Valid key",
 			authorization: "Secret-Key good-key",
 			createManager: func(t *testing.T) *serverMocks.MockManager {
+				agent := &model.Agent{
+					ID:     "",
+					Labels: model.MakeLabels(),
+				}
+
 				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(ctx, true)
+				manager.On("Agent", mock.Anything, "").Return(agent, nil)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
 				Accept:         true,
 				HTTPStatusCode: http.StatusOK,
+			},
+		},
+		{
+			name:          "Valid key, agent is already connected",
+			authorization: "Secret-Key good-key",
+			createManager: func(t *testing.T) *serverMocks.MockManager {
+				agent := &model.Agent{
+					ID:     "",
+					Labels: model.MakeLabels(),
+					Status: model.Connected,
+				}
+
+				manager := serverMocks.NewMockManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(ctx, true)
+				manager.On("Agent", mock.Anything, "").Return(agent, nil)
+				return manager
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         false,
+				HTTPStatusCode: http.StatusConflict,
 			},
 		},
 		{
