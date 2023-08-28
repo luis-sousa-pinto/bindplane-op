@@ -262,6 +262,18 @@ func (mapstore *mapStore) UpdateAgent(ctx context.Context, agentID string, updat
 	return agent, nil
 }
 
+// UpdateAgentStatus will update the status of an existing agent. If the agentID does not exist, this does nothing. An
+// error is only returned if updating the status of the agent fails.
+//
+// In some store implementations this will be more efficient than using UpdateAgent and modifying the Agent model
+// directly.
+func (mapstore *mapStore) UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error {
+	_, err := mapstore.UpdateAgent(ctx, agentID, func(current *model.Agent) {
+		current.Status = status
+	})
+	return err
+}
+
 // UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
 // agent corresponding to that ID will be returned. An error is only returned if the update fails.
 func (mapstore *mapStore) UpdateAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error) {

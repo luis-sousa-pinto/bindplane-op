@@ -491,9 +491,10 @@ func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists
 	agent := &model.Agent{ID: agentID}
 
 	// load the existing agent or create it
-	if data := bucket.Get(key); data != nil {
+	dataBefore := bucket.Get(key)
+	if dataBefore != nil {
 		// existing agent, unmarshal
-		if err := jsoniter.Unmarshal(data, agent); err != nil {
+		if err := jsoniter.Unmarshal(dataBefore, agent); err != nil {
 			return agent, err
 		}
 		agentEventType = EventTypeUpdate
@@ -526,17 +527,20 @@ func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists
 	}
 
 	// marshal it back to to json
-	data, err := jsoniter.Marshal(agent)
+	dataAfter, err := jsoniter.Marshal(agent)
 	if err != nil {
 		return agent, err
 	}
 
-	err = bucket.Put(key, data)
-	if err != nil {
-		return agent, err
+	// only write and include in updates if there are actual changes
+	if !bytes.Equal(dataBefore, dataAfter) {
+		err = bucket.Put(key, dataAfter)
+		if err != nil {
+			return agent, err
+		}
+		updates.IncludeAgent(agent, agentEventType)
 	}
 
-	updates.IncludeAgent(agent, agentEventType)
 	return agent, nil
 }
 

@@ -104,3 +104,29 @@ type BroadCastBuilder[T any] func(ctx context.Context, options Options, logger *
 
 // RolloutUpdateCreator is a function that creates a RolloutEventUpdates from a set of agent events.
 type RolloutUpdateCreator func(context.Context, Events[*model.Agent]) RolloutEventUpdates
+
+// mergeAllUpdates will merge all of the individual updates as much as possible. For example, if there are 4 updates,
+// and the first 2 can be merged and the last 2 can be merged, there will be 2 updates in the result. Because the
+// updates in the list will be merged into each other, the list should not be used again as it will contain duplicate
+// update information. Because of this, the usage should typically look like:
+//
+//	updates = mergeAllUpdates(updates)
+//
+// This method is primarily used for testing to ensure that a list of updates is merged as much as possible and can be
+// safely compared with a similar list of updates.
+func mergeAllUpdates(list []BasicEventUpdates) []BasicEventUpdates {
+	var result []BasicEventUpdates
+
+	var prev BasicEventUpdates
+	for _, cur := range list {
+		// base case for the first iteration
+		if prev != nil && MergeUpdates(prev, cur) {
+			continue
+		}
+		// either first iteration (prev == nil) or we failed to merge and need to create a new base
+		result = append(result, cur)
+		prev = cur
+	}
+
+	return result
+}

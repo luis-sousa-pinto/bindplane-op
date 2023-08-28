@@ -271,6 +271,17 @@ func (s *BoltstoreCore) UpdateAgent(ctx context.Context, agentID string, updater
 	return s.updateOrUpsertAgent(ctx, true, agentID, updater)
 }
 
+// UpdateAgentStatus will update the status of an existing agent. If the agentID does not exist, this does nothing. An
+// error is only returned if updating the status of the agent fails.
+//
+// In boltstore, this uses UpdateAgent directly.
+func (s *BoltstoreCore) UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error {
+	_, err := s.UpdateAgent(ctx, agentID, func(current *model.Agent) {
+		current.Status = status
+	})
+	return err
+}
+
 func (s *BoltstoreCore) updateOrUpsertAgent(ctx context.Context, requireExists bool, agentID string, updater AgentUpdater) (*model.Agent, error) {
 	var updatedAgent *model.Agent
 	updates := s.CreateEventUpdate()

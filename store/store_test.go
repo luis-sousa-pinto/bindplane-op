@@ -793,7 +793,11 @@ func runUpdateAgentsTests(t *testing.T, store Store) {
 			agents: []*model.Agent{
 				{ID: "1"},
 			},
-			updater:       func(current *model.Agent) { current.Status = 1 },
+			updater: func(current *model.Agent) {
+				// because these tests run in sequence without a store reset and we want to ensure that there are changes, we
+				// use a different status
+				current.Status = 2
+			},
 			expectUpdates: []string{"1"},
 		},
 		{
@@ -810,7 +814,11 @@ func runUpdateAgentsTests(t *testing.T, store Store) {
 				{ID: "9"},
 				{ID: "10"},
 			},
-			updater:       func(current *model.Agent) { current.Status = 1 },
+			updater: func(current *model.Agent) {
+				// because these tests run in sequence without a store reset and we want to ensure that there are changes, we
+				// use a different status
+				current.Status = 3
+			},
 			expectUpdates: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
 		},
 	}
@@ -5035,4 +5043,62 @@ func runRolloutToDisconnectedAgentsTest(ctx context.Context, t *testing.T, store
 		require.True(t, configuration.IsLatest())
 	})
 
+}
+
+// runUpdateAgentStatusTests runs tests for the store.UpdateAgentStatus method
+func runUpdateAgentStatusTests(ctx context.Context, t *testing.T, store Store) {
+	tests := []struct {
+		name          string
+		newStatus     model.AgentStatus
+		expectUpdates func(agent *model.Agent) []BasicEventUpdates
+	}{
+		{
+			name:      "agent exists, new status",
+			newStatus: model.Configuring,
+			expectUpdates: func(agent *model.Agent) (result []BasicEventUpdates) {
+				agent.Status = model.Configuring
+				updates := NewEventUpdates()
+				updates.IncludeAgent(agent, EventTypeUpdate)
+				result = append(result, updates)
+				return
+			},
+		},
+		{
+			name:      "agent exists, same status",
+			newStatus: model.Connected,
+		},
+		{
+			name:      "missing agent, no update",
+			newStatus: model.Connected,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// start recording
+			recorder := recordStoreUpdates(ctx, store)
+
+			// create the agent in advance
+			id := model.NewResourceID()
+			agent, err := store.UpsertAgent(ctx, id, func(current *model.Agent) {
+				current.Status = model.Connected
+				current.Labels = model.MakeLabels()
+			})
+			require.NoError(t, err)
+			require.NotNil(t, agent)
+
+			// update the status
+			err = store.UpdateAgentStatus(ctx, id, test.newStatus)
+			require.NoError(t, err)
+
+			insertUpdates := NewEventUpdates()
+			insertUpdates.IncludeAgent(agent, EventTypeInsert)
+			expectUpdates := []BasicEventUpdates{}
+			if test.expectUpdates != nil {
+				expectUpdates = test.expectUpdates(agent)
+			}
+			expectUpdates = append([]BasicEventUpdates{insertUpdates}, expectUpdates...)
+			recorder.assertEvents(t, expectUpdates)
+		})
+	}
 }

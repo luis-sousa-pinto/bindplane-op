@@ -72,6 +72,13 @@ type Store interface {
 	// agent will be nil. An error is only returned if the update fails.
 	UpdateAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
 
+	// UpdateAgentStatus will update the status of an existing agent. If the agentID does not exist, this does nothing. An
+	// error is only returned if updating the status of the agent fails.
+	//
+	// When only the agent status needs to be modified, this should be preferred over UpdateAgent. In some store
+	// implementations this will be more efficient.
+	UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error
+
 	// UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
 	// agent corresponding to that ID will be returned. An error is only returned if the update fails.
 	UpdateAgents(ctx context.Context, agentIDs []string, updater AgentUpdater) ([]*model.Agent, error)

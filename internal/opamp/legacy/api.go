@@ -419,7 +419,7 @@ func (s *legacyOpampServer) UpdateAgent(ctx context.Context, agent *model.Agent,
 		serverToAgent.RemoteConfig = legacyAgentRemoteConfig(&newRawConfiguration, &agentRawConfiguration)
 
 		// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not required to update the agent
-		_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+		_ = s.manager.UpdateAgentStatus(ctx, agent.ID, model.Configuring)
 	}
 
 	if updates.Version != "" {
@@ -650,7 +650,7 @@ func (s *legacyOpampServer) updateAgentConfig(ctx context.Context, agent *model.
 
 	// change the agent status to Configuring, but ignore any failure as this status is considered nice to have and not
 	// required to update the agent
-	_, _ = s.manager.UpdateAgent(ctx, agent.ID, func(current *model.Agent) { current.Status = model.Configuring })
+	_ = s.manager.UpdateAgentStatus(ctx, agent.ID, model.Configuring)
 
 	s.logger.Info("agent running with outdated config", zap.Any("cur", agentConfiguration.Collector), zap.Any("new", serverConfiguration.Collector))
 	response.RemoteConfig = remoteConfig

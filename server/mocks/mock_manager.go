@@ -254,6 +254,20 @@ func (_m *MockManager) UpdateAgent(ctx context.Context, agentID string, updater 
 	return r0, r1
 }
 
+// UpdateAgentStatus provides a mock function with given fields: ctx, agentID, status
+func (_m *MockManager) UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error {
+	ret := _m.Called(ctx, agentID, status)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, model.AgentStatus) error); ok {
+		r0 = rf(ctx, agentID, status)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpsertAgent provides a mock function with given fields: ctx, agentID, updater
 func (_m *MockManager) UpsertAgent(ctx context.Context, agentID string, updater store.AgentUpdater) (*model.Agent, error) {
 	ret := _m.Called(ctx, agentID, updater)
