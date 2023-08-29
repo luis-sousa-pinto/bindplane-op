@@ -965,6 +965,188 @@ service:
 	require.Equal(t, expect, result)
 }
 
+func TestEvalConfigurationDestinationProcessorsWithMeasurementsInterval(t *testing.T) {
+	store := newTestResourceStore()
+	config := newTestConfiguration()
+
+	postgresql := testResource[*SourceType](t, "sourcetype-macos.yaml")
+	store.sourceTypes.add(postgresql)
+
+	googleCloudType := testResource[*DestinationType](t, "destinationtype-googlecloud.yaml")
+	store.destinationTypes.add(googleCloudType)
+
+	googleCloud := testResource[*Destination](t, "destination-googlecloud.yaml")
+	store.destinations.add(googleCloud)
+
+	resourceAttributeTransposerType := testResource[*ProcessorType](t, "processortype-resourceattributetransposer.yaml")
+	store.processorTypes.add(resourceAttributeTransposerType)
+
+	agent := &Agent{
+		ID:      "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+		Version: v1_9_2.String(),
+		TLS: &ManagerTLS{
+			InsecureSkipVerify: true,
+			CAFile:             strp("/path/to/ca"),
+			CertFile:           strp("/path/to/cert"),
+			KeyFile:            strp("/path/to/key"),
+		},
+	}
+
+	configuration := testResource[*Configuration](t, "configuration-macos-measurement-interval.yaml")
+	configuration.Spec.MeasurementInterval = "60s"
+	result, err := configuration.Render(context.TODO(), agent, config.bindplaneURL, config.bindplaneInsecureSkipVerify, store, GetOssOtelHeaders())
+	require.NoError(t, err)
+
+	expect := strings.TrimLeft(`
+receivers:
+    hostmetrics/source0:
+        collection_interval: 1m
+        scrapers:
+            load: null
+    plugin/source0__journald:
+        plugin:
+            name: journald
+    plugin/source0__macos:
+        parameters:
+            - name: enable_system_log
+              value: false
+            - name: system_log_path
+              value: /var/log/system.log
+            - name: enable_install_log
+              value: true
+            - name: install_log_path
+              value: /var/log/install.log
+            - name: start_at
+              value: end
+        plugin:
+            name: macos
+    prometheus/_agent_metrics:
+        config:
+            scrape_configs:
+                - job_name: observiq-otel-collector
+                  metric_relabel_configs:
+                    - action: keep
+                      regex: otelcol_processor_throughputmeasurement_.*
+                      source_labels:
+                        - __name__
+                  scrape_interval: 60s
+                  static_configs:
+                    - labels:
+                        agent: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+                        configuration: macos-xy
+                      targets:
+                        - 0.0.0.0:8888
+processors:
+    batch/_agent_metrics: null
+    batch/googlecloud: null
+    resourceattributetransposer/googlecloud-0__processor0:
+        operations:
+            - from: from.attribute3
+              to: to.attribute3
+    resourceattributetransposer/googlecloud-0__processor1:
+        operations:
+            - from: from.attribute4
+              to: to.attribute4
+    resourceattributetransposer/source0__processor0:
+        operations:
+            - from: from.attribute
+              to: to.attribute
+    resourceattributetransposer/source0__processor1:
+        operations:
+            - from: from.attribute2
+              to: to.attribute2
+    snapshotprocessor: null
+    snapshotprocessor/_d0_googlecloud-0: null
+    snapshotprocessor/_s0_source0: null
+    throughputmeasurement/_d0_logs_googlecloud-0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d0_metrics_googlecloud-0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_logs_googlecloud-0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_d1_metrics_googlecloud-0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s0_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_logs_source0:
+        enabled: true
+        sampling_ratio: 1
+    throughputmeasurement/_s1_metrics_source0:
+        enabled: true
+        sampling_ratio: 1
+exporters:
+    googlecloud/googlecloud: null
+    otlphttp/_agent_metrics:
+        endpoint: /v1/otlphttp
+        headers: {}
+        retry_on_failure:
+            enabled: false
+        sending_queue:
+            enabled: false
+        tls:
+            ca_file: /path/to/ca
+            cert_file: /path/to/cert
+            insecure_skip_verify: true
+            key_file: /path/to/key
+service:
+    pipelines:
+        logs/source0__googlecloud-0:
+            receivers:
+                - plugin/source0__macos
+                - plugin/source0__journald
+            processors:
+                - throughputmeasurement/_s0_logs_source0
+                - snapshotprocessor/_s0_source0
+                - resourceattributetransposer/source0__processor0
+                - resourceattributetransposer/source0__processor1
+                - throughputmeasurement/_s1_logs_source0
+                - throughputmeasurement/_d0_logs_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
+                - resourceattributetransposer/googlecloud-0__processor0
+                - resourceattributetransposer/googlecloud-0__processor1
+                - throughputmeasurement/_d1_logs_googlecloud-0
+                - batch/googlecloud
+                - snapshotprocessor
+            exporters:
+                - googlecloud/googlecloud
+        metrics/_agent_metrics:
+            receivers:
+                - prometheus/_agent_metrics
+            processors:
+                - batch/_agent_metrics
+            exporters:
+                - otlphttp/_agent_metrics
+        metrics/source0__googlecloud-0:
+            receivers:
+                - hostmetrics/source0
+            processors:
+                - throughputmeasurement/_s0_metrics_source0
+                - snapshotprocessor/_s0_source0
+                - resourceattributetransposer/source0__processor0
+                - resourceattributetransposer/source0__processor1
+                - throughputmeasurement/_s1_metrics_source0
+                - throughputmeasurement/_d0_metrics_googlecloud-0
+                - snapshotprocessor/_d0_googlecloud-0
+                - resourceattributetransposer/googlecloud-0__processor0
+                - resourceattributetransposer/googlecloud-0__processor1
+                - throughputmeasurement/_d1_metrics_googlecloud-0
+                - batch/googlecloud
+                - snapshotprocessor
+            exporters:
+                - googlecloud/googlecloud
+`, "\n")
+
+	require.Equal(t, expect, result)
+}
+
 func TestEvalConfigurationDestinationProcessorsWithMeasurementsMTLSInsecureOverride(t *testing.T) {
 	store := newTestResourceStore()
 	config := newTestConfiguration()
@@ -3043,7 +3225,7 @@ func TestNewConfiguration(t *testing.T) {
 	require.Equal(t, version.V1, config.APIVersion)
 	require.Equal(t, KindConfiguration, config.Kind)
 	require.NotNil(t, config.Metadata.Labels)
-	require.Equal(t, ConfigurationSpec{}, config.Spec)
+	require.Equal(t, ConfigurationSpec{MeasurementInterval: "10s"}, config.Spec)
 
 	// Test NewRawConfiguration
 	rawConfig := NewRawConfiguration(name, raw)

@@ -2003,6 +2003,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.ResourceConfiguration"
                     }
                 },
+                "measurementInterval": {
+                    "type": "string"
+                },
                 "raw": {
                     "type": "string"
                 },

@@ -116,6 +116,7 @@ type RenderContext struct {
 	ConfigurationName           string
 	BindPlaneURL                string
 	BindPlaneInsecureSkipVerify bool
+	measurementInterval         string
 	measurementProcessors       map[ComponentID]struct{}
 }
 
@@ -128,7 +129,7 @@ type MeasurementsTLS struct {
 }
 
 // NewRenderContext creates a new render context used to render configurations
-func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool, tls *MeasurementsTLS) *RenderContext {
+func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool, tls *MeasurementsTLS, measurementInterval string) *RenderContext {
 	return &RenderContext{
 		AgentID:                     agentID,
 		ConfigurationName:           configurationName,
@@ -136,6 +137,7 @@ func NewRenderContext(agentID string, configurationName string, bindplaneURL str
 		BindPlaneInsecureSkipVerify: bindplaneInsecureSkipVerify,
 		measurementProcessors:       map[ComponentID]struct{}{},
 		TLS:                         tls,
+		measurementInterval:         measurementInterval,
 	}
 }
 
@@ -434,6 +436,10 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[s
 		otlphttp["tls"] = tls
 	}
 
+	if rc.measurementInterval == "" {
+		rc.measurementInterval = "10s"
+	}
+
 	parts := Partial{
 		Receivers: ComponentList{{
 			"prometheus/_agent_metrics": map[string]any{
@@ -441,7 +447,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[s
 					"scrape_configs": []map[string]any{
 						{
 							"job_name":        "observiq-otel-collector",
-							"scrape_interval": "10s",
+							"scrape_interval": rc.measurementInterval,
 							"static_configs": []map[string]any{
 								{
 									"targets": []string{"0.0.0.0:8888"},
