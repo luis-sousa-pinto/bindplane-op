@@ -81,7 +81,7 @@ gql`
   }
 `;
 
-interface Props {
+export interface AgentsTableProps {
   onAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
   onDeletableAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
   onUpdatableAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
@@ -95,13 +95,13 @@ interface Props {
   allowSelection: boolean;
 }
 
-const AGENTS_TABLE_FILTER_OPTIONS: Suggestion[] = [
+export const AGENTS_TABLE_FILTER_OPTIONS: Suggestion[] = [
   { label: "Disconnected agents", query: "status:disconnected" },
   { label: "Outdated agents", query: "-version:latest" },
   { label: "No managed configuration", query: "-configuration:" },
 ];
 
-const AgentsTableComponent: React.FC<Props> = ({
+const AgentsTableComponent: React.FC<AgentsTableProps> = ({
   allowSelection,
   onAgentsSelected,
   onDeletableAgentsSelected,
@@ -232,12 +232,12 @@ const AgentsTableComponent: React.FC<Props> = ({
   );
 };
 
-function isDeletable(agents: AgentsTableAgent[], id: string): boolean {
+export function isDeletable(agents: AgentsTableAgent[], id: string): boolean {
   return agents.some(
     (a) => a.id === id && a.status === AgentStatus.DISCONNECTED
   );
 }
-function isUpdatable(
+export function isUpdatable(
   agents: AgentsTableAgent[],
   id: string,
   latestVersion?: string

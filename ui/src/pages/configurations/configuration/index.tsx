@@ -6,7 +6,6 @@ import { Navigate, useParams } from "react-router-dom";
 import { CardContainer } from "../../../components/CardContainer";
 import { PlusCircleIcon } from "../../../components/Icons";
 import { withNavBar } from "../../../components/NavBar";
-import { AgentsTable } from "../../../components/Tables/AgentsTable";
 import { AgentsTableField } from "../../../components/Tables/AgentsTable/AgentsDataGrid";
 import { withRequireLogin } from "../../../contexts/RequireLogin";
 import {
@@ -25,6 +24,7 @@ import { hasPermission } from "../../../utils/has-permission";
 import { useRole } from "../../../hooks/useRole";
 
 import styles from "./configuration-page.module.scss";
+import { useComponents } from "../../../hooks/useComponents";
 
 gql`
   query GetConfiguration($name: String!) {
@@ -123,6 +123,7 @@ export const ConfigPageContent: React.FC = () => {
   const { name } = useParams();
   const { enqueueSnackbar } = useSnackbar();
   const role = useRole();
+  const { AgentsTable } = useComponents();
 
   const [fetchConfig, { data }] = useGetConfigurationLazyQuery({
     fetchPolicy: "cache-and-network",
