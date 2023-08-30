@@ -196,17 +196,12 @@ export const RolloutProgress: React.FC<RolloutProgressProps> = ({
     return null;
   }
 
-  const totalCount =
-    progressData.completed() || progressData.rolloutIsStarted()
-      ? progressData.total()
-      : progressData.agentCount();
-
   return (
     <>
-      {(totalCount > 0 ||
+      {(progressData.agentCount() > 0 ||
         progressData.configuration.metadata.version !== 1) && (
         <RolloutProgressBar
-          totalCount={totalCount}
+          totalCount={progressData.agentCount()}
           errors={progressData.errored()}
           completedCount={progressData.completed()}
           rolloutStatus={progressData.rolloutStatus()}
