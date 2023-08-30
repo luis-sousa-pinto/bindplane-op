@@ -330,19 +330,6 @@ func TestAgentStatusDisplayText(t *testing.T) {
 }
 
 func TestConfigurationVersions(t *testing.T) {
-	t.Run("UniqueKey", func(t *testing.T) {
-		cv := &ConfigurationVersions{
-			Current: "current-1.0.0",
-			Pending: "pending-2.0.0",
-			Future:  "future-3.0.0",
-		}
-
-		key := cv.UniqueKey()
-
-		expectedKey := "current-1.0.0|pending-2.0.0|future-3.0.0"
-		require.Equal(t, expectedKey, key)
-	})
-
 	t.Run("Clear", func(t *testing.T) {
 		cv := &ConfigurationVersions{
 			Current: "current-1.0.0",

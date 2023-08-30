@@ -19,7 +19,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"sort"
-	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -181,17 +180,6 @@ type ConfigurationVersions struct {
 	// Future is the configuration that will be assigned to this agent when the rollout assigns the new configuration to
 	// the agent. Once the rollout assigns the configuration, Pending will be set to this value and this will be cleared.
 	Future string `json:"future,omitempty" yaml:"future,omitempty" db:"future_configuration"`
-}
-
-// UniqueKey returns the agent ID to uniquely identify an Agent
-func (cv *ConfigurationVersions) UniqueKey() string {
-	keyBuilder := &strings.Builder{}
-	keyBuilder.WriteString(TrimVersion(cv.Current))
-	keyBuilder.WriteString("|")
-	keyBuilder.WriteString(TrimVersion(cv.Pending))
-	keyBuilder.WriteString("|")
-	keyBuilder.WriteString(TrimVersion(cv.Future))
-	return keyBuilder.String()
 }
 
 // Clear clears the configuration versions, setting them all to ""

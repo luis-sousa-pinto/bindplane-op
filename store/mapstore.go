@@ -48,6 +48,7 @@ type mapStore struct {
 	destinationTypes resourceStore[*model.DestinationType]
 
 	updates            *Updates
+	rolloutBatcher     RolloutBatcher
 	agentIndex         search.Index
 	configurationIndex search.Index
 	logger             *zap.Logger
@@ -60,7 +61,7 @@ var _ Store = (*mapStore)(nil)
 
 // NewMapStore returns an in memory Store
 func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store {
-	return &mapStore{
+	store := &mapStore{
 		agents:             make(map[string]*model.Agent),
 		configurations:     newResourceStore[*model.Configuration](),
 		sources:            newResourceStore[*model.Source](),
@@ -69,12 +70,19 @@ func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store
 		processorTypes:     newResourceStore[*model.ProcessorType](),
 		destinations:       newResourceStore[*model.Destination](),
 		destinationTypes:   newResourceStore[*model.DestinationType](),
-		updates:            NewUpdates(ctx, options, logger, BuildBasicEventBroadcast(), BuildRolloutEventBroadcast(), NewRolloutUpdates),
 		agentIndex:         search.NewInMemoryIndex("agent"),
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		logger:             logger,
+		rolloutBatcher:     NewNopRolloutBatcher(),
 		sessionStore:       NewBPCookieStore(options.SessionsSecret),
 	}
+
+	if !options.DisableRolloutUpdater {
+		store.rolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	}
+	store.updates = NewUpdates(ctx, options, logger, store.rolloutBatcher, BuildBasicEventBroadcast())
+
+	return store
 }
 
 // ----------------------------------------------------------------------
@@ -179,7 +187,7 @@ func (r *resourceStore[T]) clear() {
 
 func (mapstore *mapStore) Close() error {
 	mapstore.updates.Shutdown(context.Background())
-	return nil
+	return mapstore.rolloutBatcher.Shutdown(context.Background())
 }
 
 func (mapstore *mapStore) Clear() {
@@ -673,10 +681,6 @@ func (mapstore *mapStore) AgentsIDsMatchingConfiguration(_ context.Context, conf
 
 func (mapstore *mapStore) Updates(_ context.Context) eventbus.Source[BasicEventUpdates] {
 	return mapstore.updates.Updates()
-}
-
-func (mapstore *mapStore) AgentRolloutUpdates(_ context.Context) eventbus.Source[RolloutEventUpdates] {
-	return mapstore.updates.RolloutUpdates()
 }
 
 // ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should

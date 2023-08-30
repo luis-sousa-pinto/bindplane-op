@@ -46,6 +46,7 @@ type BoltstoreCore struct {
 	DB             *bbolt.DB
 	Logger         *zap.Logger
 	SessionStorage sessions.Store
+	RolloutBatcher RolloutBatcher
 	sync.RWMutex
 	BoltstoreCommon
 }
@@ -146,11 +147,6 @@ func (s *BoltstoreCore) AgentsIDsMatchingConfiguration(ctx context.Context, conf
 // Updates returns a channel that will receive updates when resources are added, updated, or deleted.
 func (s *BoltstoreCore) Updates(_ context.Context) eventbus.Source[BasicEventUpdates] {
 	return s.StoreUpdates.Updates()
-}
-
-// AgentRolloutUpdates will receive agent update events that are meant to be processed for purpose of rollouts.
-func (s *BoltstoreCore) AgentRolloutUpdates(_ context.Context) eventbus.Source[RolloutEventUpdates] {
-	return s.StoreUpdates.RolloutUpdates()
 }
 
 // DeleteResources iterates threw a slice of resources, and removes them from storage by name.

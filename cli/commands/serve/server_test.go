@@ -185,7 +185,6 @@ func TestServeWithClient(t *testing.T) {
 
 	st := storeMocks.NewMockStore(t)
 	st.On("Updates", mock.Anything).Return(eventbus.NewSource[store.BasicEventUpdates]())
-	st.On("AgentRolloutUpdates", mock.Anything).Return(eventbus.NewSource[store.RolloutEventUpdates]())
 
 	mockMeasurements := statsmocks.NewMockMeasurements(t)
 	st.On("Measurements").Return(mockMeasurements)

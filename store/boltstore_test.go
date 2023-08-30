@@ -762,6 +762,7 @@ func TestUpdateAgentStatus(t *testing.T) {
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 
 var testOptions = Options{
-	SessionsSecret:   "super-secret-key",
-	MaxEventsToMerge: 1,
+	SessionsSecret:        "super-secret-key",
+	MaxEventsToMerge:      1,
+	DisableRolloutUpdater: true,
 }

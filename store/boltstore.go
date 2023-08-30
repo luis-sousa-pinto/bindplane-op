@@ -57,11 +57,18 @@ func NewBoltStore(ctx context.Context, db *bbolt.DB, options Options, logger *za
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		BoltstoreCore: &BoltstoreCore{
 			DB:             db,
-			StoreUpdates:   NewUpdates(ctx, options, logger, BuildBasicEventBroadcast(), BuildRolloutEventBroadcast(), NewRolloutUpdates),
 			Logger:         logger,
+			RolloutBatcher: NewNopRolloutBatcher(),
 			SessionStorage: NewBPCookieStore(options.SessionsSecret),
 		},
 	}
+
+	// There is a cyclic dependency here that's not great where the rollout batcher needs the store and the updates need the rollout batcher.
+	if !options.DisableRolloutUpdater {
+		// Assign a real batcher if we are not disabling rollout updater
+		store.RolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	}
+	store.StoreUpdates = NewUpdates(ctx, options, logger, store.RolloutBatcher, BuildBasicEventBroadcast())
 
 	// it might seem unintuitive, but it's important to point the boltstoreCommon interface to the store
 	store.BoltstoreCommon = store
@@ -119,8 +126,16 @@ func InitBoltstoreDB(storageFilePath string) (*bbolt.DB, error) {
 }
 
 func (s *boltstore) Close() error {
+	var errs error
 	s.StoreUpdates.Shutdown(context.Background())
-	return s.DB.Close()
+	if err := s.RolloutBatcher.Shutdown(context.Background()); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("failed to shutdown rollout batcher: %w", err))
+	}
+	if err := s.DB.Close(); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("failed to shutdown DB: %w", err))
+	}
+
+	return errs
 }
 
 // Apply resources iterates through a slice of resources, then adds them to storage,

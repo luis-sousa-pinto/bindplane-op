@@ -158,8 +158,6 @@ func (s *defaultServer) Serve(ctx context.Context) error {
 
 	s.startMetrics(ctx)
 
-	s.startRolloutUpdates(ctx)
-
 	serverErr := make(chan error, 1)
 	go func() {
 		switch httpServer.TLSConfig {
@@ -336,19 +334,6 @@ func (s *defaultServer) startScheduler(ctx context.Context) {
 	s.stopQueue.Add(
 		func(stopCtx context.Context) error {
 			return scheduler.Stop(stopCtx)
-		},
-	)
-}
-
-// startRolloutUpdates starts the store listening for agent rollout updates
-func (s *defaultServer) startRolloutUpdates(ctx context.Context) {
-	subCtx, cancel := context.WithCancel(ctx)
-	go store.HandleRolloutUpdates(subCtx, s.store, s.logger)
-
-	s.stopQueue.Add(
-		func(stopCtx context.Context) error {
-			cancel()
-			return nil
 		},
 	)
 }

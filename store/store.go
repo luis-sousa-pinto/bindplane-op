@@ -55,6 +55,7 @@ type Options struct {
 // Store handles interacting with a storage backend,
 //
 //go:generate mockery --name=Store --filename=mock_store.go --structname=MockStore --with-expecter
+//go:generate mockery --name Store --inpackage --filename mock_store.go --structname mockStore --with-expecter
 type Store interface {
 	Clear()
 
@@ -162,9 +163,6 @@ type Store interface {
 	// removed from CleanupDisconnectedAgents are also sent with Updates.
 	Updates(ctx context.Context) eventbus.Source[BasicEventUpdates]
 
-	// AgentRolloutUpdates will receive agent update events that are meant to be processed for purpose of rollouts.
-	AgentRolloutUpdates(ctx context.Context) eventbus.Source[RolloutEventUpdates]
-
 	// AgentIndex provides access to the search AgentIndex implementation managed by the Store
 	AgentIndex(ctx context.Context) search.Index
 
@@ -254,35 +252,6 @@ func FindAgents(ctx context.Context, idx search.Index, key string, value string)
 	q := key + ":" + value
 	query := search.ParseQuery(q)
 	return idx.Search(ctx, query)
-}
-
-// HandleRolloutUpdates is a blocking call that subscribes to the store AgentRolloutUpdates and calls
-// UpdateRollout on all agent configurations
-func HandleRolloutUpdates(ctx context.Context, s Store, logger *zap.Logger) {
-	subChan, unsubscribe := eventbus.Subscribe(ctx, s.AgentRolloutUpdates(ctx))
-	defer unsubscribe()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case msg := <-subChan:
-			for _, update := range msg.Updates() {
-				status := update.Item
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Current); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Pending); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Future); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-			}
-		}
-	}
 }
 
 // CurrentRolloutsForConfiguration returns a list of all rollouts that are currently in progress for the specified configuration.
