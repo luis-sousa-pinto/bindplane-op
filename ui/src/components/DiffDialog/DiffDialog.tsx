@@ -100,17 +100,21 @@ export const DiffDialog: React.FC<DiffDialogProps> = ({
 
   if (!currentConfigData || !latestConfigData) {
     return (
-      <Stack
-        height="616px"
-        width="100%"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <CircularProgress />
-      </Stack>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+        <TitleSection onClose={onClose} title="Compare Versions" />
+        <ContentSection>
+          <Stack
+            height="616px"
+            width="100%"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <CircularProgress />
+          </Stack>
+        </ContentSection>
+      </Dialog>
     );
   }
-
   const noChanges =
     currentConfigData.value().localeCompare(latestConfigData.value()) === 0;
 
