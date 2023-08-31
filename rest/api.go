@@ -109,7 +109,7 @@ func AddRestRoutes(router gin.IRouter, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.AgentsResponse
 // @Failure 500 {object} ErrorResponse
 func Agents(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/agents")
+	ctx, span := tracer.Start(c.Request.Context(), "api/Agents")
 	defer span.End()
 
 	options := []store.QueryOption{}
@@ -170,7 +170,7 @@ func Agents(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/agents")
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteAgents")
 	defer span.End()
 
 	p := &model.DeleteAgentsPayload{}
@@ -200,9 +200,12 @@ func DeleteAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func GetAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/GetAgent")
+	defer span.End()
+
 	id := c.Param("id")
 
-	agent, err := bindplane.Store().Agent(c, id)
+	agent, err := bindplane.Store().Agent(ctx, id)
 
 	switch {
 	case err != nil:
@@ -225,9 +228,12 @@ func GetAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func GetAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/GetAgentLabels")
+	defer span.End()
+
 	id := c.Param("id")
 
-	agent, err := bindplane.Store().Agent(c, id)
+	agent, err := bindplane.Store().Agent(ctx, id)
 
 	switch {
 	case err != nil:
@@ -250,9 +256,12 @@ func GetAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func GetAgentConfiguration(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/GetAgentConfiguration")
+	defer span.End()
+
 	id := c.Param("id")
 
-	agent, err := bindplane.Store().Agent(c, id)
+	agent, err := bindplane.Store().Agent(ctx, id)
 	switch {
 	case err != nil:
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
@@ -262,7 +271,7 @@ func GetAgentConfiguration(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	config, err := bindplane.Store().AgentConfiguration(c, agent)
+	config, err := bindplane.Store().AgentConfiguration(ctx, agent)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -280,7 +289,7 @@ func GetAgentConfiguration(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Param labels body boolean false "overwrite labels"
 // @Success 200 {object} model.BulkAgentLabelsResponse
 func LabelAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/labelAgents")
+	ctx, span := tracer.Start(c.Request.Context(), "api/LabelAgents")
 	defer span.End()
 
 	p := &model.BulkAgentLabelsPayload{}
@@ -312,7 +321,7 @@ func LabelAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 	upsertIDs := make([]string, 0, len(p.IDs))
 	apiErrors := make([]string, 0)
 	for _, id := range p.IDs {
-		curAgent, err := bindplane.Store().Agent(c, id)
+		curAgent, err := bindplane.Store().Agent(ctx, id)
 
 		switch {
 		case err != nil:
@@ -360,7 +369,7 @@ func LabelAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func PatchAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/patchAgentLabels")
+	ctx, span := tracer.Start(c.Request.Context(), "api/PatchAgentLabels")
 	defer span.End()
 
 	id := c.Param("id")
@@ -382,7 +391,7 @@ func PatchAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
 		HandleErrorResponse(c, http.StatusBadRequest, err)
 	}
 
-	curAgent, err := bindplane.Store().Agent(c, id)
+	curAgent, err := bindplane.Store().Agent(ctx, id)
 	switch {
 	case err != nil:
 		span.SetStatus(codes.Error, err.Error())
@@ -431,6 +440,9 @@ func PatchAgentLabels(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Router /agents/{id}/restart [put]
 // @Param 	id	path	string	true "the id of the agent"
 func RestartAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
+	_, span := tracer.Start(c.Request.Context(), "api/RestartAgent")
+	defer span.End()
+
 	id := c.Param("id")
 
 	// TODO(andy): Do a restart
@@ -444,7 +456,7 @@ func RestartAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Router /agents/version [patch]
 // @Param body body model.PatchAgentVersionsRequest true "request body containing ids and version"
 func UpgradeAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/upgradeAgents")
+	ctx, span := tracer.Start(c.Request.Context(), "api/UpgradeAgents")
 	defer span.End()
 
 	req := &struct {
@@ -466,7 +478,7 @@ func UpgradeAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	for _, id := range req.IDs {
 		// just ignore agents that don't exist or don't support upgrade
-		agent, err := bindplane.Store().Agent(c, id)
+		agent, err := bindplane.Store().Agent(ctx, id)
 		if err != nil || agent == nil || !agent.SupportsUpgrade() {
 			continue
 		}
@@ -492,7 +504,7 @@ func UpgradeAgents(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 409 {object} ErrorResponse "If the agent does not support upgrade"
 // @Failure 500 {object} ErrorResponse
 func UpgradeAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/upgradeAgent")
+	ctx, span := tracer.Start(c.Request.Context(), "api/UpgradeAgent")
 	defer span.End()
 
 	id := c.Param("id")
@@ -503,7 +515,7 @@ func UpgradeAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
 		return
 	}
 
-	agent, err := bindplane.Store().Agent(c, id)
+	agent, err := bindplane.Store().Agent(ctx, id)
 	switch {
 	case err != nil:
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
@@ -539,7 +551,10 @@ func UpgradeAgent(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.AgentVersionsResponse
 // @Failure 500 {object} ErrorResponse
 func AgentVersions(c *gin.Context, bindplane exposedserver.BindPlane) {
-	agentVersions, err := bindplane.Store().AgentVersions(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/AgentVersions")
+	defer span.End()
+
+	agentVersions, err := bindplane.Store().AgentVersions(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.AgentVersionsResponse{
 			AgentVersions: agentVersions,
@@ -556,8 +571,11 @@ func AgentVersions(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func AgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/AgentVersion")
+	defer span.End()
+
 	name := c.Param("name")
-	agentVersion, err := bindplane.Store().AgentVersion(c, name)
+	agentVersion, err := bindplane.Store().AgentVersion(ctx, name)
 	if OkResource(c, agentVersion == nil, err) {
 		c.JSON(http.StatusOK, model.AgentVersionResponse{
 			AgentVersion: agentVersion,
@@ -574,8 +592,11 @@ func AgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteAgentVersion")
+	defer span.End()
+
 	name := c.Param("name")
-	agentVersion, err := bindplane.Store().DeleteAgentVersion(c, name)
+	agentVersion, err := bindplane.Store().DeleteAgentVersion(ctx, name)
 	if OkResource(c, agentVersion == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -590,7 +611,10 @@ func DeleteAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ConfigurationsResponse
 // @Failure 500 {object} ErrorResponse
 func Configurations(c *gin.Context, bindplane exposedserver.BindPlane) {
-	configs, err := bindplane.Store().Configurations(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/Configurations")
+	defer span.End()
+
+	configs, err := bindplane.Store().Configurations(ctx)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -609,7 +633,7 @@ func Configurations(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func Configuration(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/configuration")
+	ctx, span := tracer.Start(c.Request.Context(), "api/Configuration")
 	defer span.End()
 
 	name := c.Param("name")
@@ -639,8 +663,11 @@ func Configuration(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteConfiguration(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteConfiguration")
+	defer span.End()
+
 	name := c.Param("name")
-	configuration, err := bindplane.Store().DeleteConfiguration(c, name)
+	configuration, err := bindplane.Store().DeleteConfiguration(ctx, name)
 	if OkResource(c, configuration == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -658,10 +685,13 @@ func DeleteConfiguration(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func CopyConfig(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/CopyConfig")
+	defer span.End()
+
 	name := c.Param("name")
 
 	// The config to make a duplicate of
-	config, err := bindplane.Store().Configuration(c, name)
+	config, err := bindplane.Store().Configuration(ctx, name)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -679,7 +709,7 @@ func CopyConfig(c *gin.Context, bindplane exposedserver.BindPlane) {
 	}
 
 	duplicateName := req.Name
-	duplicateConfig, err := bindplane.Store().Configuration(c, duplicateName)
+	duplicateConfig, err := bindplane.Store().Configuration(ctx, duplicateName)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -692,7 +722,7 @@ func CopyConfig(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	duplicateConfig = config.Duplicate(duplicateName)
 
-	updates, err := bindplane.Store().ApplyResources(c, []model.Resource{duplicateConfig})
+	updates, err := bindplane.Store().ApplyResources(ctx, []model.Resource{duplicateConfig})
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -731,7 +761,10 @@ func CopyConfig(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.SourcesResponse
 // @Failure 500 {object} ErrorResponse
 func Sources(c *gin.Context, bindplane exposedserver.BindPlane) {
-	sources, err := bindplane.Store().Sources(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/Sources")
+	defer span.End()
+
+	sources, err := bindplane.Store().Sources(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.SourcesResponse{
 			Sources: sources,
@@ -748,8 +781,11 @@ func Sources(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func Source(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/Source")
+	defer span.End()
+
 	name := c.Param("name")
-	source, err := bindplane.Store().Source(c, name)
+	source, err := bindplane.Store().Source(ctx, name)
 	if OkResource(c, source == nil, err) {
 		c.JSON(http.StatusOK, model.SourceResponse{
 			Source: source,
@@ -766,8 +802,11 @@ func Source(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteSource(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteSource")
+	defer span.End()
+
 	name := c.Param("name")
-	source, err := bindplane.Store().DeleteSource(c, name)
+	source, err := bindplane.Store().DeleteSource(ctx, name)
 
 	if OkResource(c, source == nil, err) {
 		c.Status(http.StatusNoContent)
@@ -783,7 +822,10 @@ func DeleteSource(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.SourceTypesResponse
 // @Failure 500 {object} ErrorResponse
 func SourceTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
-	sourceTypes, err := bindplane.Store().SourceTypes(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/SourceTypes")
+	defer span.End()
+
+	sourceTypes, err := bindplane.Store().SourceTypes(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.SourceTypesResponse{
 			SourceTypes: sourceTypes,
@@ -800,8 +842,11 @@ func SourceTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func SourceType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/SourceType")
+	defer span.End()
+
 	name := c.Param("name")
-	sourceType, err := bindplane.Store().SourceType(c, name)
+	sourceType, err := bindplane.Store().SourceType(ctx, name)
 	if OkResource(c, sourceType == nil, err) {
 		c.JSON(http.StatusOK, model.SourceTypeResponse{
 			SourceType: sourceType,
@@ -818,8 +863,11 @@ func SourceType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteSourceType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteSourceType")
+	defer span.End()
+
 	name := c.Param("name")
-	sourceType, err := bindplane.Store().DeleteSourceType(c, name)
+	sourceType, err := bindplane.Store().DeleteSourceType(ctx, name)
 	if OkResource(c, sourceType == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -834,7 +882,10 @@ func DeleteSourceType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ProcessorsResponse
 // @Failure 500 {object} ErrorResponse
 func Processors(c *gin.Context, bindplane exposedserver.BindPlane) {
-	processors, err := bindplane.Store().Processors(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/Processors")
+	defer span.End()
+
+	processors, err := bindplane.Store().Processors(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.ProcessorsResponse{
 			Processors: processors,
@@ -851,8 +902,11 @@ func Processors(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func Processor(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/Processor")
+	defer span.End()
+
 	name := c.Param("name")
-	processor, err := bindplane.Store().Processor(c, name)
+	processor, err := bindplane.Store().Processor(ctx, name)
 	if OkResource(c, processor == nil, err) {
 		c.JSON(http.StatusOK, model.ProcessorResponse{
 			Processor: processor,
@@ -869,8 +923,11 @@ func Processor(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteProcessor(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteProcessor")
+	defer span.End()
+
 	name := c.Param("name")
-	processor, err := bindplane.Store().DeleteProcessor(c, name)
+	processor, err := bindplane.Store().DeleteProcessor(ctx, name)
 	if OkResource(c, processor == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -885,7 +942,10 @@ func DeleteProcessor(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ProcessorTypesResponse
 // @Failure 500 {object} ErrorResponse
 func ProcessorTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
-	processorTypes, err := bindplane.Store().ProcessorTypes(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/ProcessorTypes")
+	defer span.End()
+
+	processorTypes, err := bindplane.Store().ProcessorTypes(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.ProcessorTypesResponse{
 			ProcessorTypes: processorTypes,
@@ -902,8 +962,11 @@ func ProcessorTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func ProcessorType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/ProcessorType")
+	defer span.End()
+
 	name := c.Param("name")
-	processorType, err := bindplane.Store().ProcessorType(c, name)
+	processorType, err := bindplane.Store().ProcessorType(ctx, name)
 	if OkResource(c, processorType == nil, err) {
 		c.JSON(http.StatusOK, model.ProcessorTypeResponse{
 			ProcessorType: processorType,
@@ -920,8 +983,11 @@ func ProcessorType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteProcessorType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteProcessorType")
+	defer span.End()
+
 	name := c.Param("name")
-	processorType, err := bindplane.Store().DeleteProcessorType(c, name)
+	processorType, err := bindplane.Store().DeleteProcessorType(ctx, name)
 	if OkResource(c, processorType == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -936,7 +1002,10 @@ func DeleteProcessorType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.DestinationsResponse
 // @Failure 500 {object} ErrorResponse
 func Destinations(c *gin.Context, bindplane exposedserver.BindPlane) {
-	destinations, err := bindplane.Store().Destinations(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/Destinations")
+	defer span.End()
+
+	destinations, err := bindplane.Store().Destinations(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.DestinationsResponse{
 			Destinations: destinations,
@@ -953,8 +1022,11 @@ func Destinations(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func Destination(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/Destination")
+	defer span.End()
+
 	name := c.Param("name")
-	destination, err := bindplane.Store().Destination(c, name)
+	destination, err := bindplane.Store().Destination(ctx, name)
 	if OkResource(c, destination == nil, err) {
 		c.JSON(http.StatusOK, model.DestinationResponse{
 			Destination: destination,
@@ -971,8 +1043,11 @@ func Destination(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteDestination(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteDestination")
+	defer span.End()
+
 	name := c.Param("name")
-	destination, err := bindplane.Store().DeleteDestination(c, name)
+	destination, err := bindplane.Store().DeleteDestination(ctx, name)
 	if OkResource(c, destination == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -987,7 +1062,10 @@ func DeleteDestination(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.DestinationTypesResponse
 // @Failure 500 {object} ErrorResponse
 func DestinationTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
-	destinationTypes, err := bindplane.Store().DestinationTypes(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/DestinationTypes")
+	defer span.End()
+
+	destinationTypes, err := bindplane.Store().DestinationTypes(ctx)
 	if OkResponse(c, err) {
 		c.JSON(http.StatusOK, model.DestinationTypesResponse{
 			DestinationTypes: destinationTypes,
@@ -1004,8 +1082,11 @@ func DestinationTypes(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DestinationType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DestinationType")
+	defer span.End()
+
 	name := c.Param("name")
-	destinationType, err := bindplane.Store().DestinationType(c, name)
+	destinationType, err := bindplane.Store().DestinationType(ctx, name)
 	if OkResource(c, destinationType == nil, err) {
 		c.JSON(http.StatusOK, model.DestinationTypeResponse{
 			DestinationType: destinationType,
@@ -1022,8 +1103,11 @@ func DestinationType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteDestinationType(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteDestinationType")
+	defer span.End()
+
 	name := c.Param("name")
-	destinationType, err := bindplane.Store().DeleteDestinationType(c, name)
+	destinationType, err := bindplane.Store().DeleteDestinationType(ctx, name)
 	if OkResource(c, destinationType == nil, err) {
 		c.Status(http.StatusNoContent)
 	}
@@ -1043,6 +1127,9 @@ func DeleteDestinationType(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/ApplyResources")
+	defer span.End()
+
 	p := &model.ApplyPayload{}
 	if err := c.BindJSON(p); err != nil {
 		HandleErrorResponse(c, http.StatusBadRequest, err)
@@ -1069,7 +1156,7 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 	// Extra validation for configs; We want to ensure that the configuration CAN be rendered before saving it.
 	for _, res := range resources {
 		if conf, ok := res.(*model.Configuration); ok {
-			_, err := conf.Render(c, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), memoryFirstStore, model.GetOssOtelHeaders())
+			_, err := conf.Render(ctx, nil, bindplane.BindPlaneURL(), bindplane.BindPlaneInsecureSkipVerify(), memoryFirstStore, model.GetOssOtelHeaders())
 			if err != nil {
 				HandleErrorResponse(c, http.StatusBadRequest, fmt.Errorf("failed to render config (resourceID: %s): %w", res.ID(), err))
 				return
@@ -1079,7 +1166,7 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	bindplane.Logger().Info("/apply", zap.Int("count", len(resources)))
 
-	resourceStatuses, err := bindplane.Store().ApplyResources(c, resources)
+	resourceStatuses, err := bindplane.Store().ApplyResources(ctx, resources)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -1087,7 +1174,7 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	// Make sure to mask any sensitive parameters before they are returned
 	for _, status := range resourceStatuses {
-		store.MaskSensitiveParameters(c, status.Resource)
+		store.MaskSensitiveParameters(ctx, status.Resource)
 	}
 
 	c.JSON(http.StatusAccepted, &model.ApplyResponse{
@@ -1107,6 +1194,9 @@ func ApplyResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func DeleteResources(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/DeleteResources")
+	defer span.End()
+
 	p := &model.DeletePayload{}
 	if err := c.BindJSON(p); err != nil {
 		HandleErrorResponse(c, http.StatusBadRequest, err)
@@ -1128,7 +1218,7 @@ func DeleteResources(c *gin.Context, bindplane exposedserver.BindPlane) {
 
 	bindplane.Logger().Info("/delete", zap.Int("count", len(resources)))
 
-	resourceStatuses, err := bindplane.Store().DeleteResources(c, resources)
+	resourceStatuses, err := bindplane.Store().DeleteResources(ctx, resources)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -1160,6 +1250,8 @@ func BindplaneVersion(c *gin.Context) {
 // @Param labels query string false "env=stage,app=bindplane"
 // @Success 200 {object} model.InstallCommandResponse
 func getInstallCommand(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/getInstallCommand")
+	defer span.End()
 
 	// note: don't use DefaultQuery because caller may specify secret-key=(empty string) but we want to use the default
 	// value in that case
@@ -1178,7 +1270,7 @@ func getInstallCommand(c *gin.Context, bindplane exposedserver.BindPlane) {
 	// if version is empty or "latest", find the latest version
 	version := c.Param("name")
 	if version == "" || version == "latest" {
-		v, err := bindplane.Versions().LatestVersion(c)
+		v, err := bindplane.Versions().LatestVersion(ctx)
 		if err != nil {
 			HandleErrorResponse(c, http.StatusInternalServerError,
 				fmt.Errorf("unable to get the latest version of the agent: %w", err),
@@ -1229,6 +1321,9 @@ func getInstallCommand(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func SyncAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
+	ctx, span := tracer.Start(c.Request.Context(), "api/SyncAgentVersion")
+	defer span.End()
+
 	var resources []model.Resource
 
 	// create an agent-version resource from the contents of the github release
@@ -1253,7 +1348,7 @@ func SyncAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
 		resources = append(resources, agentVersion)
 	}
 
-	resourceStatuses, err := bindplane.Store().ApplyResources(c, resources)
+	resourceStatuses, err := bindplane.Store().ApplyResources(ctx, resources)
 	if err != nil {
 		HandleErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -1271,7 +1366,7 @@ func SyncAgentVersion(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ConfigurationsResponse
 // @Failure 500 {object} ErrorResponse
 func Rollouts(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/rollouts")
+	ctx, span := tracer.Start(c.Request.Context(), "api/Rollouts")
 	defer span.End()
 
 	// TODO(andy): only return configurations with active rollouts
@@ -1294,7 +1389,7 @@ func Rollouts(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 200 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func Rollout(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/rollout")
+	ctx, span := tracer.Start(c.Request.Context(), "api/Rollout")
 	defer span.End()
 
 	name := c.Param("name")
@@ -1317,9 +1412,11 @@ func Rollout(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 202 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutStatus(c *gin.Context, bindplane exposedserver.BindPlane) {
-	bindplane.Logger().Debug("statusOfRollout")
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutStatus")
+	defer span.End()
+
 	name := c.Param("name")
-	config, err := bindplane.Store().Configuration(c, name)
+	config, err := bindplane.Store().Configuration(ctx, name)
 	if !OkResource(c, config == nil, err) {
 		return
 	}
@@ -1339,7 +1436,7 @@ var mp metric.Meter = otel.Meter("rest")
 // @Success 202 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutStart(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/rolloutStart")
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutStart")
 	defer span.End()
 
 	bindplane.Logger().Debug("startRollout")
@@ -1371,10 +1468,12 @@ func RolloutStart(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 202 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutResume(c *gin.Context, bindplane exposedserver.BindPlane) {
-	bindplane.Logger().Debug("resumeRollout")
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutResume")
+	defer span.End()
+
 	name := c.Param("name")
 
-	configuration, err := bindplane.Store().ResumeRollout(c, name)
+	configuration, err := bindplane.Store().ResumeRollout(ctx, name)
 
 	if !OkResource(c, configuration == nil, err) {
 		return
@@ -1392,11 +1491,12 @@ func RolloutResume(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 202 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutPause(c *gin.Context, bindplane exposedserver.BindPlane) {
-	bindplane.Logger().Debug("pauseRollout")
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutPause")
+	defer span.End()
 
 	name := c.Param("name")
 
-	configuration, err := bindplane.Store().PauseRollout(c, name)
+	configuration, err := bindplane.Store().PauseRollout(ctx, name)
 
 	if !OkResource(c, configuration == nil, err) {
 		return
@@ -1414,13 +1514,15 @@ func RolloutPause(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 202 {object} model.ConfigurationResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutUpdate(c *gin.Context, bindplane exposedserver.BindPlane) {
-	bindplane.Logger().Debug("updateRollout")
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutUpdate")
+	defer span.End()
+
 	name := c.Param("name")
-	configuration, err := bindplane.Store().Configuration(c, name)
+	configuration, err := bindplane.Store().Configuration(ctx, name)
 	if !OkResource(c, configuration == nil, err) {
 		return
 	}
-	config, err := bindplane.Store().UpdateRollout(c, name)
+	config, err := bindplane.Store().UpdateRollout(ctx, name)
 
 	if !OkResponse(c, err) {
 		return
@@ -1438,8 +1540,10 @@ func RolloutUpdate(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Success 202 {object} model.ConfigurationsResponse
 // @Failure 500 {object} ErrorResponse
 func RolloutsUpdate(c *gin.Context, bindplane exposedserver.BindPlane) {
-	bindplane.Logger().Debug("updateRollout")
-	configurations, err := bindplane.Store().UpdateRollouts(c)
+	ctx, span := tracer.Start(c.Request.Context(), "api/RolloutsUpdate")
+	defer span.End()
+
+	configurations, err := bindplane.Store().UpdateRollouts(ctx)
 
 	if !OkResponse(c, err) {
 		return
@@ -1462,7 +1566,7 @@ func RolloutsUpdate(c *gin.Context, bindplane exposedserver.BindPlane) {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 func History(c *gin.Context, bindplane exposedserver.BindPlane) {
-	ctx, span := tracer.Start(c.Request.Context(), "rest/history")
+	ctx, span := tracer.Start(c.Request.Context(), "api/History")
 	defer span.End()
 
 	kind := model.ParseKind(c.Param("kind"))

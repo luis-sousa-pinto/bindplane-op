@@ -21,9 +21,12 @@ import (
 	"time"
 
 	"github.com/observiq/bindplane-op/util"
+	"go.opentelemetry.io/otel"
 )
 
 const subscriberChannelBufferSize = 10
+
+var tracer = otel.Tracer("eventbus")
 
 // UnsubscribeFunc is a function that allows a subscriber to unsubscribe
 type UnsubscribeFunc func()
@@ -223,6 +226,9 @@ func SubscribeWithFilter[T, R any](ctx context.Context, source Source[T], filter
 
 // SubscribeUntilDone adds the subscriber and returns a cancel function.
 func (s *source[T]) Subscribe(ctx context.Context, subscriber Subscriber[T], unsubscribeHook func()) UnsubscribeFunc {
+	ctx, span := tracer.Start(ctx, "source/Subscribe")
+	defer span.End()
+
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -264,7 +270,10 @@ func (s *source[T]) Subscribe(ctx context.Context, subscriber Subscriber[T], uns
 }
 
 // Send the event to all of the subscribers
-func (s *source[T]) Send(_ context.Context, event T) {
+func (s *source[T]) Send(ctx context.Context, event T) {
+	_, span := tracer.Start(ctx, "source/Send")
+	defer span.End()
+
 	for _, sub := range s.subscriberList() {
 		sub.Receive(event)
 	}
@@ -291,6 +300,9 @@ func (s *source[T]) Subscribers() int {
 // sending events to the destination. When the supplied context is Done, the relay is automatically unsubscribed from
 // the source and the destination will no longer receive events.
 func Relay[T any](ctx context.Context, source Source[T], destination Receiver[T], options ...SubscriptionOption[T]) {
+	ctx, span := tracer.Start(ctx, "source/Relay")
+	defer span.End()
+
 	channel, unsubscribe := Subscribe(ctx, source, options...)
 	go relay(ctx, channel, unsubscribe, destination)
 }
@@ -300,11 +312,17 @@ func Relay[T any](ctx context.Context, source Source[T], destination Receiver[T]
 // context is Done, the relay is automatically unsubscribed from the source and the destination will no longer receive
 // events.
 func RelayWithFilter[T, R any](ctx context.Context, source Source[T], filter SubscriptionFilter[T, R], destination Receiver[R], options ...SubscriptionOption[R]) {
+	ctx, span := tracer.Start(ctx, "source/RelayWithFilter")
+	defer span.End()
+
 	channel, unsubscribe := SubscribeWithFilter(ctx, source, filter, options...)
 	go relay(ctx, channel, unsubscribe, destination)
 }
 
 func relay[T any](ctx context.Context, channel <-chan T, unsubscribe UnsubscribeFunc, destination Receiver[T]) {
+	ctx, span := tracer.Start(ctx, "source/relay")
+	defer span.End()
+
 	defer unsubscribe()
 	for {
 		select {
