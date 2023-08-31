@@ -16,13 +16,13 @@ type MockIndex struct {
 	mock.Mock
 }
 
-// Matches provides a mock function with given fields: query, indexID
-func (_m *MockIndex) Matches(query *search.Query, indexID string) bool {
-	ret := _m.Called(query, indexID)
+// Matches provides a mock function with given fields: ctx, query, indexID
+func (_m *MockIndex) Matches(ctx context.Context, query *search.Query, indexID string) bool {
+	ret := _m.Called(ctx, query, indexID)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(*search.Query, string) bool); ok {
-		r0 = rf(query, indexID)
+	if rf, ok := ret.Get(0).(func(context.Context, *search.Query, string) bool); ok {
+		r0 = rf(ctx, query, indexID)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -30,13 +30,13 @@ func (_m *MockIndex) Matches(query *search.Query, indexID string) bool {
 	return r0
 }
 
-// Remove provides a mock function with given fields: _a0
-func (_m *MockIndex) Remove(_a0 modelsearch.Indexed) error {
-	ret := _m.Called(_a0)
+// Remove provides a mock function with given fields: _a0, _a1
+func (_m *MockIndex) Remove(_a0 context.Context, _a1 modelsearch.Indexed) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(modelsearch.Indexed) error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, modelsearch.Indexed) error); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -70,13 +70,13 @@ func (_m *MockIndex) Search(ctx context.Context, query *search.Query) ([]string,
 	return r0, r1
 }
 
-// Select provides a mock function with given fields: Labels
-func (_m *MockIndex) Select(Labels map[string]string) []string {
-	ret := _m.Called(Labels)
+// Select provides a mock function with given fields: ctx, Labels
+func (_m *MockIndex) Select(ctx context.Context, Labels map[string]string) []string {
+	ret := _m.Called(ctx, Labels)
 
 	var r0 []string
-	if rf, ok := ret.Get(0).(func(map[string]string) []string); ok {
-		r0 = rf(Labels)
+	if rf, ok := ret.Get(0).(func(context.Context, map[string]string) []string); ok {
+		r0 = rf(ctx, Labels)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -86,25 +86,25 @@ func (_m *MockIndex) Select(Labels map[string]string) []string {
 	return r0
 }
 
-// Suggestions provides a mock function with given fields: query
-func (_m *MockIndex) Suggestions(query *search.Query) ([]*search.Suggestion, error) {
-	ret := _m.Called(query)
+// Suggestions provides a mock function with given fields: ctx, query
+func (_m *MockIndex) Suggestions(ctx context.Context, query *search.Query) ([]*search.Suggestion, error) {
+	ret := _m.Called(ctx, query)
 
 	var r0 []*search.Suggestion
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*search.Query) ([]*search.Suggestion, error)); ok {
-		return rf(query)
+	if rf, ok := ret.Get(0).(func(context.Context, *search.Query) ([]*search.Suggestion, error)); ok {
+		return rf(ctx, query)
 	}
-	if rf, ok := ret.Get(0).(func(*search.Query) []*search.Suggestion); ok {
-		r0 = rf(query)
+	if rf, ok := ret.Get(0).(func(context.Context, *search.Query) []*search.Suggestion); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*search.Suggestion)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*search.Query) error); ok {
-		r1 = rf(query)
+	if rf, ok := ret.Get(1).(func(context.Context, *search.Query) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -112,13 +112,13 @@ func (_m *MockIndex) Suggestions(query *search.Query) ([]*search.Suggestion, err
 	return r0, r1
 }
 
-// Upsert provides a mock function with given fields: _a0
-func (_m *MockIndex) Upsert(_a0 modelsearch.Indexed) error {
-	ret := _m.Called(_a0)
+// Upsert provides a mock function with given fields: _a0, _a1
+func (_m *MockIndex) Upsert(_a0 context.Context, _a1 modelsearch.Indexed) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(modelsearch.Indexed) error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, modelsearch.Indexed) error); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}

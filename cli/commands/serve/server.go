@@ -112,7 +112,7 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 	}
 
 	for _, c := range configurations {
-		if err := s.store.ConfigurationIndex(ctx).Upsert(c); err != nil {
+		if err := s.store.ConfigurationIndex(ctx).Upsert(ctx, c); err != nil {
 			return fmt.Errorf("failed to seed configuration index: %s, %w", c.ID(), err)
 		}
 	}
@@ -123,7 +123,7 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 	}
 
 	for _, a := range agents {
-		if err := s.store.AgentIndex(ctx).Upsert(a); err != nil {
+		if err := s.store.AgentIndex(ctx).Upsert(ctx, a); err != nil {
 			return fmt.Errorf("failed to seed agent index: %s, %w", a.ID, err)
 		}
 	}

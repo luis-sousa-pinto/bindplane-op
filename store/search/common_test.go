@@ -24,7 +24,7 @@ import (
 
 func upsertDocuments(t *testing.T, index Index, docs ...*Document) {
 	for _, doc := range docs {
-		err := index.Upsert(doc)
+		err := index.Upsert(context.Background(), doc)
 		require.NoError(t, err)
 	}
 }
@@ -225,7 +225,7 @@ func runMatchesTests(t *testing.T, index Index) {
 		for id, matches := range test.expect {
 			t.Run(fmt.Sprintf("%s-%s", test.query, id), func(t *testing.T) {
 				query := ParseQuery(test.query)
-				result := index.Matches(query, id)
+				result := index.Matches(context.Background(), query, id)
 				require.Equal(t, matches, result)
 			})
 		}
@@ -282,12 +282,12 @@ func runRemoveTests(t *testing.T, index Index) {
 			require.NoError(t, err)
 			require.ElementsMatch(t, test.expect0, result0)
 
-			index.Remove(doc2)
+			index.Remove(context.Background(), doc2)
 			result1, err := index.Search(context.TODO(), ParseQuery(test.query))
 			require.NoError(t, err)
 			require.ElementsMatch(t, test.expect1, result1)
 
-			index.Remove(doc1)
+			index.Remove(context.Background(), doc1)
 			result2, err := index.Search(context.TODO(), ParseQuery(test.query))
 			require.NoError(t, err)
 			require.ElementsMatch(t, test.expect2, result2)
@@ -380,7 +380,7 @@ func runSuggestionsTests(t *testing.T, index Index) {
 
 	for _, test := range tests {
 		t.Run(test.query, func(t *testing.T) {
-			suggestions, err := index.Suggestions(ParseQuery(test.query))
+			suggestions, err := index.Suggestions(context.Background(), ParseQuery(test.query))
 			require.NoError(t, err)
 			require.ElementsMatch(t, test.expect, suggestions)
 		})
@@ -610,7 +610,7 @@ func runSelectTests(t *testing.T, index Index) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			results := index.Select(test.selector)
+			results := index.Select(context.Background(), test.selector)
 			require.ElementsMatch(t, test.expect, results)
 		})
 	}

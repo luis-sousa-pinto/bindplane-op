@@ -92,13 +92,16 @@ func ApplySelectorToChanges(selector *model.Selector, changes store.Events[*mode
 }
 
 // ApplyQueryToChanges applies the query to the changes and returns the changes that match the query.
-func ApplyQueryToChanges(query *search.Query, index search.Index, changes store.Events[*model.Agent]) store.Events[*model.Agent] {
+func ApplyQueryToChanges(ctx context.Context, query *search.Query, index search.Index, changes store.Events[*model.Agent]) store.Events[*model.Agent] {
+	ctx, span := tracer.Start(ctx, "resolver/ApplyQueryToChanges")
+	defer span.End()
+
 	if query == nil {
 		return changes
 	}
 	result := store.NewEvents[*model.Agent]()
 	for _, change := range changes {
-		if change.Type != store.EventTypeRemove && !index.Matches(query, change.Item.ID) {
+		if change.Type != store.EventTypeRemove && !index.Matches(ctx, query, change.Item.ID) {
 			result.Include(change.Item, store.EventTypeRemove)
 		} else {
 			result.Include(change.Item, change.Type)
@@ -124,13 +127,16 @@ func ApplySelectorToEvents[T model.Resource](selector *model.Selector, events st
 }
 
 // ApplyQueryToEvents applies the query to the events and returns the events that match the query.
-func ApplyQueryToEvents[T model.Resource](query *search.Query, index search.Index, events store.Events[T]) store.Events[T] {
+func ApplyQueryToEvents[T model.Resource](ctx context.Context, query *search.Query, index search.Index, events store.Events[T]) store.Events[T] {
+	ctx, span := tracer.Start(ctx, "resolver/ApplyQueryToEvents")
+	defer span.End()
+
 	if query == nil || index == nil {
 		return events
 	}
 	result := store.NewEvents[T]()
 	for _, event := range events {
-		if event.Type != store.EventTypeRemove && !index.Matches(query, event.Item.Name()) {
+		if event.Type != store.EventTypeRemove && !index.Matches(ctx, query, event.Item.Name()) {
 			result.Include(event.Item, store.EventTypeRemove)
 		} else {
 			result.Include(event.Item, event.Type)
@@ -165,7 +171,10 @@ func (r *Resolver) ParseSelectorAndQuery(selector *string, query *string) (*mode
 }
 
 // QueryOptionsAndSuggestions parses the selector and query strings and returns the appropriate options
-func (r *Resolver) QueryOptionsAndSuggestions(selector *string, query *string, index search.Index) ([]store.QueryOption, []*search.Suggestion, error) {
+func (r *Resolver) QueryOptionsAndSuggestions(ctx context.Context, selector *string, query *string, index search.Index) ([]store.QueryOption, []*search.Suggestion, error) {
+	ctx, span := tracer.Start(ctx, "resolver/QueryOptionsAndSuggestions")
+	defer span.End()
+
 	parsedSelector, parsedQuery, err := r.ParseSelectorAndQuery(selector, query)
 	if err != nil {
 		return nil, nil, err
@@ -180,7 +189,7 @@ func (r *Resolver) QueryOptionsAndSuggestions(selector *string, query *string, i
 	if parsedQuery != nil {
 		options = append(options, store.WithQuery(parsedQuery))
 
-		s, err := index.Suggestions(parsedQuery)
+		s, err := index.Suggestions(ctx, parsedQuery)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -206,6 +215,9 @@ func (r *Resolver) HasAgentConfigurationChanges(updates store.BasicEventUpdates)
 // UpgradeAvailable is the resolver for the upgradeAvailable field.
 // func (r *Resolver) UpgradeAvailable(ctx context.Context, obj *model.Agent) (*string, error) {
 func (r *Resolver) UpgradeAvailable(ctx context.Context, obj *model.Agent) (*string, error) {
+	ctx, span := tracer.Start(ctx, "resolver/UpgradeAvailable")
+	defer span.End()
+
 	if !obj.SupportsUpgrade() {
 		return nil, nil
 	}
@@ -224,6 +236,9 @@ func (r *Resolver) UpgradeAvailable(ctx context.Context, obj *model.Agent) (*str
 
 // UpdateProcessors is the resolver for the updateProcessors field.
 func (r *Resolver) UpdateProcessors(ctx context.Context, input model1.UpdateProcessorsInput) (*bool, error) {
+	ctx, span := tracer.Start(ctx, "resolver/UpdateProcessors")
+	defer span.End()
+
 	config, err := r.Bindplane.Store().Configuration(ctx, input.Configuration)
 	if err != nil {
 		return nil, err
@@ -267,7 +282,7 @@ func (r *Resolver) UpdateProcessors(ctx context.Context, input model1.UpdateProc
 
 // RemoveAgentConfiguration sets the given agent's `configuration` label to blank
 func (r *Resolver) RemoveAgentConfiguration(ctx context.Context, input *model1.RemoveAgentConfigurationInput) (*model.Agent, error) {
-	ctx, span := tracer.Start(ctx, "graphql/removeAgentConfiguration",
+	ctx, span := tracer.Start(ctx, "resolver/removeAgentConfiguration",
 		trace.WithAttributes(attribute.String("bindplane.agent.id", input.AgentID)),
 	)
 	defer span.End()
@@ -339,6 +354,9 @@ func (r *Resolver) Type(_ context.Context, obj *model.ParameterDefinition) (mode
 
 // OverviewPage is the resolver for the overviewPage field.
 func (r *Resolver) OverviewPage(ctx context.Context, configIDs []string, destinationIDs []string, period string, telemetryType string) (*model1.OverviewPage, error) {
+	ctx, span := tracer.Start(ctx, "resolver/OverviewPage")
+	defer span.End()
+
 	graph, err := OverviewGraph(ctx, r.Bindplane, configIDs, destinationIDs, period, telemetryType)
 	if err != nil {
 		return nil, err
@@ -351,10 +369,10 @@ func (r *Resolver) OverviewPage(ctx context.Context, configIDs []string, destina
 
 // Agents is the resolver for the agents field.
 func (r *Resolver) Agents(ctx context.Context, selector *string, query *string) (*model1.Agents, error) {
-	ctx, span := tracer.Start(ctx, "graphql/Agents")
+	ctx, span := tracer.Start(ctx, "resolver/Agents")
 	defer span.End()
 
-	options, suggestions, err := r.QueryOptionsAndSuggestions(selector, query, r.Bindplane.Store().AgentIndex(ctx))
+	options, suggestions, err := r.QueryOptionsAndSuggestions(ctx, selector, query, r.Bindplane.Store().AgentIndex(ctx))
 	if err != nil {
 		r.Bindplane.Logger().Error("error getting query options and suggestion", zap.Error(err))
 		return nil, err
@@ -376,7 +394,10 @@ func (r *Resolver) Agents(ctx context.Context, selector *string, query *string) 
 
 // Configurations is the resolver for the configurations field.
 func (r *Resolver) Configurations(ctx context.Context, selector *string, query *string, onlyDeployedConfigurations *bool) (*model1.Configurations, error) {
-	options, suggestions, err := r.QueryOptionsAndSuggestions(selector, query, r.Bindplane.Store().ConfigurationIndex(ctx))
+	ctx, span := tracer.Start(ctx, "resolver/Configurations")
+	defer span.End()
+
+	options, suggestions, err := r.QueryOptionsAndSuggestions(ctx, selector, query, r.Bindplane.Store().ConfigurationIndex(ctx))
 	if err != nil {
 		r.Bindplane.Logger().Error("error getting query options and suggestion", zap.Error(err))
 		return nil, err
@@ -409,7 +430,7 @@ func (r *Resolver) Configurations(ctx context.Context, selector *string, query *
 
 // ProcessorWithType is the resolver for the processorWithType field.
 func (r *Resolver) ProcessorWithType(ctx context.Context, name string) (*model1.ProcessorWithType, error) {
-	ctx, span := tracer.Start(ctx, "graphql/ProcessorWithType",
+	ctx, span := tracer.Start(ctx, "resolver/ProcessorWithType",
 		trace.WithAttributes(attribute.String("bindplane.processor.name", name)))
 	defer span.End()
 	resp := &model1.ProcessorWithType{}
@@ -440,7 +461,7 @@ func (r *Resolver) ProcessorWithType(ctx context.Context, name string) (*model1.
 
 // SourceWithType is the resolver for the sourceWithType field.
 func (r *Resolver) SourceWithType(ctx context.Context, name string) (*model1.SourceWithType, error) {
-	ctx, span := tracer.Start(ctx, "graphql/SourceWithType",
+	ctx, span := tracer.Start(ctx, "resolver/SourceWithType",
 		trace.WithAttributes(attribute.String("bindplane.source.name", name)))
 	defer span.End()
 
@@ -472,6 +493,9 @@ func (r *Resolver) SourceWithType(ctx context.Context, name string) (*model1.Sou
 
 // DestinationWithType is the resolver for the destinationWithType field.
 func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model1.DestinationWithType, error) {
+	ctx, span := tracer.Start(ctx, "resolver/DestinationWithType")
+	defer span.End()
+
 	resp := &model1.DestinationWithType{}
 
 	dest, err := r.Bindplane.Store().Destination(ctx, name)
@@ -500,6 +524,9 @@ func (r *Resolver) DestinationWithType(ctx context.Context, name string) (*model
 
 // Snapshot returns a snapshot of the agent with the specified id and pipeline type
 func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType otel.PipelineType, position *string, resourceName *string) (*model1.Snapshot, error) {
+	ctx, span := tracer.Start(ctx, "resolver/Snapshot")
+	defer span.End()
+
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
@@ -598,6 +625,9 @@ func (r *Resolver) Snapshot(ctx context.Context, agentID string, pipelineType ot
 
 // AgentChanges returns a channel of agent changes
 func (r *Resolver) AgentChanges(ctx context.Context, selector *string, query *string) (<-chan []*model1.AgentChange, error) {
+	ctx, span := tracer.Start(ctx, "resolver/AgentChanges")
+	defer span.End()
+
 	parsedSelector, parsedQuery, err := r.ParseSelectorAndQuery(selector, query)
 	if err != nil {
 		return nil, err
@@ -610,7 +640,7 @@ func (r *Resolver) AgentChanges(ctx context.Context, selector *string, query *st
 		// if the observer is using a selector or query, we want to change Update to Remove if it no longer matches the
 		// selector or query
 		events := ApplySelectorToChanges(parsedSelector, updates.Agents())
-		events = ApplyQueryToChanges(parsedQuery, r.Bindplane.Store().AgentIndex(ctx), events)
+		events = ApplyQueryToChanges(ctx, parsedQuery, r.Bindplane.Store().AgentIndex(ctx), events)
 
 		return model1.ToAgentChangeArray(events), !events.Empty()
 	})
@@ -620,6 +650,9 @@ func (r *Resolver) AgentChanges(ctx context.Context, selector *string, query *st
 
 // ConfigurationMetrics returns a channel of configuration metrics
 func (r *Resolver) ConfigurationMetrics(ctx context.Context, period string, name *string, agent *string) (<-chan *model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "graphql/ConfigurationMetrics")
+	defer span.End()
+
 	channel := make(chan *model1.GraphMetrics)
 
 	updateTicker := time.NewTicker(ConfigurationMetricsUpdateInterval)
@@ -648,6 +681,9 @@ func (r *Resolver) ConfigurationMetrics(ctx context.Context, period string, name
 
 // OverviewMetrics returns a channel of overview metrics
 func (r *Resolver) OverviewMetrics(ctx context.Context, period string, configIDs []string, destinationIDs []string) (<-chan *model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "resolver/OverviewMetrics")
+	defer span.End()
+
 	channel := make(chan *model1.GraphMetrics)
 
 	updateTicker := time.NewTicker(OverviewMetricsUpdateInterval)
@@ -667,6 +703,9 @@ func (r *Resolver) OverviewMetrics(ctx context.Context, period string, configIDs
 
 // AgentMetrics returns a channel of agent metrics
 func (r *Resolver) AgentMetrics(ctx context.Context, period string, ids []string) (<-chan *model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "resolver/AgentMetrics")
+	defer span.End()
+
 	channel := make(chan *model1.GraphMetrics)
 
 	updateTicker := time.NewTicker(AgentMetricsUpdateInterval)
@@ -686,6 +725,9 @@ func (r *Resolver) AgentMetrics(ctx context.Context, period string, ids []string
 
 // ConfigurationChanges returns a channel of configuration changes
 func (r *Resolver) ConfigurationChanges(ctx context.Context, selector *string, query *string) (<-chan []*model1.ConfigurationChange, error) {
+	ctx, span := tracer.Start(ctx, "resolver/ConfigurationChanges")
+	defer span.End()
+
 	parsedSelector, parsedQuery, err := r.ParseSelectorAndQuery(selector, query)
 	if err != nil {
 		return nil, err
@@ -713,7 +755,7 @@ func (r *Resolver) ConfigurationChanges(ctx context.Context, selector *string, q
 		}
 
 		events := ApplySelectorToEvents(parsedSelector, configUpdates)
-		events = ApplyQueryToEvents(parsedQuery, r.Bindplane.Store().ConfigurationIndex(ctx), events)
+		events = ApplyQueryToEvents(ctx, parsedQuery, r.Bindplane.Store().ConfigurationIndex(ctx), events)
 
 		return model1.ToConfigurationChanges(events), len(events) > 0
 	})
@@ -737,6 +779,9 @@ func ConfigurationNodeIDResolver(_ *record.Metric, position model.MeasurementPos
 }
 
 func configIsDeployed(ctx context.Context, bindplane exposedserver.BindPlane, configurationName string) bool {
+	ctx, span := tracer.Start(ctx, "resolver/configIsDeployed")
+	defer span.End()
+
 	config, err := bindplane.Store().Configuration(ctx, configurationName)
 	if err != nil || config == nil {
 		bindplane.Logger().Debug("unable to get configuration", zap.String("configuration", configurationName), zap.Error(err))
@@ -766,6 +811,9 @@ func matchSubsequence(query string, target string) bool {
 }
 
 func destinationsInConfigs(ctx context.Context, store store.Store, query *string) ([]*model.Destination, error) {
+	ctx, span := tracer.Start(ctx, "resolver/destinationsInConfigs")
+	defer span.End()
+
 	// returns only destinations that are in non-raw (managed?) configs and deployed to agents
 	configs, err := store.Configurations(ctx)
 	if err != nil {
@@ -811,6 +859,9 @@ func destinationsInConfigs(ctx context.Context, store store.Store, query *string
 
 // Destinations is the resolver for the destinations field.
 func Destinations(ctx context.Context, store store.Store, query *string, filterUnused *bool) ([]*model.Destination, error) {
+	ctx, span := tracer.Start(ctx, "resolver/Destinations")
+	defer span.End()
+
 	if filterUnused != nil && *filterUnused {
 		return destinationsInConfigs(ctx, store, query)
 	}
@@ -833,6 +884,9 @@ func Destinations(ctx context.Context, store store.Store, query *string, filterU
 
 // OverviewMetrics returns a list of metrics for the overview page
 func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period string, configIDs []string, destinationIDs []string) (*model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "resolver/OverviewMetrics")
+	defer span.End()
+
 	if period == "" {
 		period = "1m"
 	}
@@ -966,6 +1020,9 @@ func OverviewMetrics(ctx context.Context, bindplane exposedserver.BindPlane, per
 
 // ConfigurationMetrics returns a list of metrics for the configuration page
 func ConfigurationMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period string, name *string) (*model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "resolver/ConfigurationMetrics")
+	defer span.End()
+
 	if period == "" {
 		period = "1m"
 	}
@@ -987,6 +1044,9 @@ func ConfigurationMetrics(ctx context.Context, bindplane exposedserver.BindPlane
 
 // AgentMetrics returns a list of metrics for the agent page
 func AgentMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period string, ids []string) (*model1.GraphMetrics, error) {
+	ctx, span := tracer.Start(ctx, "resolver/AgentMetrics")
+	defer span.End()
+
 	if period == "" {
 		period = "1m"
 	}

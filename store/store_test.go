@@ -4378,7 +4378,7 @@ func runTestCurrentRolloutsForConfiguration(ctx context.Context, t *testing.T, s
 				require.NoError(t, err)
 			}
 
-			rollouts, err := CurrentRolloutsForConfiguration(store.AgentIndex(ctx), test.configurationName)
+			rollouts, err := CurrentRolloutsForConfiguration(context.Background(), store.AgentIndex(ctx), test.configurationName)
 			require.NoError(t, err)
 			require.ElementsMatch(t, test.expect, rollouts)
 		})

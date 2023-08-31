@@ -83,7 +83,7 @@ func TestUpgradeAvailable(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			agentVersions := agentMocks.NewMockVersions(t)
-			agentVersions.On("LatestVersion", ctx).Return(tc.latestVersion, nil)
+			agentVersions.On("LatestVersion", mock.Anything).Return(tc.latestVersion, nil)
 			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(&config.Config{},
 				zaptest.NewLogger(t),

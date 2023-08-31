@@ -173,7 +173,7 @@ func (s *boltstore) ApplyResources(ctx context.Context, resources []model.Resour
 			switch r := resource.(type) {
 			case *model.Configuration:
 				// update the index
-				err = s.configurationIndex.Upsert(r)
+				err = s.configurationIndex.Upsert(ctx, r)
 				if err != nil {
 					s.Logger.Error("failed to update the search index", zap.String("configuration", r.Name()))
 				}
@@ -339,7 +339,7 @@ func (s *boltstore) DeleteAgents(ctx context.Context, agentIDs []string) ([]*mod
 
 	// remove deleted agents from the index
 	for _, agent := range deleted {
-		if err := s.agentIndex.Remove(agent); err != nil {
+		if err := s.agentIndex.Remove(ctx, agent); err != nil {
 			s.Logger.Error("failed to remove from the search index", zap.String("agentID", agent.ID))
 		}
 	}
@@ -855,7 +855,7 @@ func DeleteResource[R model.Resource](ctx context.Context, s BoltstoreCommon, ki
 	}
 
 	if emptyResource.GetKind() == model.KindConfiguration {
-		if err := s.ConfigurationsIndex(ctx).Remove(emptyResource); err != nil {
+		if err := s.ConfigurationsIndex(ctx).Remove(ctx, emptyResource); err != nil {
 			s.ZapLogger().Error("failed to remove configuration from the search index", zap.String("name", emptyResource.Name()))
 		}
 	}
@@ -939,7 +939,7 @@ func editResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 	// only re-index if modified
 	if wasModified {
 		if resource.GetKind() == model.KindConfiguration {
-			if err := s.ConfigurationsIndex(ctx).Upsert(resource); err != nil {
+			if err := s.ConfigurationsIndex(ctx).Upsert(ctx, resource); err != nil {
 				return resource, wasModified, err
 			}
 		}

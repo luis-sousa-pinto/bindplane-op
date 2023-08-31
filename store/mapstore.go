@@ -364,7 +364,7 @@ func (mapstore *mapStore) DeleteAgents(ctx context.Context, agentIDs []string) (
 			updates.Agents().Include(agent, EventTypeRemove)
 
 			// remove from the search index
-			if err := mapstore.agentIndex.Remove(agent); err != nil {
+			if err := mapstore.agentIndex.Remove(ctx, agent); err != nil {
 				mapstore.logger.Error("failed to remove agent from the search index", zap.String("agentID", agent.ID))
 			}
 		}
@@ -547,7 +547,7 @@ func (mapstore *mapStore) ApplyResources(ctx context.Context, resources []model.
 			resourceStatus = mapstore.agentVersions.add(r)
 		case *model.Configuration:
 			resourceStatus = mapstore.configurations.add(r)
-			if err := mapstore.configurationIndex.Upsert(resourceStatus.Resource); err != nil {
+			if err := mapstore.configurationIndex.Upsert(ctx, resourceStatus.Resource); err != nil {
 				mapstore.logger.Error("error updating configuration in the search index", zap.Error(err))
 			}
 		case *model.Source:
@@ -616,7 +616,7 @@ func (mapstore *mapStore) DeleteResources(ctx context.Context, resources []model
 
 		case *model.Configuration:
 			c, e := mapstore.configurations.remove(r.Name())
-			if err := mapstore.configurationIndex.Remove(c); err != nil {
+			if err := mapstore.configurationIndex.Remove(ctx, c); err != nil {
 				mapstore.logger.Error("error removing configuration from the search index", zap.Error(err))
 			}
 			exists = e
@@ -674,8 +674,8 @@ func (mapstore *mapStore) AgentConfiguration(_ context.Context, agent *model.Age
 }
 
 // AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
-func (mapstore *mapStore) AgentsIDsMatchingConfiguration(_ context.Context, configuration *model.Configuration) ([]string, error) {
-	ids := mapstore.agentIndex.Select(configuration.Spec.Selector.MatchLabels)
+func (mapstore *mapStore) AgentsIDsMatchingConfiguration(ctx context.Context, configuration *model.Configuration) ([]string, error) {
+	ids := mapstore.agentIndex.Select(ctx, configuration.Spec.Selector.MatchLabels)
 	return ids, nil
 }
 
@@ -790,7 +790,7 @@ func (mapstore *mapStore) upsertAgent(agentID string, updater AgentUpdater, upda
 	mapstore.agents[agentID] = agent
 
 	// update the index
-	err := mapstore.agentIndex.Upsert(agent)
+	err := mapstore.agentIndex.Upsert(context.Background(), agent)
 	if err != nil {
 		mapstore.logger.Error("failed to update the search index", zap.String("agentID", agent.ID))
 	}

@@ -140,7 +140,7 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 
 // AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
 func (s *BoltstoreCore) AgentsIDsMatchingConfiguration(ctx context.Context, configuration *model.Configuration) ([]string, error) {
-	ids := s.AgentIndex(ctx).Select(configuration.Spec.Selector.MatchLabels)
+	ids := s.AgentIndex(ctx).Select(ctx, configuration.Spec.Selector.MatchLabels)
 	return ids, nil
 }
 
@@ -242,7 +242,7 @@ func (s *BoltstoreCore) updateOrUpsertAgents(ctx context.Context, requireExists 
 
 	// update the search index with changes
 	for _, a := range agents {
-		if err := s.AgentsIndex(ctx).Upsert(a); err != nil {
+		if err := s.AgentsIndex(ctx).Upsert(ctx, a); err != nil {
 			s.ZapLogger().Error("failed to update the search index", zap.String("agentID", a.ID))
 		}
 	}
@@ -304,7 +304,7 @@ func (s *BoltstoreCore) updateOrUpsertAgent(ctx context.Context, requireExists b
 	}
 
 	// update the index
-	err = s.AgentsIndex(ctx).Upsert(updatedAgent)
+	err = s.AgentsIndex(ctx).Upsert(ctx, updatedAgent)
 	if err != nil {
 		s.ZapLogger().Error("failed to update the search index", zap.String("agentID", updatedAgent.ID))
 	}
@@ -504,7 +504,7 @@ func (s *BoltstoreCore) UpdateConfiguration(ctx context.Context, name string, up
 		case model.StatusConfigured:
 			updates.IncludeResource(config, EventTypeUpdate)
 		}
-		err = s.ConfigurationsIndex(ctx).Upsert(config)
+		err = s.ConfigurationsIndex(ctx).Upsert(ctx, config)
 		if err != nil {
 			s.Logger.Error("failed to update the search index", zap.String("configuration", name), zap.Error(err))
 		}
@@ -777,7 +777,7 @@ func (s *BoltstoreCore) CleanupDisconnectedAgents(ctx context.Context, since tim
 			changes.IncludeAgent(agent, EventTypeRemove)
 
 			// update the index
-			if err := s.AgentsIndex(ctx).Remove(agent); err != nil {
+			if err := s.AgentsIndex(ctx).Remove(ctx, agent); err != nil {
 				s.Logger.Error("failed to remove from the search index", zap.String("agentID", agent.ID))
 			}
 		}
@@ -826,7 +826,7 @@ func (s *BoltstoreCore) StartRollout(ctx context.Context, configurationName stri
 	nameAndVersion := config.NameAndVersion()
 
 	// if there is already a rollout in progress, we need to replace it
-	rollouts, err := CurrentRolloutsForConfiguration(s.AgentIndex(ctx), config.Name())
+	rollouts, err := CurrentRolloutsForConfiguration(ctx, s.AgentIndex(ctx), config.Name())
 	if err != nil {
 		return nil, err
 	}
@@ -1013,7 +1013,7 @@ func (s *BoltstoreCore) UpdateRollout(ctx context.Context, configuration string)
 
 			// update the search index with changes
 			for _, a := range agents {
-				if err := s.AgentsIndex(ctx).Upsert(a); err != nil {
+				if err := s.AgentsIndex(ctx).Upsert(ctx, a); err != nil {
 					s.Logger.Error("failed to update the search index", zap.String("agentID", a.ID))
 				}
 			}

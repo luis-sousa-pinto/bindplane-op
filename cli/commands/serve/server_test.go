@@ -49,11 +49,11 @@ func TestSeed(t *testing.T) {
 			storeFunc: func() store.Store {
 				testConfig := model.NewConfiguration("test")
 				configIndex := searchMocks.NewMockIndex(t)
-				configIndex.On("Upsert", testConfig).Return(nil)
+				configIndex.On("Upsert", mock.Anything, testConfig).Return(nil)
 
 				testAgent := &model.Agent{ID: "test"}
 				agentIndex := searchMocks.NewMockIndex(t)
-				agentIndex.On("Upsert", testAgent).Return(nil)
+				agentIndex.On("Upsert", mock.Anything, testAgent).Return(nil)
 
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)
@@ -71,11 +71,11 @@ func TestSeed(t *testing.T) {
 			storeFunc: func() store.Store {
 				testConfig := model.NewConfiguration("test")
 				configIndex := searchMocks.NewMockIndex(t)
-				configIndex.On("Upsert", testConfig).Return(nil)
+				configIndex.On("Upsert", mock.Anything, testConfig).Return(nil)
 
 				testAgent := &model.Agent{ID: "test"}
 				agentIndex := searchMocks.NewMockIndex(t)
-				agentIndex.On("Upsert", testAgent).Return(nil)
+				agentIndex.On("Upsert", mock.Anything, testAgent).Return(nil)
 
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("error"))
@@ -103,7 +103,7 @@ func TestSeed(t *testing.T) {
 			storeFunc: func() store.Store {
 				testConfig := model.NewConfiguration("test")
 				configIndex := searchMocks.NewMockIndex(t)
-				configIndex.On("Upsert", testConfig).Return(fmt.Errorf("error"))
+				configIndex.On("Upsert", mock.Anything, testConfig).Return(fmt.Errorf("error"))
 
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)
@@ -119,7 +119,7 @@ func TestSeed(t *testing.T) {
 			storeFunc: func() store.Store {
 				testConfig := model.NewConfiguration("test")
 				configIndex := searchMocks.NewMockIndex(t)
-				configIndex.On("Upsert", testConfig).Return(nil)
+				configIndex.On("Upsert", mock.Anything, testConfig).Return(nil)
 
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)
@@ -136,11 +136,11 @@ func TestSeed(t *testing.T) {
 			storeFunc: func() store.Store {
 				testConfig := model.NewConfiguration("test")
 				configIndex := searchMocks.NewMockIndex(t)
-				configIndex.On("Upsert", testConfig).Return(nil)
+				configIndex.On("Upsert", mock.Anything, testConfig).Return(nil)
 
 				testAgent := &model.Agent{ID: "test"}
 				agentIndex := searchMocks.NewMockIndex(t)
-				agentIndex.On("Upsert", testAgent).Return(fmt.Errorf("error"))
+				agentIndex.On("Upsert", mock.Anything, testAgent).Return(fmt.Errorf("error"))
 
 				s := storeMocks.NewMockStore(t)
 				s.On("ApplyResources", mock.Anything, mock.Anything).Return(nil, nil)

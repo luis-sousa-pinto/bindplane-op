@@ -235,8 +235,8 @@ type ConfigurationUpdater func(current *model.Configuration)
 // search index helpers
 
 // StartedRolloutsFromIndex returns a list of all rollouts that are not pending.
-func StartedRolloutsFromIndex(_ context.Context, index search.Index) ([]string, error) {
-	pendingConfigs, err := index.Suggestions(search.ParseQuery("rollout-pending:"))
+func StartedRolloutsFromIndex(ctx context.Context, index search.Index) ([]string, error) {
+	pendingConfigs, err := index.Suggestions(ctx, search.ParseQuery("rollout-pending:"))
 	pendingConfigNames := make([]string, 0, len(pendingConfigs))
 	for _, c := range pendingConfigs {
 		pendingConfigNames = append(pendingConfigNames, c.Label)
@@ -255,12 +255,12 @@ func FindAgents(ctx context.Context, idx search.Index, key string, value string)
 }
 
 // CurrentRolloutsForConfiguration returns a list of all rollouts that are currently in progress for the specified configuration.
-func CurrentRolloutsForConfiguration(idx search.Index, configurationName string) ([]string, error) {
-	pending, err := FindSuggestions(idx, model.FieldConfigurationPending, configurationName+":")
+func CurrentRolloutsForConfiguration(ctx context.Context, idx search.Index, configurationName string) ([]string, error) {
+	pending, err := FindSuggestions(ctx, idx, model.FieldConfigurationPending, configurationName+":")
 	if err != nil {
 		return nil, err
 	}
-	future, err := FindSuggestions(idx, model.FieldConfigurationFuture, configurationName+":")
+	future, err := FindSuggestions(ctx, idx, model.FieldConfigurationFuture, configurationName+":")
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func CurrentRolloutsForConfiguration(idx search.Index, configurationName string)
 }
 
 // FindSuggestions returns a list of all values for the specified key that start with the specified prefix.
-func FindSuggestions(idx search.Index, key string, prefix string) ([]string, error) {
+func FindSuggestions(ctx context.Context, idx search.Index, key string, prefix string) ([]string, error) {
 	q := key + ":" + prefix
 	query := &search.Query{
 		Original: q,
@@ -283,7 +283,7 @@ func FindSuggestions(idx search.Index, key string, prefix string) ([]string, err
 			},
 		},
 	}
-	suggestions, err := idx.Suggestions(query)
+	suggestions, err := idx.Suggestions(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -577,7 +577,7 @@ func seedAgentsIndex(ctx context.Context, s Store) error {
 func seedIndex[T modelSearch.Indexed](indexed []T, index search.Index) error {
 	var errs error
 	for _, i := range indexed {
-		err := index.Upsert(i)
+		err := index.Upsert(context.Background(), i)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 		}
