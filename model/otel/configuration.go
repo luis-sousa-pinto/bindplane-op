@@ -185,12 +185,24 @@ const SnapshotProcessorName ComponentID = "snapshotprocessor"
 const MeasureProcessorName ComponentID = "throughputmeasurement"
 
 // YAML marshals the configuration to yaml
-func (c *Configuration) YAML() (string, error) {
+// It prepends the comment string as a YAML comment, prepending each line of the comment with "#"
+func (c *Configuration) YAML(comment string) (string, error) {
 	if c == nil || !c.HasPipelines() {
 		return NoopConfig, nil
 	}
 	bytes, err := yaml.Marshal(c)
-	return string(bytes), err
+
+	// Sanitize comment
+	return prepareYAMLComment(comment) + string(bytes), err
+}
+
+// prepareYAMLComment modifies the input comment such that it can be safely prepended to any YAML payload.
+func prepareYAMLComment(comment string) string {
+	if len(comment) == 0 {
+		return ""
+	}
+
+	return "# " + strings.ReplaceAll(comment, "\n", "\n# ") + "\n"
 }
 
 // HasPipelines returns true if there are pipelines

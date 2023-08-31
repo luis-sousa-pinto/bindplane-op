@@ -181,6 +181,8 @@ func TestEvalConfiguration(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos:1
 receivers:
     plugin/source0__journald:
         plugin:
@@ -261,6 +263,8 @@ func TestEvalConfiguration2(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -360,6 +364,8 @@ func TestEvalConfiguration3(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: otlp:1
 receivers:
     otlp/source0:
         protocols:
@@ -413,6 +419,8 @@ func TestEvalConfiguration4(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: postgresql:1
 receivers:
     plugin/source0__postgresql:
         parameters:
@@ -461,6 +469,8 @@ func TestEvalConfiguration5(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -542,6 +552,8 @@ func TestEvalConfigurationDestinationProcessors(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -640,6 +652,8 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurements(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -816,6 +830,8 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsMTLS(t *testing.T
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -998,6 +1014,8 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsInterval(t *testi
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -1182,6 +1200,8 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsMTLSInsecureOverr
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -1360,6 +1380,8 @@ func TestEvalConfigurationDestinationProcessorsWithMeasurementsTLSSkipVerify(t *
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -1537,6 +1559,8 @@ func TestEvalConfigurationMultiDestination(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -1720,7 +1744,10 @@ func TestEvalConfigurationSameDestination(t *testing.T) {
 	result, err := configuration.Render(context.TODO(), agent, config.BindPlaneURL(), config.BindPlaneInsecureSkipVerify(), store, GetOssOtelHeaders())
 	require.NoError(t, err)
 
-	expect := strings.TrimLeft(`receivers:
+	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
+receivers:
     hostmetrics/source0:
         collection_interval: 1m
         scrapers:
@@ -1986,6 +2013,8 @@ func TestConfigurationRender_DisabledDestination(t *testing.T) {
 
 	// We expect the full pipeline, omitting the disabled googlecloud destination
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos:1
 receivers:
     plugin/source0__journald:
         plugin:
@@ -2071,6 +2100,8 @@ func TestConfigurationRender_DisabledSource(t *testing.T) {
 
 	// We expect the full pipeline, omitting the disabled macOS source
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     plugin/source1:
         parameters:
@@ -2127,6 +2158,8 @@ func TestConfigurationRender_DisabledProcessor(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: macos-xy:1
 receivers:
     hostmetrics/source0:
         collection_interval: 1m
@@ -2197,6 +2230,8 @@ func TestEvalConfiguration_FileLogStorage(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: filelog-storage:1
 receivers:
     plugin/source0:
         parameters:
@@ -2290,6 +2325,8 @@ func TestEvalConfiguration_TestAgentMetricsTLS(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: otlp:1
 receivers:
     otlp/source0:
         protocols:
@@ -2442,6 +2479,8 @@ func TestEvalConfiguration_TestAgentMetricsTLSInsecure(t *testing.T) {
 	require.NoError(t, err)
 
 	expect := strings.TrimLeft(`
+# This configuration is managed by BindPlane OP.
+# Configuration: otlp:1
 receivers:
     otlp/source0:
         protocols:

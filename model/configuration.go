@@ -534,15 +534,17 @@ func (c *Configuration) Render(ctx context.Context, agent *Agent, bindPlaneURL s
 		// we always prefer raw
 		return c.Spec.Raw, nil
 	}
-	return c.renderComponents(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers)
+
+	comment := fmt.Sprintf("This configuration is managed by BindPlane OP.\nConfiguration: %s", c.NameAndVersion())
+	return c.renderComponents(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers, comment)
 }
 
-func (c *Configuration) renderComponents(ctx context.Context, agent *Agent, bindPlaneURL string, bindPlaneInsecureSkipVerify bool, store ResourceStore, headers map[string]string) (string, error) {
+func (c *Configuration) renderComponents(ctx context.Context, agent *Agent, bindPlaneURL string, bindPlaneInsecureSkipVerify bool, store ResourceStore, headers map[string]string, comment string) (string, error) {
 	configuration, err := c.otelConfiguration(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers)
 	if err != nil {
 		return "", err
 	}
-	return configuration.YAML()
+	return configuration.YAML(comment)
 }
 
 type renderContext struct {

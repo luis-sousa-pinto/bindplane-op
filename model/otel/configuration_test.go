@@ -72,16 +72,47 @@ func TestUniqueComponentID(t *testing.T) {
 
 func TestEmptyConfiguration(t *testing.T) {
 	c := NewConfiguration()
-	yaml, err := c.YAML()
+	yaml, err := c.YAML("")
 	require.NoError(t, err)
 	require.Equal(t, NoopConfig, yaml)
 }
 
 func TestNilConfiguration(t *testing.T) {
 	var c *Configuration
-	yaml, err := c.YAML()
+	yaml, err := c.YAML("")
 	require.NoError(t, err)
 	require.Equal(t, NoopConfig, yaml)
+}
+
+func TestPrepareYAMLComment(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "single line",
+			input:    "This is a comment",
+			expected: "# This is a comment\n",
+		},
+		{
+			name:     "multi line",
+			input:    "This is a comment\nThis is a second line",
+			expected: "# This is a comment\n# This is a second line\n",
+		},
+		{
+			name:     "No comment",
+			input:    "",
+			expected: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := prepareYAMLComment(tc.input)
+			require.Equal(t, tc.expected, out)
+		})
+	}
 }
 
 func TestPipelineTypeFlags_Set(t *testing.T) {
