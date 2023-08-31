@@ -33,6 +33,7 @@ interface MeasurementControlBarProps {
   onTelemetryTypeChange: (telemetry: string) => void;
   period: string;
   onPeriodChange: (period: string) => void;
+  periods?: string[];
 }
 
 /**
@@ -50,6 +51,7 @@ export const MeasurementControlBar: React.FC<MeasurementControlBarProps> = ({
   onPeriodChange,
   telemetry,
   period,
+  periods = Object.keys(PERIODS),
 }) => {
   function handleTelemetryChange(
     _event: React.SyntheticEvent<Element, Event>,
@@ -84,11 +86,11 @@ export const MeasurementControlBar: React.FC<MeasurementControlBarProps> = ({
         </Tabs>
 
         <Tabs value={period} onChange={handlePeriodChange}>
-          {Object.entries(PERIODS).map(([p, label]) => (
+          {periods.map((p) => (
             <Tab
               key={`period-tab-${p}`}
               value={p}
-              label={label}
+              label={p}
               classes={{ root: styles.tab }}
             />
           ))}

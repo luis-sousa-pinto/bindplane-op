@@ -10,12 +10,15 @@ import {
 } from "../MeasurementControlBar";
 import { useState } from "react";
 import { gql } from "@apollo/client";
-import { useGetConfigurationVersionsQuery } from "../../graphql/generated";
+import {
+  useGetConfigurationVersionsQuery,
+  useGetLatestMeasurementIntervalQuery,
+} from "../../graphql/generated";
 import { useSnackbar } from "notistack";
 import { VersionsData } from "./versions-data";
 import { RolloutProgress } from "../RolloutProgress";
 import { OtelConfigEditor } from "../OtelConfigEditor/OtelConfigEditor";
-import { nameAndVersion } from "../../utils/version-helpers";
+import { asCurrentVersion, nameAndVersion } from "../../utils/version-helpers";
 import { useRefetchOnConfigurationChange } from "../../hooks/useRefetchOnConfigurationChanges";
 import { DiffDialog } from "../DiffDialog/DiffDialog";
 
@@ -34,6 +37,20 @@ gql`
         current
         pending
         latest
+      }
+    }
+  }
+
+  query getLatestMeasurementInterval($name: String!) {
+    configuration(name: $name) {
+      metadata {
+        name
+        id
+        version
+      }
+
+      spec {
+        measurementInterval
       }
     }
   }
@@ -68,7 +85,8 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
   const [selectedTelemetry, setSelectedTelemetry] = useState<string>(
     DEFAULT_TELEMETRY_TYPE
   );
-  const [period, setPeriod] = useState<string>(DEFAULT_PERIOD);
+  const [period, setPeriod] = useState<string>();
+  const [measurementPeriods, setMeasurementPeriods] = useState<string[]>();
   const [tab, setTab] = useState<ConfigurationVersionSwitcherTab>();
   const [selectedVersion, setSelectedVersion] = useState<number>();
   const [editingCurrentVersion, setEditingCurrentVersion] =
@@ -110,7 +128,41 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
     },
   });
 
-  useRefetchOnConfigurationChange(configurationName, refetch);
+  const { refetch: refetchMI } = useGetLatestMeasurementIntervalQuery({
+    variables: {
+      name: asCurrentVersion(configurationName),
+    },
+    onCompleted(data) {
+      if (data.configuration?.spec?.measurementInterval != null) {
+        switch (data.configuration.spec.measurementInterval) {
+          case "1m":
+            setMeasurementPeriods(["1m", "5m", "1h", "24h"]);
+            setPeriod("1m");
+            break;
+          case "5m":
+            setMeasurementPeriods(["5m", "1h", "24h"]);
+            setPeriod("5m");
+            break;
+          case "1h":
+            setMeasurementPeriods(["1h", "24h"]);
+            setPeriod("1h");
+            break;
+          case "24h":
+            setMeasurementPeriods(["24h"]);
+            setPeriod("24h");
+            break;
+          default:
+            setMeasurementPeriods(["10s", "1m", "5m", "1h", "24h"]);
+            setPeriod(DEFAULT_PERIOD);
+        }
+      }
+    },
+  });
+
+  useRefetchOnConfigurationChange(configurationName, () => {
+    refetch();
+    refetchMI();
+  });
 
   // TODO(dsvanlani): Add a loading state
   if (tab == null || versionsData == null) {
@@ -171,15 +223,16 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
         <MeasurementControlBar
           telemetry={selectedTelemetry!}
           onTelemetryTypeChange={setSelectedTelemetry}
-          period={period}
+          period={period ?? DEFAULT_PERIOD}
           onPeriodChange={setPeriod}
+          periods={measurementPeriods}
         />
       )}
       {tab === "current" && (
         <EditorComponent
           configurationName={nameAndVersion(configurationName, currentVersion)}
           selectedTelemetry={selectedTelemetry!}
-          period={period}
+          period={period ?? DEFAULT_PERIOD}
           readOnly
         />
       )}
@@ -187,7 +240,7 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
       {tab === "history" && (
         <EditorComponent
           selectedTelemetry={selectedTelemetry!}
-          period={period}
+          period={period ?? DEFAULT_PERIOD}
           configurationName={nameAndVersion(configurationName, selectedVersion)}
           skipMeasurements
           readOnly
@@ -197,7 +250,7 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
       {tab === "pending" && (
         <EditorComponent
           selectedTelemetry={selectedTelemetry!}
-          period={period}
+          period={period ?? DEFAULT_PERIOD}
           configurationName={nameAndVersion(configurationName, pendingVersion)}
           skipMeasurements
           readOnly
@@ -207,7 +260,7 @@ export const ConfigurationEditor: React.FC<ConfigurationEditorProps> = ({
       {tab === "new" && (
         <EditorComponent
           selectedTelemetry={selectedTelemetry!}
-          period={period}
+          period={period ?? DEFAULT_PERIOD}
           configurationName={nameAndVersion(configurationName, editingVersion)}
           skipMeasurements
         />

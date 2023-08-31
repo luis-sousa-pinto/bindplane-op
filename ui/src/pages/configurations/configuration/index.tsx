@@ -38,6 +38,8 @@ gql`
       }
       agentCount
       spec {
+        measurementInterval
+
         raw
         sources {
           id

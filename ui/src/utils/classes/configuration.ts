@@ -24,6 +24,7 @@ export class BPConfiguration
     this.apiVersion = APIVersion.V1;
     this.kind = ResourceKind.CONFIGURATION;
     this.spec = configuration?.spec ?? {
+      measurementInterval: "",
       raw: "",
       sources: [],
       destinations: [],
@@ -109,6 +110,12 @@ export class BPConfiguration
 
     const newSpec = cloneDeep(this.spec);
     newSpec.destinations = newDestinations;
+    this.spec = newSpec;
+  }
+
+  updateMeasurementInterval(measurementInterval: string) {
+    const newSpec = cloneDeep(this.spec);
+    newSpec.measurementInterval = measurementInterval;
     this.spec = newSpec;
   }
 

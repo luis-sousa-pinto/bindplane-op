@@ -662,6 +662,7 @@ export const SettingsIcon: React.FC<IconProps> = (props) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="2"
+      stroke="currentColor"
       viewBox="0 0 24 24"
       width="20"
       {...props}
