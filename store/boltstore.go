@@ -64,10 +64,10 @@ func NewBoltStore(ctx context.Context, db *bbolt.DB, options Options, logger *za
 	}
 
 	// There is a cyclic dependency here that's not great where the rollout batcher needs the store and the updates need the rollout batcher.
-	if !options.DisableRolloutUpdater {
-		// Assign a real batcher if we are not disabling rollout updater
-		store.RolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
-	}
+	// if !options.DisableRolloutUpdater {
+	// 	// Assign a real batcher if we are not disabling rollout updater
+	// 	store.RolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	// }
 	store.StoreUpdates = NewUpdates(ctx, options, logger, store.RolloutBatcher, BuildBasicEventBroadcast())
 
 	// it might seem unintuitive, but it's important to point the boltstoreCommon interface to the store

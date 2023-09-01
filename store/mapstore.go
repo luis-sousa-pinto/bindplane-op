@@ -77,9 +77,9 @@ func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store
 		sessionStore:       NewBPCookieStore(options.SessionsSecret),
 	}
 
-	if !options.DisableRolloutUpdater {
-		store.rolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
-	}
+	// if !options.DisableRolloutUpdater {
+	// 	store.rolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	// }
 	store.updates = NewUpdates(ctx, options, logger, store.rolloutBatcher, BuildBasicEventBroadcast())
 
 	return store
