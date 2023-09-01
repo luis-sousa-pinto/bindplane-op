@@ -22,6 +22,7 @@ import { AgentTable } from "../../components/Tables/AgentTable";
 import {
   useGetAgentAndConfigurationsQuery,
   useGetConfigurationQuery,
+  useGetLatestMeasurementIntervalQuery,
 } from "../../graphql/generated";
 import { useAgentChangesContext } from "../../hooks/useAgentChanges";
 import { RawConfigWizard } from "../configurations/wizards/RawConfigWizard";
@@ -114,7 +115,8 @@ export const AgentPageContent: React.FC = () => {
   const [selectedTelemetry, setSelectedTelemetry] = useState(
     DEFAULT_TELEMETRY_TYPE
   );
-  const [period, setPeriod] = useState(DEFAULT_PERIOD);
+  const [period, setPeriod] = useState<string>();
+  const [measurementPeriods, setMeasurementPeriods] = useState<string[]>();
 
   // AgentChanges subscription to trigger a refetch.
   const agentChanges = useAgentChangesContext();
@@ -188,6 +190,41 @@ export const AgentPageContent: React.FC = () => {
     variables: { name: currentConfigName ?? "" },
     fetchPolicy: "cache-and-network",
   });
+
+  useGetLatestMeasurementIntervalQuery({
+    skip:
+      configQuery.data?.configuration != null &&
+      configQuery.data.configuration.spec.raw !== "",
+    variables: {
+      name: currentConfigName ?? "",
+    },
+    onCompleted(data) {
+      if (data.configuration?.spec?.measurementInterval != null) {
+        switch (data.configuration.spec.measurementInterval) {
+          case "1m":
+            setMeasurementPeriods(["1m", "5m", "1h", "24h"]);
+            setPeriod("1m");
+            break;
+          case "5m":
+            setMeasurementPeriods(["5m", "1h", "24h"]);
+            setPeriod("5m");
+            break;
+          case "1h":
+            setMeasurementPeriods(["1h", "24h"]);
+            setPeriod("1h");
+            break;
+          case "24h":
+            setMeasurementPeriods(["24h"]);
+            setPeriod("24h");
+            break;
+          default:
+            setMeasurementPeriods(["10s", "1m", "5m", "1h", "24h"]);
+            setPeriod(DEFAULT_PERIOD);
+        }
+      }
+    },
+  });
+
   const configGraph = configQuery.data?.configuration;
   const [rawOrTopologyTab, setRawOrTopologyTab] = useState<"topology" | "raw">(
     "topology"
@@ -396,14 +433,15 @@ export const AgentPageContent: React.FC = () => {
                   <MeasurementControlBar
                     telemetry={selectedTelemetry}
                     onTelemetryTypeChange={setSelectedTelemetry}
-                    period={period}
+                    period={period ?? DEFAULT_PERIOD}
                     onPeriodChange={setPeriod}
+                    periods={measurementPeriods}
                   />
                   <PipelineGraph
                     agentId={data.agent.id}
                     configurationName={`${data.agent.configurationResource?.metadata.name}:${data.agent.configurationResource?.metadata.version}`}
                     selectedTelemetry={selectedTelemetry}
-                    period={period}
+                    period={period ?? DEFAULT_PERIOD}
                     readOnly
                   />
                 </div>

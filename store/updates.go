@@ -19,7 +19,6 @@ import (
 
 	"github.com/observiq/bindplane-op/eventbus"
 	"github.com/observiq/bindplane-op/eventbus/broadcast"
-	"github.com/observiq/bindplane-op/model"
 	"go.uber.org/zap"
 )
 
@@ -46,17 +45,16 @@ func UpdatesForContext(ctx context.Context) (updates BasicEventUpdates, newConte
 
 // Updates is a wrapped event bus for store updates.
 type Updates struct {
-	broadcast            broadcast.Broadcast[BasicEventUpdates]
-	rolloutBroadcast     broadcast.Broadcast[RolloutEventUpdates]
-	rolloutUpdateCreator RolloutUpdateCreator
-	cancel               context.CancelFunc
+	broadcast      broadcast.Broadcast[BasicEventUpdates]
+	rolloutBatcher RolloutBatcher
+	logger         *zap.Logger
+	cancel         context.CancelFunc
 }
 
 // NewUpdates creates a new UpdatesEventBus.
 func NewUpdates(ctx context.Context, options Options, logger *zap.Logger,
+	rolloutBatcher RolloutBatcher,
 	basicEventBroadcaster BroadCastBuilder[BasicEventUpdates],
-	rolloutBroadcaster BroadCastBuilder[RolloutEventUpdates],
-	rolloutUpdateCreator RolloutUpdateCreator,
 ) *Updates {
 	ctx, cancel := context.WithCancel(ctx)
 	maxEventsToMerge := options.MaxEventsToMerge
@@ -65,10 +63,10 @@ func NewUpdates(ctx context.Context, options Options, logger *zap.Logger,
 	}
 
 	return &Updates{
-		broadcast:            basicEventBroadcaster(ctx, options, logger, maxEventsToMerge),
-		rolloutBroadcast:     rolloutBroadcaster(ctx, options, logger, maxEventsToMerge),
-		rolloutUpdateCreator: rolloutUpdateCreator,
-		cancel:               cancel,
+		broadcast:      basicEventBroadcaster(ctx, options, logger, maxEventsToMerge),
+		rolloutBatcher: rolloutBatcher,
+		logger:         logger.Named("updates"),
+		cancel:         cancel,
 	}
 }
 
@@ -77,18 +75,14 @@ func (s *Updates) Updates() eventbus.Source[BasicEventUpdates] {
 	return s.broadcast.Consumer()
 }
 
-// RolloutUpdates returns the external channel that can be provided to external clients
-func (s *Updates) RolloutUpdates() eventbus.Source[RolloutEventUpdates] {
-	return s.rolloutBroadcast.Consumer()
-}
-
 // Send adds an Updates event to the internal channel where it can be merged and relayed to the external channel.
 func (s *Updates) Send(ctx context.Context, updates BasicEventUpdates) {
 	s.broadcast.Producer().Send(ctx, updates)
 
 	if !updates.Agents().Empty() {
-		rolloutEvent := s.rolloutUpdateCreator(ctx, updates.Agents())
-		s.rolloutBroadcast.Producer().Send(ctx, rolloutEvent)
+		if err := s.rolloutBatcher.Batch(ctx, updates.Agents()); err != nil {
+			s.logger.Error("Failed to batch rollout updates", zap.Error(err))
+		}
 	}
 }
 
@@ -102,5 +96,28 @@ func (s *Updates) Shutdown(_ context.Context) {
 // BroadCastBuilder is a function that builds a broadcast.Broadcast[BasicUpdates] using routing and broadcast options.
 type BroadCastBuilder[T any] func(ctx context.Context, options Options, logger *zap.Logger, maxEventsToMerge int) broadcast.Broadcast[T]
 
-// RolloutUpdateCreator is a function that creates a RolloutEventUpdates from a set of agent events.
-type RolloutUpdateCreator func(context.Context, Events[*model.Agent]) RolloutEventUpdates
+// mergeAllUpdates will merge all of the individual updates as much as possible. For example, if there are 4 updates,
+// and the first 2 can be merged and the last 2 can be merged, there will be 2 updates in the result. Because the
+// updates in the list will be merged into each other, the list should not be used again as it will contain duplicate
+// update information. Because of this, the usage should typically look like:
+//
+//	updates = mergeAllUpdates(updates)
+//
+// This method is primarily used for testing to ensure that a list of updates is merged as much as possible and can be
+// safely compared with a similar list of updates.
+func mergeAllUpdates(list []BasicEventUpdates) []BasicEventUpdates {
+	var result []BasicEventUpdates
+
+	var prev BasicEventUpdates
+	for _, cur := range list {
+		// base case for the first iteration
+		if prev != nil && MergeUpdates(prev, cur) {
+			continue
+		}
+		// either first iteration (prev == nil) or we failed to merge and need to create a new base
+		result = append(result, cur)
+		prev = cur
+	}
+
+	return result
+}

@@ -442,6 +442,7 @@ exports[`NavBar renders correctly 1`] = `
           className="icon"
           fill="none"
           height="20"
+          stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"

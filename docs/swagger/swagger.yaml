@@ -255,6 +255,8 @@ definitions:
         items:
           $ref: '#/definitions/model.ResourceConfiguration'
         type: array
+      measurementInterval:
+        type: string
       raw:
         type: string
       selector:

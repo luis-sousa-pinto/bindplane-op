@@ -30,10 +30,10 @@ func (k *processorKind) NewEmptyResource() *Processor { return &Processor{} }
 // Processor will generate an exporter and be at the end of a pipeline
 type Processor struct {
 	// ResourceMeta is the metadata for the Processor
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec is the specification for the Processor containing the type and parameters
 	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[VersionStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Processor)(nil)

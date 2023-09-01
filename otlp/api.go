@@ -96,11 +96,9 @@ func Metrics(c *gin.Context, bindplane exposedserver.BindPlane) {
 	}
 
 	if len(metrics) > 0 {
-		if measurements := bindplane.Store().Measurements(); measurements != nil {
-			if err := measurements.SaveAgentMetrics(traceCtx, metrics); err != nil {
-				c.Error(err)
-				return
-			}
+		if err := bindplane.MeasurementBatcher().AcceptMetrics(traceCtx, metrics); err != nil {
+			c.Error(err)
+			return
 		}
 	}
 

@@ -4,7 +4,6 @@ import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CardContainer } from "../../components/CardContainer";
 import { PlusCircleIcon } from "../../components/Icons";
-import { AgentsTable } from "../../components/Tables/AgentsTable";
 import { classes } from "../../utils/styles";
 import { deleteAgents } from "../../utils/rest/delete-agents";
 import { useSnackbar } from "notistack";
@@ -16,6 +15,7 @@ import { upgradeAgents } from "../../utils/rest/upgrade-agent";
 import { Role } from "../../graphql/generated";
 import { hasPermission } from "../../utils/has-permission";
 import { useRole } from "../../hooks/useRole";
+import { useComponents } from "../../hooks/useComponents";
 
 import mixins from "../../styles/mixins.module.scss";
 
@@ -28,6 +28,7 @@ export const AgentsPageContent: React.FC = () => {
 
   const { enqueueSnackbar } = useSnackbar();
   const role = useRole();
+  const { AgentsTable } = useComponents();
 
   function handleSelectUpdatable(agentIds: GridRowSelectionModel) {
     setUpdatable(agentIds);

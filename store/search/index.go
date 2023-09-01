@@ -27,7 +27,7 @@ import (
 	modelSearch "github.com/observiq/bindplane-op/model/search"
 )
 
-var tracer = otel.Tracer("search")
+var tracer = otel.Tracer("store/search")
 
 // Index provides a query interface for indexed resources. A separate index will be used for each resource type.
 // Currently the functions on Index do not produce an error but some other implementation could.
@@ -35,23 +35,23 @@ var tracer = otel.Tracer("search")
 //go:generate mockery --name=Index --filename=mock_index.go --structname=MockIndex
 type Index interface {
 	// Add or updates an indexed resource
-	Upsert(search.Indexed) error
+	Upsert(context.Context, search.Indexed) error
 
 	// Remove an index resource
-	Remove(search.Indexed) error
+	Remove(context.Context, search.Indexed) error
 
 	// Query returns ids that are an exact match of the specified query
 	Search(ctx context.Context, query *Query) ([]string, error)
 
 	// Matches returns true if the specified indexID matches the query exactly
-	Matches(query *Query, indexID string) bool
+	Matches(ctx context.Context, query *Query, indexID string) bool
 
 	// Suggestions are either names of fields or Labels or will be values if a field or label is already specified. If
 	// there are no suggestions that match or there is one suggestion that is an exact match, no suggestions are returned.
-	Suggestions(query *Query) ([]*Suggestion, error)
+	Suggestions(ctx context.Context, query *Query) ([]*Suggestion, error)
 
 	// Select returns the matching ids
-	Select(Labels map[string]string) []string
+	Select(ctx context.Context, Labels map[string]string) []string
 }
 
 type index struct {
@@ -72,7 +72,10 @@ func NewInMemoryIndex(name string) Index {
 
 var _ Index = (*index)(nil)
 
-func (i *index) Upsert(indexed modelSearch.Indexed) error {
+func (i *index) Upsert(ctx context.Context, indexed modelSearch.Indexed) error {
+	_, span := tracer.Start(ctx, "index/Upsert")
+	defer span.End()
+
 	i.mtx.Lock()
 	defer i.mtx.Unlock()
 
@@ -85,7 +88,10 @@ func (i *index) Upsert(indexed modelSearch.Indexed) error {
 	return nil
 }
 
-func (i *index) Remove(indexed modelSearch.Indexed) error {
+func (i *index) Remove(ctx context.Context, indexed modelSearch.Indexed) error {
+	_, span := tracer.Start(ctx, "index/Upsert")
+	defer span.End()
+
 	i.mtx.Lock()
 	defer i.mtx.Unlock()
 
@@ -119,7 +125,10 @@ func (i *index) Search(ctx context.Context, query *Query) ([]string, error) {
 }
 
 // Matches returns true if the specified indexID matches the query
-func (i *index) Matches(query *Query, indexID string) bool {
+func (i *index) Matches(ctx context.Context, query *Query, indexID string) bool {
+	_, span := tracer.Start(ctx, "index/Matches")
+	defer span.End()
+
 	i.mtx.RLock()
 	defer i.mtx.RUnlock()
 
@@ -146,7 +155,10 @@ func (i *index) Matches(query *Query, indexID string) bool {
 	return true
 }
 
-func (i *index) Suggestions(query *Query) ([]*Suggestion, error) {
+func (i *index) Suggestions(ctx context.Context, query *Query) ([]*Suggestion, error) {
+	_, span := tracer.Start(ctx, "index/Suggestions")
+	defer span.End()
+
 	i.mtx.RLock()
 	defer i.mtx.RUnlock()
 
@@ -180,7 +192,10 @@ func (i *index) Suggestions(query *Query) ([]*Suggestion, error) {
 }
 
 // Select returns the matching ids
-func (i *index) Select(selector map[string]string) []string {
+func (i *index) Select(ctx context.Context, selector map[string]string) []string {
+	_, span := tracer.Start(ctx, "index/Select")
+	defer span.End()
+
 	i.mtx.RLock()
 	defer i.mtx.RUnlock()
 

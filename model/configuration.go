@@ -24,6 +24,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/observiq/bindplane-op/model/graph"
@@ -63,10 +64,10 @@ const (
 // Configuration is the resource for the entire agent configuration
 type Configuration struct {
 	// ResourceMeta contains the metadata for this resource
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec contains the spec for the Configuration
 	Spec                            ConfigurationSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[ConfigurationStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[ConfigurationStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ HasAgentSelector = (*Configuration)(nil)
@@ -79,7 +80,9 @@ func (c *Configuration) GetSpec() any {
 
 // NewConfiguration creates a new configuration with the specified name
 func NewConfiguration(name string) *Configuration {
-	return NewConfigurationWithSpec(name, ConfigurationSpec{})
+	return NewConfigurationWithSpec(name, ConfigurationSpec{
+		MeasurementInterval: "10s",
+	})
 }
 
 // NewRawConfiguration creates a new configuration with the specified name and raw configuration
@@ -111,11 +114,12 @@ func (c *Configuration) GetKind() Kind {
 
 // ConfigurationSpec is the spec for a configuration resource
 type ConfigurationSpec struct {
-	ContentType  string                  `json:"contentType" yaml:"contentType" mapstructure:"contentType"`
-	Raw          string                  `json:"raw,omitempty" yaml:"raw,omitempty" mapstructure:"raw"`
-	Sources      []ResourceConfiguration `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources"`
-	Destinations []ResourceConfiguration `json:"destinations,omitempty" yaml:"destinations,omitempty" mapstructure:"destinations"`
-	Selector     AgentSelector           `json:"selector" yaml:"selector" mapstructure:"selector"`
+	ContentType         string                  `json:"contentType" yaml:"contentType" mapstructure:"contentType"`
+	MeasurementInterval string                  `json:"measurementInterval" yaml:"measurementInterval" mapstructure:"measurementInterval"`
+	Raw                 string                  `json:"raw,omitempty" yaml:"raw,omitempty" mapstructure:"raw"`
+	Sources             []ResourceConfiguration `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources"`
+	Destinations        []ResourceConfiguration `json:"destinations,omitempty" yaml:"destinations,omitempty" mapstructure:"destinations"`
+	Selector            AgentSelector           `json:"selector" yaml:"selector" mapstructure:"selector"`
 }
 
 // ConfigurationStatus is the status for a configuration resource
@@ -374,7 +378,7 @@ type ResourceConfiguration struct {
 	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty" mapstructure:"displayName"`
 
 	// ParameterizedSpec contains the definition of an embedded resource if this is not a reference to another resource
-	ParameterizedSpec `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ParameterizedSpec `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ HasResourceParameters = (*ResourceConfiguration)(nil)
@@ -530,15 +534,17 @@ func (c *Configuration) Render(ctx context.Context, agent *Agent, bindPlaneURL s
 		// we always prefer raw
 		return c.Spec.Raw, nil
 	}
-	return c.renderComponents(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers)
+
+	comment := fmt.Sprintf("This configuration is managed by BindPlane OP.\nConfiguration: %s", c.NameAndVersion())
+	return c.renderComponents(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers, comment)
 }
 
-func (c *Configuration) renderComponents(ctx context.Context, agent *Agent, bindPlaneURL string, bindPlaneInsecureSkipVerify bool, store ResourceStore, headers map[string]string) (string, error) {
+func (c *Configuration) renderComponents(ctx context.Context, agent *Agent, bindPlaneURL string, bindPlaneInsecureSkipVerify bool, store ResourceStore, headers map[string]string, comment string) (string, error) {
 	configuration, err := c.otelConfiguration(ctx, agent, bindPlaneURL, bindPlaneInsecureSkipVerify, store, headers)
 	if err != nil {
 		return "", err
 	}
-	return configuration.YAML()
+	return configuration.YAML(comment)
 }
 
 type renderContext struct {
@@ -570,7 +576,7 @@ func (c *Configuration) otelConfiguration(ctx context.Context, agent *Agent, bin
 	}
 
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext(agentID, c.Name(), bindPlaneURL, bindPlaneInsecureSkipVerify, measurementsTLS),
+		RenderContext:     otel.NewRenderContext(agentID, c.Name(), bindPlaneURL, bindPlaneInsecureSkipVerify, measurementsTLS, c.Spec.MeasurementInterval),
 		pipelineTypeUsage: newPipelineTypeUsage(),
 	}
 	rc.IncludeSnapshotProcessor = agentFeatures.Has(AgentSupportsSnapshots)
@@ -886,6 +892,13 @@ func (cs *ConfigurationSpec) validate(errors validation.Errors) {
 }
 
 func (cs *ConfigurationSpec) validateSpecFields(errors validation.Errors) {
+	if cs.MeasurementInterval != "" {
+		_, err := time.ParseDuration(cs.MeasurementInterval)
+		if err != nil {
+			errors.Add(fmt.Errorf("invalid measurementInterval: %w", err))
+		}
+	}
+
 	if cs.Raw != "" {
 		if len(cs.Destinations) > 0 || len(cs.Sources) > 0 {
 			errors.Add(fmt.Errorf("configuration must specify raw or sources and destinations"))
@@ -1377,7 +1390,7 @@ func (c *Configuration) determinePipelineTypeUsage(ctx context.Context, store Re
 
 	// the agent ID, URL, and tls values aren't important
 	rc := &renderContext{
-		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false, nil),
+		RenderContext:     otel.NewRenderContext("AGENT_ID", c.Name(), "BINDPLANE_URL", false, nil, c.Spec.MeasurementInterval),
 		pipelineTypeUsage: p,
 	}
 	config, err := c.otelConfigurationWithRenderContext(ctx, rc, store, GetOssOtelHeaders())

@@ -8,7 +8,7 @@ import {
   Typography,
   colors,
 } from "@mui/material";
-import { CopyIcon, MenuIcon, TrashIcon } from "../Icons";
+import { CopyIcon, MenuIcon, SettingsIcon, TrashIcon } from "../Icons";
 import { useState } from "react";
 import { DuplicateConfigDialog } from "../../pages/configurations/configuration/DuplicateConfigDialog";
 import { ConfirmDeleteResourceDialog } from "../ConfirmDeleteResourceDialog";
@@ -17,6 +17,7 @@ import { ResourceKind } from "../../types/resources";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { asCurrentVersion } from "../../utils/version-helpers";
+import { AdvancedConfigDialog } from "../../pages/configurations/configuration/AdvancedConfigDialog";
 
 interface ConfigDetailsMenuProps {
   configName: string;
@@ -29,6 +30,7 @@ export const ConfigDetailsMenu: React.FC<ConfigDetailsMenuProps> = ({
   const menuOpen = Boolean(anchorEl);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false);
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -98,6 +100,12 @@ export const ConfigDetailsMenu: React.FC<ConfigDetailsMenuProps> = ({
             </ListItemIcon>
             <ListItemText>Duplicate current version</ListItemText>
           </MenuItem>
+          <MenuItem onClick={() => setAdvancedDialogOpen(true)}>
+            <ListItemIcon>
+              <SettingsIcon width="20px" />
+            </ListItemIcon>
+            <ListItemText>Advanced Configuration</ListItemText>
+          </MenuItem>
           <MenuItem onClick={() => setDeleteDialogOpen(true)}>
             <ListItemIcon>
               <TrashIcon width="20px" stroke={colors.red[700]} />
@@ -113,6 +121,16 @@ export const ConfigDetailsMenu: React.FC<ConfigDetailsMenuProps> = ({
         onClose={() => setDuplicateDialogOpen(false)}
         onSuccess={() => {
           setDuplicateDialogOpen(false);
+          setAnchorEl(null);
+        }}
+      />
+
+      <AdvancedConfigDialog
+        configName={configName}
+        open={advancedDialogOpen}
+        onClose={() => setAdvancedDialogOpen(false)}
+        onSuccess={() => {
+          setAdvancedDialogOpen(false);
           setAnchorEl(null);
         }}
       />

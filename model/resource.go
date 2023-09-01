@@ -206,7 +206,7 @@ type Resource interface {
 type AnyResource struct {
 	ResourceMeta               `yaml:",inline" mapstructure:",squash"`
 	Spec                       map[string]any `yaml:"spec" json:"spec" mapstructure:"spec"`
-	StatusType[map[string]any] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[map[string]any] `yaml:",inline" mapstructure:",squash"`
 }
 
 // treat AnyResource as having sensitive parameters because it is possible the parsed spec will contain sensitive

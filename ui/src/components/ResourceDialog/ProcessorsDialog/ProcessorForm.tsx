@@ -48,7 +48,12 @@ export const ProcessorForm: React.FC<Props> = ({
         </Grid>
       </Grid>
       <form style={{ flexGrow: 1, overflow: "auto" }}>
-        <Grid container spacing={3} className={mixins["mb-5"]}>
+        <Grid
+          container
+          spacing={3}
+          className={mixins["mb-5"]}
+          paddingTop={"8px"}
+        >
           <Grid item xs={7}>
             <ResourceDisplayNameInput
               value={formValues.displayName}

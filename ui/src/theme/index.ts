@@ -47,6 +47,16 @@ const themeOptions: ThemeOptions = {
         variant: "outlined",
       },
     },
+    MuiInputLabel: {
+      defaultProps: {
+        shrink: true,
+      },
+    },
+    MuiOutlinedInput: {
+      defaultProps: {
+        notched: true,
+      },
+    },
     MuiButton: {
       styleOverrides: {
         contained: {

@@ -48,6 +48,7 @@ type mapStore struct {
 	destinationTypes resourceStore[*model.DestinationType]
 
 	updates            *Updates
+	rolloutBatcher     RolloutBatcher
 	agentIndex         search.Index
 	configurationIndex search.Index
 	logger             *zap.Logger
@@ -60,7 +61,7 @@ var _ Store = (*mapStore)(nil)
 
 // NewMapStore returns an in memory Store
 func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store {
-	return &mapStore{
+	store := &mapStore{
 		agents:             make(map[string]*model.Agent),
 		configurations:     newResourceStore[*model.Configuration](),
 		sources:            newResourceStore[*model.Source](),
@@ -69,12 +70,19 @@ func NewMapStore(ctx context.Context, options Options, logger *zap.Logger) Store
 		processorTypes:     newResourceStore[*model.ProcessorType](),
 		destinations:       newResourceStore[*model.Destination](),
 		destinationTypes:   newResourceStore[*model.DestinationType](),
-		updates:            NewUpdates(ctx, options, logger, BuildBasicEventBroadcast(), BuildRolloutEventBroadcast(), NewRolloutUpdates),
 		agentIndex:         search.NewInMemoryIndex("agent"),
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		logger:             logger,
+		rolloutBatcher:     NewNopRolloutBatcher(),
 		sessionStore:       NewBPCookieStore(options.SessionsSecret),
 	}
+
+	// if !options.DisableRolloutUpdater {
+	// 	store.rolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	// }
+	store.updates = NewUpdates(ctx, options, logger, store.rolloutBatcher, BuildBasicEventBroadcast())
+
+	return store
 }
 
 // ----------------------------------------------------------------------
@@ -179,7 +187,7 @@ func (r *resourceStore[T]) clear() {
 
 func (mapstore *mapStore) Close() error {
 	mapstore.updates.Shutdown(context.Background())
-	return nil
+	return mapstore.rolloutBatcher.Shutdown(context.Background())
 }
 
 func (mapstore *mapStore) Clear() {
@@ -260,6 +268,18 @@ func (mapstore *mapStore) UpdateAgent(ctx context.Context, agentID string, updat
 	mapstore.notify(ctx, u)
 
 	return agent, nil
+}
+
+// UpdateAgentStatus will update the status of an existing agent. If the agentID does not exist, this does nothing. An
+// error is only returned if updating the status of the agent fails.
+//
+// In some store implementations this will be more efficient than using UpdateAgent and modifying the Agent model
+// directly.
+func (mapstore *mapStore) UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error {
+	_, err := mapstore.UpdateAgent(ctx, agentID, func(current *model.Agent) {
+		current.Status = status
+	})
+	return err
 }
 
 // UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
@@ -344,7 +364,7 @@ func (mapstore *mapStore) DeleteAgents(ctx context.Context, agentIDs []string) (
 			updates.Agents().Include(agent, EventTypeRemove)
 
 			// remove from the search index
-			if err := mapstore.agentIndex.Remove(agent); err != nil {
+			if err := mapstore.agentIndex.Remove(ctx, agent); err != nil {
 				mapstore.logger.Error("failed to remove agent from the search index", zap.String("agentID", agent.ID))
 			}
 		}
@@ -527,7 +547,7 @@ func (mapstore *mapStore) ApplyResources(ctx context.Context, resources []model.
 			resourceStatus = mapstore.agentVersions.add(r)
 		case *model.Configuration:
 			resourceStatus = mapstore.configurations.add(r)
-			if err := mapstore.configurationIndex.Upsert(resourceStatus.Resource); err != nil {
+			if err := mapstore.configurationIndex.Upsert(ctx, resourceStatus.Resource); err != nil {
 				mapstore.logger.Error("error updating configuration in the search index", zap.Error(err))
 			}
 		case *model.Source:
@@ -596,7 +616,7 @@ func (mapstore *mapStore) DeleteResources(ctx context.Context, resources []model
 
 		case *model.Configuration:
 			c, e := mapstore.configurations.remove(r.Name())
-			if err := mapstore.configurationIndex.Remove(c); err != nil {
+			if err := mapstore.configurationIndex.Remove(ctx, c); err != nil {
 				mapstore.logger.Error("error removing configuration from the search index", zap.Error(err))
 			}
 			exists = e
@@ -654,17 +674,13 @@ func (mapstore *mapStore) AgentConfiguration(_ context.Context, agent *model.Age
 }
 
 // AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration
-func (mapstore *mapStore) AgentsIDsMatchingConfiguration(_ context.Context, configuration *model.Configuration) ([]string, error) {
-	ids := mapstore.agentIndex.Select(configuration.Spec.Selector.MatchLabels)
+func (mapstore *mapStore) AgentsIDsMatchingConfiguration(ctx context.Context, configuration *model.Configuration) ([]string, error) {
+	ids := mapstore.agentIndex.Select(ctx, configuration.Spec.Selector.MatchLabels)
 	return ids, nil
 }
 
 func (mapstore *mapStore) Updates(_ context.Context) eventbus.Source[BasicEventUpdates] {
 	return mapstore.updates.Updates()
-}
-
-func (mapstore *mapStore) AgentRolloutUpdates(_ context.Context) eventbus.Source[RolloutEventUpdates] {
-	return mapstore.updates.RolloutUpdates()
 }
 
 // ReportConnectedAgents sets the ReportedAt time for the specified agents to the specified time. This update should
@@ -774,7 +790,7 @@ func (mapstore *mapStore) upsertAgent(agentID string, updater AgentUpdater, upda
 	mapstore.agents[agentID] = agent
 
 	// update the index
-	err := mapstore.agentIndex.Upsert(agent)
+	err := mapstore.agentIndex.Upsert(context.Background(), agent)
 	if err != nil {
 		mapstore.logger.Error("failed to update the search index", zap.String("agentID", agent.ID))
 	}

@@ -142,11 +142,12 @@ type ComplexityRoot struct {
 	}
 
 	ConfigurationSpec struct {
-		ContentType  func(childComplexity int) int
-		Destinations func(childComplexity int) int
-		Raw          func(childComplexity int) int
-		Selector     func(childComplexity int) int
-		Sources      func(childComplexity int) int
+		ContentType         func(childComplexity int) int
+		Destinations        func(childComplexity int) int
+		MeasurementInterval func(childComplexity int) int
+		Raw                 func(childComplexity int) int
+		Selector            func(childComplexity int) int
+		Sources             func(childComplexity int) int
 	}
 
 	ConfigurationStatus struct {
@@ -931,6 +932,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ConfigurationSpec.Destinations(childComplexity), true
+
+	case "ConfigurationSpec.measurementInterval":
+		if e.complexity.ConfigurationSpec.MeasurementInterval == nil {
+			break
+		}
+
+		return e.complexity.ConfigurationSpec.MeasurementInterval(childComplexity), true
 
 	case "ConfigurationSpec.raw":
 		if e.complexity.ConfigurationSpec.Raw == nil {
@@ -2749,6 +2757,7 @@ type PhaseAgentCount {
 }
 
 type ConfigurationSpec {
+  measurementInterval: String
   contentType: String
   raw: String
   sources: [ResourceConfiguration!]
@@ -2900,6 +2909,7 @@ enum ParameterType {
   metrics
   awsCloudwatchNamedField
   fileLogSort
+  mapToEnum
 }
 
 type ParameterDefinition {
@@ -5754,6 +5764,8 @@ func (ec *executionContext) fieldContext_Configuration_spec(ctx context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "measurementInterval":
+				return ec.fieldContext_ConfigurationSpec_measurementInterval(ctx, field)
 			case "contentType":
 				return ec.fieldContext_ConfigurationSpec_contentType(ctx, field)
 			case "raw":
@@ -6106,6 +6118,47 @@ func (ec *executionContext) fieldContext_ConfigurationChange_eventType(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type EventType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ConfigurationSpec_measurementInterval(ctx context.Context, field graphql.CollectedField, obj *model1.ConfigurationSpec) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfigurationSpec_measurementInterval(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MeasurementInterval, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfigurationSpec_measurementInterval(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfigurationSpec",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -19114,6 +19167,10 @@ func (ec *executionContext) _ConfigurationSpec(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ConfigurationSpec")
+		case "measurementInterval":
+
+			out.Values[i] = ec._ConfigurationSpec_measurementInterval(ctx, field, obj)
+
 		case "contentType":
 
 			out.Values[i] = ec._ConfigurationSpec_contentType(ctx, field, obj)

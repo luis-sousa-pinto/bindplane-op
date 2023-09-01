@@ -18,7 +18,6 @@ package otel
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
@@ -117,6 +116,7 @@ type RenderContext struct {
 	ConfigurationName           string
 	BindPlaneURL                string
 	BindPlaneInsecureSkipVerify bool
+	measurementInterval         string
 	measurementProcessors       map[ComponentID]struct{}
 }
 
@@ -129,7 +129,7 @@ type MeasurementsTLS struct {
 }
 
 // NewRenderContext creates a new render context used to render configurations
-func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool, tls *MeasurementsTLS) *RenderContext {
+func NewRenderContext(agentID string, configurationName string, bindplaneURL string, bindplaneInsecureSkipVerify bool, tls *MeasurementsTLS, measurementInterval string) *RenderContext {
 	return &RenderContext{
 		AgentID:                     agentID,
 		ConfigurationName:           configurationName,
@@ -137,6 +137,7 @@ func NewRenderContext(agentID string, configurationName string, bindplaneURL str
 		BindPlaneInsecureSkipVerify: bindplaneInsecureSkipVerify,
 		measurementProcessors:       map[ComponentID]struct{}{},
 		TLS:                         tls,
+		measurementInterval:         measurementInterval,
 	}
 }
 
@@ -184,12 +185,24 @@ const SnapshotProcessorName ComponentID = "snapshotprocessor"
 const MeasureProcessorName ComponentID = "throughputmeasurement"
 
 // YAML marshals the configuration to yaml
-func (c *Configuration) YAML() (string, error) {
+// It prepends the comment string as a YAML comment, prepending each line of the comment with "#"
+func (c *Configuration) YAML(comment string) (string, error) {
 	if c == nil || !c.HasPipelines() {
 		return NoopConfig, nil
 	}
 	bytes, err := yaml.Marshal(c)
-	return string(bytes), err
+
+	// Sanitize comment
+	return prepareYAMLComment(comment) + string(bytes), err
+}
+
+// prepareYAMLComment modifies the input comment such that it can be safely prepended to any YAML payload.
+func prepareYAMLComment(comment string) string {
+	if len(comment) == 0 {
+		return ""
+	}
+
+	return "# " + strings.ReplaceAll(comment, "\n", "\n# ") + "\n"
 }
 
 // HasPipelines returns true if there are pipelines
@@ -422,22 +435,21 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[s
 		// Default retry values can be found at:
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L249
 		"retry_on_failure": map[string]any{
-			"enabled":          true,
-			"initial_interval": 5 * time.Second,
-			"max_interval":     5 * time.Second,
-			"max_elapsed_time": 30 * time.Second,
+			"enabled": false,
 		},
 		// Default queue values can be found at:
 		// https://github.com/open-telemetry/opentelemetry-collector/blob/v0.70.0/exporter/exporterhelper/queued_retry.go#L44
 		"sending_queue": map[string]any{
-			"enabled":       true,
-			"num_consumers": 1,
-			"queue_size":    60,
+			"enabled": false,
 		},
 	}
 
 	if tls != nil {
 		otlphttp["tls"] = tls
+	}
+
+	if rc.measurementInterval == "" {
+		rc.measurementInterval = "10s"
 	}
 
 	parts := Partial{
@@ -447,7 +459,7 @@ func (c *Configuration) AddAgentMetricsPipeline(rc *RenderContext, headers map[s
 					"scrape_configs": []map[string]any{
 						{
 							"job_name":        "observiq-otel-collector",
-							"scrape_interval": "10s",
+							"scrape_interval": rc.measurementInterval,
 							"static_configs": []map[string]any{
 								{
 									"targets": []string{"0.0.0.0:8888"},

@@ -88,10 +88,34 @@ describe("ConfigurationDetails component", () => {
         data: {
           configuration: {
             metadata: {
-              name: "linux-metrics",
-              id: "linux-metrics-id",
-              version: LATEST_VERSION,
-              description: NEW_DESCRIPTION_BODY,
+              id: "01GXXRKHEEM1RBZKR7R9CBHEW8",
+              name: "raw",
+              description: "",
+              labels: {
+                platform: "linux",
+              },
+              version: 1,
+            },
+            agentCount: 4,
+            spec: {
+              measurementInterval: "60s",
+              raw: "receivers:\n  hostmetrics:\n    collection_interval: 1m\n    scrapers:\n      load:\n      filesystem:\n      memory:\n      network:\n\nprocessors:\n  batch:\n\nexporters:\n  logging:\n    loglevel: error\n\nservice:\n  pipelines:\n    metrics:\n      receivers: [hostmetrics]\n      processors: [batch]\n      exporters: [logging]\n",
+              sources: null,
+              destinations: null,
+              selector: {
+                matchLabels: {
+                  configuration: "raw",
+                },
+              },
+            },
+            graph: {
+              attributes: {
+                activeTypeFlags: 0,
+              },
+              sources: [],
+              intermediates: [],
+              targets: [],
+              edges: [],
             },
           },
         },

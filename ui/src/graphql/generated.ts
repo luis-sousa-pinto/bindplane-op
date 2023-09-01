@@ -119,6 +119,7 @@ export type ConfigurationSpec = {
   __typename?: 'ConfigurationSpec';
   contentType?: Maybe<Scalars['String']['output']>;
   destinations?: Maybe<Array<ResourceConfiguration>>;
+  measurementInterval?: Maybe<Scalars['String']['output']>;
   raw?: Maybe<Scalars['String']['output']>;
   selector?: Maybe<AgentSelector>;
   sources?: Maybe<Array<ResourceConfiguration>>;
@@ -363,6 +364,7 @@ export enum ParameterType {
   FileLogSort = 'fileLogSort',
   Int = 'int',
   Map = 'map',
+  MapToEnum = 'mapToEnum',
   Metrics = 'metrics',
   String = 'string',
   Strings = 'strings',
@@ -775,6 +777,13 @@ export type GetConfigurationVersionsQueryVariables = Exact<{
 
 export type GetConfigurationVersionsQuery = { __typename?: 'Query', configurationHistory: Array<{ __typename?: 'Configuration', activeTypes?: Array<string> | null, metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, status: { __typename?: 'ConfigurationStatus', current: boolean, pending: boolean, latest: boolean } }> };
 
+export type GetLatestMeasurementIntervalQueryVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+
+export type GetLatestMeasurementIntervalQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', metadata: { __typename?: 'Metadata', name: string, id: string, version: number }, spec: { __typename?: 'ConfigurationSpec', measurementInterval?: string | null } } | null };
+
 export type GetRenderedConfigQueryVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
@@ -970,7 +979,7 @@ export type GetConfigurationQueryVariables = Exact<{
 }>;
 
 
-export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null, version: number }, spec: { __typename?: 'ConfigurationSpec', raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
+export type GetConfigurationQuery = { __typename?: 'Query', configuration?: { __typename?: 'Configuration', agentCount?: number | null, metadata: { __typename?: 'Metadata', id: string, name: string, description?: string | null, labels?: any | null, version: number }, spec: { __typename?: 'ConfigurationSpec', measurementInterval?: string | null, raw?: string | null, sources?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, destinations?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null, processors?: Array<{ __typename?: 'ResourceConfiguration', id?: string | null, type?: string | null, name?: string | null, displayName?: string | null, disabled: boolean, parameters?: Array<{ __typename?: 'Parameter', name: string, value: any }> | null }> | null }> | null, selector?: { __typename?: 'AgentSelector', matchLabels?: any | null } | null }, graph?: { __typename?: 'Graph', attributes: any, sources: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, intermediates: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, targets: Array<{ __typename?: 'Node', id: string, type: string, label: string, attributes: any }>, edges: Array<{ __typename?: 'Edge', id: string, source: string, target: string }> } | null } | null };
 
 export type DestinationsAndTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1472,6 +1481,48 @@ export function useGetConfigurationVersionsLazyQuery(baseOptions?: Apollo.LazyQu
 export type GetConfigurationVersionsQueryHookResult = ReturnType<typeof useGetConfigurationVersionsQuery>;
 export type GetConfigurationVersionsLazyQueryHookResult = ReturnType<typeof useGetConfigurationVersionsLazyQuery>;
 export type GetConfigurationVersionsQueryResult = Apollo.QueryResult<GetConfigurationVersionsQuery, GetConfigurationVersionsQueryVariables>;
+export const GetLatestMeasurementIntervalDocument = gql`
+    query getLatestMeasurementInterval($name: String!) {
+  configuration(name: $name) {
+    metadata {
+      name
+      id
+      version
+    }
+    spec {
+      measurementInterval
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetLatestMeasurementIntervalQuery__
+ *
+ * To run a query within a React component, call `useGetLatestMeasurementIntervalQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetLatestMeasurementIntervalQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetLatestMeasurementIntervalQuery({
+ *   variables: {
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useGetLatestMeasurementIntervalQuery(baseOptions: Apollo.QueryHookOptions<GetLatestMeasurementIntervalQuery, GetLatestMeasurementIntervalQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetLatestMeasurementIntervalQuery, GetLatestMeasurementIntervalQueryVariables>(GetLatestMeasurementIntervalDocument, options);
+      }
+export function useGetLatestMeasurementIntervalLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLatestMeasurementIntervalQuery, GetLatestMeasurementIntervalQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetLatestMeasurementIntervalQuery, GetLatestMeasurementIntervalQueryVariables>(GetLatestMeasurementIntervalDocument, options);
+        }
+export type GetLatestMeasurementIntervalQueryHookResult = ReturnType<typeof useGetLatestMeasurementIntervalQuery>;
+export type GetLatestMeasurementIntervalLazyQueryHookResult = ReturnType<typeof useGetLatestMeasurementIntervalLazyQuery>;
+export type GetLatestMeasurementIntervalQueryResult = Apollo.QueryResult<GetLatestMeasurementIntervalQuery, GetLatestMeasurementIntervalQueryVariables>;
 export const GetRenderedConfigDocument = gql`
     query getRenderedConfig($name: String!) {
   configuration(name: $name) {
@@ -2833,6 +2884,7 @@ export const GetConfigurationDocument = gql`
     }
     agentCount
     spec {
+      measurementInterval
       raw
       sources {
         id

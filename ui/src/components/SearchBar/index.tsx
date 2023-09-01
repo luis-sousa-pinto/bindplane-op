@@ -44,7 +44,7 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
   const [query, setQuery] = useState(initialQuery ?? "");
 
   function handleInputChange(
-    e: React.SyntheticEvent,
+    _e: React.SyntheticEvent,
     value: string,
     reason: AutocompleteInputChangeReason
   ) {

@@ -11,9 +11,9 @@ import { GridRowId } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import React, { useState } from "react";
 import { ShowPageConfig } from ".";
-import { AgentsTable } from "../../../components/Tables/AgentsTable";
 import { labelAgents } from "../../../utils/rest/label-agents";
 import { initQuery } from "./utils";
+import { useComponents } from "../../../hooks/useComponents";
 
 interface ApplyConfigDialogProps extends DialogProps {
   configuration: NonNullable<ShowPageConfig>;
@@ -33,6 +33,7 @@ export const ApplyConfigDialog: React.FC<ApplyConfigDialogProps> = ({
   const [agentsToApply, setAgentsToApply] = useState<GridRowId[]>([]);
 
   const { enqueueSnackbar } = useSnackbar();
+  const { AgentsTable } = useComponents();
 
   function handleAgentsSelected(a: GridRowId[]) {
     setAgentsToApply(a);

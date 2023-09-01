@@ -35,6 +35,7 @@ import (
 	exposedserver "github.com/observiq/bindplane-op/server"
 	"github.com/observiq/bindplane-op/stopqueue"
 	"github.com/observiq/bindplane-op/store"
+	"github.com/observiq/bindplane-op/store/stats"
 	"github.com/observiq/bindplane-op/tracer"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -111,7 +112,7 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 	}
 
 	for _, c := range configurations {
-		if err := s.store.ConfigurationIndex(ctx).Upsert(c); err != nil {
+		if err := s.store.ConfigurationIndex(ctx).Upsert(ctx, c); err != nil {
 			return fmt.Errorf("failed to seed configuration index: %s, %w", c.ID(), err)
 		}
 	}
@@ -122,7 +123,7 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 	}
 
 	for _, a := range agents {
-		if err := s.store.AgentIndex(ctx).Upsert(a); err != nil {
+		if err := s.store.AgentIndex(ctx).Upsert(ctx, a); err != nil {
 			return fmt.Errorf("failed to seed agent index: %s, %w", a.ID, err)
 		}
 	}
@@ -133,7 +134,10 @@ func (s *defaultServer) Seed(ctx context.Context) error {
 // Serve will run a BindPlane server until an error occurs or the context is canceled.
 func (s *defaultServer) Serve(ctx context.Context) error {
 	agentVersions := s.createAgentVersions(ctx)
-	bindplane := bpserver.NewBindPlane(s.cfg, s.logger, s.store, agentVersions)
+
+	batcher := s.createMeasurementBatcher(ctx)
+
+	bindplane := bpserver.NewBindPlane(s.cfg, s.logger, s.store, agentVersions, batcher)
 
 	s.startManager(ctx, bindplane)
 
@@ -153,8 +157,6 @@ func (s *defaultServer) Serve(ctx context.Context) error {
 	s.startTracer(ctx)
 
 	s.startMetrics(ctx)
-
-	s.startRolloutUpdates(ctx)
 
 	serverErr := make(chan error, 1)
 	go func() {
@@ -214,6 +216,17 @@ func (s *defaultServer) createAgentVersions(ctx context.Context) agent.Versions 
 	}
 
 	return agent.NewVersions(ctx, versionClient, s.store, settings)
+}
+
+// createMeasurementBatcher creates a measurement batcher and adds it to the stop queue
+func (s *defaultServer) createMeasurementBatcher(ctx context.Context) stats.MeasurementBatcher {
+	batcher := stats.NewDefaultBatcher(ctx, s.logger, s.store.Measurements())
+
+	s.stopQueue.Add(func(stopCtx context.Context) error {
+		return batcher.Shutdown(stopCtx)
+	})
+
+	return batcher
 }
 
 // setGinMode will set the gin mode based on the environment.
@@ -321,19 +334,6 @@ func (s *defaultServer) startScheduler(ctx context.Context) {
 	s.stopQueue.Add(
 		func(stopCtx context.Context) error {
 			return scheduler.Stop(stopCtx)
-		},
-	)
-}
-
-// startRolloutUpdates starts the store listening for agent rollout updates
-func (s *defaultServer) startRolloutUpdates(ctx context.Context) {
-	subCtx, cancel := context.WithCancel(ctx)
-	go store.HandleRolloutUpdates(subCtx, s.store, s.logger)
-
-	s.stopQueue.Add(
-		func(stopCtx context.Context) error {
-			cancel()
-			return nil
 		},
 	)
 }

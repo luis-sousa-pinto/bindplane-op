@@ -22,7 +22,7 @@ func (k *processorTypeKind) NewEmptyResource() *ProcessorType { return &Processo
 
 // ProcessorType is a ResourceType used to define sources
 type ProcessorType struct {
-	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceType `yaml:",inline" mapstructure:",squash"`
 }
 
 // NewProcessorType creates a new processor-type with the specified name,

@@ -3,7 +3,10 @@ import { TELEMETRY_SIZE_METRICS } from "../../components/MeasurementControlBar/M
 import { isSourceID } from "../../components/PipelineGraph/Nodes/ProcessorNode";
 import { MinimumRequiredConfig } from "../../components/PipelineGraph/PipelineGraph";
 import { Graph, GraphMetric, GraphMetrics } from "../../graphql/generated";
-import { isNodeDisabled } from "../../components/PipelineGraph/Nodes/nodeUtils";
+import {
+  AttributeName,
+  isNodeDisabled,
+} from "../../components/PipelineGraph/Nodes/nodeUtils";
 
 export const GRAPH_NODE_OFFSET = 150;
 export const GRAPH_PADDING = 300;
@@ -390,18 +393,38 @@ export function getNodesAndEdges(
         type: MarkerType.ArrowClosed,
       },
       data: {
+        attributes: {},
         connectedNodesAndEdges: [e.id],
       },
       type: isConfigurationFlow ? "configurationEdge" : "overviewEdge",
       zIndex: 1,
     };
 
-    nodes.forEach((node) => {
-      // Use the attributes from the node on the right of the edge
-      if (node.id === e.target) {
-        edge.data.attributes = node.data.attributes;
+    // Set the edge's ActiveTypeFlag attribute from the intersection of the source
+    // and target node ActiveTypeFlag attribute
+
+    // Find the source and target nodes
+    const sourceNode = nodes.find((n) => n.id === e.source);
+    const targetNode = nodes.find((n) => n.id === e.target);
+
+    if (sourceNode && targetNode) {
+      // Get the ActiveTypeFlag attribute from the source and target nodes
+      const sourceNodeActiveTypeFlag =
+        sourceNode.data.attributes[AttributeName.ActiveTypeFlags];
+      const targetNodeActiveTypeFlag =
+        targetNode.data.attributes[AttributeName.ActiveTypeFlags];
+
+      // If the source and target nodes have ActiveTypeFlag attributes
+      if (sourceNodeActiveTypeFlag && targetNodeActiveTypeFlag) {
+        // Set the ActiveTypeFlag attribute as the intersection of the two nodes
+        edge.data.attributes = {
+          ...(targetNode.data.attributes ?? {}),
+          [AttributeName.ActiveTypeFlags]:
+            sourceNodeActiveTypeFlag & targetNodeActiveTypeFlag,
+        };
       }
-    });
+    }
+
     if (isNodeDisabled(telemetryType || "", edge.data.attributes)) {
       edge.zIndex = 0;
     }

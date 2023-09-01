@@ -36,9 +36,9 @@ import (
 //
 // There are separate ResourceTypes for each type of resource, e.g. SourceType for Source resources.
 type ResourceType struct {
-	ResourceMeta              `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta              `yaml:",inline" mapstructure:",squash"`
 	Spec                      ResourceTypeSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[VersionStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 // GetSpec returns the spec for this resource.
@@ -430,6 +430,8 @@ func (s *ResourceTypeSpec) validate(kind Kind, errs validation.Errors) {
 				params[p.Name] = []string{}
 			case yamlType:
 				params[p.Name] = ""
+			case mapToEnumType:
+				params[p.Name] = make(map[string]string)
 			}
 		}
 	}

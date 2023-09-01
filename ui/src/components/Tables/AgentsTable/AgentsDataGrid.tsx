@@ -36,7 +36,7 @@ export enum AgentsTableField {
   TRACES = "traces",
 }
 
-interface AgentsDataGridProps {
+export interface AgentsDataGridProps {
   onAgentsSelected?: (agentIds: GridRowSelectionModel) => void;
   isRowSelectable?: (params: GridRowParams<AgentsTableAgent>) => boolean;
   clearSelectionModelFnRef?: React.MutableRefObject<(() => void) | null>;
@@ -54,12 +54,12 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
   clearSelectionModelFnRef,
   onAgentsSelected,
   isRowSelectable,
-  minHeight,
-  maxHeight,
+  minHeight = "65vh",
+  maxHeight = "65vh",
   loading,
   agents,
   agentMetrics,
-  columnFields,
+  columnFields = defaultFields,
   density,
   allowSelection,
 }) => {
@@ -76,7 +76,144 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
     };
   }, [setSelectionModel, clearSelectionModelFnRef]);
 
-  const columns: GridColDef[] = (columnFields || []).map((field) => {
+  const columns = makeAgentsTableColumns(columnFields, agentMetrics);
+
+  function handleSelect(s: GridRowSelectionModel) {
+    setSelectionModel(s);
+
+    isFunction(onAgentsSelected) && onAgentsSelected(s);
+  }
+
+  return (
+    <DataGrid
+      checkboxSelection={isFunction(onAgentsSelected) && allowSelection}
+      isRowSelectable={isRowSelectable}
+      onRowSelectionModelChange={handleSelect}
+      rowSelectionModel={selectionModel}
+      density={density}
+      components={{
+        NoRowsOverlay: () => (
+          <Stack height="100%" alignItems="center" justifyContent="center">
+            No Agents
+          </Stack>
+        ),
+      }}
+      style={{ minHeight, maxHeight }}
+      loading={loading}
+      disableRowSelectionOnClick
+      columns={columns}
+      rows={agents ?? []}
+    />
+  );
+};
+
+function renderConfigurationCell(cellParams: GridCellParams<any, string>) {
+  const configName = cellParams.value;
+  if (configName == null) {
+    return <></>;
+  }
+  return (
+    <SearchLink
+      path={`/configurations/${configName}`}
+      displayName={configName}
+    />
+  );
+}
+
+export function renderNameDataCell(
+  cellParams: GridCellParams<{ name: string; id: string }, AgentsTableAgent>
+): JSX.Element {
+  return (
+    <SearchLink
+      path={`/agents/${cellParams.row.id}`}
+      displayName={cellParams.row.name}
+    />
+  );
+}
+
+export function renderLabelDataCell(
+  cellParams: GridCellParams<any, Record<string, string>>
+): JSX.Element {
+  return renderAgentLabels(cellParams.value);
+}
+
+export function renderStatusDataCell(
+  cellParams: GridCellParams<any, AgentStatus>
+): JSX.Element {
+  return renderAgentStatus(cellParams.value);
+}
+
+export function createMetricRateColumn(
+  field: string,
+  telemetryType: string,
+  width: number,
+  agentMetrics?: AgentsTableMetricsSubscription
+): GridColDef[][0] {
+  return {
+    field,
+    width: width,
+    headerName: TELEMETRY_TYPES[telemetryType],
+    valueGetter: (params: GridValueGetterParams) => {
+      if (agentMetrics == null) {
+        return "";
+      }
+      // should probably have a lookup table here rather than interpolate in two places
+      const metricName = TELEMETRY_SIZE_METRICS[telemetryType];
+      const agentName = params.id;
+
+      // get all metrics for this agent that match the pattern /^destination\/\w+$/
+      // those are metrics for data received by a destination, ignoring values before the processors
+      const metrics = agentMetrics.agentMetrics.metrics.filter(
+        (m) =>
+          m.name === metricName &&
+          m.agentID! === agentName &&
+          m.nodeID.startsWith("destination/") &&
+          !m.nodeID.endsWith("/processors")
+      );
+      if (metrics == null) {
+        return 0;
+      }
+      // to make this sortable, we use the raw value and provide a valueFormatter implementation to show units
+      return metrics.reduce((a, b) => a + b.value, 0);
+    },
+    valueFormatter: (params: GridValueFormatterParams<number>): string => {
+      if (params.value === 0) {
+        return "";
+      }
+
+      const metricName = TELEMETRY_SIZE_METRICS[telemetryType];
+      const agentName = params.id;
+
+      const metrics = agentMetrics?.agentMetrics.metrics.find(
+        (m) => m.name === metricName && m.agentID! === agentName
+      );
+      return formatMetric(
+        { value: params.value, unit: metrics?.unit || "B/s" },
+        DEFAULT_AGENTS_TABLE_PERIOD
+      );
+    },
+  };
+}
+
+export const defaultFields = [
+  AgentsTableField.NAME,
+  AgentsTableField.STATUS,
+  AgentsTableField.VERSION,
+  AgentsTableField.CONFIGURATION,
+  AgentsTableField.LOGS,
+  AgentsTableField.METRICS,
+  AgentsTableField.TRACES,
+  AgentsTableField.OPERATING_SYSTEM,
+  AgentsTableField.LABELS,
+];
+
+export const AgentsDataGrid = memo(AgentsDataGridComponent);
+
+export function makeAgentsTableColumns(
+  fields: AgentsTableField[],
+  agentMetrics?: AgentsTableMetricsSubscription
+): GridColDef[] {
+  return fields.map((field) => {
     switch (field) {
       case AgentsTableField.STATUS:
         return {
@@ -156,138 +293,4 @@ const AgentsDataGridComponent: React.FC<AgentsDataGridProps> = ({
         };
     }
   });
-
-  function handleSelect(s: GridRowSelectionModel) {
-    setSelectionModel(s);
-
-    isFunction(onAgentsSelected) && onAgentsSelected(s);
-  }
-
-  return (
-    <DataGrid
-      checkboxSelection={isFunction(onAgentsSelected) && allowSelection}
-      isRowSelectable={isRowSelectable}
-      onRowSelectionModelChange={handleSelect}
-      rowSelectionModel={selectionModel}
-      density={density}
-      components={{
-        NoRowsOverlay: () => (
-          <Stack height="100%" alignItems="center" justifyContent="center">
-            No Agents
-          </Stack>
-        ),
-      }}
-      style={{ minHeight, maxHeight }}
-      loading={loading}
-      disableRowSelectionOnClick
-      columns={columns}
-      rows={agents ?? []}
-    />
-  );
-};
-
-function renderConfigurationCell(cellParams: GridCellParams<any, string>) {
-  const configName = cellParams.value;
-  if (configName == null) {
-    return <></>;
-  }
-  return (
-    <SearchLink
-      path={`/configurations/${configName}`}
-      displayName={configName}
-    />
-  );
 }
-
-function renderNameDataCell(
-  cellParams: GridCellParams<{ name: string; id: string }, AgentsTableAgent>
-): JSX.Element {
-  return (
-    <SearchLink
-      path={`/agents/${cellParams.row.id}`}
-      displayName={cellParams.row.name}
-    />
-  );
-}
-
-function renderLabelDataCell(
-  cellParams: GridCellParams<any, Record<string, string>>
-): JSX.Element {
-  return renderAgentLabels(cellParams.value);
-}
-
-function renderStatusDataCell(
-  cellParams: GridCellParams<any, AgentStatus>
-): JSX.Element {
-  return renderAgentStatus(cellParams.value);
-}
-
-function createMetricRateColumn(
-  field: string,
-  telemetryType: string,
-  width: number,
-  agentMetrics?: AgentsTableMetricsSubscription
-): GridColDef[][0] {
-  return {
-    field,
-    width: width,
-    headerName: TELEMETRY_TYPES[telemetryType],
-    valueGetter: (params: GridValueGetterParams) => {
-      if (agentMetrics == null) {
-        return "";
-      }
-      // should probably have a lookup table here rather than interpolate in two places
-      const metricName = TELEMETRY_SIZE_METRICS[telemetryType];
-      const agentName = params.id;
-
-      // get all metrics for this agent that match the pattern /^destination\/\w+$/
-      // those are metrics for data received by a destination, ignoring values before the processors
-      const metrics = agentMetrics.agentMetrics.metrics.filter(
-        (m) =>
-          m.name === metricName &&
-          m.agentID! === agentName &&
-          m.nodeID.startsWith("destination/") &&
-          !m.nodeID.endsWith("/processors")
-      );
-      if (metrics == null) {
-        return 0;
-      }
-      // to make this sortable, we use the raw value and provide a valueFormatter implementation to show units
-      return metrics.reduce((a, b) => a + b.value, 0);
-    },
-    valueFormatter: (params: GridValueFormatterParams<number>): string => {
-      if (params.value === 0) {
-        return "";
-      }
-
-      const metricName = TELEMETRY_SIZE_METRICS[telemetryType];
-      const agentName = params.id;
-
-      const metrics = agentMetrics?.agentMetrics.metrics.find(
-        (m) => m.name === metricName && m.agentID! === agentName
-      );
-      return formatMetric(
-        { value: params.value, unit: metrics?.unit || "B/s" },
-        DEFAULT_AGENTS_TABLE_PERIOD
-      );
-    },
-  };
-}
-
-AgentsDataGridComponent.defaultProps = {
-  minHeight: "65vh",
-  maxHeight: "65vh",
-  columnFields: [
-    AgentsTableField.NAME,
-    AgentsTableField.STATUS,
-    AgentsTableField.VERSION,
-    AgentsTableField.CONFIGURATION,
-    AgentsTableField.LOGS,
-    AgentsTableField.METRICS,
-    AgentsTableField.TRACES,
-    AgentsTableField.OPERATING_SYSTEM,
-    AgentsTableField.LABELS,
-  ],
-};
-
-export const AgentsDataGrid = memo(AgentsDataGridComponent);

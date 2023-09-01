@@ -31,6 +31,7 @@ import (
 	bpserver "github.com/observiq/bindplane-op/server"
 	serverMocks "github.com/observiq/bindplane-op/server/mocks"
 	"github.com/observiq/bindplane-op/store"
+	storeMocks "github.com/observiq/bindplane-op/store/mocks"
 	"github.com/observiq/opamp-go/protobufs"
 	opamp "github.com/observiq/opamp-go/server/types"
 
@@ -281,13 +282,39 @@ func TestServerOnConnecting(t *testing.T) {
 			name:          "Valid key",
 			authorization: "Secret-Key good-key",
 			createManager: func(t *testing.T) *serverMocks.MockManager {
+				agent := &model.Agent{
+					ID:     "",
+					Labels: model.MakeLabels(),
+				}
+
 				manager := serverMocks.NewMockManager(t)
 				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(ctx, true)
+				manager.On("Agent", mock.Anything, "").Return(agent, nil)
 				return manager
 			},
 			expect: opamp.ConnectionResponse{
 				Accept:         true,
 				HTTPStatusCode: http.StatusOK,
+			},
+		},
+		{
+			name:          "Valid key, agent is already connected",
+			authorization: "Secret-Key good-key",
+			createManager: func(t *testing.T) *serverMocks.MockManager {
+				agent := &model.Agent{
+					ID:     "",
+					Labels: model.MakeLabels(),
+					Status: model.Connected,
+				}
+
+				manager := serverMocks.NewMockManager(t)
+				manager.On("VerifySecretKey", mock.Anything, "good-key").Return(ctx, true)
+				manager.On("Agent", mock.Anything, "").Return(agent, nil)
+				return manager
+			},
+			expect: opamp.ConnectionResponse{
+				Accept:         false,
+				HTTPStatusCode: http.StatusConflict,
 			},
 		},
 		{
@@ -882,7 +909,16 @@ func TestOnConnectingOpAMPCompatibility(t *testing.T) {
 				SecretKey: "a0f1db77-818a-4f1a-81a3-7b6a9613ef41",
 			},
 		}
-		testManager := bpserver.NewManager(cfg, nil, nil, zap.NewNop())
+
+		agent := &model.Agent{
+			ID:     "",
+			Labels: model.MakeLabels(),
+		}
+
+		mockStore := storeMocks.NewMockStore(t)
+		mockStore.On("Agent", mock.Anything, mock.Anything).Return(agent, nil).Maybe()
+
+		testManager := bpserver.NewManager(cfg, mockStore, nil, zap.NewNop())
 		testServer := newLegacyServer(testManager, zap.NewNop())
 		testServer.compatibleOpAMPVersions = []string{"v0.2.0"}
 

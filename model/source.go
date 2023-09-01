@@ -29,10 +29,10 @@ func (k *sourceKind) NewEmptyResource() *Source { return &Source{} }
 // Source will generate an exporter and be at the end of a pipeline
 type Source struct {
 	// ResourceMeta is the metadata for the Source
-	ResourceMeta `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceMeta `yaml:",inline" mapstructure:",squash"`
 	// Spec is the specification for the Source that contains the type and parameters
 	Spec                      ParameterizedSpec `json:"spec" yaml:"spec" mapstructure:"spec"`
-	StatusType[VersionStatus] `yaml:",inline" json:",inline" mapstructure:",squash"`
+	StatusType[VersionStatus] `yaml:",inline" mapstructure:",squash"`
 }
 
 var _ parameterizedResource = (*Source)(nil)

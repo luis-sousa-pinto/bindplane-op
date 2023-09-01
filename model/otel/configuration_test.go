@@ -16,7 +16,6 @@ package otel
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -73,16 +72,47 @@ func TestUniqueComponentID(t *testing.T) {
 
 func TestEmptyConfiguration(t *testing.T) {
 	c := NewConfiguration()
-	yaml, err := c.YAML()
+	yaml, err := c.YAML("")
 	require.NoError(t, err)
 	require.Equal(t, NoopConfig, yaml)
 }
 
 func TestNilConfiguration(t *testing.T) {
 	var c *Configuration
-	yaml, err := c.YAML()
+	yaml, err := c.YAML("")
 	require.NoError(t, err)
 	require.Equal(t, NoopConfig, yaml)
+}
+
+func TestPrepareYAMLComment(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "single line",
+			input:    "This is a comment",
+			expected: "# This is a comment\n",
+		},
+		{
+			name:     "multi line",
+			input:    "This is a comment\nThis is a second line",
+			expected: "# This is a comment\n# This is a second line\n",
+		},
+		{
+			name:     "No comment",
+			input:    "",
+			expected: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := prepareYAMLComment(tc.input)
+			require.Equal(t, tc.expected, out)
+		})
+	}
 }
 
 func TestPipelineTypeFlags_Set(t *testing.T) {
@@ -128,7 +158,7 @@ func TestPipelineTypeFlags_Set(t *testing.T) {
 // TODO(jsirianni): Refactor this test to include all measurement cases, including tls,
 // prometheus scraper, etc.
 func TestAddAgentMetricsPipeline(t *testing.T) {
-	rc := NewRenderContext("testid", "testname", "http://test", false, nil)
+	rc := NewRenderContext("testid", "testname", "http://test", false, nil, "10s")
 	rc.IncludeMeasurements = true
 	c := NewConfiguration()
 	c.AddAgentMetricsPipeline(rc, map[string]string{})
@@ -136,15 +166,10 @@ func TestAddAgentMetricsPipeline(t *testing.T) {
 	expect := map[string]any{
 		"endpoint": "http://test/v1/otlphttp",
 		"retry_on_failure": map[string]any{
-			"enabled":          true,
-			"initial_interval": 5 * time.Second,
-			"max_interval":     5 * time.Second,
-			"max_elapsed_time": 30 * time.Second,
+			"enabled": false,
 		},
 		"sending_queue": map[string]any{
-			"enabled":       true,
-			"num_consumers": 1,
-			"queue_size":    60,
+			"enabled": false,
 		},
 		"headers": map[string]string{},
 	}

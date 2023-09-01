@@ -747,9 +747,22 @@ func TestReportConnectedAgents(t *testing.T) {
 	RunReportConnectedAgentsTests(ctx, t, store)
 }
 
+func TestUpdateAgentStatus(t *testing.T) {
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop())
+	defer store.Close()
+
+	runUpdateAgentStatusTests(ctx, t, store)
+}
+
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 
 var testOptions = Options{
-	SessionsSecret:   "super-secret-key",
-	MaxEventsToMerge: 1,
+	SessionsSecret:        "super-secret-key",
+	MaxEventsToMerge:      1,
+	DisableRolloutUpdater: true,
 }

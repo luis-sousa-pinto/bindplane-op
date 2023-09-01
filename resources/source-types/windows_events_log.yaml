@@ -6,7 +6,7 @@ metadata:
   icon: /icons/sources/windows.svg
   description: Collect logs from Windows Event Service.
 spec:
-  version: 0.0.1
+  version: 0.1.0
   supportedPlatforms:
     - windows
   parameters:
@@ -34,6 +34,15 @@ spec:
         gridColumns: 12
       default: true
 
+    - name: raw_logs
+      label: Raw Logs
+      description: When enabled, the XML log is not parsed into a structure but instead saved to the log body.
+      type: bool
+      options:
+        gridColumns: 12
+      default: false
+      advancedConfig: true
+    
     - name: custom_channels
       label: Custom Channels
       description: Custom channels to read events from.
@@ -60,6 +69,7 @@ spec:
       {{ if .system_event_input }}
       - windowseventlog/system:
           channel: system
+          raw: {{ .raw_logs }}
           max_reads: 100
           poll_interval: 1s
           attributes:
@@ -70,6 +80,7 @@ spec:
       {{ if .app_event_input }}
       - windowseventlog/application:
           channel: application
+          raw: {{ .raw_logs }}
           max_reads: 100
           poll_interval: 1s
           attributes:
@@ -80,6 +91,7 @@ spec:
       {{ if .security_event_input }}
       - windowseventlog/security:
           channel: security
+          raw: {{ .raw_logs }}
           max_reads: 100
           poll_interval: 1s
           attributes:
@@ -90,6 +102,7 @@ spec:
       {{ range $index, $chan := .custom_channels }}
       - windowseventlog/custom/{{ $index }}:
           channel: {{ $chan }}
+          raw: {{ .raw_logs }}
           max_reads: 100
           poll_interval: 1s
           attributes:

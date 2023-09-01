@@ -57,11 +57,18 @@ func NewBoltStore(ctx context.Context, db *bbolt.DB, options Options, logger *za
 		configurationIndex: search.NewInMemoryIndex("configuration"),
 		BoltstoreCore: &BoltstoreCore{
 			DB:             db,
-			StoreUpdates:   NewUpdates(ctx, options, logger, BuildBasicEventBroadcast(), BuildRolloutEventBroadcast(), NewRolloutUpdates),
 			Logger:         logger,
+			RolloutBatcher: NewNopRolloutBatcher(),
 			SessionStorage: NewBPCookieStore(options.SessionsSecret),
 		},
 	}
+
+	// There is a cyclic dependency here that's not great where the rollout batcher needs the store and the updates need the rollout batcher.
+	// if !options.DisableRolloutUpdater {
+	// 	// Assign a real batcher if we are not disabling rollout updater
+	// 	store.RolloutBatcher = NewDefaultBatcher(ctx, logger, DefaultRolloutBatchFlushInterval, store)
+	// }
+	store.StoreUpdates = NewUpdates(ctx, options, logger, store.RolloutBatcher, BuildBasicEventBroadcast())
 
 	// it might seem unintuitive, but it's important to point the boltstoreCommon interface to the store
 	store.BoltstoreCommon = store
@@ -119,8 +126,16 @@ func InitBoltstoreDB(storageFilePath string) (*bbolt.DB, error) {
 }
 
 func (s *boltstore) Close() error {
+	var errs error
 	s.StoreUpdates.Shutdown(context.Background())
-	return s.DB.Close()
+	if err := s.RolloutBatcher.Shutdown(context.Background()); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("failed to shutdown rollout batcher: %w", err))
+	}
+	if err := s.DB.Close(); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("failed to shutdown DB: %w", err))
+	}
+
+	return errs
 }
 
 // Apply resources iterates through a slice of resources, then adds them to storage,
@@ -158,7 +173,7 @@ func (s *boltstore) ApplyResources(ctx context.Context, resources []model.Resour
 			switch r := resource.(type) {
 			case *model.Configuration:
 				// update the index
-				err = s.configurationIndex.Upsert(r)
+				err = s.configurationIndex.Upsert(ctx, r)
 				if err != nil {
 					s.Logger.Error("failed to update the search index", zap.String("configuration", r.Name()))
 				}
@@ -324,7 +339,7 @@ func (s *boltstore) DeleteAgents(ctx context.Context, agentIDs []string) ([]*mod
 
 	// remove deleted agents from the index
 	for _, agent := range deleted {
-		if err := s.agentIndex.Remove(agent); err != nil {
+		if err := s.agentIndex.Remove(ctx, agent); err != nil {
 			s.Logger.Error("failed to remove from the search index", zap.String("agentID", agent.ID))
 		}
 	}
@@ -491,9 +506,10 @@ func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists
 	agent := &model.Agent{ID: agentID}
 
 	// load the existing agent or create it
-	if data := bucket.Get(key); data != nil {
+	dataBefore := bucket.Get(key)
+	if dataBefore != nil {
 		// existing agent, unmarshal
-		if err := jsoniter.Unmarshal(data, agent); err != nil {
+		if err := jsoniter.Unmarshal(dataBefore, agent); err != nil {
 			return agent, err
 		}
 		agentEventType = EventTypeUpdate
@@ -526,17 +542,20 @@ func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists
 	}
 
 	// marshal it back to to json
-	data, err := jsoniter.Marshal(agent)
+	dataAfter, err := jsoniter.Marshal(agent)
 	if err != nil {
 		return agent, err
 	}
 
-	err = bucket.Put(key, data)
-	if err != nil {
-		return agent, err
+	// only write and include in updates if there are actual changes
+	if !bytes.Equal(dataBefore, dataAfter) {
+		err = bucket.Put(key, dataAfter)
+		if err != nil {
+			return agent, err
+		}
+		updates.IncludeAgent(agent, agentEventType)
 	}
 
-	updates.IncludeAgent(agent, agentEventType)
 	return agent, nil
 }
 
@@ -836,7 +855,7 @@ func DeleteResource[R model.Resource](ctx context.Context, s BoltstoreCommon, ki
 	}
 
 	if emptyResource.GetKind() == model.KindConfiguration {
-		if err := s.ConfigurationsIndex(ctx).Remove(emptyResource); err != nil {
+		if err := s.ConfigurationsIndex(ctx).Remove(ctx, emptyResource); err != nil {
 			s.ZapLogger().Error("failed to remove configuration from the search index", zap.String("name", emptyResource.Name()))
 		}
 	}
@@ -920,7 +939,7 @@ func editResource[R model.Resource](ctx context.Context, s BoltstoreCommon, tx *
 	// only re-index if modified
 	if wasModified {
 		if resource.GetKind() == model.KindConfiguration {
-			if err := s.ConfigurationsIndex(ctx).Upsert(resource); err != nil {
+			if err := s.ConfigurationsIndex(ctx).Upsert(ctx, resource); err != nil {
 				return resource, wasModified, err
 			}
 		}

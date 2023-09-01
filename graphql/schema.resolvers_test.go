@@ -29,6 +29,7 @@ import (
 	"github.com/observiq/bindplane-op/model"
 	"github.com/observiq/bindplane-op/store"
 	"github.com/observiq/bindplane-op/store/mocks"
+	statsmocks "github.com/observiq/bindplane-op/store/stats/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -82,11 +83,13 @@ func TestUpgradeAvailable(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			agentVersions := agentMocks.NewMockVersions(t)
-			agentVersions.On("LatestVersion", ctx).Return(tc.latestVersion, nil)
+			agentVersions.On("LatestVersion", mock.Anything).Return(tc.latestVersion, nil)
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(&config.Config{},
 				zaptest.NewLogger(t),
 				store.NewMapStore(ctx, store.Options{}, zap.NewNop()),
 				agentVersions,
+				mockBatcher,
 			)
 
 			resolver := agentResolver{&Resolver{
@@ -114,7 +117,8 @@ func TestQueryResolvers(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, zap.NewNop())
 
-	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), mapstore, mockVersions())
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), mapstore, mockVersions(), mockBatcher)
 
 	srv := NewHandler(bindplane)
 	c := client.New(srv)
@@ -173,7 +177,8 @@ func TestConfigForAgent(t *testing.T) {
 		MaxEventsToMerge: 1,
 	}, zap.NewNop())
 
-	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), mapstore, mockVersions())
+	mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+	bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), mapstore, mockVersions(), mockBatcher)
 
 	srv := NewHandler(bindplane)
 	c := client.New(srv)
@@ -379,11 +384,13 @@ func Test_queryResolver_ConfigurationHistory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)
@@ -438,7 +445,8 @@ func Test_mutationResolver_ClearAgentUpgradeError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), tt.store(t), mockVersions())
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
+			bindplane := server.NewBindPlane(&config.Config{}, zaptest.NewLogger(t), tt.store(t), mockVersions(), mockBatcher)
 			resolver := &Resolver{Bindplane: bindplane}
 			r := &mutationResolver{
 				Resolver: resolver,
@@ -489,11 +497,13 @@ func Test_mutationResolver_EditConfigurationDescription(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)
@@ -702,11 +712,13 @@ func Test_queryResolver_Destination(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t).(store.Store),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)
@@ -816,11 +828,13 @@ func Test_queryResolver_DestinationWithType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t).(store.Store),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)
@@ -930,11 +944,13 @@ func Test_queryResolver_SourceWithType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t).(store.Store),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)
@@ -1043,11 +1059,13 @@ func Test_queryResolver_ProcessorWithType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockBatcher := statsmocks.NewMockMeasurementBatcher(t)
 			bindplane := server.NewBindPlane(
 				&config.Config{},
 				zap.NewNop(),
 				tt.store(t).(store.Store),
 				mockVersions(),
+				mockBatcher,
 			)
 
 			resolver := NewResolver(bindplane)

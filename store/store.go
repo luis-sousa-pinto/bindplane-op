@@ -55,6 +55,7 @@ type Options struct {
 // Store handles interacting with a storage backend,
 //
 //go:generate mockery --name=Store --filename=mock_store.go --structname=MockStore --with-expecter
+//go:generate mockery --name Store --inpackage --filename mock_store.go --structname mockStore --with-expecter
 type Store interface {
 	Clear()
 
@@ -71,6 +72,13 @@ type Store interface {
 	// UpdateAgent updates an existing Agent in the Store. If the agentID does not exist, no error is returned but the
 	// agent will be nil. An error is only returned if the update fails.
 	UpdateAgent(ctx context.Context, agentID string, updater AgentUpdater) (*model.Agent, error)
+
+	// UpdateAgentStatus will update the status of an existing agent. If the agentID does not exist, this does nothing. An
+	// error is only returned if updating the status of the agent fails.
+	//
+	// When only the agent status needs to be modified, this should be preferred over UpdateAgent. In some store
+	// implementations this will be more efficient.
+	UpdateAgentStatus(ctx context.Context, agentID string, status model.AgentStatus) error
 
 	// UpdateAgents updates existing Agents in the Store. If an agentID does not exist, that agentID is ignored and no
 	// agent corresponding to that ID will be returned. An error is only returned if the update fails.
@@ -155,9 +163,6 @@ type Store interface {
 	// removed from CleanupDisconnectedAgents are also sent with Updates.
 	Updates(ctx context.Context) eventbus.Source[BasicEventUpdates]
 
-	// AgentRolloutUpdates will receive agent update events that are meant to be processed for purpose of rollouts.
-	AgentRolloutUpdates(ctx context.Context) eventbus.Source[RolloutEventUpdates]
-
 	// AgentIndex provides access to the search AgentIndex implementation managed by the Store
 	AgentIndex(ctx context.Context) search.Index
 
@@ -230,8 +235,8 @@ type ConfigurationUpdater func(current *model.Configuration)
 // search index helpers
 
 // StartedRolloutsFromIndex returns a list of all rollouts that are not pending.
-func StartedRolloutsFromIndex(_ context.Context, index search.Index) ([]string, error) {
-	pendingConfigs, err := index.Suggestions(search.ParseQuery("rollout-pending:"))
+func StartedRolloutsFromIndex(ctx context.Context, index search.Index) ([]string, error) {
+	pendingConfigs, err := index.Suggestions(ctx, search.ParseQuery("rollout-pending:"))
 	pendingConfigNames := make([]string, 0, len(pendingConfigs))
 	for _, c := range pendingConfigs {
 		pendingConfigNames = append(pendingConfigNames, c.Label)
@@ -249,42 +254,13 @@ func FindAgents(ctx context.Context, idx search.Index, key string, value string)
 	return idx.Search(ctx, query)
 }
 
-// HandleRolloutUpdates is a blocking call that subscribes to the store AgentRolloutUpdates and calls
-// UpdateRollout on all agent configurations
-func HandleRolloutUpdates(ctx context.Context, s Store, logger *zap.Logger) {
-	subChan, unsubscribe := eventbus.Subscribe(ctx, s.AgentRolloutUpdates(ctx))
-	defer unsubscribe()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case msg := <-subChan:
-			for _, update := range msg.Updates() {
-				status := update.Item
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Current); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Pending); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-
-				if err := processAgentRolloutUpdate(ctx, s, status.Future); err != nil {
-					logger.Error("Failed to update rollout", zap.Error(err))
-				}
-			}
-		}
-	}
-}
-
 // CurrentRolloutsForConfiguration returns a list of all rollouts that are currently in progress for the specified configuration.
-func CurrentRolloutsForConfiguration(idx search.Index, configurationName string) ([]string, error) {
-	pending, err := FindSuggestions(idx, model.FieldConfigurationPending, configurationName+":")
+func CurrentRolloutsForConfiguration(ctx context.Context, idx search.Index, configurationName string) ([]string, error) {
+	pending, err := FindSuggestions(ctx, idx, model.FieldConfigurationPending, configurationName+":")
 	if err != nil {
 		return nil, err
 	}
-	future, err := FindSuggestions(idx, model.FieldConfigurationFuture, configurationName+":")
+	future, err := FindSuggestions(ctx, idx, model.FieldConfigurationFuture, configurationName+":")
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +271,7 @@ func CurrentRolloutsForConfiguration(idx search.Index, configurationName string)
 }
 
 // FindSuggestions returns a list of all values for the specified key that start with the specified prefix.
-func FindSuggestions(idx search.Index, key string, prefix string) ([]string, error) {
+func FindSuggestions(ctx context.Context, idx search.Index, key string, prefix string) ([]string, error) {
 	q := key + ":" + prefix
 	query := &search.Query{
 		Original: q,
@@ -307,7 +283,7 @@ func FindSuggestions(idx search.Index, key string, prefix string) ([]string, err
 			},
 		},
 	}
-	suggestions, err := idx.Suggestions(query)
+	suggestions, err := idx.Suggestions(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -601,7 +577,7 @@ func seedAgentsIndex(ctx context.Context, s Store) error {
 func seedIndex[T modelSearch.Indexed](indexed []T, index search.Index) error {
 	var errs error
 	for _, i := range indexed {
-		err := index.Upsert(i)
+		err := index.Upsert(context.Background(), i)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 		}

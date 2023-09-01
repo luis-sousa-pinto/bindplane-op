@@ -22,7 +22,7 @@ func (k *destinationTypeKind) NewEmptyResource() *DestinationType { return &Dest
 
 // DestinationType is a ResourceType used to define destinations
 type DestinationType struct {
-	ResourceType `yaml:",inline" json:",inline" mapstructure:",squash"`
+	ResourceType `yaml:",inline" mapstructure:",squash"`
 }
 
 // NewDestinationType creates a new destination-type with the specified name,
