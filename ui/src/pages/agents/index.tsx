@@ -16,6 +16,7 @@ import { Role } from "../../graphql/generated";
 import { hasPermission } from "../../utils/has-permission";
 import { useRole } from "../../hooks/useRole";
 import { useComponents } from "../../hooks/useComponents";
+import { RBACWrapper } from "../../components/RBACWrapper/RBACWrapper";
 
 import mixins from "../../styles/mixins.module.scss";
 
@@ -99,15 +100,17 @@ export const AgentsPageContent: React.FC = () => {
             {deletable.length > 1 && "s"}
           </Button>
         ) : (
-          <Button
-            component={Link}
-            variant={"contained"}
-            classes={{ root: mixins["float-right"] }}
-            to="/agents/install"
-            startIcon={<PlusCircleIcon />}
-          >
-            Install Agent
-          </Button>
+          <RBACWrapper requiredRole={Role.User}>
+            <Button
+              component={Link}
+              variant={"contained"}
+              classes={{ root: mixins["float-right"] }}
+              to="/agents/install"
+              startIcon={<PlusCircleIcon />}
+            >
+              Install Agent
+            </Button>
+          </RBACWrapper>
         )}
 
         {/* --------------------- Update Button and Confirmation ---------------------  */}
