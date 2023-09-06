@@ -324,7 +324,12 @@ func (s *BoltstoreCore) Agents(ctx context.Context, options ...QueryOption) ([]*
 		if err != nil {
 			return nil, err
 		}
-		return s.agentsByID(ctx, ids, opts)
+
+		agents, err := s.agentsByID(ctx, ids, opts)
+		if err != nil {
+			return nil, err
+		}
+		return ApplySortOffsetAndLimit[*model.Agent](agents, opts, model.AgentFieldAccessor), nil
 	}
 
 	agents := []*model.Agent{}
@@ -358,14 +363,7 @@ func (s *BoltstoreCore) Agents(ctx context.Context, options ...QueryOption) ([]*
 	if opts.Sort == "" {
 		opts.Sort = "name"
 	}
-	return ApplySortOffsetAndLimit(agents, opts, func(field string, item *model.Agent) string {
-		switch field {
-		case "id":
-			return item.ID
-		default:
-			return item.Name
-		}
-	}), nil
+	return ApplySortOffsetAndLimit(agents, opts, model.AgentFieldAccessor), nil
 }
 
 func (s *BoltstoreCore) agentsByID(ctx context.Context, ids []string, opts QueryOptions) ([]*model.Agent, error) {

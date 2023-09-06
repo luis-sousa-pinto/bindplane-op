@@ -5102,3 +5102,36 @@ func runUpdateAgentStatusTests(ctx context.Context, t *testing.T, store Store) {
 		})
 	}
 }
+
+func TestByField(t *testing.T) {
+	type item struct {
+		f1 string
+	}
+
+	items := []item{
+		{f1: "a"},            // 0
+		{f1: "b"},            // 1
+		{f1: "A"},            // 2
+		{f1: "B"},            // 3
+		{f1: "ubuntu"},       // 4
+		{f1: "Ubuntu"},       // 5
+		{f1: "macOS"},        // 6
+		{f1: "macOS 13.4"},   // 7
+		{f1: "Ubuntu 22.04"}, // 8
+	}
+
+	byF := byField[item]{
+		list: items,
+		fieldAccessor: func(field string, item item) string {
+			return item.f1
+		},
+		field:     "f1",
+		ascending: true,
+	}
+
+	require.True(t, byF.Less(0, 1), "items[0] < items[1]")
+	require.False(t, byF.Less(1, 2), "items[1] > items[2]")
+	require.True(t, byF.Less(2, 3), "items[2] < items[3]")
+	require.True(t, byF.Less(6, 5), "items[6] < items[5]")
+	require.True(t, byF.Less(7, 8), "items[7] < items[8]")
+}

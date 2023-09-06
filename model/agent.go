@@ -662,3 +662,21 @@ func (a *Agent) PrintableFieldValue(title string) string {
 	}
 	return ""
 }
+
+// AgentFieldAccessor satisfies the FieldAccessor type and
+// is used to access fields on an Agent for sorting
+var AgentFieldAccessor FieldAccessor[*Agent] = func(field string, item *Agent) string {
+	switch field {
+	case "id":
+		return item.ID
+	case "name":
+		return item.Name
+	case "version":
+		return item.Version
+	case "status":
+		return item.StatusDisplayText()
+	case "operatingSystem":
+		return item.OperatingSystem
+	}
+	return ""
+}
