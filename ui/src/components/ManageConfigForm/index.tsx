@@ -34,7 +34,7 @@ interface ManageConfigFormProps {
   onImport: () => void;
   editing: boolean;
   setEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedConfig: Config | undefined;
+  selectedConfig?: Config;
   setSelectedConfig: React.Dispatch<React.SetStateAction<Config | undefined>>;
 }
 
@@ -118,6 +118,8 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
     );
   };
 
+  const disableApply = selectedConfig == null;
+
   return (
     <>
       <div
@@ -151,6 +153,7 @@ export const ManageConfigForm: React.FC<ManageConfigFormProps> = ({
                 variant="contained"
                 onClick={onApplyConfiguration}
                 classes={{ root: mixins["ml-2"] }}
+                disabled={disableApply}
               >
                 Apply
               </Button>
