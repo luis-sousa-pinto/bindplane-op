@@ -100,7 +100,8 @@ spec:
           error_mode: ignore
           metrics:
             datapoint:
-            - {{ if eq .action "include" }} not{{ end }} (
+            - |-
+              {{ if eq .action "include" }}not{{ end }}(
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
               {{ if not $firstAttr }} and{{ end }}
@@ -132,7 +133,8 @@ spec:
           error_mode: ignore
           logs:
             log_record:
-            - {{ if eq .action "include" }} not{{ end }} (
+            - |-
+              {{ if eq .action "include" }}not {{ end }}(
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
               {{ if not $firstAttr }} and{{ end }}
@@ -173,7 +175,8 @@ spec:
           error_mode: ignore
           traces:
             span:
-            - {{ if eq .action "include" }} not{{ end }} (
+            - |-
+              {{ if eq .action "include" }}not {{ end }}(
               {{- $firstAttr := true -}}
               {{ range $k, $v := .attributes }}
               {{ if not $firstAttr }} and{{ end }}
