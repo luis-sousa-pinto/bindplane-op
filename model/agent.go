@@ -582,15 +582,26 @@ func (a *Agent) IndexFields(index modelSearch.Indexer) {
 	index("type", a.Type)
 	index("status", a.StatusDisplayText())
 
-	// index the configuration name and current, pending, and future versions
+	// index the current version
 	index(FieldConfigurationCurrent, a.ConfigurationStatus.Current)
-	index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
-	index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
+
+	switch a.Status {
+	case Deleted, Disconnected:
+		// do nothing
+	default:
+		// index pending and future configurations which are used to track rollouts.
+		//
+		// deleted and disconnected agents are not considered part of the rollout process but will become part of the
+		// rollout if their status changes.
+		index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
+		index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
+	}
 
 	switch a.Status {
 	case Deleted, Disconnected:
 		// do nothing
 	case Error:
+		// index this as rollout-error and waiting based on status
 		index(FieldRolloutError, a.ConfigurationStatus.Pending)
 		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 	default:
@@ -598,6 +609,8 @@ func (a *Agent) IndexFields(index modelSearch.Indexer) {
 		// user to find the agents when moving them back to their original config
 		configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
 		index("configuration", configuration)
+
+		// index this as pending and waiting as appropriate based on status
 		index(FieldRolloutPending, a.ConfigurationStatus.Pending)
 		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
 	}

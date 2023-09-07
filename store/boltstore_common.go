@@ -87,26 +87,20 @@ func (s *BoltstoreCore) AgentConfiguration(ctx context.Context, agent *model.Age
 }
 
 // FindAgentConfiguration uses label matching to find the appropriate configuration for this agent. If a configuration
-// is found that does not match the Current configuration, the configuration will be assigned to Future.
+// is found that does not match the Current configuration, the configuration will be assigned to Future. This can be
+// called in the context of UpsertAgent to set the pending and future configurations for an Agent.
 func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model.Agent) (*model.Configuration, error) {
 	// check for configuration= label and use that
 	if configurationName, ok := agent.Labels.Set["configuration"]; ok {
 		// if there is a configuration label, this takes precedence and we don't need to look any further
-		configuration, err := s.Configuration(ctx, model.JoinVersion(configurationName, model.VersionCurrent))
-		if configuration == nil {
-			configuration, err = s.Configuration(ctx, configurationName)
-		}
+		configuration, err := s.Configuration(ctx, configurationName)
 		if err != nil {
 			return nil, fmt.Errorf("unable to retrieve agent configuration: %w", err)
 		}
-		agent.SetFutureConfiguration(configuration)
-		if configuration != nil && configuration.Status.Rollout.Status == model.RolloutStatusStable {
-			return configuration, nil
-		}
-		return nil, nil
+		return s.AssignConfigurationToAgent(ctx, configuration, agent)
 	}
 
-	var result *model.Configuration
+	var matchingConfiguration *model.Configuration
 
 	err := s.DB.View(func(tx *bbolt.Tx) error {
 		// iterate over the configurations looking for one that applies
@@ -124,7 +118,9 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 				continue
 			}
 			if configuration.IsForAgent(agent) {
-				result = configuration
+				matchingConfiguration = configuration
+				matchingConfiguration.SetPending(matchingConfiguration.Version() == matchingConfiguration.Status.PendingVersion)
+				matchingConfiguration.SetCurrent(matchingConfiguration.Version() == matchingConfiguration.Status.CurrentVersion)
 				break
 			}
 		}
@@ -134,8 +130,62 @@ func (s *BoltstoreCore) FindAgentConfiguration(ctx context.Context, agent *model
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve agent configuration: %w", err)
 	}
-	agent.SetFutureConfiguration(result)
-	return result, nil
+
+	return s.AssignConfigurationToAgent(ctx, matchingConfiguration, agent)
+}
+
+// AssignConfigurationToAgent assigns the given configuration to the given agent. It returns the current configuration
+// that should be used for the Agent. This may be the supplied configuration or it could be the current version of the
+// configuration if the supplied configuration is not the current version of the configuration. It may return nil for
+// the configuration if there is no current configuration to assign.
+func (s *BoltstoreCore) AssignConfigurationToAgent(ctx context.Context, configuration *model.Configuration, agent *model.Agent) (newConfiguration *model.Configuration, err error) {
+	if configuration == nil {
+		// there is no configuration to assign, set future configuration to nil to clear all configuration status
+		agent.SetFutureConfiguration(nil)
+		return nil, nil
+	}
+
+	// check to see if there is a rollout in progress by looking for a pending version. It may seem strange that we are
+	// looking for the pending configuration and assigning that to the future configuration (and not pending) but it is
+	// the job of UpdateRollout to move things from future to pending.
+	pendingVersion := configuration.Status.PendingVersion
+	if pendingVersion != 0 {
+		// there is a rollout in progress, set future configuration to ensure that this agent gets the new configuration
+		// during the rollout
+		pendingConfiguration, err := s.configurationVersion(ctx, configuration, pendingVersion)
+		if err != nil {
+			return nil, fmt.Errorf("error in AssignConfigurationToAgent getting the pending version of the configuration: %w", err)
+		}
+		agent.SetFutureConfiguration(pendingConfiguration)
+	}
+
+	// check to see if there is a completed rollout by looking for a current version. It may seem strange that we are
+	// looking for the current configuration and assigning it to pending (and not current) but it will be set as the
+	// current configuration on the agent once the configuration is confirmed to have been successfully applied.
+	currentVersion := configuration.Status.CurrentVersion
+	if currentVersion != 0 {
+		// there is a current version, set pending configuration to ensure that this agent eventually gets the current
+		// configuration
+		currentConfiguration, err := s.configurationVersion(ctx, configuration, currentVersion)
+		if err != nil {
+			return nil, fmt.Errorf("error in AssignConfigurationToAgent getting the current version of the configuration: %w", err)
+		}
+		agent.SetPendingConfiguration(currentConfiguration)
+
+		// return this configuration as the current configuration for the agent
+		newConfiguration = currentConfiguration
+	}
+
+	return newConfiguration, err
+}
+
+// configurationVersion returns a specific version of a configuration. The version should be an actual version number
+// and not model.VersionCurrent, etc.
+func (s *BoltstoreCore) configurationVersion(ctx context.Context, configuration *model.Configuration, version model.Version) (*model.Configuration, error) {
+	if version == configuration.Version() {
+		return configuration, nil
+	}
+	return s.Configuration(ctx, model.JoinVersion(configuration.Name(), version))
 }
 
 // AgentsIDsMatchingConfiguration returns the list of agent IDs that are using the specified configuration

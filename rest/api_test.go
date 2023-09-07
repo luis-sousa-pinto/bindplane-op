@@ -1029,19 +1029,20 @@ func TestREST(t *testing.T) {
 			},
 		}
 
-		resources, err := bindplane.Store().ApplyResources(ctx, []model.Resource{config})
+		_, err := s.ApplyResources(ctx, []model.Resource{config})
 		require.NoError(t, err)
 
-		expectConfiguration := resources[0].Resource
-		expectConfiguration.SetDateModified(nil)
+		config, err = s.StartRollout(ctx, "config", nil)
+		require.NoError(t, err)
+		require.Equal(t, "Stable", config.Status.Rollout.Status.String())
+
+		expectConfiguration, err := s.Configuration(ctx, "config")
+		require.NoError(t, err)
 
 		t.Run("|agents|1|configuration returns config", func(t *testing.T) {
 			result := &model.ConfigurationResponse{}
-			_, err := client.R().SetResult(result).Get("/agents/1/configuration")
+			_, err = client.R().SetResult(result).Get("/agents/1/configuration")
 			require.NoError(t, err)
-
-			result.Configuration.SetDateModified(nil)
-
 			assert.Equal(t, expectConfiguration, result.Configuration)
 		})
 

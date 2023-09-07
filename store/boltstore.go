@@ -524,19 +524,18 @@ func (s *BoltstoreCore) updateOrUpsertAgentTx(ctx context.Context, requireExists
 	// update the agent
 	updater(agent)
 
-	labelsAfter := agent.Labels.String()
-	pendingAfter := agent.ConfigurationStatus.Pending
-
 	// if the labels changes is this is just an update, use EventTypeLabel
+	labelsAfter := agent.Labels.String()
 	if labelsAfter != labelsBefore && agentEventType == EventTypeUpdate {
 		agentEventType = EventTypeLabel
-		_, err := s.FindAgentConfiguration(ctx, agent)
+		_, err := s.FindAgentConfiguration(ctx, agent) // this can modify Pending
 		if err != nil {
 			return agent, err
 		}
 	}
 
 	// if Pending changes to a new configuration, use EventTypeRollout
+	pendingAfter := agent.ConfigurationStatus.Pending
 	if pendingAfter != "" && pendingBefore != pendingAfter {
 		agentEventType = EventTypeRollout
 	}

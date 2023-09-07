@@ -759,6 +759,134 @@ func TestUpdateAgentStatus(t *testing.T) {
 	runUpdateAgentStatusTests(ctx, t, store)
 }
 
+func TestAssignConfigurationToAgent(t *testing.T) {
+	// The setup for these tests will create three configuration versions and pass the 3rd (latest) version to the setup
+	// function.
+	tests := []struct {
+		name                string
+		setup               func(store Store, agent *model.Agent, configuration *model.Configuration)
+		expectVersions      model.ConfigurationVersions
+		expectConfiguration string
+	}{
+		{
+			name: "no current or pending version does nothing",
+			setup: func(store Store, agent *model.Agent, configuration *model.Configuration) {
+				// simulate no current or pending
+				configuration.Status.PendingVersion = 0
+				configuration.Status.CurrentVersion = 0
+			},
+			expectVersions: model.ConfigurationVersions{
+				Pending: "",
+				Future:  "",
+			},
+			expectConfiguration: "",
+		},
+		{
+			name: "no rollout, current version gets assigned to agent pending",
+			setup: func(store Store, agent *model.Agent, configuration *model.Configuration) {
+				// simulate no-rollout by setting pending to 0
+				configuration.Status.PendingVersion = 0
+				configuration.Status.CurrentVersion = 1
+			},
+			expectVersions: model.ConfigurationVersions{
+				Pending: "test:1",
+			},
+			expectConfiguration: "test:1",
+		},
+		{
+			name: "no rollout, latest configuration is current",
+			setup: func(store Store, agent *model.Agent, configuration *model.Configuration) {
+				configuration.Status.PendingVersion = 2
+				configuration.Status.CurrentVersion = 2
+			},
+			expectVersions: model.ConfigurationVersions{
+				Pending: "test:2",
+			},
+			expectConfiguration: "test:2",
+		},
+		{
+			name: "mid-rollout, has agent pending set to current configuration and agent future set to pending configuration",
+			setup: func(store Store, agent *model.Agent, configuration *model.Configuration) {
+				configuration.Status.PendingVersion = 2
+				configuration.Status.CurrentVersion = 1
+			},
+			expectVersions: model.ConfigurationVersions{
+				Pending: "test:1",
+				Future:  "test:2",
+			},
+			expectConfiguration: "test:1",
+		},
+	}
+
+	db, err := storetest.InitTestBboltDB(t, testBuckets)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := NewBoltStore(ctx, db, testOptions, zap.NewNop()).(*boltstore)
+	defer store.Close()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			store.Clear()
+
+			// create test configuration and agent
+			configuration := model.NewConfigurationWithSpec("test", model.ConfigurationSpec{
+				Raw: "# version 1\nservice:",
+			})
+
+			statuses, err := store.ApplyResources(ctx, []model.Resource{configuration})
+			require.NoError(t, err)
+			require.Len(t, statuses, 1)
+			require.Equal(t, model.StatusCreated, statuses[0].Status)
+
+			// rollout to force a new version
+			_, err = store.StartRollout(ctx, "test", nil)
+			require.NoError(t, err)
+
+			// create version 2 of the configuration
+			configuration.Spec.Raw = "# version 2\nservice:"
+			statuses, err = store.ApplyResources(ctx, []model.Resource{configuration})
+			require.NoError(t, err)
+			require.Len(t, statuses, 1)
+			require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+			// rollout to force a new version
+			_, err = store.StartRollout(ctx, "test", nil)
+			require.NoError(t, err)
+
+			// create version 3 of the configuration
+			configuration.Spec.Raw = "# version 3\nservice:"
+			statuses, err = store.ApplyResources(ctx, []model.Resource{configuration})
+			require.NoError(t, err)
+			require.Len(t, statuses, 1)
+			require.Equal(t, model.StatusConfigured, statuses[0].Status)
+
+			configuration, err = store.Configuration(ctx, "test")
+			require.NoError(t, err)
+			require.Equal(t, model.Version(3), configuration.Version())
+
+			agent, err := store.UpsertAgent(ctx, "agent-1", func(current *model.Agent) {
+				current.Status = model.Connected
+			})
+
+			if test.setup != nil {
+				test.setup(store, agent, configuration)
+			}
+
+			// assign configuration to agent
+			newConfiguration, err := store.AssignConfigurationToAgent(ctx, configuration, agent)
+			require.NoError(t, err)
+			require.Equal(t, test.expectVersions, agent.ConfigurationStatus)
+			var nameAndVersion string
+			if newConfiguration != nil {
+				nameAndVersion = newConfiguration.NameAndVersion()
+			}
+			require.Equal(t, test.expectConfiguration, nameAndVersion)
+		})
+	}
+}
+
 /* ------------------------ SETUP + HELPER FUNCTIONS ------------------------ */
 
 var testOptions = Options{
