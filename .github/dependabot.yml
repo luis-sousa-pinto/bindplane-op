@@ -32,7 +32,7 @@ updates:
         update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "docker/"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -71,5 +71,6 @@ updates:
       prefix: "deps"
       include: "scope"
     ignore:
+      - dependency-name: "@storybook/*"
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
