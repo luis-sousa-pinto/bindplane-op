@@ -29,6 +29,13 @@ spec:
       default: ""
 
     # Advanced Options
+    - name: add_unit_and_type
+      label: Add Unit and Type Suffixes
+      description: When set, adds units and type suffixes to metric names.
+      type: bool
+      default: false
+      advancedConfig: true
+
     - name: namespace
       label: Namespace
       description: Prefix to attach to each metric name.
@@ -276,6 +283,8 @@ spec:
           {{ if ne .namespace "" }}
           namespace: {{ .namespace }}
           {{ end }}
+
+          add_metric_suffixes: {{ .add_unit_and_type }}
 
           {{ if .enable_write_ahead_log }}
           wal:

@@ -31,6 +31,13 @@ spec:
       required: false
       default: ""
 
+    - name: add_unit_and_type
+      label: Add Unit and Type Suffixes
+      description: When set, adds units and type suffixes to metric names.
+      type: bool
+      default: false
+      advancedConfig: true
+
     # TLS
     - name: configure_tls
       label: Enable TLS
@@ -112,6 +119,7 @@ spec:
           resource_to_telemetry_conversion:
             enabled: true
           namespace: {{ .namespace }}
+          add_metric_suffixes: {{ .add_unit_and_type }}
           {{ if .configure_tls }}
           tls:
             cert_file: "{{ .cert_file }}"
