@@ -3282,3 +3282,23 @@ func TestNewConfiguration(t *testing.T) {
 	require.NotNil(t, specConfig.Metadata.Labels)
 	require.Equal(t, spec, specConfig.Spec)
 }
+
+func TestAgentsPerPhaseWithDefaults(t *testing.T) {
+	for size, options := range DefaultRolloutOptions {
+		for phase := 1; phase <= 100; phase++ {
+			r := Rollout{
+				Options: options,
+				Phase:   phase,
+			}
+			got := r.AgentsPerPhase()
+			// Since the logic is exponential, we don't have an easy way to determine the expected value without duplicating the logic.
+			// Instead, we can at least ensure the calculated value isn't exceeding the maximum.
+			if got > options.PhaseAgentCount.Maximum {
+				t.Errorf("For rollout size %s at phase %d, exceeded maximum. Got %d agents but expected no more than %d", size, phase, got, options.PhaseAgentCount.Maximum)
+			}
+			if got < 0 {
+				t.Errorf("For rollout size %s at phase %d, got negative number of agents: %d", size, phase, got)
+			}
+		}
+	}
+}

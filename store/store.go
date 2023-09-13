@@ -667,7 +667,7 @@ func FindDependentResources(ctx context.Context, configurationIndex search.Index
 // generic helpers for sorting and paging
 
 // ApplySortOffsetAndLimit applies the sort, offset, and limit options to the list.
-func ApplySortOffsetAndLimit[T any](list []T, opts QueryOptions, fieldAccessor fieldAccessor[T]) []T {
+func ApplySortOffsetAndLimit[T any](list []T, opts QueryOptions, fieldAccessor model.FieldAccessor[T]) []T {
 	if opts.Sort != "" {
 		sortField := opts.Sort
 		ascending := true
@@ -707,13 +707,11 @@ func NewBPCookieStore(secret string) *sessions.CookieStore {
 	return store
 }
 
-type fieldAccessor[T any] func(field string, item T) string
-
 type byField[T any] struct {
 	list          []T
 	field         string
 	ascending     bool
-	fieldAccessor fieldAccessor[T]
+	fieldAccessor model.FieldAccessor[T]
 }
 
 var _ sort.Interface = (*byField[any])(nil)
@@ -730,11 +728,12 @@ func (r byField[T]) Swap(i, j int) {
 
 // Less returns true if the i'th item is less than the j'th
 func (r byField[T]) Less(i, j int) bool {
-	f1 := r.fieldAccessor(r.field, r.list[i])
-	f2 := r.fieldAccessor(r.field, r.list[j])
+	f1 := strings.ToLower(r.fieldAccessor(r.field, r.list[i]))
+	f2 := strings.ToLower(r.fieldAccessor(r.field, r.list[j]))
 	if r.ascending {
 		return f1 < f2
 	}
+
 	return f1 > f2
 }
 

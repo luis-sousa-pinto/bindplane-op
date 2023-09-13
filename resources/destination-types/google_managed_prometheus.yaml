@@ -6,7 +6,7 @@ metadata:
   icon: /icons/destinations/prometheus.svg
   description: Send metrics to Google Managed Prometheus.
 spec:
-  version: 0.0.1
+  version: 0.2.0
   parameters:
     - name: project
       label: Project ID
@@ -120,56 +120,13 @@ spec:
         - text: Read more
           url: https://cloud.google.com/monitoring/api/resources#tag_prometheus_target
       advancedConfig: true
-    
-    # Retry on failure
-    - name: retry_on_failure_enabled
-      label: Enable Retry on Failure
-      description: Attempt to resend telemetry data that has failed to be transmitted to the destination.
+
+    - name: add_unit_and_type
+      label: Add Unit and Type Suffixes
+      description: When set, adds units and type suffixes to metric names.
       type: bool
-      documentation:
-        - text: Read More
-          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
-      default: true
-      options:
-        sectionHeader: true
+      default: false
       advancedConfig: true
-      required: false
-
-    - name: retry_on_failure_initial_interval
-      label: Initial interval
-      description: Time (in seconds) to wait after the first failure before retrying.
-      type: int
-      default: 5
-      advancedConfig: true
-      required: false
-      relevantIf:
-        - name: retry_on_failure_enabled
-          operator: equals
-          value: true
-
-    - name: retry_on_failure_max_interval
-      label: Max interval
-      description: The upper bound (in seconds) on backoff.
-      type: int
-      default: 30
-      advancedConfig: true
-      required: false
-      relevantIf:
-        - name: retry_on_failure_enabled
-          operator: equals
-          value: true
-
-    - name: retry_on_failure_max_elapsed_time
-      label: Max elapsed time
-      description: The maximum amount of time (in seconds) spent trying to send a batch, used to avoid a never-ending retry loop.
-      type: int
-      default: 300
-      advancedConfig: true
-      required: false
-      relevantIf:
-        - name: retry_on_failure_enabled
-          operator: equals
-          value: true
 
     # Sending Queue Options
     - name: sending_queue_enabled
@@ -220,8 +177,8 @@ spec:
       default: true
       advancedConfig: true
       documentation:
-      - text: Read More
-        url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
       options:
         sectionHeader: true
       required: false
@@ -229,7 +186,7 @@ spec:
         - name: sending_queue_enabled
           operator: equals
           value: true
-    
+
     - name: persistent_queue_directory
       label: Persistent Queue Directory
       description: The directory used to temporarily store telemetry data.
@@ -264,9 +221,9 @@ spec:
           credentials_file: "{{ .credentials_file }}"
           {{ end }}
           metric:
+            add_metric_suffixes: {{ .add_unit_and_type }}
             resource_filters:
               regex: ".*"
-          {{ bpRenderOtelRetryOnFailureConfig .retry_on_failure_enabled .retry_on_failure_initial_interval .retry_on_failure_max_interval .retry_on_failure_max_elapsed_time }} 
           {{ bpRenderOtelSendingQueueConfig .sending_queue_enabled .persistent_queue_enabled (bpComponentID "file_storage") .sending_queue_num_consumers .sending_queue_queue_size }}
 
     processors: |

@@ -690,3 +690,7 @@ func (m *Metadata) indexLabels(index modelSearch.Indexer) {
 		index(n, v)
 	}
 }
+
+// FieldAccessor is a function that returns a string value for a field on a resource. It
+// is used to sort items by a field.
+type FieldAccessor[T any] func(field string, item T) string

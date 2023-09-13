@@ -64,6 +64,28 @@ const (
 	Upgrading AgentStatus = 7
 )
 
+// DisplayText returns the text that should be displayed to represent this status.
+func (a AgentStatus) DisplayText() string {
+	switch a {
+	case Disconnected:
+		return "Disconnected"
+	case Connected:
+		return "Connected"
+	case Error:
+		return "Error"
+	case ComponentFailed:
+		return "Component Failed"
+	case Deleted:
+		return "Deleted"
+	case Configuring:
+		return "Configuring"
+	case Upgrading:
+		return "Upgrading"
+	default:
+		return "Unknown"
+	}
+}
+
 // AgentUpgradeStatus is the status of the AgentUpgrade
 type AgentUpgradeStatus uint8
 
@@ -213,24 +235,7 @@ func (a *Agent) UniqueKey() string {
 
 // StatusDisplayText returns the string representation of the agent's status.
 func (a *Agent) StatusDisplayText() string {
-	switch a.Status {
-	case Disconnected:
-		return "Disconnected"
-	case Connected:
-		return "Connected"
-	case Error:
-		return "Error"
-	case ComponentFailed:
-		return "Component Failed"
-	case Deleted:
-		return "Deleted"
-	case Configuring:
-		return "Configuring"
-	case Upgrading:
-		return "Upgrading"
-	default:
-		return "Unknown"
-	}
+	return a.Status.DisplayText()
 }
 
 // GetLabels implements the Labeled interface for Agents
@@ -580,28 +585,15 @@ func (a *Agent) IndexFields(index modelSearch.Indexer) {
 	index("os", a.OperatingSystem)
 	index("macAddress", a.MacAddress)
 	index("type", a.Type)
-	index("status", a.StatusDisplayText())
 
-	// index the configuration name and current, pending, and future versions
-	index(FieldConfigurationCurrent, a.ConfigurationStatus.Current)
-	index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
-	index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
-
-	switch a.Status {
-	case Deleted, Disconnected:
-		// do nothing
-	case Error:
-		index(FieldRolloutError, a.ConfigurationStatus.Pending)
-		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
-	default:
-		// removing this from the index in the case of an error allows the
-		// user to find the agents when moving them back to their original config
-		configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
-		index("configuration", configuration)
-		index(FieldRolloutPending, a.ConfigurationStatus.Pending)
-		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
+	// Index rollout status fields also
+	ars := AgentRolloutStatusIndexer{
+		AgentID:             a.ID,
+		ConfigurationStatus: a.ConfigurationStatus,
+		Status:              a.Status,
 	}
-	index(FieldRolloutComplete, a.ConfigurationStatus.Current)
+
+	ars.IndexFields(index)
 }
 
 // IndexLabels returns a map of label name to label value to be stored in the index
@@ -662,3 +654,90 @@ func (a *Agent) PrintableFieldValue(title string) string {
 	}
 	return ""
 }
+
+// AgentFieldAccessor satisfies the FieldAccessor type and
+// is used to access fields on an Agent for sorting
+var AgentFieldAccessor FieldAccessor[*Agent] = func(field string, item *Agent) string {
+	switch field {
+	case "id":
+		return item.ID
+	case "name":
+		return item.Name
+	case "version":
+		return item.Version
+	case "status":
+		return item.StatusDisplayText()
+	case "operatingSystem":
+		return item.OperatingSystem
+	}
+	return ""
+}
+
+// AgentRolloutStatusIndexer is an Indexed object that only indexes fields relevant to the agent rollout status.
+// It's intended to be a subset of the Agent, such that you could unmarshal an Agent into it.
+// This can be used to efficiently update the index with only the rollout status fields.
+type AgentRolloutStatusIndexer struct {
+	AgentID             string                `json:"id" yaml:"id" db:"id"`
+	ConfigurationStatus ConfigurationVersions `json:"configurationStatus,omitempty" yaml:"configurationStatus,omitempty" db:",inline"`
+	Status              AgentStatus           `json:"status" db:"status"`
+}
+
+var _ modelSearch.Indexed = (*AgentRolloutStatusIndexer)(nil)
+
+// IndexID returns an ID used to identify the agent that is indexed
+func (a AgentRolloutStatusIndexer) IndexID() string {
+	return a.AgentID
+}
+
+// AgentRolloutStatusIndexerFieldSet is a set of fields returned by
+// AgentRolloutStatusIndexer.IndexFields.
+var AgentRolloutStatusIndexerFieldSet = map[string]struct{}{
+	FieldConfigurationCurrent: {},
+	FieldConfigurationPending: {},
+	FieldConfigurationFuture:  {},
+	FieldRolloutError:         {},
+	FieldRolloutPending:       {},
+	FieldRolloutWaiting:       {},
+	FieldRolloutComplete:      {},
+	"configuration":           {},
+	"status":                  {},
+}
+
+// IndexFields calls index with the key-value pairs that should be indexed
+func (a AgentRolloutStatusIndexer) IndexFields(index modelSearch.Indexer) {
+	index("status", a.Status.DisplayText())
+
+	// index the current version
+	index(FieldConfigurationCurrent, a.ConfigurationStatus.Current)
+
+	switch a.Status {
+	case Deleted, Disconnected:
+		// do nothing
+	default:
+		// index pending and future configurations which are used to track rollouts.
+		//
+		// deleted and disconnected agents are not considered part of the rollout process but will become part of the
+		// rollout if their status changes.
+		index(FieldConfigurationPending, a.ConfigurationStatus.Pending)
+		index(FieldConfigurationFuture, a.ConfigurationStatus.Future)
+	}
+
+	switch a.Status {
+	case Deleted, Disconnected:
+		// do nothing
+	case Error:
+		index(FieldRolloutError, a.ConfigurationStatus.Pending)
+		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
+	default:
+		// removing this from the index in the case of an error allows the
+		// user to find the agents when moving them back to their original config
+		configuration, _ := SplitVersion(a.ConfigurationStatus.Current)
+		index("configuration", configuration)
+		index(FieldRolloutPending, a.ConfigurationStatus.Pending)
+		index(FieldRolloutWaiting, a.ConfigurationStatus.Future)
+	}
+	index(FieldRolloutComplete, a.ConfigurationStatus.Current)
+}
+
+// IndexLabels is a noop, AgentRolloutStatusIndexer has no labels.
+func (a AgentRolloutStatusIndexer) IndexLabels(_ modelSearch.Indexer) {}
