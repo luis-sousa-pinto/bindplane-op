@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"reflect"
 	"sort"
 	"strconv"
@@ -324,11 +323,23 @@ type RolloutProgress struct {
 
 // AgentsPerPhase returns the number of agents that will be updated in the current phase.
 func (r *Rollout) AgentsPerPhase() int {
-	numAgents := r.Options.PhaseAgentCount.Initial * int(math.Pow(r.Options.PhaseAgentCount.Multiplier, float64(r.Phase)))
-	if numAgents > r.Options.PhaseAgentCount.Maximum {
-		return r.Options.PhaseAgentCount.Maximum
+	multiplier := r.Options.PhaseAgentCount.Multiplier
+	// If the multiplier is 1 or less, the number of agents won't change over phases.
+	if multiplier <= 1 {
+		return r.Options.PhaseAgentCount.Initial
 	}
-	return numAgents
+
+	numAgents := float64(r.Options.PhaseAgentCount.Initial)
+	for i := 0; i < r.Phase; i++ {
+		numAgents *= multiplier
+
+		// Check for potential overflow or if the number exceeds the max.
+		if int(numAgents) >= r.Options.PhaseAgentCount.Maximum || int(numAgents) < 0 {
+			return r.Options.PhaseAgentCount.Maximum
+		}
+	}
+
+	return int(numAgents)
 }
 
 // UpdateStatus updates the status of the rollout based on the number of completed, errored, pending, and waiting agents.
