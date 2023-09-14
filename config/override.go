@@ -211,6 +211,7 @@ func DefaultOverrides() []*Override {
 		NewOverride("tracing.type", "the type of tracing to use. One of: otlp|google", ""),
 		NewOverride("tracing.otlp.endpoint", "the endpoint to send tracing data to, if using OTLP", ""),
 		NewOverride("tracing.otlp.insecure", "whether to use insecure TLS for tracing", false),
+		NewOverride("tracing.samplingRate", "ratio between 0 and 1 that determines what percentage of traces to keep", float64(0)),
 
 		// Metrics overrides
 		NewOverride("metrics.type", "the type of metrics to use. One of: otlp", MetricsTypeNop),

@@ -99,6 +99,7 @@ func TestOverrideFlags(t *testing.T) {
 		"--tracing-type", "otlp",
 		"--tracing-otlp-endpoint", "localhost:4317",
 		"--tracing-otlp-insecure", "true",
+		"--tracing-sampling-rate", "0.5",
 		"--metrics-type", "otlp",
 		"--metrics-otlp-endpoint", "localhost:4317",
 		"--metrics-otlp-insecure", "true",
@@ -156,7 +157,8 @@ func TestOverrideFlags(t *testing.T) {
 			},
 		},
 		Tracing: Tracing{
-			Type: "otlp",
+			Type:         "otlp",
+			SamplingRate: float64(0.5),
 			OTLP: OTLPTracing{
 				Endpoint: "localhost:4317",
 				Insecure: true,
@@ -199,6 +201,7 @@ func TestOverrideEnvs(t *testing.T) {
 		"BINDPLANE_TRACING_TYPE":                 "otlp",
 		"BINDPLANE_TRACING_OTLP_ENDPOINT":        "localhost:4317",
 		"BINDPLANE_TRACING_OTLP_INSECURE":        "true",
+		"BINDPLANE_TRACING_SAMPLING_RATE":        "0.5",
 		"BINDPLANE_METRICS_TYPE":                 "otlp",
 		"BINDPLANE_METRICS_OTLP_ENDPOINT":        "localhost:4317",
 		"BINDPLANE_METRICS_OTLP_INSECURE":        "true",
@@ -256,7 +259,8 @@ func TestOverrideEnvs(t *testing.T) {
 			},
 		},
 		Tracing: Tracing{
-			Type: "otlp",
+			Type:         "otlp",
+			SamplingRate: float64(0.5),
 			OTLP: OTLPTracing{
 				Endpoint: "localhost:4317",
 				Insecure: true,
