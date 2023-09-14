@@ -46,7 +46,7 @@ jobs:
         run: make install-tools
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Cache NPM
         id: npm-cache
         uses: actions/cache@v3
@@ -182,7 +182,7 @@ jobs:
           key: tooling-${{ runner.os }}-${{ hashFiles('./internal/tools/go.mod') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Cache NPM
         uses: actions/cache@v3
         with:
@@ -208,7 +208,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Cache NPM
         uses: actions/cache@v3
         with:
@@ -284,7 +284,7 @@ jobs:
           key: tooling-${{ runner.os }}-${{ hashFiles('./internal/tools/go.mod') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Cache NPM
         uses: actions/cache@v3
         with:

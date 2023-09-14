@@ -3,7 +3,7 @@
 ## Requirements
 Ensure that the following tools are installed:
 - Go 1.20 ([install instructions](https://go.dev/doc/install))
-- Node 16.x.x ([install instructions](https://nodejs.dev/learn/how-to-install-nodejs))
+- Node 18.x.x ([install instructions](https://nodejs.org/en/download))
 - GoReleaser ([install instructions](https://goreleaser.com/install/))
 
 Run the following commands after a fresh clone:
