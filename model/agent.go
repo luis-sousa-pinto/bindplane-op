@@ -18,6 +18,7 @@ package model
 import (
 	"database/sql/driver"
 	"errors"
+	"fmt"
 	"sort"
 	"time"
 
@@ -669,6 +670,11 @@ var AgentFieldAccessor FieldAccessor[*Agent] = func(field string, item *Agent) s
 		return item.StatusDisplayText()
 	case "operatingSystem":
 		return item.OperatingSystem
+	case "configuration":
+		return ConfigurationNameFromStatus(item.ConfigurationStatus)
+	case "configurationVersion":
+		_, v := SplitVersion(item.ConfigurationStatus.Current)
+		return fmt.Sprintf("%d", v)
 	}
 	return ""
 }
@@ -741,3 +747,18 @@ func (a AgentRolloutStatusIndexer) IndexFields(index modelSearch.Indexer) {
 
 // IndexLabels is a noop, AgentRolloutStatusIndexer has no labels.
 func (a AgentRolloutStatusIndexer) IndexLabels(_ modelSearch.Indexer) {}
+
+// ConfigurationNameFromStatus returns a string of the configuration name (without version) from the configuration status field.
+// It prefers the future configuration, then pending, then current or an empty string if none are set.
+func ConfigurationNameFromStatus(status ConfigurationVersions) string {
+	switch {
+	case status.Future != "":
+		return TrimVersion(status.Future)
+	case status.Pending != "":
+		return TrimVersion(status.Pending)
+	case status.Current != "":
+		return TrimVersion(status.Current)
+	default:
+		return ""
+	}
+}
