@@ -67,6 +67,9 @@ type ResourceTypeSpec struct {
 
 	// all three (alphabetical order)
 	LogsMetricsTraces ResourceTypeOutput `json:"logs+metrics+traces,omitempty" yaml:"logs+metrics+traces,omitempty" mapstructure:"logs+metrics+traces"`
+
+	// FeatureGate is a string that is used to gate the availability of this resource type.
+	FeatureGate string `json:"featureGate,omitempty" yaml:"featureGate,omitempty" mapstructure:"featureGate"`
 }
 
 // ResourceTypeOutput describes the output of the resource type
@@ -323,6 +326,20 @@ func (rt *ResourceType) evalTemplate(r ResourceTypeTemplate, nameProvider otel.C
 	}
 
 	return set
+}
+
+// ----------------------------------------------------------------------
+// featureGate
+// ----------------------------------------------------------------------
+
+// FeatureGate returns the feature flag for this resource type
+func (rt *ResourceType) FeatureGate() string {
+	return rt.Spec.FeatureGate
+}
+
+// SetFeatureGate sets the feature flag for this resource type
+func (rt *ResourceType) SetFeatureGate(featureGate string) {
+	rt.Spec.FeatureGate = featureGate
 }
 
 // ----------------------------------------------------------------------

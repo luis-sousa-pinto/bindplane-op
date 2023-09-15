@@ -409,6 +409,26 @@ func GetSeedResources(ctx context.Context, files embed.FS, folders []string) ([]
 			return nil, err
 		}
 	}
+
+	// set feature flags for base resources
+	for resourceIndex, resource := range allEmbedded {
+		switch rType := resource.(type) {
+		case *model.SourceType:
+			if rType.FeatureGate() == "" {
+				rType.SetFeatureGate("base-sources")
+			}
+		case *model.DestinationType:
+			if rType.FeatureGate() == "" {
+				rType.SetFeatureGate("base-destinations")
+			}
+		case *model.ProcessorType:
+			if rType.FeatureGate() == "" {
+				rType.SetFeatureGate("base-processors")
+			}
+		}
+		allEmbedded[resourceIndex] = resource
+	}
+
 	return allEmbedded, nil
 }
 

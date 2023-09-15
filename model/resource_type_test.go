@@ -55,6 +55,11 @@ func TestEvalCabinDestination(t *testing.T) {
 	require.Equal(t, expectYaml, string(exportersYaml))
 }
 
+func TestUnmarshalFeatureGate(t *testing.T) {
+	st := fileResource[*SourceType](t, "testfiles/sourcetype-filelog-gated.yaml")
+	require.Equal(t, "feature-gate", st.FeatureGate())
+}
+
 func TestEvalGoogleCloud(t *testing.T) {
 	dt := fileResource[*DestinationType](t, "testfiles/destinationtype-googlecloud.yaml")
 	d := fileResource[*Destination](t, "testfiles/destination-googlecloud.yaml")

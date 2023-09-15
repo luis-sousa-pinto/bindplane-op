@@ -2723,6 +2723,10 @@ const docTemplate = `{
         "model.ResourceTypeSpec": {
             "type": "object",
             "properties": {
+                "featureGate": {
+                    "description": "FeatureGate is a string that is used to gate the availability of this resource type.",
+                    "type": "string"
+                },
                 "logs": {
                     "description": "individual",
                     "allOf": [
