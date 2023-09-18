@@ -293,7 +293,7 @@ jobs:
           restore-keys: npm-cache-
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       # Cache Goreleaser's container image output to be used
@@ -409,7 +409,7 @@ jobs:
       - name: Set up Docker Buildx
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Set up QEMU
         if: ${{ github.actor != 'dependabot[bot]' }}
