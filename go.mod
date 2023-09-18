@@ -44,11 +44,11 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/testcontainers/testcontainers-go v0.23.0
 	go.opentelemetry.io/collector/pdata v0.66.0
-	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.43.0
-	go.opentelemetry.io/otel v1.17.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.44.0
+	go.opentelemetry.io/otel v1.18.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.17.0
 	go.opentelemetry.io/otel/sdk v1.17.0
-	go.opentelemetry.io/otel/trace v1.17.0
+	go.opentelemetry.io/otel/trace v1.18.0
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 	google.golang.org/api v0.139.0
 	google.golang.org/grpc v1.58.0
@@ -63,7 +63,7 @@ require (
 	github.com/observiq/opamp-go v0.2.1
 	github.com/open-telemetry/opamp-go v0.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.40.0
-	go.opentelemetry.io/otel/metric v1.17.0
+	go.opentelemetry.io/otel/metric v1.18.0
 	go.opentelemetry.io/otel/sdk/metric v0.40.0
 )
 
