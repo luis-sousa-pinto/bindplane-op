@@ -323,7 +323,7 @@ jobs:
       # Push container images to ghcr.io for use in other steps.
       # It is safe to push development images with the github sha tag.
       - name: Login to Github Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -417,7 +417,7 @@ jobs:
 
       - name: Login to Github Container Registry
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
