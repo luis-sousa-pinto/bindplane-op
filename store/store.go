@@ -702,6 +702,11 @@ func ApplySortOffsetAndLimit[T any](list []T, opts QueryOptions, fieldAccessor m
 			fieldAccessor: fieldAccessor,
 		})
 	}
+	return ApplyOffsetAndLimit[T](list, opts)
+}
+
+// ApplyOffsetAndLimit applies the offset and limit options to the list.
+func ApplyOffsetAndLimit[T any](list []T, opts QueryOptions) []T {
 	if opts.Offset != 0 {
 		offset := opts.Offset
 		if offset > len(list) {

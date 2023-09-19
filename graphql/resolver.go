@@ -1039,7 +1039,7 @@ func ConfigurationMetrics(ctx context.Context, bindplane exposedserver.BindPlane
 		return nil, err
 	}
 
-	return assignMetricsToGraph(metrics, ConfigurationNodeIDResolver, bindplane), nil
+	return AssignMetricsToGraph(metrics, ConfigurationNodeIDResolver)
 }
 
 // AgentMetrics returns a list of metrics for the agent page
@@ -1074,7 +1074,12 @@ func AgentMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period
 			return nil, err
 		}
 
-		singleIDMetrics := assignMetricsToGraph(metrics, ConfigurationNodeIDResolver, bindplane)
+		singleIDMetrics, err := AssignMetricsToGraph(metrics, ConfigurationNodeIDResolver)
+		if err != nil {
+			// This should never happen, but lets log and continue if it does.
+			bindplane.Logger().Error("failed to assign metrics to graph", zap.Error(err))
+			continue
+		}
 
 		for _, m := range singleIDMetrics.Metrics {
 			// This prevents each AgentID being pointed at the same string
@@ -1095,7 +1100,11 @@ func AgentMetrics(ctx context.Context, bindplane exposedserver.BindPlane, period
 // will be ignored.
 type NodeIDResolver func(metric *record.Metric, position model.MeasurementPosition, pipelineType bpotel.PipelineType, resourceName string) string
 
-func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bindplane exposedserver.BindPlane) *model1.GraphMetrics {
+// AssignMetricsToGraph returns a GraphMetrics struct with metrics and max values.
+// It assigns the appropriate NodeID to a GraphMetric based on its position and NodeIDResolver.
+// as well as the agentID and PipelineType fields.  It returns an error in the case
+// it cannot convert a metric to a GraphMetric.
+func AssignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver) (*model1.GraphMetrics, error) {
 	var graphMetrics []*model1.GraphMetric
 	var maxMetricValue float64
 	var maxLogValue float64
@@ -1104,8 +1113,7 @@ func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bin
 	for _, m := range metrics {
 		graphMetric, err := model1.ToGraphMetric(m)
 		if err != nil {
-			bindplane.Logger().Debug("unable to convert record.Metric to GraphMetric", zap.Error(err))
-			continue
+			return nil, err
 		}
 
 		// figure out what node this is. this must be sync'd with model.Configuration::Graph()
@@ -1113,6 +1121,9 @@ func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bin
 		graphMetric.NodeID = resolver(m, model.MeasurementPosition(position), bpotel.PipelineType(pipelineType), resourceName)
 
 		graphMetric.PipelineType = pipelineType
+		agentID := stats.Agent(m)
+		graphMetric.AgentID = &agentID
+
 		graphMetrics = append(graphMetrics, graphMetric)
 
 		// keep track of running max value
@@ -1137,7 +1148,7 @@ func assignMetricsToGraph(metrics []*record.Metric, resolver NodeIDResolver, bin
 		MaxMetricValue: maxMetricValue,
 		MaxLogValue:    maxLogValue,
 		MaxTraceValue:  maxTraceValue,
-	}
+	}, nil
 }
 
 // ConfigurationMetricsUpdateInterval is the interval at which the configuration metrics are updated on the configuration page
