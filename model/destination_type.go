@@ -55,6 +55,7 @@ func (d *DestinationType) GetKind() Kind { return KindDestinationType }
 
 var destinationTypeTLSExemptions = map[string]bool{
 	"aws_s3":                  true, // not available
+	"azure_blob":              true, // not available
 	"coralogix":               true, // SaaS
 	"custom":                  true,
 	"datadog":                 true, // SaaS

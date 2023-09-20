@@ -1,0 +1,109 @@
+apiVersion: bindplane.observiq.com/v1
+kind: DestinationType
+metadata:
+  name: azure_blob
+  displayName: Azure Blob
+  icon: /icons/azure-blob-icon.svg
+  description: Send logs, metrics, and traces to an Azure Storage Blob.
+spec:
+  version: 0.0.1
+  supportedPlatforms:
+    - linux
+    - windows
+    - macos
+    - kubernetes-daemonset
+    - kubernetes-deployment
+    - openshift-daemonset
+    - openshift-deployment
+  parameters:
+    - name: telemetry_types
+      label: Telemetry Types
+      type: enums
+      description: "Select which types of telemetry to export."
+      validValues: ["Logs", "Metrics", "Traces"]
+      default: ["Logs", "Metrics", "Traces"]
+      options:
+        gridColumns: 12
+
+    - name: connection_string
+      label: Connection String
+      description: The connection string to the Azure Storage account.
+      documentation:
+        - text: Read more
+          url: https://learn.microsoft.com/en-gb/azure/storage/common/storage-configure-connection-string
+      type: string
+      required: true
+
+    - name: container
+      label: Container
+      description: Name of the Azure Storage Container to export telemetry into.
+      type: string
+      required: true
+
+    - name: prefix
+      label: Folder Prefix
+      description: Root directory of the blob path to export telemetry into.
+      type: string
+      default: ""
+
+    - name: blob_prefix
+      label: Blob Prefix
+      description: Prefix for the name of exported telemetry files.
+      type: string
+      default: ""
+
+    - name: partition
+      label: Granularity
+      description: Granularity of the timestamps in the Blob path, either "minute" or "hour".
+      type: enum
+      validValues:
+        - minute
+        - hour
+      default: minute
+      advancedConfig: true
+
+    - name: compression
+      label: Compression
+      description: Compression algorithm to use when sending data.
+      type: enum
+      validValues:
+        - none
+        - gzip
+      default: gzip
+      advancedConfig: true
+
+  logs:
+    exporters: |
+      {{ if has "Logs" .telemetry_types }}
+      - azureblob:
+          connection_string: {{ .connection_string | quote }}
+          container: {{ .container }}
+          root_folder: {{ .prefix }}
+          blob_prefix: {{ .blob_prefix }}
+          partition: {{ .partition }}
+          compression: {{ .compression }}
+      {{ end }}
+
+  metrics:
+    exporters: |
+      {{ if has "Metrics" .telemetry_types }}
+      - azureblob:
+          connection_string: {{ .connection_string | quote }}
+          container: {{ .container }}
+          root_folder: {{ .prefix }}
+          blob_prefix: {{ .blob_prefix }}
+          partition: {{ .partition }}
+          compression: {{ .compression }}
+      {{ end }}
+
+  traces:
+    exporters: |
+      {{ if has "Traces" .telemetry_types }}
+      - azureblob:
+          connection_string: {{ .connection_string | quote }}
+          container: {{ .container }}
+          root_folder: {{ .prefix }}
+          blob_prefix: {{ .blob_prefix }}
+          partition: {{ .partition }}
+          compression: {{ .compression }}
+      {{ end }}
