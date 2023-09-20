@@ -6,6 +6,7 @@ metadata:
   icon: /icons/destinations/prometheus.svg
   description: Send metrics to Google Managed Prometheus.
 spec:
+  featureGate: google-destinations
   version: 0.2.0
   parameters:
     - name: project

@@ -6,6 +6,7 @@ metadata:
   icon: /icons/destinations/google-cloud-logging.svg
   description: Send metrics, traces, and logs to Google Cloud.
 spec:
+  featureGate: google-destinations
   parameters:
     - name: project
       label: Project ID
@@ -105,8 +106,8 @@ spec:
       default: true
       advancedConfig: true
       documentation:
-      - text: Read More
-        url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
+        - text: Read More
+          url: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md
       options:
         sectionHeader: true
       required: false
@@ -161,7 +162,6 @@ spec:
         - name: enable_wal
           operator: equals
           value: true
-
 
   logs+metrics+traces:
     extensions: |
